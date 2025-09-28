@@ -22,7 +22,11 @@ let UsersService = class UsersService {
         this.usersRepository = usersRepository;
     }
     async findOne(id) {
-        return await this.usersRepository.findOneBy({ id });
+        const user = await this.usersRepository.findOneBy({ id });
+        if (!user) {
+            throw new common_1.NotFoundException(`User with ID "${id}" not found`);
+        }
+        return user;
     }
 };
 exports.UsersService = UsersService;

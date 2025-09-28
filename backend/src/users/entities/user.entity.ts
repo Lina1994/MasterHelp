@@ -1,7 +1,8 @@
+import { Exclude } from 'class-transformer'; // 1. Importar Exclude
 import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity()
-@Unique(['username', 'email']) // Asegura unicidad de username y email
+@Unique(['username', 'email'])
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -12,6 +13,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @Exclude() // 2. Añadir decorador para excluir este campo
   @Column()
-  password: string; // Debe ser hash de bcrypt
+  password: string;
 }

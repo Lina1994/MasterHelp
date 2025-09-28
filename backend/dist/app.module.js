@@ -12,15 +12,28 @@ const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
-const typeorm_config_1 = require("./config/typeorm.config");
+const user_entity_1 = require("./users/entities/user.entity");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true }),
-            typeorm_1.TypeOrmModule.forRoot(typeorm_config_1.typeOrmConfig),
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+                envFilePath: '.env',
+            }),
+            typeorm_1.TypeOrmModule.forRootAsync({
+                imports: [config_1.ConfigModule],
+                inject: [config_1.ConfigService],
+                useFactory: (configService) => ({
+                    type: configService.get('DB_TYPE'),
+                    database: configService.get('DB_DATABASE'),
+                    entities: [user_entity_1.User],
+                    synchronize: configService.get('NODE_ENV') === 'development',
+                    logging: false,
+                }),
+            }),
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
         ],
