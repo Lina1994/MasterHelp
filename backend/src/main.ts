@@ -15,9 +15,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  // Configuración de CORS
+  // Configuración de CORS para desarrollo
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: true, // Permitir cualquier origen en desarrollo
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -44,7 +44,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(3000);
+  await app.listen(3000, '0.0.0.0'); // Escuchar en todas las interfaces de red
   console.log(`Application is running on: ${await app.getUrl()}`);
   console.log(`Swagger UI is running on: ${await app.getUrl()}/api`);
 }

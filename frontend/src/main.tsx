@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { ThemeProvider, createTheme } from '@mui/material/styles'; // Importar ThemeProvider y createTheme
 import CssBaseline from '@mui/material/CssBaseline'; // CssBaseline resetea estilos CSS para consistencia
 import App from './App'
+import './i18n';
 
 // Crear un tema MUI (puedes personalizarlo)
 const theme = createTheme({

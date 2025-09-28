@@ -3,4 +3,5 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     findOne(id: number): Promise<import("./entities/user.entity").User>;
+    deleteMe(req: any): Promise<void>;
 }

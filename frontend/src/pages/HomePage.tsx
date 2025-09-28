@@ -1,20 +1,22 @@
 // dm-app/frontend/src/pages/HomePage.tsx
 import { Typography, Box } from '@mui/material'; // Importar componentes de MUI
+import SettingsSection from './SettingsSection';
+import { useTranslation } from 'react-i18next';
 
 const HomePage = () => {
+  const { t } = useTranslation();
   return (
-    <Box sx={{ p: 2 }}> {/* Contenedor principal con padding */}
+    <Box sx={{ p: 2 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Welcome to the Dungeon Master App!
+        {t('welcome')}
       </Typography>
       <Typography variant="body1" paragraph>
-        You are logged in and can manage your campaigns.
+        {t('home_body')}
       </Typography>
-      {/* Aquí irá el contenido principal de la página de inicio */}
-      {/* Puedes añadir más componentes de MUI como Cards, Lists, etc. */}
       <Typography variant="body2" color="text.secondary">
-        Start by exploring the navigation menu.
+        {t('home_hint')}
       </Typography>
+      <SettingsSection />
     </Box>
   );
 };

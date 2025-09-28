@@ -28,6 +28,12 @@ let UsersService = class UsersService {
         }
         return user;
     }
+    async deleteById(id) {
+        const result = await this.usersRepository.delete(id);
+        if (result.affected === 0) {
+            throw new common_1.NotFoundException(`User with ID "${id}" not found`);
+        }
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

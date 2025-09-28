@@ -1,0 +1,32 @@
+{
+  "name": "masterhelp-desktop",
+  "version": "1.0.0",
+  "description": "Desktop application for MasterHelp",
+  "main": "electron.js",
+  "scripts": {
+    "start:backend": "npm --prefix backend run start:dev",
+    "start:frontend": "npm --prefix frontend run dev",
+    "start:electron": "wait-on http://localhost:5173 && .\\node_modules\\.bin\\electron electron.js",
+    "start:desktop": "concurrently \"npm:start:backend\" \"npm:start:frontend\" \"npm:start:electron\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lina1994/MasterHelp.git"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "nestjs"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lina1994/MasterHelp/issues"
+  },
+  "homepage": "https://github.com/Lina1994/MasterHelp#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^38.2.0",
+    "wait-on": "^9.0.1"
+  }
+}

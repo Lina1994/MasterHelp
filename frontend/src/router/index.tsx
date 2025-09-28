@@ -6,6 +6,7 @@ import RegisterPage from '../pages/RegisterPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage'; // Importa la nueva página
 import ResetPasswordPage from '../pages/ResetPasswordPage'; // Importa la nueva página
 import ChangePasswordPage from '../pages/ChangePasswordPage'; // Importa la nueva página
+import DeleteAccountPage from '../pages/DeleteAccountPage';
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,11 @@ const router = createBrowserRouter([
       {
         path: 'change-password', // Ejemplo: /change-password
         element: <ChangePasswordPage />,
+      },
+      // Ruta protegida para eliminar cuenta
+      {
+        path: 'delete-account',
+        element: <DeleteAccountPage />,
       },
       // Puedes añadir más rutas protegidas aquí
     ],

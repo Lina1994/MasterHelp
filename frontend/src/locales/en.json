@@ -1,0 +1,19 @@
+{
+  "welcome": "Welcome to the Dungeon Master App!",
+  "home_body": "You are logged in and can manage your campaigns.",
+  "home_hint": "Start by exploring the navigation menu.",
+  "settings_title": "Account settings",
+  "change_password": "Change Password",
+  "delete_account": "Delete Account",
+  "delete_account_title": "Delete account",
+  "delete_account_desc": "This action is irreversible. All your data will be deleted.",
+  "delete_account_confirm": "Are you sure you want to delete your account? This action cannot be undone.",
+  "delete_account_success": "Your account has been deleted.",
+  "delete_account_error": "An error occurred while deleting the account.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "logout": "Logout",
+  "language": "Language",
+  "spanish": "Spanish",
+  "english": "English"
+}

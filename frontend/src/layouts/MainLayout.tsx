@@ -32,15 +32,6 @@ const MainLayout = () => {
             <ListItemText primary="Home" />
           </ListItemButton>
         </ListItem>
-        {/* Nuevo item para Change Password */}
-        <ListItem key="Change Password" disablePadding>
-          <ListItemButton onClick={() => navigate('/change-password')}>
-            <ListItemIcon>
-              {/* <LockIcon /> Puedes añadir un icono aquí si instalas @mui/icons-material */}
-            </ListItemIcon>
-            <ListItemText primary="Change Password" />
-          </ListItemButton>
-        </ListItem>
         {/* Puedes añadir más items aquí */}
       </List>
     </div>

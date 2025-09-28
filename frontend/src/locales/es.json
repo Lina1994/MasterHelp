@@ -1,0 +1,19 @@
+{
+  "welcome": "¡Bienvenido a la Dungeon Master App!",
+  "home_body": "Has iniciado sesión y puedes gestionar tus campañas.",
+  "home_hint": "Comienza explorando el menú de navegación.",
+  "settings_title": "Ajustes de cuenta",
+  "change_password": "Cambiar contraseña",
+  "delete_account": "Eliminar cuenta",
+  "delete_account_title": "Eliminar cuenta",
+  "delete_account_desc": "Esta acción es irreversible. Todos tus datos serán eliminados.",
+  "delete_account_confirm": "¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.",
+  "delete_account_success": "Tu cuenta ha sido eliminada.",
+  "delete_account_error": "Ocurrió un error al eliminar la cuenta.",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "logout": "Cerrar sesión",
+  "language": "Idioma",
+  "spanish": "Español",
+  "english": "Inglés"
+}
