@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const typeorm_1 = require("@nestjs/typeorm");
 const user_entity_1 = require("../users/entities/user.entity");
@@ -21,6 +22,7 @@ exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            config_1.ConfigModule,
             typeorm_1.TypeOrmModule.forFeature([user_entity_1.User]),
             jwt_1.JwtModule.register({
                 secret: process.env.JWT_SECRET || 'defaultSecret',

@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -6,7 +7,8 @@ import { RegisterDto } from './dto/register.dto';
 export declare class AuthService {
     private usersRepository;
     private jwtService;
-    constructor(usersRepository: Repository<User>, jwtService: JwtService);
+    private configService;
+    constructor(usersRepository: Repository<User>, jwtService: JwtService, configService: ConfigService);
     register(registerDto: RegisterDto): Promise<{
         message: string;
     }>;
