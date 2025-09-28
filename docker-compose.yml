@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # No se necesitan variables de entorno de DB para SQLite
+      JWT_SECRET: your_jwt_secret_here # Cambia esto por un secreto seguro
+    volumes:
+      # Monta un volumen para persistir la base de datos SQLite
+      - dm_data:/app/data
+
+volumes:
+  dm_data: # Volumen para almacenar el archivo SQLite
