@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
+import API_BASE_URL from '../apiBase';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -20,7 +21,7 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post('http://localhost:3000/auth/login', {
+  const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         username,
         password,
       });

@@ -12,7 +12,10 @@ const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
+const campaigns_module_1 = require("./campaigns/campaigns.module");
 const user_entity_1 = require("./users/entities/user.entity");
+const campaign_entity_1 = require("./campaigns/entities/campaign.entity");
+const campaign_player_entity_1 = require("./campaigns/entities/campaign-player.entity");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -29,13 +32,14 @@ exports.AppModule = AppModule = __decorate([
                 useFactory: (configService) => ({
                     type: configService.get('DB_TYPE'),
                     database: configService.get('DB_DATABASE'),
-                    entities: [user_entity_1.User],
+                    entities: [user_entity_1.User, campaign_entity_1.Campaign, campaign_player_entity_1.CampaignPlayer],
                     synchronize: configService.get('NODE_ENV') === 'development',
                     logging: false,
                 }),
             }),
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
+            campaigns_module_1.CampaignsModule,
         ],
         controllers: [],
         providers: [],

@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
+import API_BASE_URL from '../apiBase';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -24,7 +25,7 @@ const RegisterPage = () => {
     setError('');
     setSuccess('');
     try {
-      await axios.post('http://localhost:3000/auth/register', {
+  await axios.post(`${API_BASE_URL}/auth/register`, {
         username,
         email,
         password,

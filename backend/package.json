@@ -38,7 +38,8 @@
     "resend": "^6.1.0",
     "rxjs": "^7.8.1",
     "sqlite3": "^5.1.6",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -51,6 +52,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.0",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/xlsx": "^0.0.35",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.42.0",

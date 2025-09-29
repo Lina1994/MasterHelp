@@ -1,6 +1,9 @@
 import { Exclude } from 'class-transformer'; // 1. Importar Exclude
 import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
+import { Campaign } from '../../campaigns/entities/campaign.entity';
+import { OneToMany } from 'typeorm';
+
 @Entity()
 @Unique(['username', 'email'])
 export class User {
@@ -16,4 +19,7 @@ export class User {
   @Exclude() // 2. Añadir decorador para excluir este campo
   @Column()
   password: string;
+
+  @OneToMany(() => Campaign, campaign => campaign.owner)
+  campaigns: Campaign[];
 }

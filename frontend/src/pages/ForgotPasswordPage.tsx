@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
+import API_BASE_URL from '../apiBase';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -21,7 +22,7 @@ const ForgotPasswordPage = () => {
     setMessage('');
     setError('');
     try {
-      await axios.post('http://localhost:3000/auth/forgot-password', {
+  await axios.post(`${API_BASE_URL}/auth/forgot-password`, {
         email,
       });
       setMessage('If the email exists, a reset link has been sent.');

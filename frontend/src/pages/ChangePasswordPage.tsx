@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
+import API_BASE_URL from '../apiBase';
 
 const ChangePasswordPage = () => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -29,7 +30,7 @@ const ChangePasswordPage = () => {
     try {
       // Usar el token de autenticación almacenado
       const token = localStorage.getItem('access_token');
-      await axios.put('http://localhost:3000/auth/change-password', {
+  await axios.put(`${API_BASE_URL}/auth/change-password`, {
         currentPassword,
         newPassword,
       }, {

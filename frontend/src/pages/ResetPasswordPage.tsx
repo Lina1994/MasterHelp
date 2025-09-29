@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
+import API_BASE_URL from '../apiBase';
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
@@ -28,7 +29,7 @@ const ResetPasswordPage = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:3000/auth/reset-password', {
+  await axios.post(`${API_BASE_URL}/auth/reset-password`, {
         token,
         newPassword,
       });

@@ -15,5 +15,12 @@
   "logout": "Cerrar sesión",
   "language": "Idioma",
   "spanish": "Español",
-  "english": "Inglés"
+  "english": "Inglés",
+  "theme": "Tema",
+  "light": "Claro",
+  "dark": "Oscuro",
+  "custom": "Personalizado",
+  "primary_color": "Color primario",
+  "secondary_color": "Color secundario",
+  "background_color": "Color de fondo"
 }

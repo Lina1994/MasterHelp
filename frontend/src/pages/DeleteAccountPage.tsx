@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
+import API_BASE_URL from '../apiBase';
 
 const DeleteAccountPage = () => {
   const [message, setMessage] = useState('');
@@ -28,7 +29,7 @@ const DeleteAccountPage = () => {
     setMessage('');
     try {
       const token = localStorage.getItem('access_token');
-      await axios.delete('http://localhost:3000/users/me', {
+  await axios.delete(`${API_BASE_URL}/users/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
