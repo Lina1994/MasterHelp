@@ -11,6 +11,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
 import API_BASE_URL from '../apiBase';
+import { useCampaigns } from '../components/Campaign/useCampaigns';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -19,18 +20,31 @@ const RegisterPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { afterAuth } = useCampaigns();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     try {
-  await axios.post(`${API_BASE_URL}/auth/register`, {
+      await axios.post(`${API_BASE_URL}/auth/register`, {
         username,
         email,
         password,
       });
       setSuccess('Registration successful! You can now log in.');
+      // Optionally, auto-login and store user info
+      /*
+      const loginRes = await axios.post(`${API_BASE_URL}/auth/login`, { username, password });
+      const { access_token } = loginRes.data;
+      localStorage.setItem('access_token', access_token);
+      const userRes = await axios.get(`${API_BASE_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${access_token}` },
+      });
+      afterAuth(userRes.data);
+      navigate('/');
+      return;
+      */
       setTimeout(() => navigate('/login'), 2000); // Redirige después de 2 segundos
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');

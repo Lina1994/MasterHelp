@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../apiBase';
 
 export interface Invitation {
   id: string;
@@ -19,7 +20,7 @@ export function useInvitations() {
 
   // Helper para auth
   function getAuthHeaders() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
@@ -27,9 +28,10 @@ export function useInvitations() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get('/campaigns/invitations/pending', {
+      const res = await axios.get(`${API_BASE_URL}/campaigns/invitations/pending`, {
         headers: getAuthHeaders(),
       });
+      console.log('DEBUG: /campaigns/invitations/pending response', res.data);
       setInvitations(Array.isArray(res.data) ? res.data : []);
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Error loading invitations');
@@ -41,7 +43,7 @@ export function useInvitations() {
   const respond = useCallback(async (invitationId: string, response: 'accept' | 'decline') => {
     setError(null);
     try {
-      await axios.post('/campaigns/invitation/respond', { invitationId, response }, {
+      await axios.post(`${API_BASE_URL}/campaigns/invitation/respond`, { invitationId, response }, {
         headers: getAuthHeaders(),
       });
       await fetchInvitations();

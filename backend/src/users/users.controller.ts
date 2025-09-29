@@ -8,10 +8,16 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getMe(@Request() req) {
+    // req.user.userId viene del JWT
+    return this.usersService.findOne(req.user.userId);
+  }
+
   @Get(':id')
-  // 2. Aplicar el pipe y cambiar el tipo a number
-  findOne(@Param('id', ParseIntPipe) id: number) { 
-    // 3. Ya no se necesita la conversión manual con '+'
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 

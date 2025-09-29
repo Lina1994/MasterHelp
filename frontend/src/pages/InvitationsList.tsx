@@ -7,7 +7,7 @@ export const InvitationsList: React.FC = () => {
 
   if (loading) return <Box display="flex" justifyContent="center"><CircularProgress /></Box>;
   if (error) return <Alert severity="error">{error}</Alert>;
-  if (!invitations.length) return <Typography variant="body2" color="text.secondary">No tienes invitaciones pendientes.</Typography>;
+  if (!invitations.length) return null;
 
   return (
     <Stack spacing={2}>

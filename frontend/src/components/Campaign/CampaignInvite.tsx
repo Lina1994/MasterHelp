@@ -1,14 +1,14 @@
 import { FC } from 'react';
-import { Campaign } from './types';
+import CampaignInviteForm from './CampaignInviteForm';
 
 interface CampaignInviteProps {
-  campaign: Campaign;
-  onInvite: (email: string) => void;
+  onInvite: (email: string, username?: string) => Promise<void>;
+  loading?: boolean;
+  error?: string | null;
 }
 
-const CampaignInvite: FC<CampaignInviteProps> = ({ campaign, onInvite }) => {
-  // TODO: Formulario para invitar jugadores
-  return null;
+const CampaignInvite: FC<CampaignInviteProps> = ({ onInvite, loading, error }) => {
+  return <CampaignInviteForm onInvite={onInvite} loading={loading} error={error} />;
 };
 
 export default CampaignInvite;

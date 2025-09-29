@@ -8,6 +8,7 @@ import { useContext } from 'react';
 import ActiveCampaignContext from '../components/Campaign/ActiveCampaignContext';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { InvitationsList } from '../pages/InvitationsList';
+// import { DebugUserInfo } from '../components/DebugUserInfo';
 
 const MainLayout = () => {
   const navigate = useNavigate();

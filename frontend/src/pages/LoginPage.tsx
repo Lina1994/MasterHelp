@@ -10,23 +10,30 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
 import API_BASE_URL from '../apiBase';
+import { useCampaigns } from '../components/Campaign/useCampaigns';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { afterAuth } = useCampaigns();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
-  const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         username,
         password,
       });
       const { access_token } = response.data;
       localStorage.setItem('access_token', access_token);
+      // Fetch user info and store in localStorage
+      const userRes = await axios.get(`${API_BASE_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${access_token}` },
+      });
+      afterAuth(userRes.data);
       navigate('/'); // Redirige a la página principal
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');

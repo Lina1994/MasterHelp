@@ -60,4 +60,16 @@ export class CampaignsController {
   getPendingInvitations(@Request() req) {
     return this.campaignsService.getPendingInvitations(req.user.userId);
   }
+
+  // Eliminar jugador de campaña (solo owner)
+  @Delete(':campaignId/player/:playerId')
+  @UseGuards(JwtAuthGuard)
+  async removePlayer(
+    @Request() req,
+    @Param('campaignId') campaignId: string,
+    @Param('playerId') playerId: string
+	) {
+	  // Solo el owner puede eliminar
+	  return this.campaignsService.removePlayer(req.user.userId, campaignId, playerId);
+  }
 }

@@ -21,17 +21,33 @@ export class CampaignsService {
     private readonly usersService: UsersService,
   ) {}
 
+  // --- Eliminar jugador de campaña (solo owner) ---
+  async removePlayer(ownerId: number, campaignId: string, playerId: string) {
+    // Buscar la campaña y verificar ownership
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner.id !== ownerId) throw new ForbiddenException('Only the campaign owner can remove players');
+    // Buscar el CampaignPlayer
+    const campaignPlayer = await this.campaignPlayersRepository.findOne({ where: { id: playerId }, relations: ['user', 'campaign'] });
+    if (!campaignPlayer) throw new NotFoundException('Player not found');
+    // No permitir que el owner se elimine a sí mismo
+    if (campaignPlayer.user.id === ownerId) throw new ForbiddenException('Owner cannot remove themselves');
+    // Eliminar el CampaignPlayer
+    await this.campaignPlayersRepository.delete(playerId);
+    return { message: 'Player removed' };
+  }
+
 
   async findAllForUser(userId: number): Promise<Campaign[]> {
     // Campañas donde el usuario es owner
     const asOwner = await this.campaignsRepository.find({
       where: { owner: { id: userId } },
-      relations: ['players', 'owner'],
+      relations: ['players', 'players.user', 'owner'],
     });
     // Campañas donde el usuario es player
     const asPlayer = await this.campaignPlayersRepository.find({
       where: { user: { id: userId } },
-      relations: ['campaign', 'campaign.owner', 'campaign.players'],
+      relations: ['campaign', 'campaign.owner', 'campaign.players', 'campaign.players.user'],
     });
     // Extraer campañas únicas
     const playerCampaigns = asPlayer.map(cp => cp.campaign);
@@ -42,7 +58,7 @@ export class CampaignsService {
   }
 
   async findOne(id: number): Promise<Campaign | undefined> {
-  return this.campaignsRepository.findOne({ where: { id: id as any }, relations: ['players', 'owner'] });
+    return this.campaignsRepository.findOne({ where: { id: id as any }, relations: ['players', 'players.user', 'owner'] });
   }
 
 

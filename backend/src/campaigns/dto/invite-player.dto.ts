@@ -1,15 +1,15 @@
-import { IsNotEmpty, IsString, IsOptional, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, ValidateIf } from 'class-validator';
 
 export class InvitePlayerDto {
   @IsNotEmpty()
   @IsString()
   campaignId: string;
 
-  @IsOptional()
-  @IsEmail()
+  @ValidateIf(o => o.email !== undefined && o.email !== '')
+  @IsEmail({}, { message: 'email must be a valid email' })
   email?: string;
 
-  @IsOptional()
-  @IsString()
+  @ValidateIf(o => o.username !== undefined && o.username !== '')
+  @IsString({ message: 'username must be a string' })
   username?: string;
 }

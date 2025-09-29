@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Campaign, CampaignInvite } from './types';
+import { filterVisibleCampaigns } from '../../utils/filterVisibleCampaigns';
 import API_BASE_URL from '../../apiBase';
 import axios from 'axios';
 
@@ -14,6 +15,13 @@ export function useCampaigns() {
   const getAuthHeaders = () => {
     const token = localStorage.getItem('access_token');
     return token ? { Authorization: `Bearer ${token}` } : {};
+  } 
+
+  // Helper para guardar usuario actual tras login/register
+  const storeCurrentUser = (user: any) => {
+    if (user) {
+      localStorage.setItem('current_user', JSON.stringify(user));
+    }
   };
 
   // Fetch all campaigns
@@ -22,7 +30,7 @@ export function useCampaigns() {
     setError(null);
     try {
       const res = await axios.get(`${API_BASE_URL}/campaigns`, { headers: getAuthHeaders() });
-      setCampaigns(res.data);
+  setCampaigns(filterVisibleCampaigns(res.data));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error fetching campaigns');
     } finally {
@@ -41,6 +49,11 @@ export function useCampaigns() {
       setError(err.response?.data?.message || 'Error creating campaign');
       throw err;
     }
+  };
+
+  // After login/register, call this to store user
+  const afterAuth = (user: any) => {
+    storeCurrentUser(user);
   };
 
   // Update campaign
@@ -69,20 +82,16 @@ export function useCampaigns() {
     }
   };
 
-  // Invite player (dummy, to be implemented with backend endpoint)
-  const invitePlayer = async (campaignId: string, email: string): Promise<CampaignInvite> => {
+  // Invite player (real backend)
+  const invitePlayer = async (campaignId: string, email: string, username?: string): Promise<void> => {
     setError(null);
-    // TODO: Cambiar por endpoint real cuando esté disponible
     try {
-      // const res = await axios.post(`${API_BASE_URL}/campaigns/${campaignId}/invite`, { email }, { headers: getAuthHeaders() });
-      // return res.data;
-      return {
-        campaignId,
-        email,
-        invitedBy: 'me',
-        status: 'pending',
-        sentAt: new Date().toISOString(),
-      };
+      await axios.post(
+        `${API_BASE_URL}/campaigns/invite`,
+        { campaignId, email, username },
+        { headers: getAuthHeaders() }
+      );
+      await fetchCampaigns(); // Refresca campañas para ver nuevos jugadores/invitaciones
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error inviting player');
       throw err;
@@ -105,5 +114,6 @@ export function useCampaigns() {
     updateCampaign,
     deleteCampaign,
     invitePlayer,
+    afterAuth, // export for login/register
   };
 }
