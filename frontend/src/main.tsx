@@ -20,8 +20,14 @@ axios.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('current_user');
-      // Redirigir a login solo si no estamos ya en login
-      if (!window.location.pathname.startsWith('/login')) {
+      // Redirigir a login solo si no estamos ya en login, register, forgot-password o reset-password
+      const path = window.location.pathname;
+      if (
+        !path.startsWith('/login') &&
+        !path.startsWith('/register') &&
+        !path.startsWith('/forgot-password') &&
+        !path.startsWith('/reset-password')
+      ) {
         window.location.href = '/login';
       }
     }

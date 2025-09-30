@@ -1,0 +1,4 @@
+# E2E Selenium requirements
+selenium==4.18.1
+webdriver-manager==4.0.1
+pytest==8.2.1
