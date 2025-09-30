@@ -1,12 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { CampaignSettingsModal } from '../components/Campaign/CampaignSettingsModal';
 import axios from 'axios';
 import API_BASE_URL from '../apiBase';
 import { getCurrentUser } from '../utils/getCurrentUser';
-import { Box, Typography, Button, Dialog } from '@mui/material';
+import { Box, Typography, Button, Dialog, Card, CardContent, CardMedia, Stack } from '@mui/material';
 import { useCampaigns } from '../components/Campaign/useCampaigns';
 import { CampaignPlayer } from '../components/Campaign/types';
 import CampaignList from '../components/Campaign/CampaignList';
@@ -15,10 +15,18 @@ import CampaignInvite from '../components/Campaign/CampaignInvite';
 
 const CampaignPage = () => {
   const { t } = useTranslation();
-  const { campaigns, activeCampaign, setActiveCampaign, createCampaign, invitePlayer, fetchCampaigns, loading, error } = useCampaigns();
+  const { campaigns, activeCampaign, setActiveCampaign, createCampaign, invitePlayer, fetchCampaigns, loading, error, updateCampaign } = useCampaigns();
+  // Sincroniza activeCampaign con la lista campaigns tras cada actualización
+  useEffect(() => {
+    if (activeCampaign) {
+      const updated = campaigns.find(c => c.id === activeCampaign.id);
+      if (updated) setActiveCampaign(updated);
+    }
+  }, [campaigns]);
   const [openForm, setOpenForm] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
   const [removingId, setRemovingId] = useState<string | undefined>();
+  const [editMode, setEditMode] = useState(false);
   // Eliminar jugador de campaña
   const handleRemovePlayer = async (player: CampaignPlayer) => {
     if (!activeCampaign) return;
@@ -36,9 +44,17 @@ const CampaignPage = () => {
     }
   };
 
+
   const handleSave = async (data: Partial<any>) => {
-    await createCampaign(data);
-    setOpenForm(false);
+    if (editMode && activeCampaign) {
+      // Editar campaña existente
+      await updateCampaign(activeCampaign.id, data);
+      setEditMode(false);
+    } else {
+      // Crear nueva campaña
+      await createCampaign(data);
+      setOpenForm(false);
+    }
   };
 
   return (
@@ -57,6 +73,44 @@ const CampaignPage = () => {
           setActiveCampaign(selected);
         }}
       />
+
+      {/* Detalles de campaña activa */}
+      {activeCampaign && (
+        <Card sx={{ mt: 3, mb: 3, maxWidth: 600 }}>
+          {activeCampaign.imageUrl && (
+            <Box sx={{ width: '100%', height: 220, bgcolor: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #eee' }}>
+              <img
+                src={activeCampaign.imageUrl}
+                alt={activeCampaign.name}
+                style={{ maxHeight: 200, maxWidth: '100%', objectFit: 'contain', display: 'block', margin: '0 auto' }}
+              />
+            </Box>
+          )}
+          <CardContent>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h5">{activeCampaign.name}</Typography>
+              {/* Solo el owner puede editar */}
+              {getCurrentUser()?.id === activeCampaign.owner?.id && (
+                <Button size="small" variant="outlined" onClick={() => setEditMode(true)}>
+                  {t('edit_campaign', 'Editar campaña')}
+                </Button>
+              )}
+            </Stack>
+            {activeCampaign.description && (
+              <Typography variant="body1" sx={{ mt: 1 }}>{activeCampaign.description}</Typography>
+            )}
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              {t('master', 'Master')}: {activeCampaign.owner?.username}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('created_at', 'Creada')}: {new Date(activeCampaign.createdAt).toLocaleString()}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('updated_at', 'Actualizada')}: {new Date(activeCampaign.updatedAt).toLocaleString()}
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
       {/* Gestión de jugadores/invitaciones */}
       {activeCampaign && (
         <Box sx={{ mt: 4, position: 'relative' }}>
@@ -147,10 +201,11 @@ const CampaignPage = () => {
           {/* ...el formulario de invitación ahora solo está en los ajustes de campaña... */}
         </Box>
       )}
-      <Dialog open={openForm} onClose={() => setOpenForm(false)}>
+      <Dialog open={openForm || editMode} onClose={() => { setOpenForm(false); setEditMode(false); }}>
         <CampaignForm
+          initial={editMode && activeCampaign ? activeCampaign : undefined}
           onSave={handleSave}
-          onCancel={() => setOpenForm(false)}
+          onCancel={() => { setOpenForm(false); setEditMode(false); }}
         />
       </Dialog>
     </Box>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '../apiBase';
+import { getAuthHeaders } from '../utils/auth';
 
 export interface Invitation {
   id: string;
@@ -18,11 +19,6 @@ export function useInvitations() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Helper para auth
-  function getAuthHeaders() {
-    const token = localStorage.getItem('access_token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
 
   const fetchInvitations = useCallback(async () => {
     setLoading(true);

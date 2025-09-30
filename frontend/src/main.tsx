@@ -10,6 +10,7 @@ import { ActiveCampaignProvider } from './components/Campaign/ActiveCampaignProv
 import './i18n';
 import axios from 'axios';
 import { getCurrentUser } from './utils/getCurrentUser';
+import { fetchUserFromApi } from './utils/fetchUserFromApi';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 // Interceptor global para manejar expiración de sesión (401)
@@ -28,27 +29,45 @@ axios.interceptors.response.use(
   }
 );
 
+
 function Main() {
   const { i18n } = useTranslation();
-  const [mode, setMode] = useState<ThemeMode>(() => {
-    // Si el usuario tiene preferencia guardada, usarla
-    const user = getCurrentUser();
-    return (user?.theme as ThemeMode) || (localStorage.getItem('theme') as ThemeMode) || 'light';
-  });
-  const [primary, setPrimary] = useState(() => localStorage.getItem('theme_primary') || '#1976d2');
-  const [secondary, setSecondary] = useState(() => localStorage.getItem('theme_secondary') || '#9c27b0');
-  const [background, setBackground] = useState(() => localStorage.getItem('theme_background') || '#fff');
+  const [mode, setMode] = useState<ThemeMode>('light');
+  const [primary, setPrimary] = useState('#1976d2');
+  const [secondary, setSecondary] = useState('#9c27b0');
+  const [background, setBackground] = useState('#fff');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user?.language && i18n.language !== user.language) {
-      i18n.changeLanguage(user.language);
-      localStorage.setItem('lang', user.language);
+    async function initUserPrefs() {
+      const token = localStorage.getItem('access_token');
+      let user = getCurrentUser();
+      // Si hay token, pedir usuario actualizado al backend
+      if (token) {
+        const apiUser = await fetchUserFromApi(token);
+        if (apiUser) {
+          user = apiUser;
+          localStorage.setItem('current_user', JSON.stringify(apiUser));
+        }
+      }
+      // Aplicar preferencias
+      if (user?.language && i18n.language !== user.language) {
+        i18n.changeLanguage(user.language);
+        localStorage.setItem('lang', user.language);
+      }
+      if (user?.theme) {
+        setMode(user.theme as ThemeMode);
+        localStorage.setItem('theme', user.theme);
+      } else {
+        setMode((localStorage.getItem('theme') as ThemeMode) || 'light');
+      }
+      setPrimary(localStorage.getItem('theme_primary') || '#1976d2');
+      setSecondary(localStorage.getItem('theme_secondary') || '#9c27b0');
+      setBackground(localStorage.getItem('theme_background') || '#fff');
+      setLoading(false);
     }
-    if (user?.theme && mode !== user.theme) {
-      setMode(user.theme as ThemeMode);
-      localStorage.setItem('theme', user.theme);
-    }
+    initUserPrefs();
+    // eslint-disable-next-line
   }, []);
 
   const theme = useMemo(() => {
@@ -81,6 +100,10 @@ function Main() {
     setBackground(color);
     localStorage.setItem('theme_background', color);
   };
+
+  if (loading) {
+    return <div style={{padding: 32, textAlign: 'center'}}>Cargando preferencias...</div>;
+  }
 
   return (
     <ActiveCampaignProvider>

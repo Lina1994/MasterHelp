@@ -19,7 +19,7 @@ export class CampaignsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.campaignsService.findOne(Number(id));
+    return this.campaignsService.findOne(id);
   }
 
   @Post()
@@ -31,12 +31,12 @@ export class CampaignsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCampaignDto: UpdateCampaignDto) {
-    return this.campaignsService.update(Number(id), updateCampaignDto);
+    return this.campaignsService.update(id, updateCampaignDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.campaignsService.remove(Number(id));
+    return this.campaignsService.remove(id);
   }
 
   // --- INVITATION ENDPOINTS ---

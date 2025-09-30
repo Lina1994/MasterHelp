@@ -4,6 +4,7 @@ import { Campaign, CampaignInvite } from './types';
 import { filterVisibleCampaigns } from '../../utils/filterVisibleCampaigns';
 import API_BASE_URL from '../../apiBase';
 import axios from 'axios';
+import { getAuthHeaders } from '../../utils/auth';
 
 export function useCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -11,11 +12,7 @@ export function useCampaigns() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Helper para auth
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('access_token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  } 
+  // getAuthHeaders ahora viene de utils/auth
 
   // Helper para guardar usuario actual tras login/register
   const storeCurrentUser = (user: any) => {
@@ -61,7 +58,7 @@ export function useCampaigns() {
     setError(null);
     try {
       const res = await axios.patch(`${API_BASE_URL}/campaigns/${id}`, data, { headers: getAuthHeaders() });
-      setCampaigns(prev => prev.map(c => c.id === id ? res.data : c));
+      await fetchCampaigns(); // Refresca campañas tras editar
       return res.data;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error updating campaign');

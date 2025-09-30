@@ -57,8 +57,8 @@ export class CampaignsService {
     return unique;
   }
 
-  async findOne(id: number): Promise<Campaign | undefined> {
-    return this.campaignsRepository.findOne({ where: { id: id as any }, relations: ['players', 'players.user', 'owner'] });
+  async findOne(id: string): Promise<Campaign | undefined> {
+    return this.campaignsRepository.findOne({ where: { id }, relations: ['players', 'players.user', 'owner'] });
   }
 
 
@@ -70,12 +70,12 @@ export class CampaignsService {
     return this.campaignsRepository.save(campaign);
   }
 
-  async update(id: number, updateCampaignDto: UpdateCampaignDto): Promise<Campaign> {
+  async update(id: string, updateCampaignDto: UpdateCampaignDto): Promise<Campaign> {
     await this.campaignsRepository.update(id, updateCampaignDto);
     return this.findOne(id) as Promise<Campaign>;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     await this.campaignsRepository.delete(id);
   }
 
