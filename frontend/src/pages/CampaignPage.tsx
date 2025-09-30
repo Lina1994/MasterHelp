@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { CampaignSettingsModal } from '../components/Campaign/CampaignSettingsModal';
 import axios from 'axios';
@@ -13,6 +14,7 @@ import CampaignForm from '../components/Campaign/CampaignForm';
 import CampaignInvite from '../components/Campaign/CampaignInvite';
 
 const CampaignPage = () => {
+  const { t } = useTranslation();
   const { campaigns, activeCampaign, setActiveCampaign, createCampaign, invitePlayer, fetchCampaigns, loading, error } = useCampaigns();
   const [openForm, setOpenForm] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
@@ -42,9 +44,9 @@ const CampaignPage = () => {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="h4">Campañas</Typography>
+  <Typography variant="h4">{t('campaigns', 'Campañas')}</Typography>
         <Button variant="contained" color="primary" onClick={() => setOpenForm(true)}>
-          Nueva campaña
+          {t('new_campaign', 'Nueva campaña')}
         </Button>
       </Box>
       <CampaignList
@@ -59,14 +61,14 @@ const CampaignPage = () => {
       {activeCampaign && (
         <Box sx={{ mt: 4, position: 'relative' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h6" gutterBottom>Jugadores e invitaciones</Typography>
+            <Typography variant="h6" gutterBottom>{t('players_and_invitations', 'Jugadores e invitaciones')}</Typography>
             {/* Solo el master ve el botón de ajustes */}
             {(() => {
               const currentUser = getCurrentUser();
               if (currentUser && activeCampaign.owner && activeCampaign.owner.id === currentUser.id) {
                 return (
                   <Button startIcon={<SettingsIcon />} size="small" onClick={() => setOpenSettings(true)}>
-                    Ajustes
+                    {t('settings', 'Ajustes')}
                   </Button>
                 );
               }
@@ -93,7 +95,7 @@ const CampaignPage = () => {
           {/* Lista de jugadores */}
           <Box sx={{ mb: 2 }}>
             {/* Jugadores activos */}
-            <Typography variant="subtitle1">Jugadores</Typography>
+            <Typography variant="subtitle1">{t('players', 'Jugadores')}</Typography>
             {activeCampaign.players && activeCampaign.players.filter(p => p.status === 'active').length > 0 ? (
               <ul>
                 {activeCampaign.players.filter(p => p.status === 'active').map(player => (
@@ -103,7 +105,7 @@ const CampaignPage = () => {
                 ))}
               </ul>
             ) : (
-              <Typography variant="body2" color="text.secondary">No hay jugadores activos.</Typography>
+              <Typography variant="body2" color="text.secondary">{t('no_active_players', 'No hay jugadores activos.')}</Typography>
             )}
 
             {/* Solo el master ve invitaciones pendientes y declinadas */}
@@ -112,7 +114,7 @@ const CampaignPage = () => {
               if (currentUser && activeCampaign.owner && activeCampaign.owner.id === currentUser.id) {
                 return <>
                   {/* Invitaciones pendientes */}
-                  <Typography variant="subtitle1" sx={{ mt: 2 }}>Invitaciones pendientes</Typography>
+                  <Typography variant="subtitle1" sx={{ mt: 2 }}>{t('pending_invitations', 'Invitaciones pendientes')}</Typography>
                   {activeCampaign.players && activeCampaign.players.filter(p => p.status === 'invited').length > 0 ? (
                     <ul>
                       {activeCampaign.players.filter(p => p.status === 'invited').map(player => (
@@ -122,12 +124,12 @@ const CampaignPage = () => {
                       ))}
                     </ul>
                   ) : (
-                    <Typography variant="body2" color="text.secondary">No hay invitaciones pendientes.</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('no_pending_invitations', 'No hay invitaciones pendientes.')}</Typography>
                   )}
                   {/* Invitaciones declinadas */}
                   {activeCampaign.players && activeCampaign.players.filter(p => p.status === 'declined').length > 0 && (
                     <>
-                      <Typography variant="subtitle1" sx={{ mt: 2 }}>Invitaciones declinadas</Typography>
+                      <Typography variant="subtitle1" sx={{ mt: 2 }}>{t('declined_invitations', 'Invitaciones declinadas')}</Typography>
                       <ul>
                         {activeCampaign.players.filter(p => p.status === 'declined').map(player => (
                           <li key={player.id}>

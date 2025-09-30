@@ -29,4 +29,13 @@ export class UsersService {
       throw new NotFoundException(`User with ID "${id}" not found`);
     }
   }
+
+  async updatePreferences(id: number, language?: string, theme?: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException(`User with ID "${id}" not found`);
+    if (language) user.language = language;
+    if (theme) user.theme = theme;
+    await this.usersRepository.save(user);
+    return user;
+  }
 }

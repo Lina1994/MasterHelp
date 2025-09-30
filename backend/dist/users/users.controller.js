@@ -14,6 +14,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
+updatePreferences(, req, , body, { language: string, theme: string });
+{
+    return this.usersService.updatePreferences(req.user.userId, body.language, body.theme);
+}
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const swagger_1 = require("@nestjs/swagger");
 const users_service_1 = require("./users.service");

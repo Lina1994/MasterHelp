@@ -23,4 +23,22 @@
   "primary_color": "Color primario",
   "secondary_color": "Color secundario",
   "background_color": "Color de fondo"
+  ,
+  "campaigns": "Campañas",
+  "new_campaign": "Nueva campaña",
+  "players_and_invitations": "Jugadores e invitaciones",
+  "settings": "Ajustes",
+  "players": "Jugadores",
+  "no_active_players": "No hay jugadores activos.",
+  "pending_invitations": "Invitaciones pendientes",
+  "no_pending_invitations": "No hay invitaciones pendientes.",
+  "declined_invitations": "Invitaciones declinadas",
+  "campaign_settings": "Ajustes de campaña",
+  "active_players": "Jugadores activos",
+  "invite_player": "Invitar jugador",
+  "user": "Usuario",
+  "close": "Cerrar",
+  "remove_player_title": "¿Eliminar jugador?",
+  "remove_player_confirm": "¿Seguro que quieres eliminar a",
+  "from_campaign": "de la campaña?"
 }

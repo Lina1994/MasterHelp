@@ -5,6 +5,7 @@ import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box
 // import MenuIcon from '@mui/icons-material/Menu';
 import logo from '../assets/logo.png';
 import { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import ActiveCampaignContext from '../components/Campaign/ActiveCampaignContext';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { InvitationsList } from '../pages/InvitationsList';
@@ -12,6 +13,7 @@ import { InvitationsList } from '../pages/InvitationsList';
 
 const MainLayout = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false); // Estado para controlar el drawer en móvil
 
   // El logout ahora está en los ajustes, no aquí
@@ -41,7 +43,7 @@ const MainLayout = () => {
         <ListItem key="campaigns" disablePadding>
           <ListItemButton onClick={() => navigate('/campaigns')}>
             <ListItemIcon />
-            <ListItemText primary="Campañas" />
+            <ListItemText primary={t('campaigns', 'Campañas')} />
           </ListItemButton>
         </ListItem>
         {/* Puedes añadir más items aquí */}

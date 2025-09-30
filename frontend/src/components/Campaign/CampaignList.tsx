@@ -1,5 +1,6 @@
 
 import { FC } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Campaign } from './types';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -22,9 +23,10 @@ interface CampaignListProps {
 }
 
 const CampaignList: FC<CampaignListProps> = ({ campaigns, activeCampaignId, onSelect, onEdit, onDelete }) => {
-  if (!campaigns.length) {
-    return <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>No hay campañas creadas.</Typography>;
-  }
+        const { t } = useTranslation();
+        if (!campaigns.length) {
+          return <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>{t('no_campaigns', 'No hay campañas creadas.')}</Typography>;
+        }
   return (
     <List>
       {campaigns.map(campaign => (
@@ -58,7 +60,7 @@ const CampaignList: FC<CampaignListProps> = ({ campaigns, activeCampaignId, onSe
                 <>
                   {campaign.owner && (
                     <Typography component="span" variant="caption" color="text.secondary">
-                      Master: {campaign.owner.username}
+                      {t('master', 'Master')}: {campaign.owner.username}
                     </Typography>
                   )}
                 </>

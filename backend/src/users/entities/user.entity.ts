@@ -20,6 +20,12 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ default: 'es' })
+  language: string;
+
+  @Column({ default: 'light' })
+  theme: string;
+
   @OneToMany(() => Campaign, campaign => campaign.owner)
   campaigns: Campaign[];
 }

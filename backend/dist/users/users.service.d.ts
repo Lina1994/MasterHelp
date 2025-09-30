@@ -5,4 +5,5 @@ export declare class UsersService {
     constructor(usersRepository: Repository<User>);
     findOne(id: number): Promise<User>;
     deleteById(id: number): Promise<void>;
+    updatePreferences(id: number, language?: string, theme?: string): Promise<User>;
 }

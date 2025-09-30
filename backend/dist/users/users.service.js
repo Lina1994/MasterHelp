@@ -34,6 +34,17 @@ let UsersService = class UsersService {
             throw new common_1.NotFoundException(`User with ID "${id}" not found`);
         }
     }
+    async updatePreferences(id, language, theme) {
+        const user = await this.usersRepository.findOneBy({ id });
+        if (!user)
+            throw new common_1.NotFoundException(`User with ID "${id}" not found`);
+        if (language)
+            user.language = language;
+        if (theme)
+            user.theme = theme;
+        await this.usersRepository.save(user);
+        return user;
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, List, ListItem, ListItemText, IconButton, Typography, Box } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Campaign, CampaignPlayer } from '../components/Campaign/types';
+import { Campaign, CampaignPlayer } from './types';
 import CampaignInvite from './CampaignInvite';
 
 interface CampaignSettingsModalProps {
@@ -29,6 +30,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
   inviteError,
   currentUserId,
 }) => {
+  const { t } = useTranslation();
   const [confirmPlayer, setConfirmPlayer] = useState<CampaignPlayer | null>(null);
 
   const handleRemove = (player: CampaignPlayer) => {
@@ -42,9 +44,9 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Ajustes de campaña</DialogTitle>
+      <DialogTitle>{t('campaign_settings', 'Ajustes de campaña')}</DialogTitle>
       <DialogContent>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Jugadores activos</Typography>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>{t('active_players', 'Jugadores activos')}</Typography>
         <List>
           {campaign.players.filter((p: CampaignPlayer) => p.status === 'active').map((player: CampaignPlayer) => (
             <ListItem key={player.id} secondaryAction={
@@ -52,31 +54,31 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
                 <DeleteIcon />
               </IconButton>
             }>
-              <ListItemText primary={player.user?.username || 'Usuario'} secondary={player.role} />
+              <ListItemText primary={player.user?.username || t('user', 'Usuario')} secondary={player.role} />
             </ListItem>
           ))}
         </List>
         {/* Solo el owner/master puede invitar */}
         {currentUserId && campaign.owner && campaign.owner.id === currentUserId && onInvitePlayer && (
           <Box sx={{ mt: 3 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>Invitar jugador</Typography>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>{t('invite_player', 'Invitar jugador')}</Typography>
             <CampaignInvite onInvite={onInvitePlayer} loading={inviteLoading} error={inviteError} />
           </Box>
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
+        <Button onClick={onClose}>{t('close', 'Cerrar')}</Button>
       </DialogActions>
       {/* Confirmación de borrado */}
       <Dialog open={!!confirmPlayer} onClose={() => setConfirmPlayer(null)}>
-        <DialogTitle>¿Eliminar jugador?</DialogTitle>
+        <DialogTitle>{t('remove_player_title', '¿Eliminar jugador?')}</DialogTitle>
         <DialogContent>
-          <Typography>¿Seguro que quieres eliminar a <b>{confirmPlayer?.user?.username}</b> de la campaña?</Typography>
+          <Typography>{t('remove_player_confirm', '¿Seguro que quieres eliminar a')} <b>{confirmPlayer?.user?.username}</b> {t('from_campaign', 'de la campaña?')}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmPlayer(null)} disabled={loading}>Cancelar</Button>
+          <Button onClick={() => setConfirmPlayer(null)} disabled={loading}>{t('cancel', 'Cancelar')}</Button>
           <Button onClick={handleConfirm} color="error" disabled={loading} autoFocus>
-            Eliminar
+            {t('delete', 'Eliminar')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -4,5 +4,7 @@ export declare class User {
     username: string;
     email: string;
     password: string;
+    language: string;
+    theme: string;
     campaigns: Campaign[];
 }

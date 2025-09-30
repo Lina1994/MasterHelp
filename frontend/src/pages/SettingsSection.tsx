@@ -4,19 +4,40 @@ import { useContext } from 'react';
 import ThemeContext from '../ThemeContext';
 
 import { useState } from 'react';
+import axios from 'axios';
+import API_BASE_URL from '../apiBase';
 import { useNavigate } from 'react-router-dom';
 const SettingsSection = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [openLogout, setOpenLogout] = useState(false);
   const { mode, setMode, primary, setPrimary, secondary, setSecondary, background, setBackground } = useContext(ThemeContext);
-  const handleChangeTheme = (event: any) => {
-    setMode(event.target.value);
+  const handleChangeTheme = async (event: any) => {
+    const newTheme = event.target.value;
+    setMode(newTheme);
+    localStorage.setItem('theme', newTheme);
+    // Actualizar preferencia en backend
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.patch(`${API_BASE_URL}/users/me/preferences`, { theme: newTheme }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch {}
   };
 
-  const handleChangeLanguage = (event: any) => {
-    i18n.changeLanguage(event.target.value);
-    localStorage.setItem('lang', event.target.value);
+  const handleChangeLanguage = async (event: any) => {
+    const newLang = event.target.value;
+    if (typeof i18n.changeLanguage === 'function') {
+      i18n.changeLanguage(newLang);
+    }
+    localStorage.setItem('lang', newLang);
+    // Actualizar preferencia en backend
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.patch(`${API_BASE_URL}/users/me/preferences`, { language: newLang }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch {}
   };
 
   const handleLogout = () => setOpenLogout(true);
@@ -43,7 +64,7 @@ const SettingsSection = () => {
           <InputLabel id="language-select-label">{t('language')}</InputLabel>
           <Select
             labelId="language-select-label"
-            value={i18n.language}
+            value={i18n.language || localStorage.getItem('lang') || 'es'}
             label={t('language')}
             onChange={handleChangeLanguage}
           >

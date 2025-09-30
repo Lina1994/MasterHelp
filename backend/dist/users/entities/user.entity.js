@@ -35,6 +35,14 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ default: 'es' }),
+    __metadata("design:type", String)
+], User.prototype, "language", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 'light' }),
+    __metadata("design:type", String)
+], User.prototype, "theme", void 0);
+__decorate([
     (0, typeorm_2.OneToMany)(() => campaign_entity_1.Campaign, campaign => campaign.owner),
     __metadata("design:type", Array)
 ], User.prototype, "campaigns", void 0);

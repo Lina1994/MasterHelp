@@ -1,4 +1,5 @@
 import { FC, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Campaign } from './types';
 
 interface CampaignFormProps {
@@ -9,6 +10,7 @@ interface CampaignFormProps {
 
 
 const CampaignForm: FC<CampaignFormProps> = ({ initial = {}, onSave, onCancel }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState(initial.name || '');
   const [description, setDescription] = useState(initial.description || '');
   const [imageUrl, setImageUrl] = useState(initial.imageUrl || '');
@@ -21,9 +23,9 @@ const CampaignForm: FC<CampaignFormProps> = ({ initial = {}, onSave, onCancel })
 
   return (
     <form onSubmit={handleSubmit} style={{ padding: 24, minWidth: 320 }}>
-      <h2>{initial.name ? 'Editar campaña' : 'Nueva campaña'}</h2>
+      <h2>{initial.name ? t('edit_campaign', 'Editar campaña') : t('new_campaign', 'Nueva campaña')}</h2>
       <div style={{ marginBottom: 16 }}>
-        <label>Nombre *</label>
+        <label>{t('campaign_name', 'Nombre *')}</label>
         <input
           type="text"
           value={name}
@@ -33,7 +35,7 @@ const CampaignForm: FC<CampaignFormProps> = ({ initial = {}, onSave, onCancel })
         />
       </div>
       <div style={{ marginBottom: 16 }}>
-        <label>Descripción</label>
+        <label>{t('campaign_description', 'Descripción')}</label>
         <textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
@@ -41,7 +43,7 @@ const CampaignForm: FC<CampaignFormProps> = ({ initial = {}, onSave, onCancel })
         />
       </div>
       <div style={{ marginBottom: 16 }}>
-        <label>URL de imagen (opcional)</label>
+        <label>{t('campaign_image_url', 'URL de imagen (opcional)')}</label>
         <input
           type="text"
           value={imageUrl}
@@ -50,8 +52,8 @@ const CampaignForm: FC<CampaignFormProps> = ({ initial = {}, onSave, onCancel })
         />
       </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-        <button type="button" onClick={onCancel}>Cancelar</button>
-        <button type="submit" disabled={!name.trim()}>Guardar</button>
+        <button type="button" onClick={onCancel}>{t('cancel', 'Cancelar')}</button>
+        <button type="submit" disabled={!name.trim()}>{t('save', 'Guardar')}</button>
       </div>
     </form>
   );
