@@ -1,11 +1,5 @@
 import { Controller, Get, Param, ParseIntPipe, Delete, UseGuards, Request, HttpCode, Patch, Body } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
-  @Patch('me/preferences')
-  @UseGuards(JwtAuthGuard)
-  async updatePreferences(@Request() req, @Body() body: { language?: string; theme?: string }) {
-    // Solo actualiza idioma y tema
-    return this.usersService.updatePreferences(req.user.userId, body.language, body.theme);
-  }
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -14,6 +8,13 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Patch('me/preferences')
+  @UseGuards(JwtAuthGuard)
+  async updatePreferences(@Request() req, @Body() body: { language?: string; theme?: string }) {
+    // Solo actualiza idioma y tema
+    return this.usersService.updatePreferences(req.user.userId, body.language, body.theme);
+  }
 
 
   @Get('me')
