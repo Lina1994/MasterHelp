@@ -63,7 +63,8 @@ export class CampaignsService {
     const owner = await this.campaignsRepository.manager.findOne(User, { where: { id: ownerId } });
     if (!owner) throw new Error('Owner user not found');
     const campaign = this.campaignsRepository.create({ ...createCampaignDto, owner });
-    return this.campaignsRepository.save(campaign);
+    const savedCampaign = await this.campaignsRepository.save(campaign);
+    return this.findOne(savedCampaign.id) as Promise<Campaign>;
   }
 
   async update(id: string, updateCampaignDto: UpdateCampaignDto): Promise<Campaign> {
