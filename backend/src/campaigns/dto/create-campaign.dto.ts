@@ -10,6 +10,6 @@ export class CreateCampaignDto {
   description?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({}, { message: 'Image URL must be a valid URL' })
   imageUrl?: string;
 }
