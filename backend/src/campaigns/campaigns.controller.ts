@@ -5,6 +5,7 @@ import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { InvitePlayerDto } from './dto/invite-player.dto';
 import { RespondInvitationDto } from './dto/respond-invitation.dto';
+import { CampaignOwnerGuard } from './guards/campaign-owner.guard';
 
 @Controller('campaigns')
 export class CampaignsController {
@@ -18,6 +19,7 @@ export class CampaignsController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.campaignsService.findOne(id);
   }
@@ -30,22 +32,23 @@ export class CampaignsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   update(@Param('id') id: string, @Body() updateCampaignDto: UpdateCampaignDto) {
     return this.campaignsService.update(id, updateCampaignDto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   remove(@Param('id') id: string) {
     return this.campaignsService.remove(id);
   }
 
   // --- INVITATION ENDPOINTS ---
 
-  @Post('invite')
-  @UseGuards(JwtAuthGuard)
-  invitePlayer(@Request() req, @Body() invitePlayerDto: InvitePlayerDto) {
-    // Only campaign owner can invite
-    return this.campaignsService.invitePlayer(req.user.userId, invitePlayerDto);
+  @Post(':id/invite')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  invitePlayer(@Param('id') campaignId: string, @Body() invitePlayerDto: InvitePlayerDto) {
+    return this.campaignsService.invitePlayer(campaignId, invitePlayerDto);
   }
 
   @Post('invitation/respond')
@@ -63,13 +66,11 @@ export class CampaignsController {
 
   // Eliminar jugador de campaña (solo owner)
   @Delete(':campaignId/player/:playerId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   async removePlayer(
-    @Request() req,
     @Param('campaignId') campaignId: string,
     @Param('playerId') playerId: string
 	) {
-	  // Solo el owner puede eliminar
-	  return this.campaignsService.removePlayer(req.user.userId, campaignId, playerId);
+	  return this.campaignsService.removePlayer(campaignId, playerId);
   }
 }
