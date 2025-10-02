@@ -11,7 +11,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
 import API_BASE_URL from '../apiBase';
-import { useCampaigns } from '../components/Campaign/useCampaigns';
+import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -20,7 +20,7 @@ const RegisterPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { afterAuth } = useCampaigns();
+  const { afterAuth } = useCampaignsContext();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();

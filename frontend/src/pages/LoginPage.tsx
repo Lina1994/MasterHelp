@@ -10,14 +10,14 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import axios from 'axios';
 import API_BASE_URL from '../apiBase';
-import { useCampaigns } from '../components/Campaign/useCampaigns';
+import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { afterAuth } = useCampaigns();
+  const { afterAuth } = useCampaignsContext();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

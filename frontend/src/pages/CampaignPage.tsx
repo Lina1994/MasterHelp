@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
-import API_BASE_URL from '../apiBase';
 import { Box, Typography, Button, Dialog } from '@mui/material';
-import { useCampaigns } from '../components/Campaign/useCampaigns';
-import { Campaign, CampaignPlayer } from '../components/Campaign/types';
+import { useCampaignsContext } from '../components/Campaign/CampaignContext';
+import { Campaign } from '../components/Campaign/types';
 import CampaignList from '../components/Campaign/CampaignList';
 import CampaignForm from '../components/Campaign/CampaignForm';
 
@@ -16,11 +14,11 @@ const CampaignPage = () => {
     setActiveCampaign,
     createCampaign,
     invitePlayer,
-    fetchCampaigns,
     updateCampaign,
+    handleRemovePlayer,
     loading,
     error,
-  } = useCampaigns();
+  } = useCampaignsContext();
 
   // Sincroniza activeCampaign con la lista de campañas tras cada actualización
   useEffect(() => {
@@ -32,15 +30,6 @@ const CampaignPage = () => {
 
   const [isFormOpen, setFormOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | undefined>();
-
-  const handleRemovePlayer = async (player: CampaignPlayer) => {
-    if (!activeCampaign) return;
-    const token = localStorage.getItem('access_token');
-    await axios.delete(`${API_BASE_URL}/campaigns/${activeCampaign.id}/player/${player.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    await fetchCampaigns(); // Recarga todo para mantener la consistencia
-  };
 
   const handleOpenCreateForm = () => {
     setEditingCampaign(undefined);

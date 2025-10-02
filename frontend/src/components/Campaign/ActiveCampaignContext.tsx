@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { Campaign } from './types';
-import { useCampaigns } from './useCampaigns'; // Asumimos que este hook nos da todas las campañas
+import { useCampaignsContext } from './CampaignContext'; // Asumimos que este hook nos da todas las campañas
 
 interface ActiveCampaignContextType {
   activeCampaign: Campaign | null;
@@ -15,7 +15,7 @@ export const ActiveCampaignProvider: React.FC<{ children: ReactNode }> = ({ chil
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { campaigns, loading: campaignsLoading } = useCampaigns();
+  const { campaigns, loading: campaignsLoading } = useCampaignsContext();
 
   // Cargar el ID de la campaña activa desde localStorage al iniciar
   useEffect(() => {
