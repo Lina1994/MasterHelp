@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { CampaignPlayer } from './campaign-player.entity';
 
@@ -22,9 +30,9 @@ export class Campaign {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, user => user.ownedCampaigns, { eager: true })
+  @ManyToOne(() => User, (user) => user.ownedCampaigns, { eager: true })
   owner: User;
 
-  @OneToMany(() => CampaignPlayer, player => player.campaign, { cascade: true, eager: true })
+  @OneToMany(() => CampaignPlayer, (player) => player.campaign, { cascade: true, eager: true })
   players: CampaignPlayer[];
 }

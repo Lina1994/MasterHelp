@@ -1,4 +1,3 @@
-
 import { ValidateBy, ValidationOptions, buildMessage } from 'class-validator';
 
 export const IS_URL_OR_DATA_URI = 'isUrlOrDataUri';
@@ -21,7 +20,8 @@ export function IsUrlOrDataUri(validationOptions?: ValidationOptions): PropertyD
     {
       name: IS_URL_OR_DATA_URI,
       validator: {
-        validate: (value, args): boolean => isUrlOrDataUri(value),
+        // _args se mantiene para compatibilidad con la firma esperada por class-validator
+        validate: (value, _args): boolean => isUrlOrDataUri(value),
         defaultMessage: buildMessage(
           (eachPrefix) => eachPrefix + '$property must be a valid URL or a Data URI',
           validationOptions,

@@ -1,5 +1,15 @@
-import { Controller, Get, Param, ParseIntPipe, Delete, UseGuards, Request, HttpCode, Patch, Body } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Delete,
+  UseGuards,
+  Request,
+  HttpCode,
+  Patch,
+  Body,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -15,7 +25,6 @@ export class UsersController {
     // Solo actualiza idioma y tema
     return this.usersService.updatePreferences(req.user.userId, body.language, body.theme);
   }
-
 
   @Get('me')
   @UseGuards(JwtAuthGuard)

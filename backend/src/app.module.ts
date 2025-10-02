@@ -11,7 +11,7 @@ import { CampaignPlayer } from './campaigns/entities/campaign-player.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ 
+    ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env', // Especifica el archivo de entorno
     }),
@@ -19,17 +19,18 @@ import { CampaignPlayer } from './campaigns/entities/campaign-player.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: configService.get<string>('DB_TYPE') as any,
+        // Using explicit union of supported driver types instead of casting to any
+        type: (configService.get<string>('DB_TYPE') || 'sqlite') as 'sqlite' | 'better-sqlite3',
         database: configService.get<string>('DB_DATABASE'),
-  entities: [User, Campaign, CampaignPlayer],
+        entities: [User, Campaign, CampaignPlayer],
         // synchronize: true solo en desarrollo
         synchronize: configService.get<string>('NODE_ENV') === 'development',
         logging: false,
       }),
     }),
-  AuthModule,
-  UsersModule,
-  CampaignsModule,
+    AuthModule,
+    UsersModule,
+    CampaignsModule,
   ],
   controllers: [],
   providers: [],

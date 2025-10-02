@@ -1,4 +1,3 @@
-
 import { Exclude } from 'class-transformer';
 import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany } from 'typeorm';
 import { Campaign } from '../../campaigns/entities/campaign.entity';
@@ -25,6 +24,6 @@ export class User {
   @Column({ default: 'light' })
   theme: string;
 
-  @OneToMany(() => Campaign, campaign => campaign.owner)
+  @OneToMany(() => Campaign, (campaign) => campaign.owner)
   ownedCampaigns: Campaign[]; // Renamed from 'campaigns' to match the relation
 }

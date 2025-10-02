@@ -37,8 +37,15 @@ export class AuthController {
   @Put('change-password')
   @ApiBearerAuth() // Indica que requiere token
   @UseGuards(JwtAuthGuard) // Protege la ruta usando el guardia JwtAuthGuard
-  async changePassword(@Request() req, @Body() changePasswordDto: { currentPassword: string; newPassword: string }) {
+  async changePassword(
+    @Request() req,
+    @Body() changePasswordDto: { currentPassword: string; newPassword: string },
+  ) {
     // req.user es inyectado por el guardia JwtAuthGuard
-    return this.authService.changePassword(req.user.userId, changePasswordDto.currentPassword, changePasswordDto.newPassword);
+    return this.authService.changePassword(
+      req.user.userId,
+      changePasswordDto.currentPassword,
+      changePasswordDto.newPassword,
+    );
   }
 }

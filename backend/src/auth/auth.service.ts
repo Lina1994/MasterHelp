@@ -8,7 +8,6 @@ import { Resend } from 'resend';
 import { User } from '../users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -109,7 +108,11 @@ export class AuthService {
     }
   }
 
-  async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<{ message: string }> {
+  async changePassword(
+    userId: number,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
 
     if (!user) {

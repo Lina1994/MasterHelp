@@ -7,10 +7,10 @@ export class CampaignPlayer {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Campaign, campaign => campaign.id)
+  @ManyToOne(() => Campaign, (campaign) => campaign.id)
   campaign: Campaign;
 
-  @ManyToOne(() => User, user => user.id)
+  @ManyToOne(() => User, (user) => user.id)
   user: User;
 
   @Column({ default: 'player' })

@@ -1,0 +1,250 @@
+La aplicación está orientada a ayudar al Dungeon Máster a llevar una partida de rol sin tener que navegar entre distintas notas, webs y aplicaciones.
+Está orientada al juego presencial, aunque podría usarse en una partida online.
+
+La aplicación se podrá ejecutar localmente como aplicación, o como aplicación web.
+Tiene que ser compatible con windows, linux, mac, android e IOS.
+Se tiene que poder instalar en portainer.
+Aunque el primer desarrollo se hará para web, ya que de ahí se podrá encapsular para el resto de plataformas.
+
+En el caso de ejecutar la aplicación de escritorio, el dungeon máster dispondrá de 3 ventanas.
+Una ventana es la que usará el Dungeon máster para llevar la partida, y las ventanas secundarias están pensadas para poner en un monitor que esté tumbado en la mesa y otro entre el master y los jugadores mirando a los jugadores.
+La ventana tumbada mostrará los mapas que el Dungeon máster envíe a los jugadores y en la otra ventana se verá la imagen de la escena asociada al mapa y se podrá mostrar imágenes superpuestas de los personajes y enemigos.
+
+ En caso de ejecutar la aplicación web, las ventanas principales y secundarias se abrirán en pestañas diferentes, pudiendo controlar lo que se ve en las secundarias desde la principal.
+
+
+ Funcionamiento:
+
+Al iniciar la aplicación nos pedirá loguearnos o crear un usuario, si ya nos hemos logueado previamente debería guardarse el loguin. Tiene que tener opción a recuperar la contraseña si la hemos olvidado.
+ 
+Una vez logueados estaremos en el home, donde nos pedirá que seleccionemos la campaña como master o como jugador, que creemos una campaña nueva como master o que nos unamos a una campaña como jugador.
+Para unirnos a una campaña como jugador el master nos tiene que invitar a esa campaña primero.
+La aplicación tendrá que guardar si con nuestro usuario somo master o jugador de una campaña, así de esta forma los jugadores no entrarán a las notas del master.
+ 
+Al seleccionar la opción de crear campaña nos redirigirá al componente donde podemos crear la campaña. Cada campaña tiene un nombre y le podemos asignar una imagen, un autor (por defecto será nuestro usuario), participantes (los jugadores), descripción y notas. Desde aquí podremos invitar a los jugadores para que se unan a la campaña.
+Si seleccionamos una campaña el icono de la aplicación en el sidebar cambiará por la imagen de la campaña o por el nombre si no tiene imagen.
+
+En el sidebar nos encontraremos el logo de la aplicación (o la campaña seleccionada) que actuará como botón para ir al home; los atajos a los distintos componentes, estos se pueden ocultar para no tener todos los accesos directos en el sidebar; el calendario de la campaña (si la campaña tiene uno); el momento del día (Madrugada, mañana, tarde o noche); la canción que se está reproduciendo junto al botón de play/pausa y volumen (solo se ve si se está reproduciendo una canción).
+
+ Al pulsar sobre la imagen de la aplicación/campaña en el sidebar nos llevará al home, donde a parte de poder seleccionar la campaña, podremos cambiar los ajustes de la aplicación. Al ir a los ajustes tendremos un navegador con todos los componentes. Este navegador siempre mostrará todos los componentes. Desde aquí podremos editar los accesos rápidos que queremos ver en el sidebar, podremos cambiar el idioma y podremos alternar entre el modo oscuro y el claro.
+
+Los distintos componentes de la aplicación son:
+Home (Icono de la app/campaña)
+ Maps
+ Bestiary
+ Shops
+ Encounters
+ Combat
+ Soundtrack
+ Characters
+ Spells
+ Campaig
+ Journal
+ Missions
+ Worldpedia
+ 
+HOME
+ 
+Desde este apartado puedes seleccionar la campaña, ver un navegador a cada componente y entrar a los ajustes.
+En los ajustes puedes:
+Seleccionar entre la vista oscura, clara o personalizada.
+Cambiar el idioma
+Modificar los atajos visibles en el sidebar
+Configurar integración con alexa, google home, home assistant, govee, hue...
+ 
+Maps
+
+ En este componente se pueden ver, añadir, seleccionar, editar y eliminar mapas, el contenido depende de la campaña seleccionada.
+Tiene un buscador para encontrar los mapas rápidamente.
+ Desde aquí se pueden abrir las pantallas secundarias "ventana mapas" y "ventana panorámica" donde se mostrarán los mapas para los jugadores y la vista panorámica asociada al mapa.
+ 
+Al añadir un nuevo mapa, se podrán subir las imágenes como archivo o como url, la aplicación la transformará y almacenará en formato blob y cada imagen se procesará y almacenará con tres resoluciones (baja, media y alta) para así poder optimizar recursos mostrando la imagen en resolución baja en la lista de mapas pero en resolución alta al mostrarla en detalle o en las ventanas secundarias.
+
+ Tiene una zona donde se ve la ventana secundaria, pudiendo alternar entre la ventana de mapas y la panorámica. Se ve que tamaño y promociones tiene la ventana secundaria y donde está el mapa.
+Se puede hacer zoom al mapa, rotarlo  y se puede mover el mapa. Lo que se hace aquí afecta a como se ve en la ventana secundaria, de esta forma no importa que la ventana mapas esté en un monitor detrás de la pantalla del máster, el master podrá controlarla.
+
+ Cada mapa tiene una imagen para el mapa en 4 momentos del día (amanecer, mañana, tarde y noche), un nombre, un grupo y canciones asociadas para situaciones según el momento del día y la situación (base, batalla fácil, batalla media, batalla difícil, batalla mortal, batalla extrema.).
+A parte de vincular canciones a un mapa, podrás vincular presets de soundeffects.
+Por defecto al poner la primera canción asociada, automáticamente pondrá esa misma canción para todas las situaciones de ese mapa.
+Por lo que tendrá canción para amanecer base, amanecer batalla fácil, mañana base ….
+
+ Al seleccionar un mapa automáticamente se reproduce la canción base del mapa del momento del día actual. Si no tiene canción asociada dejará sonando lo que ya estuviese, y si ya estaba sonando la misma canción la dejará sonando, no la reiniciará.
+ Tiene un botón para ir a combat y otro para añadir a diario.
+El de añadir a diario añadirá una entrada al diario en el día actual indicando por donde pasaron los personajes
+ cada mapa tendrá un modo "World map"
+
+ Al ir al modo "World map" se verá el mapa en grande en la pantalla del máster.
+ Se le puede hacer zoom, mover y añadir marcadores. (Estos movimientos serán independientes al zoom y mover del mapa que se ve en la ventana secundaria)
+ Los marcadores tienen nombre, icono, notas y se le puede asociar uno o más mapas, personajes, enemigos, encuentros y apuntes de worldpedia.
+los marcadores se mueden ver, crear, editar y eliminar.
+ Al pulsar sobre un marcador abre la ventana con la información del marcador, y si pulsas sobre un mapa/personaje/enemigo/encuentro/worldpedia verás la información de este.
+ En los marcadores, desde la vista detallada de un mapa asociado al marcador, puedes mandar el mapa a la ventana de jugadores.
+Las vistas de los personajes, mapas y enemigos permiten mandar los mapas/personajes/enemigos a la ventana de vista panorámica o la ventana de mapas.
+ 
+Si tienes configurada la integración con alexa, google home, home assistant, govee, hue..., puedes configurar que al seleccionar un mapa las luces cambien de color, de intensidad o algún automatismo.
+ 
+ 
+Se puede exportar e importar la lista de los mapas con sus datos en un archivo de excel.
+ 
+Si entras como master tendrás control total, como jugador no tienes acceso.
+
+ Bestiary
+
+ Aquí se pueden ver, añadir, editar y eliminar entradas de enemigos.
+Se puede abrir el detalle de las entradas para ver todos sus datos.
+ Los datos se pueden importar y exportar a un Excel.
+ Tiene buscador con filtros para facilitar encontrar las entradas
+Desde la ficha de un enemigo se puede enviar la imagen del enemigo a la ventana de vista panorámica.
+Cada entrada de un enemigo puede tener:
+Nombre / VD / Tipo / Alineamiento / Origen / Tamaño / PX / Armadura / Puntos de golpe / Velocidad / FUE / DES / CONS / INT / SAB / CAR / Tiradas de salvación / Habilidades / Sentidos / Idiomas / Resistencias al daño / Inmunidades al daño / Inmunidades al estado / Vulnerabilidades al daño / Rasgos / Acciones / Acciones legendarias / Reacciones  / Descripción / Imagen / Token del Monstruo (aquí se podrá elegir entre un token con un color o un token con una imagen)
+ 
+Al añadir un nuevo enemigo, se podrán subir las imágenes como archivo o como url, la aplicación la transformará y almacenará en formato blob y cada imagen se procesará y almacenará con tres resoluciones (baja, media y alta) para así poder optimizar recursos mostrando la imagen en resolución baja en la lista de enemigos pero en resolución alta al mostrarla en detalle o en las ventanas secundarias.
+
+
+Si entras como master tendrás control total, como jugador no tienes acceso.
+
+ Shops
+
+ Aquí se pueden ver, añadir, editar y eliminar tiendas
+ Cada tienda puede tener varias secciones y cada sección puede tener los apartados que se le indique, formando así una tabla a medida.
+Cada celda del mapa se puede configurar para que almacene un texto, una imagen, un vídeo, un gif o un archivo de audio.
+Estos datos se pueden importar y exportar a un Excel.
+ Tiene buscador para facilitar encontrar las entradas
+ 
+Al añadir un nuevo elemento, se podrán subir las imágenes, vídeos, archivos de audio o gif como archivo o como url, la aplicación la transformará y almacenará en formato blob.
+ 
+Si entras como master tendrás control total, como jugador no tienes acceso.
+
+ Encounters
+
+ Aquí se pueden ver, crear, editar y eliminar encuentros.
+ Cada encuentro tiene un nombre y se le puede añadir cualquier enemigo del bestiary y cualquier personaje de characters. Tambiés se podrán añadir personajes de characters como si fuesen enemoigos.
+Tiene una calculadora de dificultad y muestra la dificultad de cada encuentro a medida que se añaden los personajes y enemigos.
+ Cada encuentro puede tener una canción asociada y canciones asociadas a cada nivel de dificultad.
+Se mostrará una lista de los encuentros creados.
+ Tiene un botón para ir a combat.
+ 
+Si entras como master tendrás control total, como jugador no tienes acceso.
+
+ Combat
+
+ Como en Maps, tiene una vista previa del mapa de la ventana de mapas. Aquí también se puede activar/desactivar una cuadrícula en el mapa (se le puede ajustar el tamaño y desplazarlo), se puede cambiar entre una cuadrícula cuadrada y una hexagonal como un panal de abejas.
+
+ Aquí se muestra el mapa ya seleccionado, pero también permite seleccionar otro mapa sin tener que ir a Maps.
+ Al seleccionar un encuentro trae los datos del encuentro a este componente.
+Desde esta vista previa se pueden manejar los tokens de los personajes y los enemigos. Estos tokens se verán tanto en la vista previa como en la ventana secunaria de mapas.
+Tiene la opción de niebla de guerra, ocultando parte del mapa a los jugadores y mostrando el mapa sombreado para el master para saber lo que los jugadores ven o dejan de ver.
+ Tiene un apartado donde gestionar la iniciativa de cada integrante del encuentro, la de los enemigos se puede poner de fora manual o de forma automática. La vida de los enemigos se le puede poner de forma manual o automática.
+ Tiene otro apartado donde segur el turno de enemigos y personajes.
+ Tiene otro apartado donde a la izquierda muestra la ficha del enemigo/personaje del turno actual y a la derecha muestra la ficha del enemigo/personaje que el máster seleccione.
+Hace seguimiento de los turnos y rondas que lleva el encuentro.
+ Tiene un botón de añadir a diario, que añade una entrada al día actual en el diario donde pone donde, quienes y a quienes se enfrentan.
+ Tiene un botón para ir a Maps.
+ Tiene un botón para ir a encounters.
+ Tiene un selector para priorizar la música del encuentro o la música del mapa.
+ Tiene un botón de empezar batalla, este botón hará que se ponga la música del nivel de batalla al que se enfrentan los personajes.
+ Un botón de escapar batalla que pondrá la música base que estuviese sonando previamente.
+ Un botón de batalla ganada que pone la música que estuviese sonando previamente y sube experiencia a los personajes que participaron.
+Hará un seguimiento de los estados de los personajes/enemigos.
+ 
+Si tienes configurada la integración con alexa, google home, home assistant, govee, hue..., puedes configurar que al comenzar una batalla las luces cambien de color, de intensidad o algún automatismo.
+ 
+
+ Si entras como master tendrás control total, como jugador verás el traqueo de turnos.
+
+ Soundtrack
+
+ Desde aquí se pueden agregar canciones, editar su nombre y su grupo, eliminar canciones y reproducir canciones.
+ Tiene un buscador
+Tiene una sección de soundeffects.
+En esta sección tendremos una lista con distintos soundeffects y otra lista de "presets"
+Podremos reproducir, crear, editar y eliminar presets.
+En un preset podremos añadir uno a varios soundeffects, ajustar el volumen de cada soundeffect de forma individual, ajustar cada soundeffect para que se reproduzca en bucle contínuo, en bucle pero con un tiempo de espera fijo que se pueda indicar (1 segundo, 15 segundos...) o en bucle pero con un tiempo de espera aleatorio.
+ 
+Al añadir un nuevo elemento, se podrán subir el archivos de audio como archivo o como url, la aplicación la transformará y almacenará en formato blob.
+
+ Si entras como master tendrás control total, como jugador no tienes acceso.
+
+ Characters
+
+ Aquí se pueden ver, agregar, editar y eliminar las fichas de los jugadores
+Desde la ficha de un personaje se puede enviar la imagen del personaje a la ventana de vista panorámica.
+Cada ficha puede tener:
+Nombre del Personaje / selector de  si es jugador o npc / Clase / Nivel / Trasfondo / Raza / Alineamiento / Nombre del Jugador / Fuerza / Destreza / Constitución / Inteligencia / Sabiduría / Carisma / Bonificación por Competencia / Clase de Armadura / Iniciativa / Velocidad / Puntos de Golpe Máximos / Puntos de Golpe Actuales / Puntos de Golpe Temporales / Dados de Golpe / Otras Competencias e Idiomas / Equipo / Rasgos y Atributos / Edad / Altura / Peso / Ojos / Piel / Pelo / Token del personaje (aquí se podrá elegir entre un token con un color o un token con una imagen)/ Imagen del Personaje / Aptitud Mágica / CD Tirada de Salvación de Conjuros / Bonificador de Ataque de Conjuro / lista de Trucos / Lista de conjuros nivel 1 /  Lista de conjuros nivel 2 /  Lista de conjuros nivel 3 /  Lista de conjuros nivel 4 /  Lista de conjuros nivel 5 /  Lista de conjuros nivel 6 /  Lista de conjuros nivel 7 /  Lista de conjuros nivel 8 / Aliados y organizaciones / Historia del personaje / Tesoro /  Checkbox de si el personaje lo conocen los jugadores o no
+ 
+La lista de personajes y sus datos se tiene que poder importar y exportar a un excel
+Al añadir un nuevo elemento, se podrán subir la imágen como archivo o como url, la aplicación la transformará y almacenará en formato blob.
+Tiene un buscador
+ 
+Tiene una función de ayuda para ayudar a crear la ficha del personaje, pero sin llegar a restringir el contenido que el usuario quiera poner.
+ 
+Si entras como master tendrás control total, si entras como jugador podras ver la lista de los personajes que los jugadores conocen y podrás acceder a la ficha de tu personaje donde tendrás control total para editarla.
+
+ Spells
+
+ Desde aquí se pueden ver, agregar, editar y eliminar la lista de hechizos.
+ Tiene un buscador
+Cada hechizo puede tener:
+Nombre / Escuela / Nivel / Alcance / Duración / Coste / Checkbox de si es Ritual/ Checkbox de si tiene Concentración / Checkbox de si tiene Material / Componentes / Clases / Descripción / Daño / Ataque / Área de Efecto / Clase de Dificultad / Lanzamiento a Nivel Superior
+La lista de hechizos y sus datos se tiene que poder importar y exportar a un excel
+ 
+Si entras como master tendrás control total, si entras como jugador podrás ver la lista y la vista detallada de los hechizos.
+
+ Campaign
+
+ Aquí se puede seleccionar, ver, agregar, editar y eliminar campañas.
+Desde aquí podremos invitar a jugadores a las campañas de las que seamos master.
+Si para una campaña somos jugador solo podremos seleccionarla.
+La lista de campañas y sus datos se tiene que poder importar y exportar a un excel
+
+ Journal
+
+ Aquí puedes crear un calendario completamente personalizable.
+ Puedes elegir cuantos meses hay, cuantos días tiene cada mes y el nombre de cada mes.
+ Cuantos días tiene cada semana y el nombre de los días de la semana.
+ Puedes indicar el año actual.
+ Tiene un apartado de diario asociado a los días del calendario. Seleccionando un día del calendario mostrará la página del diario de ese día y en el sidebar indicará el día seleccionado.
+ Tiene un apartado de sesiones, donde podremos tener un registro de cada sesión. Al iniciar sesión registrará todas las páginas del diario de los días transcurridos durante la partida.
+Desde journal se podrá gestionar los momentos del día (madrugada, mañana, tarde o noche)
+ 
+El calendario, las sesiones y sus datos se tiene que poder importar y exportar a un excel
+ 
+Si entras como master tendrás control total, si entras como jugador podras ver las notas del diario y las sesiones, pero no podrás editar nada.
+ 
+Missions
+ 
+Desde aquí se pueden ver, agregar, editar y eliminar misiones.
+Las misiones tienen los estados sin aceptar, aceptada y completada, se organizan según el estado.
+Al aceptar y al completar una misión añadirá una nueva entrada al diario con esta información.
+Se pueden configurar misiones para que estén disponibles tras completar otra misión.
+Tiene un buscador con filtros.
+Tiene un generador de misiones que podrá generar misiones. Usará una lista de datos para generar misiones aleatorias. Los datos de esta lista se pueden añadir, editar y eliminar.
+ 
+La lista de misiones y sus datos se tiene que poder importar y exportar a un excel.
+ 
+Si entras como master tendrás control total, si entras como jugador podras ver las misiones aceptadas y las completadas.
+ 
+Worldpedia
+ 
+Este componente está pensado para que el máster ponga todas sus notas sobre la campaña, los personajes, el lore.
+El máster podrá crear editar y eliminar carpetas y notas tanto dentro como fuera de las carpetas.
+Podrá mover las notas de una carpeta a otra o dejarla fuera de las carpetas.
+Tiene un buscador para encontrar fácilmente las notas.
+Puedes añadir tres tipos de enlaces en una nota:
+Enlace a internet (un hipervínculo con una URL de internet) con el puedes abrir una ventana a esa página.
+Enlace a otra nota dentro de worldpedia, al pulsar el enlace te llevará a esa nota.
+Enlaces a elementos de la app pero fuera de worldpedia (personajes, lugares, hechizos, enemigos) con estos enlaces podrás, por ejemplo, abrir la ficha de un personaje desde worldpedia sin necesidad de ir al componente "characters".
+Las vistas de los personajes, mapas y enemigos permiten mandar los mapas/personajes/enemigos a la ventana de vista panorámica o la ventana de jugadores.
+Cada carpeta y cada nota guardará cuando se creó y una relación de los enlaces que tiene y los enlaces que apuntan a esa nota.
+Dentro de las notas se podrán añadir imágenes.
+ 
+Las carpetas y las notas se podrán importar y exportar.
+Si entras como master tendrás control total, como jugador no tienes acceso.
+ 
+ 
+Elementos independientes a los componentes del sidebar:
+ 
+Componente "recuérdame". Este componente aparecerá como un pequeño icono en el lateral, fuera del sidebar.
+Al pulsarlo abrirá una vista con información en función al mapa actual, personaje seleccionado, encuentro seleccionado. Cojera la información (notas, marcadores...) que tengan relación con los elementos seleccionados. La idea es proporcionarle al máster la información relacionada con los elementos actuales para que no olvide detalles “La mejor herramienta no es la que hace todo por ti.  Es la que te recuerda lo que tú ya sabías… pero en el momento justo.”.
+ 
+

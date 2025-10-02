@@ -25,19 +25,25 @@ export class CampaignsService {
   async removePlayer(campaignId: string, playerId: string) {
     // La propiedad ya fue verificada por CampaignOwnerGuard.
     // Aún necesitamos la campaña para la lógica interna.
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner'] });
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner'],
+    });
     if (!campaign) throw new NotFoundException('Campaign not found');
 
-    const campaignPlayer = await this.campaignPlayersRepository.findOne({ where: { id: playerId }, relations: ['user', 'campaign'] });
+    const campaignPlayer = await this.campaignPlayersRepository.findOne({
+      where: { id: playerId },
+      relations: ['user', 'campaign'],
+    });
     if (!campaignPlayer) throw new NotFoundException('Player not found');
 
     // Lógica de negocio: El owner no puede eliminarse a sí mismo por esta vía.
-    if (campaignPlayer.user.id === campaign.owner.id) throw new ForbiddenException('Owner cannot remove themselves');
-    
+    if (campaignPlayer.user.id === campaign.owner.id)
+      throw new ForbiddenException('Owner cannot remove themselves');
+
     await this.campaignPlayersRepository.delete(playerId);
     return { message: 'Player removed' };
   }
-
 
   async findAllForUser(userId: number): Promise<Campaign[]> {
     const asOwner = await this.campaignsRepository.find({
@@ -48,16 +54,18 @@ export class CampaignsService {
       where: { user: { id: userId } },
       relations: ['campaign', 'campaign.owner', 'campaign.players', 'campaign.players.user'],
     });
-    const playerCampaigns = asPlayer.map(cp => cp.campaign);
+    const playerCampaigns = asPlayer.map((cp) => cp.campaign);
     const all = [...asOwner, ...playerCampaigns];
-    const unique = all.filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
+    const unique = all.filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i);
     return unique;
   }
 
   async findOne(id: string): Promise<Campaign | undefined> {
-    return this.campaignsRepository.findOne({ where: { id }, relations: ['players', 'players.user', 'owner'] });
+    return this.campaignsRepository.findOne({
+      where: { id },
+      relations: ['players', 'players.user', 'owner'],
+    });
   }
-
 
   async createWithOwner(createCampaignDto: CreateCampaignDto, ownerId: number): Promise<Campaign> {
     const owner = await this.campaignsRepository.manager.findOne(User, { where: { id: ownerId } });
@@ -82,18 +90,23 @@ export class CampaignsService {
 
   async invitePlayer(campaignId: string, dto: InvitePlayerDto) {
     // La propiedad ya fue verificada por CampaignOwnerGuard.
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner', 'players', 'players.user'],
+    });
     if (!campaign) throw new NotFoundException('Campaign not found');
 
     let user: User | undefined;
     if (dto.email) {
       user = await this.usersService['usersRepository'].findOne({ where: { email: dto.email } });
     } else if (dto.username) {
-      user = await this.usersService['usersRepository'].findOne({ where: { username: dto.username } });
+      user = await this.usersService['usersRepository'].findOne({
+        where: { username: dto.username },
+      });
     }
     if (!user) throw new NotFoundException('User not found');
 
-    const existing = campaign.players.find(p => p.user.id === user!.id);
+    const existing = campaign.players.find((p) => p.user.id === user!.id);
     if (existing) {
       if (existing.status === 'invited') throw new BadRequestException('User already invited');
       if (existing.status === 'active') throw new BadRequestException('User is already a player');
@@ -115,10 +128,14 @@ export class CampaignsService {
   }
 
   async respondInvitation(userId: number, dto: RespondInvitationDto) {
-    const invitation = await this.campaignPlayersRepository.findOne({ where: { id: dto.invitationId }, relations: ['user'] });
+    const invitation = await this.campaignPlayersRepository.findOne({
+      where: { id: dto.invitationId },
+      relations: ['user'],
+    });
     if (!invitation) throw new NotFoundException('Invitation not found');
     if (invitation.user.id !== userId) throw new ForbiddenException('Not your invitation');
-    if (invitation.status !== 'invited') throw new BadRequestException('Invitation already responded');
+    if (invitation.status !== 'invited')
+      throw new BadRequestException('Invitation already responded');
 
     if (dto.response === 'accept') {
       invitation.status = 'active';

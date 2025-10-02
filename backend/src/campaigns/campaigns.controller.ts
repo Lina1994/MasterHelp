@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CampaignsService } from './campaigns.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
@@ -67,10 +77,7 @@ export class CampaignsController {
   // Eliminar jugador de campaña (solo owner)
   @Delete(':campaignId/player/:playerId')
   @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
-  async removePlayer(
-    @Param('campaignId') campaignId: string,
-    @Param('playerId') playerId: string
-	) {
-	  return this.campaignsService.removePlayer(campaignId, playerId);
+  async removePlayer(@Param('campaignId') campaignId: string, @Param('playerId') playerId: string) {
+    return this.campaignsService.removePlayer(campaignId, playerId);
   }
 }
