@@ -1,4 +1,5 @@
-const { app, BrowserWindow } = require('electron');
+
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 
 // Determinar si estamos en modo de desarrollo
@@ -10,35 +11,44 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      // En un entorno de producción, es recomendable deshabilitar nodeIntegration
-      // y usar un preload script para exponer APIs de forma segura.
-      nodeIntegration: false, // Es más seguro
-      contextIsolation: true, // Protege contra scripts maliciosos
+      // Enlazar el script de preload para una comunicación segura
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   });
 
   // Cargar la URL del frontend.
-  // En desarrollo, carga el servidor de Vite. En producción, cargaría el archivo estático.
   const startUrl = isDev
     ? 'http://localhost:5173'
     : `file://${path.join(__dirname, './frontend/dist/index.html')}`;
 
   mainWindow.loadURL(startUrl);
 
-  // Abrir las DevTools en modo de desarrollo (desactivado).
+  // Abrir las DevTools en modo de desarrollo (opcional).
   // if (isDev) {
   //   mainWindow.webContents.openDevTools();
   // }
 }
 
-// Este método se llamará cuando Electron haya terminado
-// la inicialización y esté listo para crear ventanas del navegador.
+// Este método se llamará cuando Electron haya terminado la inicialización.
 app.whenReady().then(() => {
+  // Registrar el manejador para el diálogo de confirmación
+  ipcMain.handle('dialog:show-confirm', async (event, message) => {
+    const result = await dialog.showMessageBox({
+      type: 'question',
+      buttons: ['Cancelar', 'Confirmar'],
+      defaultId: 1, // El índice del botón por defecto (Confirmar)
+      title: 'Confirmar acción',
+      message: message,
+    });
+    // Devuelve true si el botón presionado fue 'Confirmar' (índice 1)
+    return result.response === 1;
+  });
+
   createWindow();
 
   app.on('activate', function () {
-    // En macOS, es común volver a crear una ventana en la aplicación cuando el
-    // icono del dock se hace clic y no hay otras ventanas abiertas.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
