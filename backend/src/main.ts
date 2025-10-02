@@ -1,9 +1,11 @@
+
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as fs from 'fs';
 import { join } from 'path';
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   // Asegurar que el directorio de datos para SQLite exista
@@ -14,6 +16,10 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule);
+
+  // Aumentar el límite del tamaño del payload
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   // Configuración de CORS para desarrollo
   app.enableCors({

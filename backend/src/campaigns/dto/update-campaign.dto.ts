@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
+import { IsUrlOrDataUri } from '../../config/validators/is-url-or-data-uri.validator';
 
 export class UpdateCampaignDto {
   @IsOptional()
@@ -10,6 +11,6 @@ export class UpdateCampaignDto {
   description?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrlOrDataUri()
   imageUrl?: string;
 }

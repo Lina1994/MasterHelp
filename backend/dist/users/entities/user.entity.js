@@ -13,7 +13,6 @@ exports.User = void 0;
 const class_transformer_1 = require("class-transformer");
 const typeorm_1 = require("typeorm");
 const campaign_entity_1 = require("../../campaigns/entities/campaign.entity");
-const typeorm_2 = require("typeorm");
 let User = class User {
 };
 exports.User = User;
@@ -43,9 +42,9 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "theme", void 0);
 __decorate([
-    (0, typeorm_2.OneToMany)(() => campaign_entity_1.Campaign, campaign => campaign.owner),
+    (0, typeorm_1.OneToMany)(() => campaign_entity_1.Campaign, campaign => campaign.owner),
     __metadata("design:type", Array)
-], User.prototype, "campaigns", void 0);
+], User.prototype, "ownedCampaigns", void 0);
 exports.User = User = __decorate([
     (0, typeorm_1.Entity)(),
     (0, typeorm_1.Unique)(['username', 'email'])

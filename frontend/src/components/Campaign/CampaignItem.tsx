@@ -1,3 +1,4 @@
+
 import { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Campaign, CampaignPlayer } from './types';
@@ -19,7 +20,10 @@ import {
 } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import EditIcon from '@mui/icons-material/Edit';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { CampaignSettingsModal } from './CampaignSettingsModal';
+import { useActiveCampaign } from './ActiveCampaignContext';
 
 interface CampaignItemProps {
   campaign: Campaign;
@@ -47,8 +51,18 @@ const CampaignItem: FC<CampaignItemProps> = ({
   const { t } = useTranslation();
   const [openSettings, setOpenSettings] = useState(false);
   const [removingId, setRemovingId] = useState<string | undefined>();
+  const { activeCampaign, setActiveCampaignId } = useActiveCampaign();
 
   const isOwner = getCurrentUser()?.id === campaign.owner?.id;
+  const isCurrentlyActive = activeCampaign?.id === campaign.id;
+
+  const handleSetActive = () => {
+    if (isCurrentlyActive) {
+      setActiveCampaignId(null); // Deselect if already active
+    } else {
+      setActiveCampaignId(campaign.id);
+    }
+  };
 
   const handleRemovePlayer = async (player: CampaignPlayer) => {
     setRemovingId(player.id);
@@ -85,6 +99,9 @@ const CampaignItem: FC<CampaignItemProps> = ({
         />
         {isOwner && (
           <Box>
+            <IconButton edge="end" aria-label="set active" onClick={(e) => { e.stopPropagation(); handleSetActive(); }}>
+              {isCurrentlyActive ? <StarIcon color="primary" /> : <StarBorderIcon />}
+            </IconButton>
             <IconButton edge="end" aria-label="settings" onClick={(e) => { e.stopPropagation(); setOpenSettings(true); }}>
               <SettingsIcon />
             </IconButton>

@@ -6,5 +6,5 @@ export declare class User {
     password: string;
     language: string;
     theme: string;
-    campaigns: Campaign[];
+    ownedCampaigns: Campaign[];
 }

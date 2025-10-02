@@ -6,6 +6,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const fs = require("fs");
 const path_1 = require("path");
+const express_1 = require("express");
 async function bootstrap() {
     const dataDir = (0, path_1.join)(__dirname, '..', '..', 'data');
     if (!fs.existsSync(dataDir)) {
@@ -13,6 +14,8 @@ async function bootstrap() {
         console.log(`Directorio de datos creado en: ${dataDir}`);
     }
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.use((0, express_1.json)({ limit: '10mb' }));
+    app.use((0, express_1.urlencoded)({ extended: true, limit: '10mb' }));
     app.enableCors({
         origin: true,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

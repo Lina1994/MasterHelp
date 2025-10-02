@@ -1,4 +1,6 @@
-import { IsNotEmpty, IsOptional, IsString, IsUrl, ValidateIf } from 'class-validator';
+
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { IsUrlOrDataUri } from '../../config/validators/is-url-or-data-uri.validator';
 
 export class CreateCampaignDto {
   @IsNotEmpty()
@@ -10,7 +12,6 @@ export class CreateCampaignDto {
   description?: string;
 
   @IsOptional()
-  @ValidateIf(o => o.imageUrl !== '') // Solo validar si no es un string vacío
-  @IsUrl({}, { message: 'Image URL must be a valid URL' })
+  @IsUrlOrDataUri()
   imageUrl?: string;
 }

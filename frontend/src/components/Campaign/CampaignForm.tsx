@@ -1,7 +1,7 @@
-
 import { FC, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Campaign } from './types';
+import { ImageUploader } from './ImageUploader';
 
 interface CampaignFormProps {
   initial?: Partial<Campaign>;
@@ -26,13 +26,11 @@ const CampaignForm: FC<CampaignFormProps> = ({ initial, onSave, onCancel }) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    // Objeto base con los campos que siempre están
     const saveData: Partial<Campaign> = {
       name,
       description,
     };
 
-    // Solo incluir imageUrl si tiene un valor no vacío
     if (imageUrl) {
       saveData.imageUrl = imageUrl;
     }
@@ -41,7 +39,7 @@ const CampaignForm: FC<CampaignFormProps> = ({ initial, onSave, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: 24, minWidth: 400 }}>
+    <form onSubmit={handleSubmit} style={{ padding: 24, minWidth: 450, maxWidth: '100%' }}>
       <h2>{initial?.id ? t('edit_campaign', 'Editar campaña') : t('new_campaign', 'Nueva campaña')}</h2>
       <div style={{ marginBottom: 16 }}>
         <label style={{ display: 'block', marginBottom: 4 }}>{t('campaign_name', 'Nombre *')}</label>
@@ -62,14 +60,11 @@ const CampaignForm: FC<CampaignFormProps> = ({ initial, onSave, onCancel }) => {
           style={{ width: '100%', padding: 8, boxSizing: 'border-box', resize: 'vertical' }}
         />
       </div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={{ display: 'block', marginBottom: 4 }}>{t('campaign_image_url', 'URL de imagen (opcional)')}</label>
-        <input
-          type="url"
-          value={imageUrl}
-          onChange={e => setImageUrl(e.target.value)}
-          placeholder="https://example.com/image.png"
-          style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
+      <div style={{ marginBottom: 24 }}>
+        <label style={{ display: 'block', marginBottom: 8 }}>{t('campaign_image', 'Imagen de la Campaña')}</label>
+        <ImageUploader
+          initialValue={imageUrl}
+          onChange={setImageUrl}
         />
       </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 24 }}>
