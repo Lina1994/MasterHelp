@@ -106,6 +106,35 @@ export class SoundtrackService {
     return { associated, reusable };
   }
 
+  /**
+   * Lista todas las canciones propiedad del usuario autenticado (sin contexto de campaña).
+   * No devuelve el binario del audio para reducir payload.
+   */
+  async listOwned(user: User | any, q?: string, group?: string) {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const qb = this.songsRepo
+      .createQueryBuilder('song')
+      .where('song.ownerId = :ownerId', { ownerId: authUserId })
+      .select([
+        'song.id',
+        'song.name',
+        'song.group',
+        'song.artist',
+        'song.album',
+        'song.atmosphere',
+        'song.mimeType',
+        'song.size',
+        'song.isPublic',
+        'song.createdAt',
+        'song.updatedAt',
+      ])
+      .orderBy('song.createdAt', 'DESC');
+    if (q) qb.andWhere('LOWER(song.name) LIKE :q', { q: `%${q.toLowerCase()}%` });
+    if (group) qb.andWhere('song.group = :group', { group });
+    return qb.getMany();
+  }
+
   async update(owner: User | any, songId: string, dto: UpdateSongDto) {
     const song = await this.songsRepo.findOne({ where: { id: songId }, relations: ['owner'] });
     if (!song) throw new NotFoundException('Song not found');
@@ -153,7 +182,15 @@ export class SoundtrackService {
     return { message: 'Song deleted' };
   }
 
-  async getStreamable(user: User | any, songId: string, campaignId: string) {
+  /**
+   * Devuelve una canción lista para streaming aplicando reglas de autorización.
+   * Reglas:
+   * - Si se proporciona campaignId:
+   *   - Si la canción está asociada: permitir a owner de campaña o a jugadores si es pública.
+   *   - Si NO está asociada: permitir sólo al owner de la campaña (preview) siempre que también sea owner de la canción.
+   * - Si NO se proporciona campaignId: permitir sólo al owner de la canción (preview fuera de campaña).
+   */
+  async getStreamable(user: User | any, songId: string, campaignId?: string) {
     const song = await this.songsRepo
       .createQueryBuilder('song')
       .leftJoinAndSelect('song.campaigns', 'c')
@@ -161,14 +198,34 @@ export class SoundtrackService {
       .where('song.id = :songId', { songId })
       .getOne();
     if (!song) throw new NotFoundException('Song not found');
-    const associated = (song.campaigns || []).some((c) => c.id === campaignId);
-    if (!associated) throw new ForbiddenException('Song not associated with campaign');
-    // Player visibility check: if user is not owner of campaign and song not public -> forbid
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId }, relations: ['owner'] });
     const authUserId = this.extractAuthUserId(user);
-    const campaignOwnerId = campaign?.owner?.id;
-    const isMaster = campaignOwnerId !== undefined && authUserId !== undefined && String(campaignOwnerId) === String(authUserId);
-    if (!isMaster && !song.isPublic) throw new ForbiddenException('Not allowed');
-    return song;
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const campaignIdProvided = !!campaignId && campaignId.trim().length > 0;
+
+    if (!campaignIdProvided) {
+      // Preview sin campaña: sólo owner
+      if (song.owner.id !== authUserId) {
+        throw new ForbiddenException('Not allowed');
+      }
+      return song;
+    }
+
+    const associated = (song.campaigns || []).some((c) => c.id === campaignId);
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId }, relations: ['owner'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isMaster = campaign.owner.id === authUserId;
+
+    if (associated) {
+      // Si está asociada: jugadores sólo si es pública o son master
+      if (!isMaster && !song.isPublic) throw new ForbiddenException('Not allowed');
+      return song;
+    }
+
+    // No asociada: permitir preview sólo al master que además es owner de la canción
+    if (isMaster && song.owner.id === authUserId) {
+      return song;
+    }
+    throw new ForbiddenException('Song not associated with campaign');
   }
 }

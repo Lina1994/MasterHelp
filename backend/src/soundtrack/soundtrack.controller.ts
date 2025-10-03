@@ -32,6 +32,12 @@ export class SoundtrackController {
     return this.service.findSectionedForCampaign(req.user, campaignId, q, group, true);
   }
 
+  @Get('songs')
+  async listOwned(@Req() req, @Query('q') q?: string, @Query('group') group?: string) {
+    // Lista canciones propias del usuario (sin separar asociadas) cuando no se especifica campaignId.
+    return this.service.listOwned(req.user, q, group);
+  }
+
   @Patch('songs/:songId')
   async update(@Req() req, @Param('songId') songId: string, @Body() dto: UpdateSongDto) {
     return this.service.update(req.user, songId, dto);
@@ -53,8 +59,9 @@ export class SoundtrackController {
   }
 
   @Get('songs/:songId/stream')
-  async stream(@Req() req, @Param('songId') songId: string, @Query('campaignId') campaignId: string, @Res() res: Response) {
-    const song = await this.service.getStreamable(req.user, songId, campaignId);
+  async stream(@Req() req, @Param('songId') songId: string, @Query('campaignId') campaignId: string | undefined, @Res() res: Response) {
+    const normalizedCampaignId = campaignId && campaignId.trim().length > 0 ? campaignId : undefined;
+    const song = await this.service.getStreamable(req.user, songId, normalizedCampaignId);
     const range = req.headers['range'];
     const buffer = song.data;
     const total = buffer.length;

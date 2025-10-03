@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useCampaignId } from '../hooks/useCampaignId';
+import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
+import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { api } from '../apiBase';
 import { getAuthHeaders } from '../utils/auth';
 import {
@@ -47,6 +48,7 @@ interface SectionedSongsResponse {
   associated: SongMeta[];
   reusable: SongMeta[];
 }
+type OwnedSongsResponse = SongMeta[];
 
 /**
  * Página de gestión de Soundtrack (canciones) para la campaña activa.
@@ -54,7 +56,8 @@ interface SectionedSongsResponse {
  * editar metadatos (nombre, artista, grupo, álbum, atmósfera) y eliminar canciones sin asociaciones.
  */
 export const SoundtrackPage = () => {
-  const campaignId = useCampaignId();
+  const { activeCampaign } = useActiveCampaign();
+  const campaignId = activeCampaign?.id || null;
   // Estado de datos y UI
   const [data, setData] = useState<SectionedSongsResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -73,9 +76,8 @@ export const SoundtrackPage = () => {
   const [atmosphere, setAtmosphere] = useState('');
   const [openCreate, setOpenCreate] = useState(false);
 
-  // Reproducción
-  const [playingId, setPlayingId] = useState<string | null>(null);
-  const [playingMeta, setPlayingMeta] = useState<SongMeta | null>(null);
+  // Reproducción global
+  const { play, current, stop } = useGlobalPlayer();
   const [objectUrls, setObjectUrls] = useState<Record<string, string>>({});
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
 
@@ -99,8 +101,14 @@ export const SoundtrackPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get(`/soundtrack/campaigns/${campaignId}/songs`, { headers: getAuthHeaders() });
-      setData(res.data);
+      if (campaignId) {
+        const res = await api.get(`/soundtrack/campaigns/${campaignId}/songs`, { headers: getAuthHeaders() });
+        setData(res.data);
+      } else {
+        const res = await api.get<OwnedSongsResponse>(`/soundtrack/songs`, { headers: getAuthHeaders() });
+        const list = res.data;
+        setData({ associated: [], reusable: list });
+      }
     } catch (e: any) {
       setError(e.response?.data?.message || 'Error cargando canciones');
     } finally { setLoading(false); }
@@ -114,7 +122,7 @@ export const SoundtrackPage = () => {
     setCreating(true);
     const form = new FormData();
     form.append('name', newName.trim());
-    form.append('campaignId', campaignId);
+  if (campaignId) form.append('campaignId', campaignId);
     if (group.trim()) form.append('group', group.trim());
     if (artist.trim()) form.append('artist', artist.trim());
     if (album.trim()) form.append('album', album.trim());
@@ -132,6 +140,7 @@ export const SoundtrackPage = () => {
   };
 
   const handleAssociate = async (songId: string) => {
+    if (!campaignId) return;
     try {
       await api.post(`/soundtrack/songs/${songId}/associate`, { campaignIds: [campaignId] }, { headers: getAuthHeaders() });
       setSnack({ msg: 'Asociada a campaña', type: 'success' });
@@ -140,6 +149,7 @@ export const SoundtrackPage = () => {
   };
 
   const handleUnassociate = async (songId: string) => {
+    if (!campaignId) return;
     try {
       await api.delete(`/soundtrack/songs/${songId}/associate/${campaignId}`, { headers: getAuthHeaders() });
       setSnack({ msg: 'Desasociada', type: 'success' });
@@ -147,7 +157,12 @@ export const SoundtrackPage = () => {
     } catch (e: any) { setSnack({ msg: e.response?.data?.message || 'Error desasociando', type: 'error' }); }
   };
 
-  const buildStreamEndpoint = (songId: string) => `${api.defaults.baseURL}/soundtrack/songs/${songId}/stream?campaignId=${campaignId}`;
+  const buildStreamEndpoint = (songId: string) => {
+    // Si hay campaignId lo incluimos; de lo contrario omitimos para fallback a preview owner-only
+    return campaignId
+      ? `${api.defaults.baseURL}/soundtrack/songs/${songId}/stream?campaignId=${campaignId}`
+      : `${api.defaults.baseURL}/soundtrack/songs/${songId}/stream`;
+  };
 
   const ensureObjectUrl = async (songId: string) => {
     if (objectUrls[songId]) return objectUrls[songId];
@@ -162,11 +177,12 @@ export const SoundtrackPage = () => {
   };
 
   const handlePlay = async (songId: string) => {
-    if (playingId === songId) { setPlayingId(null); setPlayingMeta(null); return; }
-    await ensureObjectUrl(songId);
-    const meta = data?.associated.find(s => s.id === songId) || data?.reusable.find(s => s.id === songId) || null;
-    setPlayingMeta(meta || null);
-    setPlayingId(songId);
+    const meta = data?.associated?.find(s => s.id === songId) || data?.reusable?.find(s => s.id === songId) || null;
+    if (!meta) return;
+    await play({ id: meta.id, name: meta.name, size: meta.size, mimeType: meta.mimeType }, async () => {
+      const url = await ensureObjectUrl(songId);
+      return url!;
+    });
   };
 
   const openEditDialog = (s: SongMeta) => {
@@ -200,18 +216,20 @@ export const SoundtrackPage = () => {
   };
 
   const requestDelete = (songId: string) => {
-    const meta = data?.associated.find(s => s.id === songId) || data?.reusable.find(s => s.id === songId) || null;
+    const meta = data?.associated?.find(s => s.id === songId) || data?.reusable?.find(s => s.id === songId) || null;
     if (meta) setDeleteTarget(meta);
   };
 
   const performDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
+    const deletingId = deleteTarget.id;
     try {
-      await api.delete(`/soundtrack/songs/${deleteTarget.id}`, { headers: getAuthHeaders() });
+      await api.delete(`/soundtrack/songs/${deletingId}`, { headers: getAuthHeaders() });
       setSnack({ msg: 'Canción eliminada', type: 'success' });
       await fetchSongs();
-      if (playingId === deleteTarget.id) { setPlayingId(null); setPlayingMeta(null); }
+      if (current && current.id === deletingId) { stop(); }
+      if (editTarget && editTarget.id === deletingId) { setOpenEdit(false); }
       setDeleteTarget(null);
     } catch (e: any) {
       setSnack({ msg: e.response?.data?.message || 'Error eliminando', type: 'error' });
@@ -226,38 +244,32 @@ export const SoundtrackPage = () => {
       </Box>
       {loading && <LinearProgress sx={{ mb:2 }} />}
       {error && <Alert severity="error" sx={{ mb:2 }}>{error}</Alert>}
-      {playingId && (
-        <Card variant="outlined" sx={{ mb:3 }}>
-          <CardHeader title={playingMeta?.name || 'Reproduciendo'} subheader={playingMeta ? `${(playingMeta.size/1024).toFixed(1)} KB` : undefined} />
-          <CardContent>
-            {loadingAudio === playingId && <Typography variant="caption">Cargando audio...</Typography>}
-            <audio autoPlay controls src={objectUrls[playingId]} style={{ width:'100%' }} onEnded={() => { setPlayingId(null); setPlayingMeta(null); }} />
-            <Box mt={1} display="flex" gap={1}>
-              <Button size="small" onClick={() => { setPlayingId(null); setPlayingMeta(null); }}>Cerrar</Button>
-            </Box>
-          </CardContent>
-        </Card>
+      {/* Reproductor local eliminado: ahora se usa GlobalPlayerBar persistente */}
+      {!campaignId && (
+        <Alert severity="info" sx={{ mb:2 }}>No hay campaña activa seleccionada. Puedes subir canciones y luego asociarlas cuando elijas una campaña.</Alert>
       )}
       <Grid container spacing={2} columns={12}>
         <Grid size={{ xs: 12, md: 6 }}>
           <Card variant="outlined">
-            <CardHeader title="Asociadas" />
+            <CardHeader title="Asociadas" subheader={!campaignId ? 'Selecciona una campaña para ver asociaciones' : undefined} />
             <CardContent sx={{ p:0 }}>
               <List dense>
-                {data?.associated.map(s => (
+                {campaignId && data?.associated?.map(s => (
                   <ListItem key={s.id} secondaryAction={
                     <Stack direction="row" spacing={1}>
                       <IconButton onClick={() => handleUnassociate(s.id)} size="small" title="Desasociar"><LinkOffIcon /></IconButton>
                       <IconButton onClick={() => openEditDialog(s)} size="small" title="Editar"><EditIcon /></IconButton>
-                      <IconButton onClick={() => requestDelete(s.id)} size="small" title="Eliminar"><DeleteIcon /></IconButton>
                       <IconButton onClick={() => handlePlay(s.id)} size="small" title="Reproducir"><PlayArrowIcon /></IconButton>
                     </Stack>
                   }>
                     <ListItemText primary={s.name} secondary={`${(s.size/1024).toFixed(1)} KB`} />
                   </ListItem>
                 ))}
-                {data && data.associated.length === 0 && (
+                {campaignId && data && data.associated.length === 0 && (
                   <ListItem><ListItemText primary="No hay canciones asociadas" /></ListItem>
+                )}
+                {!campaignId && (
+                  <ListItem><ListItemText primary="No hay canciones asociadas (sin campaña activa)" /></ListItem>
                 )}
               </List>
             </CardContent>
@@ -268,12 +280,13 @@ export const SoundtrackPage = () => {
             <CardHeader title="Reutilizables" subheader="No asociadas aún" />
             <CardContent sx={{ p:0 }}>
               <List dense>
-                {data?.reusable.map(s => (
+                {data?.reusable?.map(s => (
                   <ListItem key={s.id} secondaryAction={
                     <Stack direction="row" spacing={1}>
-                      <IconButton onClick={() => handleAssociate(s.id)} size="small" title="Asociar"><LinkIcon /></IconButton>
+                      {campaignId && (
+                        <IconButton onClick={() => handleAssociate(s.id)} size="small" title="Asociar"><LinkIcon /></IconButton>
+                      )}
                       <IconButton onClick={() => openEditDialog(s)} size="small" title="Editar"><EditIcon /></IconButton>
-                      <IconButton onClick={() => requestDelete(s.id)} size="small" title="Eliminar"><DeleteIcon /></IconButton>
                       <IconButton onClick={() => handlePlay(s.id)} size="small" title="Reproducir"><PlayArrowIcon /></IconButton>
                     </Stack>
                   }>
@@ -332,6 +345,7 @@ export const SoundtrackPage = () => {
           </Stack>
         </DialogContent>
         <DialogActions>
+          <Button color="error" onClick={() => editTarget && requestDelete(editTarget.id)} startIcon={<DeleteIcon />}>Eliminar</Button>
           <Button onClick={() => setOpenEdit(false)}>Cancelar</Button>
           <Button onClick={handleEditSave} disabled={editing || !editName.trim()} variant="contained" startIcon={<EditIcon />}>Guardar</Button>
         </DialogActions>
