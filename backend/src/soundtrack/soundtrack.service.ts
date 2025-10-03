@@ -32,6 +32,9 @@ export class SoundtrackService {
     const song = new Song();
     song.name = dto.name;
     song.group = dto.group;
+  song.artist = dto.artist;
+  song.album = dto.album;
+  song.atmosphere = dto.atmosphere;
     song.isPublic = dto.isPublic ?? false;
     // Si llega sólo el payload JWT (userId, username) necesitaríamos cargar el User completo.
     // Para evitar sobre-consulta, si no existe owner.id hacemos un lookup mínimo.
@@ -110,6 +113,9 @@ export class SoundtrackService {
     if (song.owner.id !== authUserId) throw new ForbiddenException('Not owner');
     if (dto.name !== undefined) song.name = dto.name;
     if (dto.group !== undefined) song.group = dto.group;
+  if (dto.artist !== undefined) song.artist = dto.artist;
+  if (dto.album !== undefined) song.album = dto.album;
+  if (dto.atmosphere !== undefined) song.atmosphere = dto.atmosphere;
     if (dto.isPublic !== undefined) song.isPublic = dto.isPublic;
     return this.songsRepo.save(song);
   }

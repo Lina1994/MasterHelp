@@ -14,6 +14,15 @@ export class Song {
   group: string;
 
   @Column({ nullable: true })
+  artist: string;
+
+  @Column({ nullable: true })
+  album: string;
+
+  @Column({ nullable: true })
+  atmosphere: string; // etiqueta libre para ambientación / mood
+
+  @Column({ nullable: true })
   originalSource: string; // URL original si se subió por URL
 
   @Column()

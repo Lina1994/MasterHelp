@@ -9,6 +9,18 @@ export class CreateSongDto {
   @IsOptional()
   group?: string;
 
+  @IsString()
+  @IsOptional()
+  artist?: string;
+
+  @IsString()
+  @IsOptional()
+  album?: string;
+
+  @IsString()
+  @IsOptional()
+  atmosphere?: string;
+
   @IsBoolean()
   @IsOptional()
   isPublic?: boolean;
