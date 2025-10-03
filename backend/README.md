@@ -43,6 +43,12 @@ Módulos actuales:
 - E2E tests en `backend/test` (ver README dedicado).
 - Pendiente: añadir primeras unit tests (services aislados).
 
+## Documentación relacionada
+- Tests E2E: `backend/test/README.md`
+- Backlog / Esquema: `BACKLOG_SCHEMA.md` (raíz del repositorio)
+- Workflow CI: `.github/workflows/ci.yml`
+- Dependencias automatizadas: `.github/dependabot.yml` (cuando exista)
+
 ## Próximas mejoras sugeridas
 - Añadir script `typecheck` (`tsc --noEmit`).
 - Factories / builders para reducir repetición en E2E.

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton
@@ -8,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { InvitationsList } from '../pages/InvitationsList';
+import MusicNoteIcon from '@mui/icons-material/MusicNote'; // nuevo icono
 
 const MainLayout = () => {
   const navigate = useNavigate();
@@ -44,6 +44,12 @@ const MainLayout = () => {
           <ListItemButton onClick={() => navigate('/campaigns')}>
             <ListItemIcon />
             <ListItemText primary={t('campaigns', 'Campañas')} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem key="soundtrack" disablePadding>
+          <ListItemButton onClick={() => navigate('/soundtrack')} disabled={!activeCampaign}>
+            <ListItemIcon><MusicNoteIcon /></ListItemIcon>
+            <ListItemText primary={t('soundtrack', 'Soundtrack')} secondary={!activeCampaign ? t('select_campaign_first','Selecciona una campaña') : undefined} />
           </ListItemButton>
         </ListItem>
         {/* Puedes añadir más items aquí */}

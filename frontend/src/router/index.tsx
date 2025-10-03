@@ -8,6 +8,7 @@ import ResetPasswordPage from '../pages/ResetPasswordPage'; // Importa la nueva 
 import ChangePasswordPage from '../pages/ChangePasswordPage'; // Importa la nueva página
 import DeleteAccountPage from '../pages/DeleteAccountPage';
 import CampaignPage from '../pages/CampaignPage';
+import SoundtrackPage from '../pages/SoundtrackPage'; // Nueva página soundtrack
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: 'campaigns',
         element: <CampaignPage />,
+      },
+      {
+        path: 'soundtrack',
+        element: <SoundtrackPage />,
       },
       // Puedes añadir más rutas protegidas aquí
     ],

@@ -21,3 +21,38 @@ El agente debe adherirse a las siguientes normas para mantener la consistencia d
     ◦ Librería UI: Material-UI (MUI).
 • Base de Datos: SQLite gestionado por TypeORM (dm_app.db).
 • DevOps: Contenerización mediante Docker.
+
+##  Obtención del campaignId Actual (Frontend)
+Para funcionalidades que dependen del contexto de campaña (ej. asociar canciones en el módulo Soundtrack) el ID de la campaña activa se obtiene mediante el contexto `ActiveCampaignContext` y su hook `useActiveCampaign`.
+
+### Flujo Actual
+1. El estado `activeCampaignId` se mantiene en memoria dentro de `ActiveCampaignProvider` y se inicializa leyendo `localStorage` (clave: `activeCampaignId`).
+2. Al seleccionar/deseleccionar una campaña en la UI (p.ej. componente `CampaignItem`), se invoca `setActiveCampaignId` que:
+    - Persiste el nuevo ID (o lo elimina) en `localStorage`.
+    - Actualiza el estado React local provocando el recálculo de `activeCampaign`.
+3. El objeto completo `activeCampaign` se deriva buscando en la lista de campañas cargadas por `CampaignsContext`.
+
+### Fuentes en el Código
+• Definición y lógica de carga/persistencia: `frontend/src/components/Campaign/ActiveCampaignContext.tsx` (uso de `localStorage.getItem('activeCampaignId')` y `localStorage.setItem/removeItem`).
+• Selección desde la UI: `frontend/src/components/Campaign/CampaignItem.tsx` (usa `useActiveCampaign()` y llama `setActiveCampaignId(campaign.id)` o `null`).
+• Consumo en layout principal: `frontend/src/layouts/MainLayout.tsx` (lee `const { activeCampaign } = useActiveCampaign()`).
+
+### Patrón de Uso Recomendado
+Para cualquier nuevo componente que necesite el ID de la campaña actual:
+```ts
+import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
+
+const { activeCampaign } = useActiveCampaign();
+const campaignId = activeCampaign?.id; // Usar este valor si existe
+```
+Validar siempre que `campaignId` no sea `undefined` antes de invocar endpoints dependientes.
+
+### Motivación Documental
+Esta sección permite incorporar nuevas features (p.ej. Soundtrack: listar canciones asociadas/reutilizables, asociar canciones existentes, reproducir streaming) sin redescubrir el mecanismo de contexto.
+
+### Próximos Ajustes Potenciales
+• Extraer un hook auxiliar `useCampaignId()` que devuelva directamente el ID o lance error si no está definido en vistas protegidas.
+• Sincronizar el ID activo con la URL (ej. `/campaigns/:campaignId/...`) para mejorar deep-linking y SEO.
+• Invalidar automáticamente el `activeCampaignId` almacenado si ya no existe en la lista (cuando una campaña es eliminada).
+
+> Nota: Si en el futuro se migra a un enfoque basado en rutas, actualizar esta sección para reflejar la nueva fuente de la verdad.
