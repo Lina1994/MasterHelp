@@ -1,0 +1,12 @@
+{
+  "id": "root",
+  "title": "D&D 5e SRD 5.2 (2024)",
+  "children": [
+    { "id": "intro", "title": "Introduction", "children": [] },
+    { "id": "rules-basic", "title": "Basic Rules", "children": [
+      { "id": "abilities", "title": "Ability Scores", "children": [] },
+      { "id": "combat", "title": "Combat", "children": [] }
+    ]},
+    { "id": "spells", "title": "Spells", "children": [] }
+  ]
+}

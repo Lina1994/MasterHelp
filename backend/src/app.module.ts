@@ -10,6 +10,8 @@ import { User } from './users/entities/user.entity';
 import { Campaign } from './campaigns/entities/campaign.entity';
 import { CampaignPlayer } from './campaigns/entities/campaign-player.entity';
 import { Song } from './soundtrack/entities/song.entity';
+import { ManualsModule } from './manuals/manuals.module';
+import { SpellsModule } from './spells/spells.module';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { Song } from './soundtrack/entities/song.entity';
     UsersModule,
   CampaignsModule,
   SoundtrackModule,
+    ManualsModule,
+    SpellsModule,
   ],
   controllers: [],
   providers: [],

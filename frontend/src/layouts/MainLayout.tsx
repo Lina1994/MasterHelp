@@ -10,6 +10,7 @@ import { GlobalPlayerProvider } from '../components/player/GlobalPlayerContext';
 import GlobalPlayerDrawerControls from '../components/player/GlobalPlayerDrawerControls';
 import { InvitationsList } from '../pages/InvitationsList';
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // nuevo icono
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 const MainLayout = () => {
   const navigate = useNavigate();
@@ -53,6 +54,12 @@ const MainLayout = () => {
           <ListItemButton onClick={() => navigate('/soundtrack')}>
             <ListItemIcon><MusicNoteIcon /></ListItemIcon>
             <ListItemText primary={t('soundtrack', 'Soundtrack')} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem key="manuals" disablePadding>
+          <ListItemButton onClick={() => navigate('/manuals')}>
+            <ListItemIcon><MenuBookIcon /></ListItemIcon>
+            <ListItemText primary={t('manuals', 'Manuales')} />
           </ListItemButton>
         </ListItem>
         {/* Más items aquí */}

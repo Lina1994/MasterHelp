@@ -1,0 +1,22 @@
+{
+  "manuals": [
+    {
+      "id": "dnd5e-2014",
+      "title": "D&D 5e SRD 5.1 (2014)",
+      "version": "5.1",
+      "licenseName": "OGL & CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "locale": "en",
+      "slug": "dnd-5e-2014"
+    },
+    {
+      "id": "dnd5e-2024",
+      "title": "D&D 5e SRD 5.2 (2024)",
+      "version": "5.2",
+      "licenseName": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "locale": "en",
+      "slug": "dnd-5e-2024"
+    }
+  ]
+}

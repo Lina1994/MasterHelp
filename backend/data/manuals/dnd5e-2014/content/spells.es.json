@@ -1,0 +1,8 @@
+{
+  "id": "spells",
+  "title": "Hechizos",
+  "format": "markdown",
+  "markdown": "# Hechizos\n\nEsta sección complementa Lanzamiento de Conjuros con un resumen del índice. Para un listado con buscador y filtros, usa el navegador de hechizos.\n\n- Niveles: 0 (trucos) a 9.º nivel.\n- Escuelas: Abjuración, Conjuración, Adivinación, Encantamiento, Evocación, Ilusión, Nigromancia, Transmutación.\n- Componentes: V (verbal), S (somático), M (material).\n- Etiquetas: ritual, concentración.\n- A menudo incluyen tiradas de salvación y áreas de efecto.\n\n## Ver Hechizos\n\nUsa el visor dedicado para buscar, filtrar por nivel/escuela y abrir el detalle:\n\n[Abrir Visor de Hechizos](/spells)\n\nConsejo: el visor se adapta al idioma seleccionado.\n",
+  "plainText": "Resumen de índice de hechizos y enlace al visor con buscador y filtros.",
+  "attribution": "Texto resumido del SRD 5.1 de D&D 5e (2014), CC BY 4.0."
+}

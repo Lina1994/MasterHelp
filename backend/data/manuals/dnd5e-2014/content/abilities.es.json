@@ -1,0 +1,7 @@
+{
+  "id": "abilities",
+  "title": "Puntuaciones de Característica",
+  "format": "markdown",
+  "markdown": "# Puntuaciones de Característica\n\nTu personaje tiene seis puntuaciones de característica: Fuerza, Destreza, Constitución, Inteligencia, Sabiduría y Carisma.\n\nEstas puntuaciones representan los atributos más básicos de tu personaje y afectan a muchos aspectos del juego.",
+  "plainText": "Puntuaciones de Característica. Tu personaje tiene seis puntuaciones: Fuerza, Destreza, Constitución, Inteligencia, Sabiduría y Carisma."
+}

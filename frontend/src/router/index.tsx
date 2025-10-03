@@ -9,6 +9,10 @@ import ChangePasswordPage from '../pages/ChangePasswordPage'; // Importa la nuev
 import DeleteAccountPage from '../pages/DeleteAccountPage';
 import CampaignPage from '../pages/CampaignPage';
 import SoundtrackPage from '../pages/SoundtrackPage'; // Nueva página soundtrack
+import ManualsHomePage from '../pages/ManualsHomePage';
+import ManualViewerPage from '../pages/ManualViewerPage';
+import MainLayout from '../layouts/MainLayout';
+import SpellsPage from '../pages/SpellsPage';
 
 const router = createBrowserRouter([
   {
@@ -56,6 +60,24 @@ const router = createBrowserRouter([
   {
     path: '/reset-password', // Nueva ruta
     element: <ResetPasswordPage />,
+  },
+  // Rutas públicas para Manuales, envueltas en MainLayout para mantener sidebar
+  {
+    path: '/manuals',
+    element: <MainLayout />,
+    children: [
+      { index: true, element: <ManualsHomePage /> },
+      { path: ':manualId', element: <ManualViewerPage /> },
+      { path: ':manualId/section/:nodeId', element: <ManualViewerPage /> },
+    ],
+  },
+  // Ruta pública para Hechizos
+  {
+    path: '/spells',
+    element: <MainLayout />,
+    children: [
+      { index: true, element: <SpellsPage /> },
+    ],
   },
 ]);
 

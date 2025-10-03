@@ -1,0 +1,8 @@
+{
+  "id": "spells",
+  "title": "Spells",
+  "format": "markdown",
+  "markdown": "# Spells\n\nThis section complements Spellcasting with an index overview. For a searchable, filterable list with full details, open the Spells browser.\n\n- Levels: 0 (cantrips) to 9th level.\n- Schools: Abjuration, Conjuration, Divination, Enchantment, Evocation, Illusion, Necromancy, Transmutation.\n- Components: V (verbal), S (somatic), M (material).\n- Tags: ritual, concentration.\n- Mechanics often reference saving throws and areas of effect.\n\n## Browse Spells\n\nUse the dedicated viewer to search, filter by level/school, and open details:\n\n[Open Spells Browser](/spells)\n\nTip: The viewer adapts to your selected language.\n",
+  "plainText": "Spells index summary and link to the searchable spells browser with filters and details.",
+  "attribution": "Text summarized from the D&D 5e SRD 5.1 (2014), CC BY 4.0."
+}
