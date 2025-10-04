@@ -13,6 +13,8 @@ export class SpellsController {
       search: q.search,
       level: q.level,
       school: q.school,
+      concentration: q.concentration,
+      ritual: q.ritual,
       page: q.page,
       pageSize: q.pageSize,
       sortBy: q.sortBy,

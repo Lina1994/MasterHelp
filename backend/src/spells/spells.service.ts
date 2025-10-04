@@ -11,6 +11,10 @@ export interface SpellSummary {
   range: string;
   duration: string;
   components: string;
+  /** True if the spell requires concentration (derived from duration) */
+  isConcentration?: boolean;
+  /** True if the spell can be cast as a ritual (derived from school text) */
+  isRitual?: boolean;
 }
 
 export interface SpellDetail extends SpellSummary {
@@ -54,8 +58,31 @@ export class SpellsService {
         data = [];
       }
       const map: Record<string, SpellDetail> = {};
-      for (const s of data) map[s.id] = s;
-      const list: SpellSummary[] = data.map(({ id, name, level, school, castingTime, range, duration, components }) => ({ id, name, level, school, castingTime, range, duration, components }));
+      const list: SpellSummary[] = [];
+      for (const s of data) {
+        const isConcentration = typeof s.duration === 'string' && s.duration.toLowerCase().trim().startsWith('concentr');
+        const isRitual = typeof s.school === 'string' && /\(\s*ritual\s*\)/i.test(s.school);
+        const detail: SpellDetail = {
+          ...s,
+          concentration: isConcentration,
+          ritual: isRitual,
+          isConcentration,
+          isRitual,
+        } as SpellDetail;
+        map[s.id] = detail;
+        list.push({
+          id: s.id,
+          name: s.name,
+          level: s.level,
+          school: s.school,
+          castingTime: s.castingTime,
+          range: s.range,
+          duration: s.duration,
+          components: s.components,
+          isConcentration,
+          isRitual,
+        });
+      }
       this.cache[lang] = { list, map, mtime };
       return this.cache[lang];
     } catch {
@@ -65,7 +92,7 @@ export class SpellsService {
     }
   }
 
-  list(lang: 'en' | 'es', filters?: { search?: string; level?: number; school?: string }): SpellSummary[] {
+  list(lang: 'en' | 'es', filters?: { search?: string; level?: number; school?: string; concentration?: boolean; ritual?: boolean }): SpellSummary[] {
     const { list } = this.load(lang);
     let out = list;
     if (filters?.search) {
@@ -81,6 +108,12 @@ export class SpellsService {
       const sc = filters.school.toLowerCase();
       out = out.filter((s) => s.school.toLowerCase() === sc);
     }
+    if (typeof filters?.concentration === 'boolean') {
+      out = out.filter((s) => !!s.isConcentration === filters.concentration);
+    }
+    if (typeof filters?.ritual === 'boolean') {
+      out = out.filter((s) => !!s.isRitual === filters.ritual);
+    }
     return out;
   }
 
@@ -91,9 +124,9 @@ export class SpellsService {
 
   listPaged(
     lang: 'en' | 'es',
-    params: { search?: string; level?: number; school?: string; page?: number; pageSize?: number; sortBy?: 'name' | 'level' | 'school'; sortDir?: 'asc' | 'desc' }
+    params: { search?: string; level?: number; school?: string; concentration?: boolean; ritual?: boolean; page?: number; pageSize?: number; sortBy?: 'name' | 'level' | 'school'; sortDir?: 'asc' | 'desc' }
   ): { items: SpellSummary[]; total: number } {
-    const all = this.list(lang, { search: params.search, level: params.level, school: params.school });
+    const all = this.list(lang, { search: params.search, level: params.level, school: params.school, concentration: params.concentration, ritual: params.ritual });
     const total = all.length;
     let sorted = all;
     if (params.sortBy) {

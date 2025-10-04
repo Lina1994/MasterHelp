@@ -162,8 +162,9 @@ Podremos reproducir, crear, editar y eliminar presets.
 En un preset podremos añadir uno a varios soundeffects, ajustar el volumen de cada soundeffect de forma individual, ajustar cada soundeffect para que se reproduzca en bucle contínuo, en bucle pero con un tiempo de espera fijo que se pueda indicar (1 segundo, 15 segundos...) o en bucle pero con un tiempo de espera aleatorio.
  
 Al añadir un nuevo elemento, se podrán subir el archivos de audio como archivo o como url, la aplicación la transformará y almacenará en formato blob.
+Si entras como master tendrás control total, como jugador podrás ver las canciones que el master marque como visibles para el jugador.
+Tanto las canciones como los soundeffect se guardarán en formato blob.
 
- Si entras como master tendrás control total, como jugador no tienes acceso.
 
  Characters
 

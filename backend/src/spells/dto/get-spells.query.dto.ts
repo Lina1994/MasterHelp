@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -20,6 +20,16 @@ export class GetSpellsQueryDto {
   @IsOptional()
   @IsString()
   school?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  concentration?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  ritual?: boolean;
 
   @IsOptional()
   @IsString()

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Dialog, DialogContent, DialogTitle, IconButton, InputAdornment, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Checkbox, Dialog, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import { DataGrid, GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
@@ -26,6 +26,8 @@ export default function SpellsBrowser({ embedded, title }: SpellsBrowserProps) {
   const [rowCount, setRowCount] = useState<number>(0);
   const [pagination, setPagination] = useState<GridPaginationModel>({ page: 0, pageSize: 25 });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }] as GridSortModel);
+  const [onlyConcentration, setOnlyConcentration] = useState(false);
+  const [onlyRitual, setOnlyRitual] = useState(false);
 
   const cols: GridColDef[] = useMemo(() => ([
     { field: 'name', headerName: 'Name', flex: 1, minWidth: 160 },
@@ -55,6 +57,8 @@ export default function SpellsBrowser({ embedded, title }: SpellsBrowserProps) {
         search,
         level: level === '' ? undefined : level,
         school: school || undefined,
+        concentration: onlyConcentration || undefined,
+        ritual: onlyRitual || undefined,
         page: pagination.page + 1,
         pageSize: pagination.pageSize,
         sortBy,
@@ -64,7 +68,7 @@ export default function SpellsBrowser({ embedded, title }: SpellsBrowserProps) {
     })
       .then(r => { setRows(r.data.items); setRowCount(r.data.total); })
       .catch(() => { setRows([]); setRowCount(0); });
-  }, [search, level, school, pagination.page, pagination.pageSize, sortModel, i18n.language]);
+  }, [search, level, school, onlyConcentration, onlyRitual, pagination.page, pagination.pageSize, sortModel, i18n.language]);
 
   const onRowClick = async (id: string) => {
     const lang = i18n.language?.slice(0,2) || 'en';
@@ -102,6 +106,14 @@ export default function SpellsBrowser({ embedded, title }: SpellsBrowserProps) {
           <MenuItem value="">All</MenuItem>
           {schools.map(s => (<MenuItem key={s} value={s}>{s}</MenuItem>))}
         </TextField>
+        <FormControlLabel
+          control={<Checkbox size="small" checked={onlyConcentration} onChange={(e) => setOnlyConcentration(e.target.checked)} />}
+          label="Concentration"
+        />
+        <FormControlLabel
+          control={<Checkbox size="small" checked={onlyRitual} onChange={(e) => setOnlyRitual(e.target.checked)} />}
+          label="Ritual"
+        />
       </Stack>
 
       <Box sx={{ height: embedded ? 520 : 560, width: '100%' }}>

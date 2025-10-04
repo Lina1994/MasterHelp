@@ -15,6 +15,9 @@ export interface SpellSummary {
   range: string;
   duration: string;
   components: string;
+  // Derived flags from backend for quick filtering/UI badges
+  isConcentration?: boolean;
+  isRitual?: boolean;
 }
 
 export interface SpellDetail extends SpellSummary {
