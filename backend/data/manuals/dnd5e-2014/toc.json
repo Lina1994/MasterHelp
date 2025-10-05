@@ -12,6 +12,7 @@
       { "id": "conditions", "title": "Conditions", "children": [] }
     ]},
     { "id": "races", "title": "Races", "children": [] },
+    { "id": "classes", "title": "Classes", "children": [] },
     { "id": "spells", "title": "Spells", "children": [] }
   ]
 }

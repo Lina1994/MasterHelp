@@ -66,4 +66,16 @@
   "speed_no_heavy_armor_penalty": "La velocidad no se reduce al llevar armadura pesada.",
   "traits": "Rasgos",
   "subraces": "Subrazas"
+  ,
+  "hit_points": "Puntos de Golpe",
+  "hit_dice": "Dados de Golpe",
+  "hp_first_level": "PG al 1er Nivel",
+  "hp_higher_levels": "PG en Niveles Superiores"
+  ,
+  "features": "Rasgos",
+  "subclasses": "Subclases",
+  "spells": "Conjuros",
+  "cantrips": "Trucos",
+  "level": "Nivel",
+  "lvl_abbr": "Niv"
 }

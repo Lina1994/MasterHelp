@@ -20,7 +20,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "spells:check": "node scripts/check-spells-parity.cjs",
-    "spells:ahl-audit": "node scripts/check-ahl.cjs"
+    "spells:ahl-audit": "node scripts/check-ahl.cjs",
+    "validate:class-spells": "node scripts/validate-class-spell-lists.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

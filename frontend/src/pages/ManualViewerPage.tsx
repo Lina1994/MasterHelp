@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SpellsBrowser from '../components/spells/SpellsBrowser';
 import RacesBrowser from '../components/races/RacesBrowser';
+import ClassesBrowser from '../components/classes/ClassesBrowser';
 
 interface TocNode { id: string; title: string; children?: TocNode[] }
 interface SectionDto { id: string; title: string; format?: 'markdown'|'html'; markdown?: string; html?: string; }
@@ -95,6 +96,12 @@ export default function ManualViewerPage() {
         {nodeId === 'races' && (
           <Box sx={{ mt: 3 }}>
             <RacesBrowser manualId={manualId} />
+          </Box>
+        )}
+        {/* Inserta el navegador de clases dentro de la sección "classes" */}
+        {nodeId === 'classes' && (
+          <Box sx={{ mt: 3 }}>
+            <ClassesBrowser manualId={manualId} />
           </Box>
         )}
         {section?.format === 'html' && section?.html && (

@@ -13,6 +13,7 @@ import { Song } from './soundtrack/entities/song.entity';
 import { ManualsModule } from './manuals/manuals.module';
 import { SpellsModule } from './spells/spells.module';
 import { RacesModule } from './races/races.module';
+import { ClassesModule } from './classes/classes.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { RacesModule } from './races/races.module';
     ManualsModule,
     SpellsModule,
     RacesModule,
+    ClassesModule,
   ],
   controllers: [],
   providers: [],

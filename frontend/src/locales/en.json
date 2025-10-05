@@ -66,4 +66,16 @@
   "speed_no_heavy_armor_penalty": "Speed is not reduced by wearing heavy armor.",
   "traits": "Traits",
   "subraces": "Subraces"
+  ,
+  "hit_points": "Hit Points",
+  "hit_dice": "Hit Dice",
+  "hp_first_level": "HP at 1st Level",
+  "hp_higher_levels": "HP at Higher Levels"
+  ,
+  "features": "Features",
+  "subclasses": "Subclasses",
+  "spells": "Spells",
+  "cantrips": "Cantrips",
+  "level": "Level",
+  "lvl_abbr": "Lvl"
 }
