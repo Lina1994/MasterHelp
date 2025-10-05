@@ -12,8 +12,8 @@ function loadJson(p) {
   return JSON.parse(text);
 }
 
-const enPath = path.resolve(__dirname, '../data/spells/spells.en.json');
-const esPath = path.resolve(__dirname, '../data/spells/spells.es.json');
+const enPath = path.resolve(__dirname, '../data/manuals/dnd5e-2014/spells/spells.en.json');
+const esPath = path.resolve(__dirname, '../data/manuals/dnd5e-2014/spells/spells.es.json');
 
 const en = loadJson(enPath);
 const es = loadJson(esPath);

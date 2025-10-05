@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 function loadSpells(filename) {
-  const p = path.resolve(__dirname, '..', 'data', 'spells', filename);
+  const p = path.resolve(__dirname, '..', 'data', 'manuals', 'dnd5e-2014', 'spells', filename);
   return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
 

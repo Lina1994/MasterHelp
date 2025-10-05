@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import MainLayout from './MainLayout';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { api } from '../apiBase';
 
 interface AuthState {
@@ -44,7 +43,8 @@ const ProtectedLayout = () => {
   if (!auth.valid) {
     return <div style={{ padding: 24 }}>Redirigiendo...</div>; // Breve estado transitorio
   }
-  return <MainLayout />;
+  // Auth OK: render children under the parent layout via Outlet
+  return <Outlet />;
 };
 
 export default ProtectedLayout;

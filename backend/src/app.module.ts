@@ -12,6 +12,7 @@ import { CampaignPlayer } from './campaigns/entities/campaign-player.entity';
 import { Song } from './soundtrack/entities/song.entity';
 import { ManualsModule } from './manuals/manuals.module';
 import { SpellsModule } from './spells/spells.module';
+import { RacesModule } from './races/races.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SpellsModule } from './spells/spells.module';
   SoundtrackModule,
     ManualsModule,
     SpellsModule,
+    RacesModule,
   ],
   controllers: [],
   providers: [],

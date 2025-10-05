@@ -11,6 +11,7 @@
       { "id": "adventuring", "title": "Adventuring", "children": [] },
       { "id": "conditions", "title": "Conditions", "children": [] }
     ]},
+    { "id": "races", "title": "Races", "children": [] },
     { "id": "spells", "title": "Spells", "children": [] }
   ]
 }

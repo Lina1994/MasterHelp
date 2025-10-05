@@ -21,7 +21,7 @@ function findDuplicates(ids) {
   return [...dups];
 }
 
-const dataDir = resolve(__dirname, '..', 'data', 'spells');
+const dataDir = resolve(__dirname, '..', 'data', 'manuals', 'dnd5e-2014', 'spells');
 const enPath = resolve(dataDir, 'spells.en.json');
 const esPath = resolve(dataDir, 'spells.es.json');
 

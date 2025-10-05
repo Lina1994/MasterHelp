@@ -29,23 +29,32 @@ export interface SpellDetail extends SpellSummary {
 
 @Injectable()
 export class SpellsService {
+  // Cache keyed by `${manualId}:${lang}`
   private cache: Record<string, { list: SpellSummary[]; map: Record<string, SpellDetail>; mtime: number }> = {};
-  private baseDir: string;
+  private readonly defaultManualId = 'dnd5e-2014';
 
   constructor() {
-    // Align with ManualsService approach: backend as cwd, data under backend/data/spells
-    this.baseDir = resolve(process.cwd(), 'data', 'spells');
   }
 
   /**
-   * Loads spells for a locale from backend/data/spells/spells.<lang>.json
+   * Compute the base directory for a given manual's spells data.
+   */
+  private getBaseDir(manualId?: string) {
+    const safeManual = (manualId || this.defaultManualId).replace(/[^a-zA-Z0-9-_]/g, '');
+    return resolve(process.cwd(), 'data', 'manuals', safeManual, 'spells');
+  }
+
+  /**
+   * Loads spells for a locale from backend/data/manuals/<manualId>/spells/spells.<lang>.json
    * and caches them in memory. Input file contains an array of details.
    */
-  private load(lang: 'en' | 'es') {
-  const file = join(this.baseDir, `spells.${lang}.json`);
+  private load(lang: 'en' | 'es', manualId?: string) {
+    const baseDir = this.getBaseDir(manualId);
+    const file = join(baseDir, `spells.${lang}.json`);
     try {
       const mtime = statSync(file).mtimeMs;
-      const cached = this.cache[lang];
+      const cacheKey = `${manualId || this.defaultManualId}:${lang}`;
+      const cached = this.cache[cacheKey];
       if (cached && cached.mtime === mtime) {
         return cached;
       }
@@ -83,17 +92,24 @@ export class SpellsService {
           isRitual,
         });
       }
-      this.cache[lang] = { list, map, mtime };
-      return this.cache[lang];
+      this.cache[cacheKey] = { list, map, mtime };
+      return this.cache[cacheKey];
     } catch {
       // If file stat/read fails, keep (or create) an empty cache
-      if (!this.cache[lang]) this.cache[lang] = { list: [], map: {}, mtime: 0 };
-      return this.cache[lang];
+      const cacheKey = `${manualId || this.defaultManualId}:${lang}`;
+      if (!this.cache[cacheKey]) this.cache[cacheKey] = { list: [], map: {}, mtime: 0 };
+      return this.cache[cacheKey];
     }
   }
 
-  list(lang: 'en' | 'es', filters?: { search?: string; level?: number; school?: string; concentration?: boolean; ritual?: boolean }): SpellSummary[] {
-    const { list } = this.load(lang);
+  /**
+   * Returns a filtered list of spells.
+   * @param lang Locale code ('en' | 'es')
+   * @param filters Optional filters (search, level, school, concentration, ritual)
+   * @param manualId Optional manual id; defaults to dnd5e-2014
+   */
+  list(lang: 'en' | 'es', filters?: { search?: string; level?: number; school?: string; concentration?: boolean; ritual?: boolean }, manualId?: string): SpellSummary[] {
+    const { list } = this.load(lang, manualId);
     let out = list;
     if (filters?.search) {
       const q = filters.search.toLowerCase();
@@ -117,16 +133,23 @@ export class SpellsService {
     return out;
   }
 
-  getById(lang: 'en' | 'es', id: string): SpellDetail | undefined {
-    const { map } = this.load(lang);
+  /**
+   * Returns a spell detail by id.
+   * @param lang Locale code ('en' | 'es')
+   * @param id Spell id
+   * @param manualId Optional manual id; defaults to dnd5e-2014
+   */
+  getById(lang: 'en' | 'es', id: string, manualId?: string): SpellDetail | undefined {
+    const { map } = this.load(lang, manualId);
     return map[id];
   }
 
   listPaged(
     lang: 'en' | 'es',
-    params: { search?: string; level?: number; school?: string; concentration?: boolean; ritual?: boolean; page?: number; pageSize?: number; sortBy?: 'name' | 'level' | 'school'; sortDir?: 'asc' | 'desc' }
+    params: { search?: string; level?: number; school?: string; concentration?: boolean; ritual?: boolean; page?: number; pageSize?: number; sortBy?: 'name' | 'level' | 'school'; sortDir?: 'asc' | 'desc' },
+    manualId?: string,
   ): { items: SpellSummary[]; total: number } {
-    const all = this.list(lang, { search: params.search, level: params.level, school: params.school, concentration: params.concentration, ritual: params.ritual });
+    const all = this.list(lang, { search: params.search, level: params.level, school: params.school, concentration: params.concentration, ritual: params.ritual }, manualId);
     const total = all.length;
     let sorted = all;
     if (params.sortBy) {
@@ -146,8 +169,13 @@ export class SpellsService {
     return { items, total };
   }
 
-  meta(lang: 'en' | 'es'): { levels: number[]; schools: string[] } {
-    const { list } = this.load(lang);
+  /**
+   * Returns basic metadata like existing levels and schools for filters.
+   * @param lang Locale code ('en' | 'es')
+   * @param manualId Optional manual id; defaults to dnd5e-2014
+   */
+  meta(lang: 'en' | 'es', manualId?: string): { levels: number[]; schools: string[] } {
+    const { list } = this.load(lang, manualId);
     const levels = Array.from(new Set(list.map(s => s.level))).sort((a,b) => a-b);
     const schools = Array.from(new Set(list.map(s => s.school))).sort((a,b) => a.localeCompare(b));
     return { levels, schools };

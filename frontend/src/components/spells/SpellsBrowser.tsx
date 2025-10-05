@@ -12,9 +12,10 @@ import remarkGfm from 'remark-gfm';
 export interface SpellsBrowserProps {
   embedded?: boolean; // if true, use compact spacing
   title?: string; // optional custom title
+  manualId?: string; // optional manual id to scope spells dataset (e.g., dnd5e-2014, dnd5e-2024)
 }
 
-export default function SpellsBrowser({ embedded, title }: SpellsBrowserProps) {
+export default function SpellsBrowser({ embedded, title, manualId }: SpellsBrowserProps) {
   const { i18n } = useTranslation();
   const [search, setSearch] = useState('');
   const [rows, setRows] = useState<SpellSummary[]>([]);
@@ -42,17 +43,19 @@ export default function SpellsBrowser({ embedded, title }: SpellsBrowserProps) {
   // Load meta (levels, schools)
   useEffect(() => {
     const lang = i18n.language?.slice(0,2) || 'en';
-    api.get('/spells/meta/all', { params: { lang } })
+    const base = manualId ? `/manuals/${manualId}/spells/meta/all` : '/spells/meta/all';
+    api.get(base, { params: { lang } })
       .then(r => { setLevels(r.data.levels || []); setSchools(r.data.schools || []); })
       .catch(() => { setLevels([]); setSchools([]); });
-  }, [i18n.language]);
+  }, [i18n.language, manualId]);
 
   // Load page
   useEffect(() => {
     const lang = i18n.language?.slice(0,2) || 'en';
     const sortBy = sortModel[0]?.field ?? 'name';
     const sortDir = (sortModel[0]?.sort ?? 'asc') as 'asc' | 'desc';
-    api.get('/spells', {
+    const base = manualId ? `/manuals/${manualId}/spells` : '/spells';
+    api.get(base, {
       params: {
         search,
         level: level === '' ? undefined : level,
@@ -68,11 +71,12 @@ export default function SpellsBrowser({ embedded, title }: SpellsBrowserProps) {
     })
       .then(r => { setRows(r.data.items); setRowCount(r.data.total); })
       .catch(() => { setRows([]); setRowCount(0); });
-  }, [search, level, school, onlyConcentration, onlyRitual, pagination.page, pagination.pageSize, sortModel, i18n.language]);
+  }, [search, level, school, onlyConcentration, onlyRitual, pagination.page, pagination.pageSize, sortModel, i18n.language, manualId]);
 
   const onRowClick = async (id: string) => {
     const lang = i18n.language?.slice(0,2) || 'en';
-    const r = await api.get(`/spells/${id}`, { params: { lang } });
+    const base = manualId ? `/manuals/${manualId}/spells/${id}` : `/spells/${id}`;
+    const r = await api.get(base, { params: { lang } });
     setSelected(r.data);
   };
 

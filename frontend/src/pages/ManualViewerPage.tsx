@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SpellsBrowser from '../components/spells/SpellsBrowser';
+import RacesBrowser from '../components/races/RacesBrowser';
 
 interface TocNode { id: string; title: string; children?: TocNode[] }
 interface SectionDto { id: string; title: string; format?: 'markdown'|'html'; markdown?: string; html?: string; }
@@ -87,7 +88,13 @@ export default function ManualViewerPage() {
         {/* Inserta el navegador de hechizos dentro de la sección "spells" */}
         {nodeId === 'spells' && (
           <Box sx={{ mt: 3 }}>
-            <SpellsBrowser embedded title={section?.title || 'Spells'} />
+            <SpellsBrowser embedded title={section?.title || 'Spells'} manualId={manualId} />
+          </Box>
+        )}
+        {/* Inserta el navegador de razas dentro de la sección "races" */}
+        {nodeId === 'races' && (
+          <Box sx={{ mt: 3 }}>
+            <RacesBrowser manualId={manualId} />
           </Box>
         )}
         {section?.format === 'html' && section?.html && (

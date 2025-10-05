@@ -15,34 +15,39 @@ import MainLayout from '../layouts/MainLayout';
 import SpellsPage from '../pages/SpellsPage';
 
 const router = createBrowserRouter([
+  // Single top-level layout so GlobalPlayer stays mounted across all app pages
   {
-    path: "/",
-    element: <ProtectedLayout />,
+    path: '/',
+    element: <MainLayout />,
     children: [
+      // Auth-protected section wraps its children and performs checks
       {
-        index: true,
-        element: <HomePage />,
+        element: <ProtectedLayout />,
+        children: [
+          { index: true, element: <HomePage /> },
+          { path: 'change-password', element: <ChangePasswordPage /> },
+          { path: 'delete-account', element: <DeleteAccountPage /> },
+          { path: 'campaigns', element: <CampaignPage /> },
+          { path: 'soundtrack', element: <SoundtrackPage /> },
+          // ...other protected routes
+        ],
       },
-      // Ruta protegida para cambiar contraseña
+      // Public sections (do not require ProtectedLayout)
       {
-        path: 'change-password', // Ejemplo: /change-password
-        element: <ChangePasswordPage />,
+        path: 'manuals',
+        children: [
+          { index: true, element: <ManualsHomePage /> },
+          { path: ':manualId', element: <ManualViewerPage /> },
+          { path: ':manualId/section/:nodeId', element: <ManualViewerPage /> },
+        ],
       },
-      // Ruta protegida para eliminar cuenta
+      // Public spells browser
       {
-        path: 'delete-account',
-        element: <DeleteAccountPage />,
+        path: 'spells',
+        children: [
+          { index: true, element: <SpellsPage /> },
+        ],
       },
-      // Ruta protegida para campañas
-      {
-        path: 'campaigns',
-        element: <CampaignPage />,
-      },
-      {
-        path: 'soundtrack',
-        element: <SoundtrackPage />,
-      },
-      // Puedes añadir más rutas protegidas aquí
     ],
   },
   {
@@ -60,24 +65,6 @@ const router = createBrowserRouter([
   {
     path: '/reset-password', // Nueva ruta
     element: <ResetPasswordPage />,
-  },
-  // Rutas públicas para Manuales, envueltas en MainLayout para mantener sidebar
-  {
-    path: '/manuals',
-    element: <MainLayout />,
-    children: [
-      { index: true, element: <ManualsHomePage /> },
-      { path: ':manualId', element: <ManualViewerPage /> },
-      { path: ':manualId/section/:nodeId', element: <ManualViewerPage /> },
-    ],
-  },
-  // Ruta pública para Hechizos
-  {
-    path: '/spells',
-    element: <MainLayout />,
-    children: [
-      { index: true, element: <SpellsPage /> },
-    ],
   },
 ]);
 
