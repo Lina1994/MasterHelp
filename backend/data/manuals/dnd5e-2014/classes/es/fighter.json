@@ -1,0 +1,118 @@
+{
+  "id": "fighter",
+  "name": "Guerrero",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 por nivel de guerrero",
+    "at1stLevel": "10 + tu modificador de Constitución",
+    "atHigherLevels": "1d10 (o 6) + tu modificador de Constitución por cada nivel de guerrero después del 1º"
+  },
+  "primaryAbilities": ["str"],
+  "savingThrows": ["str", "con"],
+  "proficiencies": {
+    "armor": ["Armadura ligera", "Armadura media", "Armadura pesada", "Escudos"],
+    "weapons": ["Armas simples", "Armas marciales"],
+    "tools": []
+  },
+  "skills": { "choose": 2, "from": ["Acrobacias", "Manejo de Animales", "Atletismo", "Historia", "Perspicacia", "Intimidación", "Percepción", "Supervivencia"] },
+  "equipment": [
+    { "choose": 1, "options": [
+      { "id": "chain_mail", "description": "Cota de mallas" },
+      { "id": "leather_longbow", "description": "Armadura de cuero, arco largo y 20 flechas" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "martial_weapon_shield", "description": "Un arma marcial y un escudo" },
+      { "id": "martial_weapon_x2", "description": "Dos armas marciales" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "light_crossbow_bolts", "description": "Una ballesta ligera y 20 virotes" },
+      { "id": "handaxe_x2", "description": "Dos hachas de mano" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "dungeoneers_pack", "description": "Mochila de Mazmorrero" },
+      { "id": "explorers_pack", "description": "Mochila de Explorador" }
+    ]}
+  ],
+  "features": [
+    {
+      "id": "fighting_style",
+      "name": "Estilo de Lucha",
+      "level": 1,
+      "description": "Adoptas un estilo de lucha (Tiro con Arco, Defensa, Duelo, Combate con Arma Pesada, Protección, Combate con Dos Armas).",
+      "effects": [ { "type": "choose_fighting_style", "styles": ["Archery", "Defense", "Dueling", "Great Weapon Fighting", "Protection", "Two-Weapon Fighting"] } ]
+    },
+    {
+      "id": "second_wind",
+      "name": "Segundo Aliento",
+      "level": 1,
+      "description": "Tienes una reserva limitada de vigor; como acción adicional, recuperas PG iguales a 1d10 + tu nivel de guerrero (1/descanso corto o largo).",
+      "effects": [ { "type": "resource", "name": "Segundo Aliento", "uses": 1, "per": "short_rest" } ]
+    },
+    {
+      "id": "action_surge",
+      "name": "Oleada de Acción",
+      "level": 2,
+      "description": "En tu turno, puedes realizar una acción adicional además de tu acción normal y posible acción adicional (1/descanso corto o largo; 2 usos en nivel 17).",
+      "effects": [ { "type": "action_surge", "uses": 1, "per": "short_rest", "scalesAt": { "17": 2 } } ]
+    },
+    {
+      "id": "martial_archetype",
+      "name": "Arquetipo Marcial",
+      "level": 3,
+      "description": "Eliges un arquetipo que emular en tu estilo y técnicas de combate (p. ej., Campeón).",
+      "effects": [ { "type": "choose_subclass", "atLevel": 3 } ]
+    },
+    {
+      "id": "extra_attack",
+      "name": "Ataque Adicional",
+      "level": 5,
+      "description": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Ataque en tu turno (tres ataques en nivel 11, cuatro en nivel 20).",
+      "effects": [ { "type": "extra_attack", "count": 1, "upgradesAt": { "11": 2, "20": 3 } } ]
+    },
+    {
+      "id": "indomitable",
+      "name": "Indómito",
+      "level": 9,
+      "description": "Puedes repetir una tirada de salvación fallida (1/descanso largo; 2 usos en nivel 13; 3 usos en nivel 17).",
+      "effects": [ { "type": "indomitable", "uses": 1, "per": "long_rest", "scalesAt": { "13": 2, "17": 3 } } ]
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["fighting_style", "second_wind"] },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["action_surge"] },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["martial_archetype"] },
+    { "level": 4,  "proficiencyBonus": 2, "features": [] },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["extra_attack"] },
+    { "level": 6,  "proficiencyBonus": 3, "features": [] },
+    { "level": 7,  "proficiencyBonus": 3, "features": [] },
+    { "level": 8,  "proficiencyBonus": 3, "features": [] },
+    { "level": 9,  "proficiencyBonus": 4, "features": ["indomitable"] },
+    { "level": 10, "proficiencyBonus": 4, "features": [] },
+    { "level": 11, "proficiencyBonus": 4, "features": ["extra_attack"] },
+    { "level": 12, "proficiencyBonus": 4, "features": [] },
+    { "level": 13, "proficiencyBonus": 5, "features": ["indomitable"] },
+    { "level": 14, "proficiencyBonus": 5, "features": [] },
+    { "level": 15, "proficiencyBonus": 5, "features": [] },
+    { "level": 16, "proficiencyBonus": 5, "features": [] },
+    { "level": 17, "proficiencyBonus": 6, "features": ["action_surge", "indomitable"] },
+    { "level": 18, "proficiencyBonus": 6, "features": [] },
+    { "level": 19, "proficiencyBonus": 6, "features": [] },
+    { "level": 20, "proficiencyBonus": 6, "features": ["extra_attack"] }
+  ],
+  "subclasses": [
+    {
+      "id": "champion",
+      "name": "Campeón",
+      "grantedAtLevel": 3,
+      "description": "El Campeón se centra en desarrollar poder físico bruto perfeccionado a la máxima eficacia mortal.",
+      "features": [
+        { "id": "improved_critical", "name": "Crítico Mejorado", "level": 3, "description": "Tus ataques con armas asestan un golpe crítico con tiradas de 19 o 20." },
+        { "id": "remarkable_athlete", "name": "Atleta Notable", "level": 7, "description": "Suma la mitad de tu bonificador de competencia (redondeado hacia arriba) a pruebas de FUE, DES o CON que no usen ya tu competencia; tu salto de longitud aumenta un número de pies igual a tu modificador de Fuerza." },
+        { "id": "additional_fighting_style", "name": "Estilo de Lucha Adicional", "level": 10, "description": "Puedes elegir una segunda opción de Estilo de Lucha." },
+        { "id": "superior_critical", "name": "Crítico Superior", "level": 15, "description": "Tus ataques con armas asestan un golpe crítico con tiradas de 18–20." },
+        { "id": "survivor", "name": "Superviviente", "level": 18, "description": "Al inicio de cada uno de tus turnos recuperas PG iguales a 5 + tu modificador de CON si te quedan a lo sumo la mitad de tus PG y no estás a 0 PG." }
+      ]
+    }
+  ]
+}

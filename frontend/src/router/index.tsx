@@ -11,6 +11,7 @@ import CampaignPage from '../pages/CampaignPage';
 import SoundtrackPage from '../pages/SoundtrackPage'; // Nueva página soundtrack
 import ManualsHomePage from '../pages/ManualsHomePage';
 import ManualViewerPage from '../pages/ManualViewerPage';
+import ClassPage from '../pages/ClassPage';
 import MainLayout from '../layouts/MainLayout';
 import SpellsPage from '../pages/SpellsPage';
 
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
           { index: true, element: <ManualsHomePage /> },
           { path: ':manualId', element: <ManualViewerPage /> },
           { path: ':manualId/section/:nodeId', element: <ManualViewerPage /> },
+          { path: ':manualId/classes/:id', element: <ClassPage /> },
         ],
       },
       // Public spells browser

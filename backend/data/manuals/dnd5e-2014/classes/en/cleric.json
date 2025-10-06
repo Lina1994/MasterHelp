@@ -1,0 +1,173 @@
+{
+  "id": "cleric",
+  "name": "Cleric",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 per cleric level",
+    "at1stLevel": "8 + your Constitution modifier",
+    "atHigherLevels": "1d8 (or 5) + your Constitution modifier per cleric level after 1st"
+  },
+  "primaryAbilities": ["wis"],
+  "savingThrows": ["wis", "cha"],
+  "proficiencies": {
+    "armor": ["Light Armor", "Medium Armor", "Shields"],
+    "weapons": ["Simple Weapons"],
+    "tools": []
+  },
+  "skills": { "choose": 2, "from": ["History", "Insight", "Medicine", "Persuasion", "Religion"] },
+  "equipment": [
+    { "choose": 1, "options": [
+      { "id": "mace", "description": "A mace" },
+      { "id": "warhammer", "description": "A warhammer (if proficient)" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "scale_mail", "description": "Scale mail" },
+      { "id": "leather_armor", "description": "Leather armor" },
+      { "id": "chain_mail", "description": "Chain mail (if proficient)" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "light_crossbow", "description": "A light crossbow and 20 bolts" },
+      { "id": "simple_weapon", "description": "Any simple weapon" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "priests_pack", "description": "Priest’s Pack" },
+      { "id": "explorers_pack", "description": "Explorer’s Pack" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "shield_holy_symbol", "description": "A shield and a holy symbol" },
+      { "id": "holy_symbol", "description": "A holy symbol" }
+    ]}
+  ],
+  "features": [
+    {
+      "id": "cleric_spellcasting",
+      "name": "Spellcasting",
+      "level": 1,
+      "description": "You have learned to draw on divine magic through meditation and prayer. Wisdom is your spellcasting ability; you prepare a number of cleric spells equal to your Wisdom modifier + your cleric level (minimum of one spell).",
+      "effects": [ { "type": "spellcasting", "ability": "wis", "prepareFormula": "WIS mod + level", "progression": "full" } ]
+    },
+    {
+      "id": "divine_domain",
+      "name": "Divine Domain",
+      "level": 1,
+      "description": "Choose a divine domain that shapes your practice of cleric magic. Your choice grants you features at 1st level and again at 2nd, 6th, 8th, and 17th level.",
+      "effects": [ { "type": "choose_subclass", "atLevel": 1 } ]
+    },
+    {
+      "id": "channel_divinity",
+      "name": "Channel Divinity",
+      "level": 2,
+      "description": "You can channel divine energy to fuel magical effects. You start with one use of Channel Divinity. You regain expended uses when you finish a short or long rest.",
+      "effects": [ { "type": "resource", "name": "Channel Divinity", "per": "short_rest", "uses": 1 } ]
+    },
+    {
+      "id": "turn_undead",
+      "name": "Turn Undead",
+      "level": 2,
+      "description": "As an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes damage.",
+      "effects": [ { "type": "turn_undead", "range": 30, "save": { "ability": "wis", "dcFormula": "8 + PB + WIS" }, "duration": "1 minute" } ]
+    },
+    {
+      "id": "destroy_undead",
+      "name": "Destroy Undead",
+      "level": 5,
+      "description": "When an undead fails its saving throw against your Turn Undead feature, the creature is instantly destroyed if its challenge rating is at or below a certain threshold (CR 1/2 at 5th, CR 1 at 8th, CR 2 at 11th, CR 3 at 14th).",
+      "effects": [ { "type": "destroy_undead_cr_max", "byLevel": { "5": 0.5, "8": 1, "11": 2, "14": 3 } } ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "At 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score by 2, or two ability scores by 1. You can't increase an ability score above 20 using this feature. Alternatively, you can choose a feat if your table uses them."
+    },
+    {
+      "id": "divine_intervention",
+      "name": "Divine Intervention",
+      "level": 10,
+      "description": "You can call on your deity to intervene on your behalf when your need is great. Roll percentile dice; if the roll is equal to or less than your cleric level, your deity intervenes. If successful, you can’t use this feature again for 7 days.",
+      "effects": [ { "type": "divine_intervention", "successRoll": "<= level", "cooldown": "7 days" } ]
+    },
+    {
+      "id": "improved_divine_intervention",
+      "name": "Improved Divine Intervention",
+      "level": 20,
+      "description": "Your call for intervention succeeds automatically, no roll required.",
+      "effects": [ { "type": "divine_intervention_auto", "value": true } ]
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["cleric_spellcasting", "divine_domain"],             "cantripsKnown": 3, "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["channel_divinity", "turn_undead"],                 "cantripsKnown": 3, "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": [],                                                    "cantripsKnown": 3, "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement"],                        "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["destroy_undead"],                                   "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": [],                                                    "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [],                                                    "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": ["ability_score_improvement"],                        "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [],                                                    "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": ["divine_intervention"],                              "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"],                        "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"],                        "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 18, "proficiencyBonus": 6, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"],                        "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 1, "8": 1, "9": 1 } },
+    { "level": 20, "proficiencyBonus": 6, "features": ["improved_divine_intervention"],                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 2, "8": 1, "9": 1 } }
+  ],
+  "subclasses": [
+    {
+      "id": "life_domain",
+      "name": "Life Domain",
+      "grantedAtLevel": 1,
+      "description": "The Life domain focuses on vibrancy, health, and healing. Clerics of this domain are guardians of life and vitality.",
+      "features": [
+        { "id": "life_bonus_proficiency", "name": "Bonus Proficiency", "level": 1, "description": "You gain proficiency with heavy armor." },
+        { "id": "disciple_of_life", "name": "Disciple of Life", "level": 1, "description": "Your healing spells are more effective. Whenever you use a spell of 1st level or higher to restore hit points to a creature, the creature regains additional hit points equal to 2 + the spell’s level." },
+        { "id": "preserve_life", "name": "Channel Divinity: Preserve Life", "level": 2, "description": "You can use Channel Divinity to heal a number of hit points equal to five times your cleric level, divided among any creatures within 30 feet of you." },
+        { "id": "blessed_healer", "name": "Blessed Healer", "level": 6, "description": "When you cast a spell of 1st level or higher that restores hit points to a creature other than you, you also regain hit points equal to 2 + the spell’s level." },
+        { "id": "divine_strike_life", "name": "Divine Strike", "level": 8, "description": "Once on each of your turns when you hit a creature with a weapon attack, you can cause the attack to deal an extra 1d8 radiant damage. When you reach 14th level, the extra damage increases to 2d8." },
+        { "id": "supreme_healing", "name": "Supreme Healing", "level": 17, "description": "When you would normally roll one or more dice to restore hit points with a spell, you instead use the highest number possible for each die." }
+      ]
+    }
+  ],
+  "spellcasting": { "ability": "wis", "progression": "full" },
+  "spells": {
+    "byLevel": {
+      "cantrip": [
+        "Guidance", "Sacred Flame", "Thaumaturgy", "Light", "Mending", "Spare the Dying", "Resistance"
+      ],
+      "1": [
+        "Bless", "Bane", "Command", "Cure Wounds", "Healing Word", "Guiding Bolt", "Shield of Faith", "Sanctuary",
+        "Detect Magic", "Protection from Evil and Good", "Create or Destroy Water", "Detect Poison and Disease", "Purify Food and Drink"
+      ],
+      "2": [
+        "Aid", "Augury", "Lesser Restoration", "Hold Person", "Enhance Ability", "Calm Emotions", "Continual Flame", "Find Traps", "Gentle Repose", "Locate Object", "Prayer of Healing", "Protection from Poison", "Silence", "Spiritual Weapon", "Warding Bond", "Zone of Truth", "Blindness/Deafness"
+      ],
+      "3": [
+        "Dispel Magic", "Daylight", "Remove Curse", "Revivify", "Water Walk", "Animate Dead", "Beacon of Hope", "Bestow Curse", "Clairvoyance", "Create Food and Water", "Glyph of Warding", "Magic Circle", "Mass Healing Word", "Meld into Stone", "Protection from Energy", "Sending", "Speak with Dead", "Spirit Guardians", "Tongues"
+      ],
+      "4": [
+        "Banishment", "Control Water", "Death Ward", "Divination", "Freedom of Movement", "Guardian of Faith", "Locate Creature", "Stone Shape"
+      ],
+      "5": [
+        "Commune", "Contagion", "Dispel Evil and Good", "Flame Strike", "Geas", "Greater Restoration", "Hallow", "Insect Plague", "Legend Lore", "Mass Cure Wounds", "Planar Binding", "Raise Dead", "Scrying"
+      ],
+      "6": [
+        "Blade Barrier", "Create Undead", "Find the Path", "Forbiddance", "Harm", "Heal", "Heroes' Feast", "Planar Ally", "True Seeing", "Word of Recall"
+      ],
+      "7": [
+        "Conjure Celestial", "Divine Word", "Etherealness", "Fire Storm", "Plane Shift", "Regenerate", "Resurrection", "Symbol"
+      ],
+      "8": [
+        "Antimagic Field", "Control Weather", "Earthquake", "Holy Aura"
+      ],
+      "9": [
+        "Astral Projection", "Gate", "Mass Heal", "True Resurrection"
+      ]
+    }
+  }
+}

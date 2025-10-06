@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { readFileSync, statSync } from 'fs';
+import { readFileSync, statSync, readdirSync } from 'fs';
 import { join, resolve } from 'path';
 
 export interface ClassSkillChoice { choose: number; from: string[] }
@@ -80,7 +80,7 @@ export interface CharacterClass {
 
 @Injectable()
 export class ClassesService {
-  private cache: Record<string, { list: CharacterClass[]; mtime: number }> = {};
+  private cache: Record<string, { list: CharacterClass[]; mtime: number; fileCount?: number }> = {};
   private readonly defaultManualId = 'dnd5e-2014';
 
   private getBaseDir(manualId?: string) {
@@ -90,8 +90,45 @@ export class ClassesService {
 
   private load(lang: 'en' | 'es', manualId?: string) {
     const baseDir = this.getBaseDir(manualId);
-    const file = join(baseDir, `classes.${lang}.json`);
     const cacheKey = `${manualId || this.defaultManualId}:${lang}`;
+
+    // 1) Preferred: per-class directory backend/data/manuals/<manual>/classes/<lang>/*.json
+    const langDir = join(baseDir, lang);
+    try {
+      const dirStat = statSync(langDir);
+      if (dirStat.isDirectory()) {
+        const fileNames = readdirSync(langDir).filter(f => f.toLowerCase().endsWith('.json'));
+        // Compute a simple freshness signature
+        let maxMtime = 0;
+        for (const fn of fileNames) {
+          try {
+            const s = statSync(join(langDir, fn));
+            if (s.mtimeMs > maxMtime) maxMtime = s.mtimeMs;
+          } catch { /* skip */ }
+        }
+        const cached = this.cache[cacheKey];
+        if (cached && cached.mtime === maxMtime && cached.fileCount === fileNames.length) return cached;
+
+        const list: CharacterClass[] = [];
+        for (const fn of fileNames) {
+          try {
+            const raw = readFileSync(join(langDir, fn), 'utf-8');
+            const obj = JSON.parse(raw);
+            if (obj && obj.id && obj.name) list.push(obj);
+          } catch {
+            // Skip malformed file
+          }
+        }
+        // Cache and return
+        this.cache[cacheKey] = { list, mtime: maxMtime, fileCount: fileNames.length };
+        return this.cache[cacheKey];
+      }
+    } catch {
+      // Directory missing; fall back to monolithic
+    }
+
+    // 2) Fallback: monolithic file backend/data/manuals/<manual>/classes/classes.<lang>.json
+    const file = join(baseDir, `classes.${lang}.json`);
     try {
       const mtime = statSync(file).mtimeMs;
       const cached = this.cache[cacheKey];

@@ -1,0 +1,179 @@
+{
+  "id": "paladin",
+  "name": "Paladin",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 per paladin level",
+    "at1stLevel": "10 + your Constitution modifier",
+    "atHigherLevels": "1d10 (or 6) + your Constitution modifier per paladin level after 1st"
+  },
+  "primaryAbilities": ["str", "cha"],
+  "savingThrows": ["wis", "cha"],
+  "proficiencies": {
+    "armor": ["Light Armor", "Medium Armor", "Heavy Armor", "Shields"],
+    "weapons": ["Simple Weapons", "Martial Weapons"],
+    "tools": []
+  },
+  "skills": { "choose": 2, "from": ["Athletics", "Insight", "Intimidation", "Medicine", "Persuasion", "Religion"] },
+  "equipment": [
+    { "choose": 1, "options": [
+      { "id": "martial_weapon_shield", "description": "A martial weapon and a shield" },
+      { "id": "martial_weapon_x2", "description": "Two martial weapons" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "javelin_x5", "description": "Five javelins" },
+      { "id": "simple_melee_weapon", "description": "Any simple melee weapon" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "priests_pack", "description": "Priest’s Pack" },
+      { "id": "explorers_pack", "description": "Explorer’s Pack" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "chain_mail_holy_symbol", "description": "Chain mail and a holy symbol" },
+      { "id": "scale_mail_holy_symbol", "description": "Scale mail and a holy symbol (if preferred by table rules)" }
+    ]}
+  ],
+  "features": [
+    {
+      "id": "divine_sense",
+      "name": "Divine Sense",
+      "level": 1,
+      "description": "As an action, open your awareness to detect celestials, fiends, and undead, and areas consecrated or desecrated.",
+      "effects": [ { "type": "detect_creatures_types", "types": ["celestial", "fiend", "undead"], "uses": { "base": 1, "plusAbility": "cha" }, "per": "long_rest", "range": 60, "duration": "until end of your next turn" } ]
+    },
+    {
+      "id": "lay_on_hands",
+      "name": "Lay on Hands",
+      "level": 1,
+      "description": "Pool of healing equal to 5 × your paladin level that you can use to restore hit points or cure diseases/poisons.",
+      "effects": [ { "type": "healing_pool", "poolFormula": "5 × level", "actions": ["heal", "cure_disease", "neutralize_poison"] } ]
+    },
+    {
+      "id": "fighting_style",
+      "name": "Fighting Style",
+      "level": 2,
+      "description": "You adopt a particular style of fighting as your specialty (Defense, Dueling, Great Weapon Fighting, Protection).",
+      "effects": [ { "type": "choose_fighting_style", "styles": ["Defense", "Dueling", "Great Weapon Fighting", "Protection"] } ]
+    },
+    {
+      "id": "paladin_spellcasting",
+      "name": "Spellcasting",
+      "level": 2,
+      "description": "You can cast paladin spells. Charisma is your spellcasting ability. You prepare a number of paladin spells equal to your Charisma modifier + half your paladin level (minimum one).",
+      "effects": [ { "type": "spellcasting", "ability": "cha", "prepareFormula": "CHA mod + half level (rounded down)", "progression": "half" } ]
+    },
+    {
+      "id": "divine_smite",
+      "name": "Divine Smite",
+      "level": 2,
+      "description": "When you hit with a melee weapon attack, you can expend a spell slot to deal radiant damage in addition to the weapon’s damage.",
+      "effects": [ { "type": "smite_on_hit", "damage": "2d8 + 1d8 per slot level above 1st (max +5d8)", "extraVs": { "undead_or_fiend": "+1d8" } } ]
+    },
+    {
+      "id": "divine_health",
+      "name": "Divine Health",
+      "level": 3,
+      "description": "Your divine magic makes you immune to disease.",
+      "effects": [ { "type": "immunity_conditions", "conditions": ["disease"] } ]
+    },
+    {
+      "id": "sacred_oath",
+      "name": "Sacred Oath",
+      "level": 3,
+      "description": "You swear a sacred oath that grants you features at 3rd, 7th, 15th, and 20th level.",
+      "effects": [ { "type": "choose_subclass", "atLevel": 3 } ]
+    },
+    {
+      "id": "extra_attack",
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+      "effects": [ { "type": "extra_attack", "count": 1 } ]
+    },
+    {
+      "id": "aura_of_protection",
+      "name": "Aura of Protection",
+      "level": 6,
+      "description": "While you are conscious, you and friendly creatures within range gain a bonus to saving throws equal to your Charisma modifier.",
+      "effects": [ { "type": "aura_save_bonus_from_cha", "radius": 10, "increasesAt": { "18": 30 } } ]
+    },
+    {
+      "id": "aura_of_courage",
+      "name": "Aura of Courage",
+      "level": 10,
+      "description": "You and friendly creatures within range can’t be frightened while you are conscious.",
+      "effects": [ { "type": "aura_immunity_conditions", "conditions": ["frightened"], "radius": 10, "increasesAt": { "18": 30 } } ]
+    },
+    {
+      "id": "improved_divine_smite",
+      "name": "Improved Divine Smite",
+      "level": 11,
+      "description": "Your melee weapon attacks deal an extra 1d8 radiant damage.",
+      "effects": [ { "type": "flat_damage_on_melee_weapon_attacks", "damage": "1d8 radiant" } ]
+    },
+    {
+      "id": "cleansing_touch",
+      "name": "Cleansing Touch",
+      "level": 14,
+      "description": "You can end one spell on yourself or on one willing creature that you touch a number of times per long rest equal to your Charisma modifier (minimum once).",
+      "effects": [ { "type": "end_spell_touch", "uses": { "plusAbility": "cha", "min": 1 }, "per": "long_rest" } ]
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["divine_sense", "lay_on_hands"] },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["fighting_style", "paladin_spellcasting", "divine_smite"] },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["divine_health", "sacred_oath"] },
+    { "level": 4,  "proficiencyBonus": 2, "features": [] },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["extra_attack"] },
+    { "level": 6,  "proficiencyBonus": 3, "features": ["aura_of_protection"] },
+    { "level": 7,  "proficiencyBonus": 3, "features": [] },
+    { "level": 8,  "proficiencyBonus": 3, "features": [] },
+    { "level": 9,  "proficiencyBonus": 4, "features": [] },
+    { "level": 10, "proficiencyBonus": 4, "features": ["aura_of_courage"] },
+    { "level": 11, "proficiencyBonus": 4, "features": ["improved_divine_smite"] },
+    { "level": 12, "proficiencyBonus": 4, "features": [] },
+    { "level": 13, "proficiencyBonus": 5, "features": [] },
+    { "level": 14, "proficiencyBonus": 5, "features": ["cleansing_touch"] },
+    { "level": 15, "proficiencyBonus": 5, "features": [] },
+    { "level": 16, "proficiencyBonus": 5, "features": [] },
+    { "level": 17, "proficiencyBonus": 6, "features": [] },
+    { "level": 18, "proficiencyBonus": 6, "features": [] },
+    { "level": 19, "proficiencyBonus": 6, "features": [] },
+    { "level": 20, "proficiencyBonus": 6, "features": [] }
+  ],
+  "subclasses": [
+    {
+      "id": "oath_of_devotion",
+      "name": "Oath of Devotion",
+      "grantedAtLevel": 3,
+      "description": "Paladins of Devotion uphold the highest ideals of justice, virtue, and order.",
+      "features": [
+        { "id": "devotion_channel_divinity", "name": "Channel Divinity (Devotion)", "level": 3, "description": "You gain Sacred Weapon and Turn the Unholy options for Channel Divinity." },
+        { "id": "aura_of_devotion", "name": "Aura of Devotion", "level": 7, "description": "You and friendly creatures within your aura can’t be charmed while you are conscious." },
+        { "id": "purity_of_spirit", "name": "Purity of Spirit", "level": 15, "description": "You are always under the effects of protection from evil and good." },
+        { "id": "holy_nimbus", "name": "Holy Nimbus", "level": 20, "description": "As an action, you can emanate holy light that harms foes and brightens the area for 1 minute (once per long rest)." }
+      ]
+    }
+  ],
+  "spellcasting": { "ability": "cha", "progression": "half" },
+  "spells": {
+    "byLevel": {
+      "1": [
+        "Bless", "Command", "Cure Wounds", "Detect Evil and Good", "Detect Magic", "Detect Poison and Disease", "Divine Favor", "Heroism", "Protection from Evil and Good", "Purify Food and Drink", "Shield of Faith"
+      ],
+      "2": [
+        "Aid", "Branding Smite", "Find Steed", "Lesser Restoration", "Locate Object", "Magic Weapon", "Protection from Poison", "Zone of Truth"
+      ],
+      "3": [
+        "Create Food and Water", "Daylight", "Dispel Magic", "Magic Circle", "Remove Curse", "Revivify"
+      ],
+      "4": [
+        "Banishment", "Death Ward", "Locate Creature"
+      ],
+      "5": [
+        "Dispel Evil and Good", "Geas", "Raise Dead"
+      ]
+    }
+  }
+}

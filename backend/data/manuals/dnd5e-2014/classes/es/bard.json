@@ -1,0 +1,186 @@
+{
+  "id": "bard",
+  "name": "Bardo",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 por nivel de bardo",
+    "at1stLevel": "8 + tu modificador de Constitución",
+    "atHigherLevels": "1d8 (o 5) + tu modificador de Constitución por cada nivel de bardo después del 1º"
+  },
+  "primaryAbilities": ["cha"],
+  "savingThrows": ["des", "car"],
+  "proficiencies": {
+    "armor": ["Armadura Ligera"],
+    "weapons": ["Armas Sencillas", "Ballestas de Mano", "Espadas Largas", "Rapiers", "Espadas Cortas"],
+    "tools": ["Tres Instrumentos Musicales"]
+  },
+  "skills": { "choose": 3, "from": ["Acrobacias", "Adiestrar Animales", "Arcanos", "Atletismo", "Engaño", "Historia", "Perspicacia", "Intimidación", "Investigación", "Medicina", "Naturaleza", "Percepción", "Interpretación", "Persuasión", "Religión", "Juego de Manos", "Sigilo", "Supervivencia"] },
+  "equipment": [
+    { "choose": 1, "options": [ { "id": "rapier", "description": "Una rapière" }, { "id": "longsword", "description": "Una espada larga" }, { "id": "simple_weapon", "description": "Cualquier arma sencilla" } ] },
+    { "choose": 1, "options": [ { "id": "diplomats_pack", "description": "Equipo de Diplomático" }, { "id": "entertainers_pack", "description": "Equipo de Artista" } ] },
+    { "choose": 1, "options": [ { "id": "lute", "description": "Un laúd" }, { "id": "musical_instrument", "description": "Cualquier otro instrumento musical" } ] },
+    { "id": "leather_armor", "description": "Armadura de cuero" },
+    { "id": "dagger", "description": "Una daga" }
+  ],
+  "features": [
+    {
+      "id": "bard_spellcasting",
+      "name": "Conjuración",
+      "level": 1,
+      "description": "Has aprendido a entrelazar y remodelar la realidad en armonía con tus deseos y tu música. Carisma es tu característica de conjuro.",
+      "effects": [ { "type": "spellcasting", "ability": "cha", "progression": "full" } ]
+    },
+    {
+      "id": "bardic_inspiration",
+      "name": "Inspiración Bárdica",
+      "level": 1,
+      "description": "Puedes inspirar a otros con palabras o música. Como acción adicional, una criatura a 60 pies (que no seas tú) gana un dado de Inspiración Bárdica (d6). Usos iguales a tu modificador de Carisma (mínimo 1), se recuperan con un descanso largo; el dado aumenta a d8 (5º), d10 (10º) y d12 (15º).",
+      "effects": [ { "type": "resource", "name": "Inspiración Bárdica", "per": "long_rest", "usesFormula": "max(1, MOD CAR)", "dieByLevel": { "1": 6, "5": 8, "10": 10, "15": 12 } } ]
+    },
+    {
+      "id": "jack_of_all_trades",
+      "name": "Aprendiz de Todo",
+      "level": 2,
+      "description": "Puedes añadir la mitad de tu bonificación por competencia, redondeada hacia abajo, a cualquier prueba de característica que hagas y que no incluya ya tu competencia."
+    },
+    {
+      "id": "song_of_rest",
+      "name": "Canción de Descanso",
+      "level": 2,
+      "description": "A partir de 2º nivel, si tú o criaturas aliadas que puedan oír tu interpretación recuperan PG al final de un descanso corto, cada una recupera 1d6 PG adicionales. Aumenta a d8 (9º), d10 (13º) y d12 (17º).",
+      "effects": [ { "type": "healing_bonus_short_rest", "dieByLevel": { "2": 6, "9": 8, "13": 10, "17": 12 } } ]
+    },
+    {
+      "id": "expertise",
+      "name": "Pericia",
+      "level": 3,
+      "description": "Elige dos de tus competencias en habilidades. Duplicas tu bonificación por competencia en las pruebas que usen esas habilidades. A 10º nivel, elige otras dos habilidades para ganar este beneficio.",
+      "effects": [ { "type": "expertise", "choose": 2, "atLevel": 3 }, { "type": "expertise", "choose": 2, "atLevel": 10 } ]
+    },
+    {
+      "id": "bard_college",
+      "name": "Colegio de Bardo",
+      "level": 3,
+      "description": "Te adentras en las técnicas avanzadas de un colegio bárdico a tu elección.",
+      "effects": [ { "type": "choose_subclass", "atLevel": 3 } ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Mejora de Característica",
+      "level": 4,
+      "description": "A 4º nivel, y de nuevo a 8º, 12º, 16º y 19º, puedes aumentar una característica en 2, o dos en 1, o elegir un dote si está disponible."
+    },
+    {
+      "id": "font_of_inspiration",
+      "name": "Fuente de Inspiración",
+      "level": 5,
+      "description": "Desde 5º nivel, recuperas los usos gastados de Inspiración Bárdica cuando terminas un descanso corto o largo.",
+      "effects": [ { "type": "resource_refresh_change", "resource": "Inspiración Bárdica", "per": "short_rest" } ]
+    },
+    {
+      "id": "countercharm",
+      "name": "Contraconjuro Musical",
+      "level": 6,
+      "description": "Usas notas musicales o palabras de poder para interrumpir efectos que influyen la mente. Como acción, interpretas hasta el final de tu próximo turno; tú y aliados a 30 pies tenéis ventaja en TS contra asustado o hechizado."
+    },
+    {
+      "id": "magical_secrets_10",
+      "name": "Secretos Mágicos",
+      "level": 10,
+      "description": "Aprendes dos conjuros a tu elección de cualquier clase. Deben ser de un nivel que puedas lanzar (o trucos).",
+      "effects": [ { "type": "magical_secrets", "count": 2, "atLevel": 10 } ]
+    },
+    {
+      "id": "magical_secrets_14",
+      "name": "Secretos Mágicos",
+      "level": 14,
+      "description": "Aprendes dos conjuros adicionales a tu elección de cualquier clase.",
+      "effects": [ { "type": "magical_secrets", "count": 2, "atLevel": 14 } ]
+    },
+    {
+      "id": "magical_secrets_18",
+      "name": "Secretos Mágicos",
+      "level": 18,
+      "description": "Aprendes dos conjuros adicionales a tu elección de cualquier clase.",
+      "effects": [ { "type": "magical_secrets", "count": 2, "atLevel": 18 } ]
+    },
+    {
+      "id": "superior_inspiration",
+      "name": "Inspiración Superior",
+      "level": 20,
+      "description": "Cuando tiras iniciativa y no te quedan usos de Inspiración Bárdica, recuperas uno."
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["bard_spellcasting", "bardic_inspiration"],              "cantripsKnown": 2, "knownSpellsCount": 4,  "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["jack_of_all_trades", "song_of_rest"],                 "cantripsKnown": 2, "knownSpellsCount": 5,  "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["bard_college", "expertise"],                        "cantripsKnown": 2, "knownSpellsCount": 6,  "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement"],                         "cantripsKnown": 3, "knownSpellsCount": 7,  "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["font_of_inspiration"],                               "cantripsKnown": 3, "knownSpellsCount": 8,  "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": ["countercharm"],                                      "cantripsKnown": 3, "knownSpellsCount": 9,  "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [],                                                     "cantripsKnown": 3, "knownSpellsCount": 10, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": ["ability_score_improvement"],                         "cantripsKnown": 3, "knownSpellsCount": 11, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [],                                                     "cantripsKnown": 3, "knownSpellsCount": 12, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": ["expertise", "magical_secrets_10"],                 "cantripsKnown": 4, "knownSpellsCount": 14, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": [],                                                     "cantripsKnown": 4, "knownSpellsCount": 15, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"],                         "cantripsKnown": 4, "knownSpellsCount": 15, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": [],                                                     "cantripsKnown": 4, "knownSpellsCount": 16, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": ["magical_secrets_14"],                                "cantripsKnown": 4, "knownSpellsCount": 18, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": [],                                                     "cantripsKnown": 4, "knownSpellsCount": 19, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"],                         "cantripsKnown": 4, "knownSpellsCount": 19, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": [],                                                     "cantripsKnown": 4, "knownSpellsCount": 20, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 18, "proficiencyBonus": 6, "features": ["magical_secrets_18"],                                "cantripsKnown": 4, "knownSpellsCount": 22, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"],                         "cantripsKnown": 4, "knownSpellsCount": 22, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 1, "8": 1, "9": 1 } },
+    { "level": 20, "proficiencyBonus": 6, "features": ["superior_inspiration"],                              "cantripsKnown": 4, "knownSpellsCount": 22, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 2, "8": 1, "9": 1 } }
+  ],
+  "subclasses": [
+    {
+      "id": "college_of_lore",
+      "name": "Colegio del Saber",
+      "grantedAtLevel": 3,
+      "description": "Los bardos del Colegio del Saber saben de casi todo, recopilando fragmentos de conocimiento de tomos eruditos y cuentos populares.",
+      "features": [
+        { "id": "bonus_proficiencies_lore", "name": "Competencias Adicionales", "level": 3, "description": "Ganas competencia con tres habilidades a tu elección." },
+        { "id": "cutting_words", "name": "Palabras Cortantes", "level": 3, "description": "Puedes usar tu reacción para gastar un uso de Inspiración Bárdica y restar el resultado a una tirada de ataque, prueba de característica o tirada de daño de una criatura." },
+        { "id": "additional_magical_secrets_lore", "name": "Secretos Mágicos Adicionales", "level": 6, "description": "Aprendes dos conjuros adicionales de cualquier clase." },
+        { "id": "peerless_skill", "name": "Habilidad Inigualable", "level": 14, "description": "Cuando haces una prueba de característica, puedes gastar un uso de Inspiración Bárdica para añadir el resultado a la tirada." }
+      ]
+    }
+  ],
+  "spellcasting": { "ability": "cha", "progression": "full", "cantripsKnown": 2, "cantripsKnownUpgrades": { "4": 3, "10": 4 } },
+  "spells": {
+    "byLevel": {
+      "cantrip": [
+        "Amparo de Cuchilla", "Luces Danzantes", "Amistad", "Luz", "Mano de Mago", "Reparar", "Mensaje", "Ilusión Menor", "Prestidigitación", "Golpe Verdadero", "Insulto Vil"
+      ],
+      "1": [
+        "Amistad con los Animales", "Quebranto", "Hechizar Persona", "Comprender Idiomas", "Curar Heridas", "Detectar Magia", "Disfrazarse", "Fuego Feérico", "Caída de Pluma", "Palabra Sanadora", "Heroísmo", "Risa Horrenda de Tasha", "Identificar", "Escritura Ilusoria", "Zancada Larga", "Imagen Silenciosa", "Dormir", "Hablar con los Animales", "Ola Atronadora", "Servidor Invisible"
+      ],
+      "2": [
+        "Mensajero Animal", "Ceguera/Sordera", "Calmar Emociones", "Mejorar Característica", "Calentar Metal", "Sujetar Persona", "Invisibilidad", "Apertura", "Restauración Menor", "Localizar Objeto", "Ver lo Invisible", "Estallar", "Sugerencia", "Zona de Verdad"
+      ],
+      "3": [
+        "Imponer Maldición", "Clarividencia", "Disipar Magia", "Miedo", "Glifo de Protección", "Patrón Hipnótico", "Imagen Mayor", "No Detección", "Crecimiento Vegetal", "Enviar Mensaje", "Hablar con los Muertos", "Hablar con las Plantas", "Nube Fétida", "Lenguas", "Cabaña Minúscula de Leomund"
+      ],
+      "4": [
+        "Confusión", "Puerta Dimensional", "Dominar Bestia", "Libertad de Movimiento", "Invisibilidad Mayor", "Terreno Alucinatorio", "Localizar Criatura", "Polimorfar"
+      ],
+      "5": [
+        "Animar Objetos", "Despertar", "Dominar Persona", "Sueño", "Geas", "Restauración Mayor", "Sujetar Monstruo", "Sabiduría Legendaria", "Curar Heridas en Masa", "Engañar", "Modificar Memoria", "Vincular Planar", "Alzar a los Muertos", "Clariaudiencia/Clarividencia Superior", "Apariencia", "Círculo de Teletransportación"
+      ],
+      "6": [
+        "Picadura Ocular", "Encontrar el Camino", "Guardias y Resguardos", "Sugerencia en Masa", "Ilusión Programada", "Visión Verdadera"
+      ],
+      "7": [
+        "Eterealidad", "Espejismo Arcano", "Proyectar Imagen", "Regeneración", "Resurrección", "Símbolo", "Teletransporte"
+      ],
+      "8": [
+        "Dominar Monstruo", "Mente Debilitada", "Labia", "Mente en Blanco", "Palabra de Poder: Aturdir"
+      ],
+      "9": [
+        "Precognición", "Palabra de Poder: Curar", "Palabra de Poder: Matar", "Polimorfismo Verdadero"
+      ]
+    }
+  }
+}

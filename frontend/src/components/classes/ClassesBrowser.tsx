@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { api } from '../../apiBase';
+import ClassSpellcastingTable from './ClassSpellcastingTable';
 import { useTranslation } from 'react-i18next';
 
 interface ClassFeature { id: string; name: string; level: number; description?: string }
@@ -107,6 +108,12 @@ export default function ClassesBrowser({ manualId }: { manualId?: string }) {
                           </Box>
                         ))}
                       </Stack>
+                    </Box>
+                  ) : null}
+                  {/* Spellcasting progression table (slots + cantrips) */}
+                  {c.levels?.some(l => l.spellSlots || typeof (l as any).cantripsKnown === 'number') ? (
+                    <Box sx={{ mt: 2 }}>
+                      <ClassSpellcastingTable data={c as any} />
                     </Box>
                   ) : null}
                   {c.subclasses?.length ? (

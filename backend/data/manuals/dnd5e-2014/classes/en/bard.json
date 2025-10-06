@@ -1,0 +1,186 @@
+{
+  "id": "bard",
+  "name": "Bard",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 per bard level",
+    "at1stLevel": "8 + your Constitution modifier",
+    "atHigherLevels": "1d8 (or 5) + your Constitution modifier per bard level after 1st"
+  },
+  "primaryAbilities": ["cha"],
+  "savingThrows": ["dex", "cha"],
+  "proficiencies": {
+    "armor": ["Light Armor"],
+    "weapons": ["Simple Weapons", "Hand Crossbows", "Longswords", "Rapiers", "Shortswords"],
+    "tools": ["Three Musical Instruments"]
+  },
+  "skills": { "choose": 3, "from": ["Acrobatics", "Animal Handling", "Arcana", "Athletics", "Deception", "History", "Insight", "Intimidation", "Investigation", "Medicine", "Nature", "Perception", "Performance", "Persuasion", "Religion", "Sleight of Hand", "Stealth", "Survival"] },
+  "equipment": [
+    { "choose": 1, "options": [ { "id": "rapier", "description": "A rapier" }, { "id": "longsword", "description": "A longsword" }, { "id": "simple_weapon", "description": "Any simple weapon" } ] },
+    { "choose": 1, "options": [ { "id": "diplomats_pack", "description": "Diplomat’s Pack" }, { "id": "entertainers_pack", "description": "Entertainer’s Pack" } ] },
+    { "choose": 1, "options": [ { "id": "lute", "description": "A lute" }, { "id": "musical_instrument", "description": "Any other musical instrument" } ] },
+    { "id": "leather_armor", "description": "Leather armor" },
+    { "id": "dagger", "description": "A dagger" }
+  ],
+  "features": [
+    {
+      "id": "bard_spellcasting",
+      "name": "Spellcasting",
+      "level": 1,
+      "description": "You have learned to untangle and reshape the fabric of reality in harmony with your wishes and music. Charisma is your spellcasting ability.",
+      "effects": [ { "type": "spellcasting", "ability": "cha", "progression": "full" } ]
+    },
+    {
+      "id": "bardic_inspiration",
+      "name": "Bardic Inspiration",
+      "level": 1,
+      "description": "You can inspire others through stirring words or music. As a bonus action, a creature (other than yourself) within 60 feet gains one Bardic Inspiration die (d6). Uses equal to your Charisma modifier (minimum 1), refresh on long rest; die increases at 5th (d8), 10th (d10), and 15th (d12).",
+      "effects": [ { "type": "resource", "name": "Bardic Inspiration", "per": "long_rest", "usesFormula": "max(1, CHA mod)", "dieByLevel": { "1": 6, "5": 8, "10": 10, "15": 12 } } ]
+    },
+    {
+      "id": "jack_of_all_trades",
+      "name": "Jack of All Trades",
+      "level": 2,
+      "description": "You can add half your proficiency bonus, rounded down, to any ability check you make that doesn't already include your proficiency bonus."
+    },
+    {
+      "id": "song_of_rest",
+      "name": "Song of Rest",
+      "level": 2,
+      "description": "Beginning at 2nd level, if you or any friendly creatures who can hear your performance regain hit points at the end of a short rest, each of those creatures regains an extra 1d6 hit points. The extra hit points increase when you reach certain levels in this class (d8 at 9th, d10 at 13th, d12 at 17th).",
+      "effects": [ { "type": "healing_bonus_short_rest", "dieByLevel": { "2": 6, "9": 8, "13": 10, "17": 12 } } ]
+    },
+    {
+      "id": "expertise",
+      "name": "Expertise",
+      "level": 3,
+      "description": "Choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies. At 10th level, choose another two of your skill proficiencies to gain this benefit.",
+      "effects": [ { "type": "expertise", "choose": 2, "atLevel": 3 }, { "type": "expertise", "choose": 2, "atLevel": 10 } ]
+    },
+    {
+      "id": "bard_college",
+      "name": "Bard College",
+      "level": 3,
+      "description": "You delve into the advanced techniques of a bardic college of your choice.",
+      "effects": [ { "type": "choose_subclass", "atLevel": 3 } ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "At 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score by 2, or two ability scores by 1, or take a feat if available."
+    },
+    {
+      "id": "font_of_inspiration",
+      "name": "Font of Inspiration",
+      "level": 5,
+      "description": "Starting at 5th level, you regain your expended uses of Bardic Inspiration when you finish a short or long rest.",
+      "effects": [ { "type": "resource_refresh_change", "resource": "Bardic Inspiration", "per": "short_rest" } ]
+    },
+    {
+      "id": "countercharm",
+      "name": "Countercharm",
+      "level": 6,
+      "description": "You can use musical notes or words of power to disrupt mind-influencing effects. As an action, you perform until the end of your next turn; you and friendly creatures within 30 feet have advantage on saving throws against being frightened or charmed."
+    },
+    {
+      "id": "magical_secrets_10",
+      "name": "Magical Secrets",
+      "level": 10,
+      "description": "You learn two spells of your choice from any class. A spell you choose must be of a level you can cast, as shown on the Bard table, or a cantrip.",
+      "effects": [ { "type": "magical_secrets", "count": 2, "atLevel": 10 } ]
+    },
+    {
+      "id": "magical_secrets_14",
+      "name": "Magical Secrets",
+      "level": 14,
+      "description": "You learn two additional spells of your choice from any class.",
+      "effects": [ { "type": "magical_secrets", "count": 2, "atLevel": 14 } ]
+    },
+    {
+      "id": "magical_secrets_18",
+      "name": "Magical Secrets",
+      "level": 18,
+      "description": "You learn two additional spells of your choice from any class.",
+      "effects": [ { "type": "magical_secrets", "count": 2, "atLevel": 18 } ]
+    },
+    {
+      "id": "superior_inspiration",
+      "name": "Superior Inspiration",
+      "level": 20,
+      "description": "When you roll initiative and have no uses of Bardic Inspiration left, you regain one use."
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["bard_spellcasting", "bardic_inspiration"],              "cantripsKnown": 2, "knownSpellsCount": 4,  "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["jack_of_all_trades", "song_of_rest"],                 "cantripsKnown": 2, "knownSpellsCount": 5,  "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["bard_college", "expertise"],                        "cantripsKnown": 2, "knownSpellsCount": 6,  "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement"],                         "cantripsKnown": 3, "knownSpellsCount": 7,  "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["font_of_inspiration"],                               "cantripsKnown": 3, "knownSpellsCount": 8,  "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": ["countercharm"],                                      "cantripsKnown": 3, "knownSpellsCount": 9,  "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [],                                                     "cantripsKnown": 3, "knownSpellsCount": 10, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": ["ability_score_improvement"],                         "cantripsKnown": 3, "knownSpellsCount": 11, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [],                                                     "cantripsKnown": 3, "knownSpellsCount": 12, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": ["expertise", "magical_secrets_10"],                 "cantripsKnown": 4, "knownSpellsCount": 14, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": [],                                                     "cantripsKnown": 4, "knownSpellsCount": 15, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"],                         "cantripsKnown": 4, "knownSpellsCount": 15, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": [],                                                     "cantripsKnown": 4, "knownSpellsCount": 16, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": ["magical_secrets_14"],                                "cantripsKnown": 4, "knownSpellsCount": 18, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": [],                                                     "cantripsKnown": 4, "knownSpellsCount": 19, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"],                         "cantripsKnown": 4, "knownSpellsCount": 19, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": [],                                                     "cantripsKnown": 4, "knownSpellsCount": 20, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 18, "proficiencyBonus": 6, "features": ["magical_secrets_18"],                                "cantripsKnown": 4, "knownSpellsCount": 22, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"],                         "cantripsKnown": 4, "knownSpellsCount": 22, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 1, "8": 1, "9": 1 } },
+    { "level": 20, "proficiencyBonus": 6, "features": ["superior_inspiration"],                              "cantripsKnown": 4, "knownSpellsCount": 22, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 2, "8": 1, "9": 1 } }
+  ],
+  "subclasses": [
+    {
+      "id": "college_of_lore",
+      "name": "College of Lore",
+      "grantedAtLevel": 3,
+      "description": "Bards of the College of Lore know something about most things, collecting bits of knowledge from sources as diverse as scholarly tomes and peasant tales.",
+      "features": [
+        { "id": "bonus_proficiencies_lore", "name": "Bonus Proficiencies", "level": 3, "description": "You gain proficiency with three skills of your choice." },
+        { "id": "cutting_words", "name": "Cutting Words", "level": 3, "description": "You can use your reaction to expend one use of Bardic Inspiration to subtract from an attack roll, ability check, or damage roll of a creature." },
+        { "id": "additional_magical_secrets_lore", "name": "Additional Magical Secrets", "level": 6, "description": "You learn two additional spells of your choice from any class." },
+        { "id": "peerless_skill", "name": "Peerless Skill", "level": 14, "description": "When you make an ability check, you can expend one use of Bardic Inspiration to add the number rolled to the check." }
+      ]
+    }
+  ],
+  "spellcasting": { "ability": "cha", "progression": "full", "cantripsKnown": 2, "cantripsKnownUpgrades": { "4": 3, "10": 4 } },
+  "spells": {
+    "byLevel": {
+      "cantrip": [
+        "Blade Ward", "Dancing Lights", "Friends", "Light", "Mage Hand", "Mending", "Message", "Minor Illusion", "Prestidigitation", "True Strike", "Vicious Mockery"
+      ],
+      "1": [
+        "Animal Friendship", "Bane", "Charm Person", "Comprehend Languages", "Cure Wounds", "Detect Magic", "Disguise Self", "Faerie Fire", "Feather Fall", "Healing Word", "Heroism", "Tasha's Hideous Laughter", "Identify", "Illusory Script", "Longstrider", "Silent Image", "Sleep", "Speak with Animals", "Thunderwave", "Unseen Servant"
+      ],
+      "2": [
+        "Animal Messenger", "Blindness/Deafness", "Calm Emotions", "Enhance Ability", "Heat Metal", "Hold Person", "Invisibility", "Knock", "Lesser Restoration", "Locate Object", "See Invisibility", "Shatter", "Suggestion", "Zone of Truth"
+      ],
+      "3": [
+        "Bestow Curse", "Clairvoyance", "Dispel Magic", "Fear", "Glyph of Warding", "Hypnotic Pattern", "Major Image", "Nondetection", "Plant Growth", "Sending", "Speak with Dead", "Speak with Plants", "Stinking Cloud", "Tongues", "Leomund's Tiny Hut"
+      ],
+      "4": [
+        "Confusion", "Dimension Door", "Dominate Beast", "Freedom of Movement", "Greater Invisibility", "Hallucinatory Terrain", "Locate Creature", "Polymorph"
+      ],
+      "5": [
+        "Animate Objects", "Awaken", "Dominate Person", "Dream", "Geas", "Greater Restoration", "Hold Monster", "Legend Lore", "Mass Cure Wounds", "Mislead", "Modify Memory", "Planar Binding", "Raise Dead", "Scrying", "Seeming", "Teleportation Circle"
+      ],
+      "6": [
+        "Eyebite", "Find the Path", "Guards and Wards", "Mass Suggestion", "Programmed Illusion", "True Seeing"
+      ],
+      "7": [
+        "Etherealness", "Mirage Arcane", "Project Image", "Regenerate", "Resurrection", "Symbol", "Teleport"
+      ],
+      "8": [
+        "Dominate Monster", "Feeblemind", "Glibness", "Mind Blank", "Power Word Stun"
+      ],
+      "9": [
+        "Foresight", "Power Word Heal", "Power Word Kill", "True Polymorph"
+      ]
+    }
+  }
+}

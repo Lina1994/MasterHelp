@@ -1,0 +1,158 @@
+{
+  "id": "rogue",
+  "name": "Rogue",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 per rogue level",
+    "at1stLevel": "8 + your Constitution modifier",
+    "atHigherLevels": "1d8 (or 5) + your Constitution modifier per rogue level after 1st"
+  },
+  "primaryAbilities": ["dex"],
+  "savingThrows": ["dex", "int"],
+  "proficiencies": {
+    "armor": ["Light Armor"],
+    "weapons": ["Simple Weapons", "Hand Crossbows", "Longswords", "Rapiers", "Shortswords"],
+    "tools": ["Thieves' Tools"]
+  },
+  "skills": { "choose": 4, "from": [
+    "Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Investigation", "Perception", "Performance", "Persuasion", "Sleight of Hand", "Stealth"
+  ]},
+  "equipment": [
+    { "choose": 1, "options": [
+      { "id": "rapier", "description": "A rapier" },
+      { "id": "shortsword", "description": "A shortsword" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "shortbow_quiver", "description": "A shortbow and a quiver of 20 arrows" },
+      { "id": "shortsword_2", "description": "A shortsword" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "burglars_pack", "description": "Burglar’s Pack" },
+      { "id": "dungeoneers_pack", "description": "Dungeoneer’s Pack" },
+      { "id": "explorers_pack", "description": "Explorer’s Pack" }
+    ]},
+    { "id": "leather_armor", "description": "Leather armor" },
+    { "id": "dagger_x2", "description": "Two daggers" },
+    { "id": "thieves_tools", "description": "Thieves’ tools" }
+  ],
+  "features": [
+    {
+      "id": "expertise",
+      "name": "Expertise",
+      "level": 1,
+      "description": "Choose two of your skill proficiencies (or one skill and your proficiency with thieves’ tools). Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies."
+    },
+    {
+      "id": "sneak_attack",
+      "name": "Sneak Attack",
+      "level": 1,
+      "description": "You know how to strike subtly and exploit a foe’s distraction. Once per turn, you can deal extra damage to one creature you hit with an attack if you have advantage on the attack roll or meet the other conditions.",
+      "effects": [ { "type": "sneak_attack", "dice": "1d6", "scalesAt": { "3": "2d6", "5": "3d6", "7": "4d6", "9": "5d6", "11": "6d6", "13": "7d6", "15": "8d6", "17": "9d6", "19": "10d6" } } ]
+    },
+    {
+      "id": "thieves_cant",
+      "name": "Thieves’ Cant",
+      "level": 1,
+      "description": "You have learned thieves’ cant, a secret mix of dialect, jargon, and code that allows you to hide messages in seemingly normal conversation."
+    },
+    {
+      "id": "cunning_action",
+      "name": "Cunning Action",
+      "level": 2,
+      "description": "Your quick thinking and agility allow you to move and act quickly. You can take the Dash, Disengage, or Hide action as a bonus action on each of your turns.",
+      "effects": [ { "type": "bonus_action_options", "actions": ["Dash", "Disengage", "Hide"] } ]
+    },
+    {
+      "id": "roguish_archetype",
+      "name": "Roguish Archetype",
+      "level": 3,
+      "description": "You choose an archetype that you emulate in your roguish techniques (e.g., Thief).",
+      "effects": [ { "type": "choose_subclass", "atLevel": 3 } ]
+    },
+    {
+      "id": "uncanny_dodge",
+      "name": "Uncanny Dodge",
+      "level": 5,
+      "description": "When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack’s damage against you.",
+      "effects": [ { "type": "reaction_halve_damage", "condition": "when hit by an attacker you can see" } ]
+    },
+    {
+      "id": "evasion",
+      "name": "Evasion",
+      "level": 7,
+      "description": "You can nimbly dodge out of the way of certain area effects; you take no damage on a successful DEX save, and only half damage on a failed save.",
+      "effects": [ { "type": "evasion", "save": "dex" } ]
+    },
+    {
+      "id": "reliable_talent",
+      "name": "Reliable Talent",
+      "level": 11,
+      "description": "Whenever you make an ability check that lets you add your proficiency bonus, you can treat a d20 roll of 9 or lower as a 10."
+    },
+    {
+      "id": "blindsense",
+      "name": "Blindsense",
+      "level": 14,
+      "description": "If you are able to hear, you are aware of the location of any hidden or invisible creature within 10 feet of you.",
+      "effects": [ { "type": "blindsense", "range": 10 } ]
+    },
+    {
+      "id": "slippery_mind",
+      "name": "Slippery Mind",
+      "level": 15,
+      "description": "You gain proficiency in Wisdom saving throws.",
+      "effects": [ { "type": "gain_save_proficiency", "ability": "wis" } ]
+    },
+    {
+      "id": "elusive",
+      "name": "Elusive",
+      "level": 18,
+      "description": "No attack roll has advantage against you while you aren’t incapacitated."
+    },
+    {
+      "id": "stroke_of_luck",
+      "name": "Stroke of Luck",
+      "level": 20,
+      "description": "If your attack misses a target within range, you can turn the miss into a hit. Alternatively, if you fail an ability check, you can treat the d20 roll as a 20 (1/short or long rest).",
+      "effects": [ { "type": "once_per_rest_luck", "per": "short_rest" } ]
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["expertise", "sneak_attack", "thieves_cant"] },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["cunning_action"] },
+    { "level": 3,  "proficiencyBonus": 2,  "features": ["roguish_archetype"] },
+    { "level": 4,  "proficiencyBonus": 2,  "features": [] },
+    { "level": 5,  "proficiencyBonus": 3,  "features": ["uncanny_dodge"] },
+    { "level": 6,  "proficiencyBonus": 3,  "features": [] },
+    { "level": 7,  "proficiencyBonus": 3,  "features": ["evasion"] },
+    { "level": 8,  "proficiencyBonus": 3,  "features": [] },
+    { "level": 9,  "proficiencyBonus": 4,  "features": [] },
+    { "level": 10, "proficiencyBonus": 4,  "features": [] },
+    { "level": 11, "proficiencyBonus": 4,  "features": ["reliable_talent"] },
+    { "level": 12, "proficiencyBonus": 4,  "features": [] },
+    { "level": 13, "proficiencyBonus": 5,  "features": [] },
+    { "level": 14, "proficiencyBonus": 5,  "features": ["blindsense"] },
+    { "level": 15, "proficiencyBonus": 5,  "features": ["slippery_mind"] },
+    { "level": 16, "proficiencyBonus": 5,  "features": [] },
+    { "level": 17, "proficiencyBonus": 6,  "features": [] },
+    { "level": 18, "proficiencyBonus": 6,  "features": ["elusive"] },
+    { "level": 19, "proficiencyBonus": 6,  "features": [] },
+    { "level": 20, "proficiencyBonus": 6,  "features": ["stroke_of_luck"] }
+  ],
+  "subclasses": [
+    {
+      "id": "thief",
+      "name": "Thief",
+      "grantedAtLevel": 3,
+      "description": "Thieves are fast and agile, focusing on stealth, agility, and exploiting opportunities.",
+      "features": [
+        { "id": "fast_hands", "name": "Fast Hands", "level": 3, "description": "You can use the bonus action granted by your Cunning Action to make a Dexterity (Sleight of Hand) check, use your thieves’ tools to disarm a trap or open a lock, or take the Use an Object action." },
+        { "id": "second_story_work", "name": "Second-Story Work", "level": 3, "description": "You gain the ability to climb faster than normal; climbing no longer costs you extra movement, and when you make a running jump, the distance you cover increases by a number of feet equal to your DEX modifier." },
+        { "id": "supreme_sneak", "name": "Supreme Sneak", "level": 9, "description": "You have advantage on a Dexterity (Stealth) check if you move no more than half your speed on the same turn." },
+        { "id": "use_magic_device", "name": "Use Magic Device", "level": 13, "description": "You can attune to any magic item and ignore all class, race, and level requirements on the use of magic items." },
+        { "id": "thieves_reflexes", "name": "Thief’s Reflexes", "level": 17, "description": "You can take two turns during the first round of any combat; you take your first turn at your initiative and your second at your initiative minus 10." }
+      ]
+    }
+  ]
+}

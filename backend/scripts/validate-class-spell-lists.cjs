@@ -7,12 +7,40 @@ function loadJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
 
+function loadClassesList(base, lang) {
+  // Preferred: per-class directory backend/data/manuals/<manual>/classes/<lang>/*.json
+  const dir = path.resolve(base, 'classes', lang);
+  try {
+    const st = fs.statSync(dir);
+    if (st.isDirectory()) {
+      const files = fs.readdirSync(dir).filter(f => f.toLowerCase().endsWith('.json'));
+      const list = [];
+      for (const f of files) {
+        try {
+          list.push(loadJson(path.resolve(dir, f)));
+        } catch {
+          // skip malformed file
+        }
+      }
+      if (list.length) return list;
+    }
+  } catch {
+    // directory missing, ignore
+  }
+  // Fallback: monolithic classes.<lang>.json
+  const mono = path.resolve(base, 'classes', `classes.${lang}.json`);
+  try {
+    return loadJson(mono);
+  } catch {
+    return [];
+  }
+}
+
 function validateLang(lang) {
   const base = path.resolve(__dirname, '..', 'data', 'manuals', 'dnd5e-2014');
   const spellsPath = path.resolve(base, 'spells', `spells.${lang}.json`);
-  const classesPath = path.resolve(base, 'classes', `classes.${lang}.json`);
   const spells = loadJson(spellsPath);
-  const classes = loadJson(classesPath);
+  const classes = loadClassesList(base, lang);
 
   const spellsByName = new Map();
   const spellsById = new Map();

@@ -1,0 +1,173 @@
+{
+  "id": "cleric",
+  "name": "Clérigo",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 por nivel de clérigo",
+    "at1stLevel": "8 + tu modificador de Constitución",
+    "atHigherLevels": "1d8 (o 5) + tu modificador de Constitución por cada nivel de clérigo después del 1º"
+  },
+  "primaryAbilities": ["wis"],
+  "savingThrows": ["wis", "cha"],
+  "proficiencies": {
+    "armor": ["Armadura ligera", "Armadura media", "Escudos"],
+    "weapons": ["Armas simples"],
+    "tools": []
+  },
+  "skills": { "choose": 2, "from": ["Historia", "Perspicacia", "Medicina", "Persuasión", "Religión"] },
+  "equipment": [
+    { "choose": 1, "options": [
+      { "id": "mace", "description": "Una maza" },
+      { "id": "warhammer", "description": "Un martillo de guerra (si eres competente)" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "scale_mail", "description": "Cota de escamas" },
+      { "id": "leather_armor", "description": "Armadura de cuero" },
+      { "id": "chain_mail", "description": "Cota de mallas (si eres competente)" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "light_crossbow", "description": "Una ballesta ligera y 20 virotes" },
+      { "id": "simple_weapon", "description": "Cualquier arma simple" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "priests_pack", "description": "Equipo de Sacerdote" },
+      { "id": "explorers_pack", "description": "Equipo de Explorador" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "shield_holy_symbol", "description": "Un escudo y un símbolo sagrado" },
+      { "id": "holy_symbol", "description": "Un símbolo sagrado" }
+    ]}
+  ],
+  "features": [
+    {
+      "id": "cleric_spellcasting",
+      "name": "Conjuración",
+      "level": 1,
+      "description": "Has aprendido a canalizar magia divina mediante meditación y oración. Sabiduría es tu característica de conjuro; preparas conjuros de clérigo igual a tu modificador de Sabiduría + tu nivel de clérigo (mínimo 1).",
+      "effects": [ { "type": "spellcasting", "ability": "wis", "prepareFormula": "SAB mod + nivel", "progression": "full" } ]
+    },
+    {
+      "id": "divine_domain",
+      "name": "Dominio Divino",
+      "level": 1,
+      "description": "Elige un dominio divino que moldea tu práctica de magia clerical. Te otorga rasgos en niveles 1, 2, 6, 8 y 17.",
+      "effects": [ { "type": "choose_subclass", "atLevel": 1 } ]
+    },
+    {
+      "id": "channel_divinity",
+      "name": "Canalizar Divinidad",
+      "level": 2,
+      "description": "Puedes canalizar energía divina para potenciar efectos mágicos. Comienzas con un uso; recuperas usos al finalizar un descanso corto o largo.",
+      "effects": [ { "type": "resource", "name": "Canalizar Divinidad", "per": "short_rest", "uses": 1 } ]
+    },
+    {
+      "id": "turn_undead",
+      "name": "Ahuyentar a los No Muertos",
+      "level": 2,
+      "description": "Como acción, presentas tu símbolo sagrado y pronuncias una plegaria que reprende a los no muertos. Cada no muerto que pueda verte u oírte a 30 pies realiza una TS de Sabiduría; con fallo, queda ahuyentado 1 minuto o hasta que reciba daño.",
+      "effects": [ { "type": "turn_undead", "range": 30, "save": { "ability": "wis", "dcFormula": "8 + PB + SAB" }, "duration": "1 minuto" } ]
+    },
+    {
+      "id": "destroy_undead",
+      "name": "Destruir No Muertos",
+      "level": 5,
+      "description": "Cuando un no muerto falla la TS contra Ahuyentar, queda destruido si su ND está por debajo del umbral (ND 1/2 a 5, ND 1 a 8, ND 2 a 11, ND 3 a 14).",
+      "effects": [ { "type": "destroy_undead_cr_max", "byLevel": { "5": 0.5, "8": 1, "11": 2, "14": 3 } } ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Mejora de Puntuación de Característica",
+      "level": 4,
+      "description": "En los niveles 4, 8, 12, 16 y 19, puedes aumentar una puntuación de característica en 2, o dos puntuaciones en 1. No puedes superar 20 con este rasgo. Alternativamente, puedes elegir un dote si tu mesa los utiliza."
+    },
+    {
+      "id": "divine_intervention",
+      "name": "Intervención Divina",
+      "level": 10,
+      "description": "Puedes pedir a tu deidad que intervenga cuando la necesidad sea grande. Tira porcentaje; si el resultado es menor o igual a tu nivel de clérigo, tu deidad interviene. Si tiene éxito, no puedes volver a usar este rasgo durante 7 días.",
+      "effects": [ { "type": "divine_intervention", "successRoll": "<= nivel", "cooldown": "7 días" } ]
+    },
+    {
+      "id": "improved_divine_intervention",
+      "name": "Intervención Divina Mejorada",
+      "level": 20,
+      "description": "Tu petición de intervención tiene éxito automáticamente, sin tirada.",
+      "effects": [ { "type": "divine_intervention_auto", "value": true } ]
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["cleric_spellcasting", "divine_domain"],             "cantripsKnown": 3, "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["channel_divinity", "turn_undead"],                 "cantripsKnown": 3, "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": [],                                                    "cantripsKnown": 3, "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement"],                        "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["destroy_undead"],                                   "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": [],                                                    "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [],                                                    "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": ["ability_score_improvement"],                        "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [],                                                    "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": ["divine_intervention"],                              "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"],                        "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"],                        "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 18, "proficiencyBonus": 6, "features": [],                                                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"],                        "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 1, "8": 1, "9": 1 } },
+    { "level": 20, "proficiencyBonus": 6, "features": ["improved_divine_intervention"],                    "cantripsKnown": 5, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 2, "8": 1, "9": 1 } }
+  ],
+  "subclasses": [
+    {
+      "id": "life_domain",
+      "name": "Dominio de la Vida",
+      "grantedAtLevel": 1,
+      "description": "El Dominio de la Vida se centra en la vitalidad, la salud y la sanación.",
+      "features": [
+        { "id": "life_bonus_proficiency", "name": "Competencia Adicional", "level": 1, "description": "Ganas competencia con armadura pesada." },
+        { "id": "disciple_of_life", "name": "Discípulo de la Vida", "level": 1, "description": "Tus conjuros de curación son más efectivos. Siempre que uses un conjuro de 1.º nivel o superior para restaurar PG a una criatura, recupera PG adicionales iguales a 2 + el nivel del conjuro." },
+        { "id": "preserve_life", "name": "Canalizar Divinidad: Preservar la Vida", "level": 2, "description": "Puedes usar Canalizar Divinidad para curar PG totales iguales a cinco veces tu nivel de clérigo, distribuidos entre criaturas a 30 pies de ti." },
+        { "id": "blessed_healer", "name": "Sanador Bendito", "level": 6, "description": "Cuando lanzas un conjuro de 1.º nivel o superior que restaura PG a una criatura distinta de ti, tú también recuperas PG iguales a 2 + el nivel del conjuro." },
+        { "id": "divine_strike_life", "name": "Golpe Divino", "level": 8, "description": "Una vez por turno, cuando golpeas con un ataque de arma, puedes hacer que inflija 1d8 de daño radiante adicional (2d8 a nivel 14)." },
+        { "id": "supreme_healing", "name": "Sanación Suprema", "level": 17, "description": "Cuando normalmente tirarías uno o más dados para restaurar PG con un conjuro, usas el valor máximo posible de cada dado." }
+      ]
+    }
+  ],
+  "spellcasting": { "ability": "wis", "progression": "full" },
+  "spells": {
+    "byLevel": {
+      "cantrip": [
+        "Guía", "Llama Sagrada", "Taumaturgia", "Luz", "Reparar", "Preservar la Vida", "Resistencia"
+      ],
+      "1": [
+        "Bendecir", "Quebranto", "Ordenar", "Curar Heridas", "Palabra Sanadora", "Rayo Guiador", "Escudo de la Fe", "Santuario",
+        "Detectar Magia", "Protección contra el Bien y el Mal", "Crear o Destruir Agua", "Detectar Veneno y Enfermedad", "Purificar Alimentos y Bebidas"
+      ],
+      "2": [
+        "Auxilio", "Augurio", "Restauración Menor", "Sujetar Persona", "Mejorar Característica", "Calmar Emociones", "Llama Continua", "Detectar Trampas", "Ceguera/Sordera", "Reposo Gentil", "Localizar Objeto", "Oración de Curación", "Protección contra el Veneno", "Silencio", "Arma Espiritual", "Vínculo de Protección", "Zona de Verdad"
+      ],
+      "3": [
+        "Disipar Magia", "Luz del Día", "Quitar Maldición", "Revivir", "Caminar sobre el Agua", "Animar a los Muertos", "Farol de Esperanza", "Imponer Maldición", "Clarividencia", "Crear Comida y Agua", "Glifo de Protección", "Círculo Mágico", "Palabra Sanadora en Masa", "Fundirse con la Piedra", "Protección contra la Energía", "Enviar Mensaje", "Hablar con los Muertos", "Guardianes Espirituales", "Lenguas"
+      ],
+      "4": [
+        "Destierro", "Controlar Agua", "Amparo contra la Muerte", "Adivinación", "Libertad de Movimiento", "Guardián de la Fe", "Localizar Criatura", "Formar Piedra"
+      ],
+      "5": [
+        "Comulgar", "Contagio", "Disipar Bien y Mal", "Golpe Flamígero", "Geas", "Restauración Mayor", "Santificar", "Plaga de Insectos", "Sabiduría Legendaria", "Curar Heridas en Masa", "Vincular Planar", "Alzar a los Muertos", "Clariaudiencia/Clarividencia Superior"
+      ],
+      "6": [
+        "Barrera de Cuchillas", "Crear No Muertos", "Encontrar el Camino", "Prohibición", "Dañar", "Curación", "Banquete de los Héroes", "Aliado Planar", "Visión Verdadera", "Palabra de Retorno"
+      ],
+      "7": [
+        "Conjurar Celestial", "Palabra Divina", "Eterealidad", "Tormenta de Fuego", "Cambio de Plano", "Regeneración", "Resurrección", "Símbolo"
+      ],
+      "8": [
+        "Campo Antimagia", "Controlar el Clima", "Terremoto", "Aura Sagrada"
+      ],
+      "9": [
+        "Proyección Astral", "Portal", "Curación en Masa", "Resurrección Verdadera"
+      ]
+    }
+  }
+}

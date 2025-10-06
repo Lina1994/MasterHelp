@@ -1,0 +1,118 @@
+{
+  "id": "fighter",
+  "name": "Fighter",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 per fighter level",
+    "at1stLevel": "10 + your Constitution modifier",
+    "atHigherLevels": "1d10 (or 6) + your Constitution modifier per fighter level after 1st"
+  },
+  "primaryAbilities": ["str"],
+  "savingThrows": ["str", "con"],
+  "proficiencies": {
+    "armor": ["Light Armor", "Medium Armor", "Heavy Armor", "Shields"],
+    "weapons": ["Simple Weapons", "Martial Weapons"],
+    "tools": []
+  },
+  "skills": { "choose": 2, "from": ["Acrobatics", "Animal Handling", "Athletics", "History", "Insight", "Intimidation", "Perception", "Survival"] },
+  "equipment": [
+    { "choose": 1, "options": [
+      { "id": "chain_mail", "description": "Chain mail" },
+      { "id": "leather_longbow", "description": "Leather armor, longbow and 20 arrows" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "martial_weapon_shield", "description": "A martial weapon and a shield" },
+      { "id": "martial_weapon_x2", "description": "Two martial weapons" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "light_crossbow_bolts", "description": "A light crossbow and 20 bolts" },
+      { "id": "handaxe_x2", "description": "Two handaxes" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "dungeoneers_pack", "description": "Dungeoneer’s Pack" },
+      { "id": "explorers_pack", "description": "Explorer’s Pack" }
+    ]}
+  ],
+  "features": [
+    {
+      "id": "fighting_style",
+      "name": "Fighting Style",
+      "level": 1,
+      "description": "You adopt a particular style of fighting as your specialty (Archery, Defense, Dueling, Great Weapon Fighting, Protection, Two-Weapon Fighting).",
+      "effects": [ { "type": "choose_fighting_style", "styles": ["Archery", "Defense", "Dueling", "Great Weapon Fighting", "Protection", "Two-Weapon Fighting"] } ]
+    },
+    {
+      "id": "second_wind",
+      "name": "Second Wind",
+      "level": 1,
+      "description": "You have a limited well of stamina; as a bonus action, you can regain hit points equal to 1d10 + your fighter level (1/short or long rest).",
+      "effects": [ { "type": "resource", "name": "Second Wind", "uses": 1, "per": "short_rest" } ]
+    },
+    {
+      "id": "action_surge",
+      "name": "Action Surge",
+      "level": 2,
+      "description": "On your turn, you can take one additional action on top of your regular action and a possible bonus action (1/short or long rest; 2 uses at 17th).",
+      "effects": [ { "type": "action_surge", "uses": 1, "per": "short_rest", "scalesAt": { "17": 2 } } ]
+    },
+    {
+      "id": "martial_archetype",
+      "name": "Martial Archetype",
+      "level": 3,
+      "description": "You choose an archetype that you strive to emulate in your combat styles and techniques (e.g., Champion).",
+      "effects": [ { "type": "choose_subclass", "atLevel": 3 } ]
+    },
+    {
+      "id": "extra_attack",
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn (three attacks at 11th level, four at 20th).",
+      "effects": [ { "type": "extra_attack", "count": 1, "upgradesAt": { "11": 2, "20": 3 } } ]
+    },
+    {
+      "id": "indomitable",
+      "name": "Indomitable",
+      "level": 9,
+      "description": "You can reroll a saving throw that you fail (1/long rest; 2 uses at 13th; 3 uses at 17th).",
+      "effects": [ { "type": "indomitable", "uses": 1, "per": "long_rest", "scalesAt": { "13": 2, "17": 3 } } ]
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["fighting_style", "second_wind"] },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["action_surge"] },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["martial_archetype"] },
+    { "level": 4,  "proficiencyBonus": 2, "features": [] },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["extra_attack"] },
+    { "level": 6,  "proficiencyBonus": 3, "features": [] },
+    { "level": 7,  "proficiencyBonus": 3, "features": [] },
+    { "level": 8,  "proficiencyBonus": 3, "features": [] },
+    { "level": 9,  "proficiencyBonus": 4, "features": ["indomitable"] },
+    { "level": 10, "proficiencyBonus": 4, "features": [] },
+    { "level": 11, "proficiencyBonus": 4, "features": ["extra_attack"] },
+    { "level": 12, "proficiencyBonus": 4, "features": [] },
+    { "level": 13, "proficiencyBonus": 5, "features": ["indomitable"] },
+    { "level": 14, "proficiencyBonus": 5, "features": [] },
+    { "level": 15, "proficiencyBonus": 5, "features": [] },
+    { "level": 16, "proficiencyBonus": 5, "features": [] },
+    { "level": 17, "proficiencyBonus": 6, "features": ["action_surge", "indomitable"] },
+    { "level": 18, "proficiencyBonus": 6, "features": [] },
+    { "level": 19, "proficiencyBonus": 6, "features": [] },
+    { "level": 20, "proficiencyBonus": 6, "features": ["extra_attack"] }
+  ],
+  "subclasses": [
+    {
+      "id": "champion",
+      "name": "Champion",
+      "grantedAtLevel": 3,
+      "description": "The Champion focuses on the development of raw physical power honed to deadly perfection.",
+      "features": [
+        { "id": "improved_critical", "name": "Improved Critical", "level": 3, "description": "Your weapon attacks score a critical hit on a roll of 19 or 20." },
+        { "id": "remarkable_athlete", "name": "Remarkable Athlete", "level": 7, "description": "Add half your proficiency bonus (round up) to any Strength, Dexterity, or Constitution check you make that doesn’t already use your proficiency bonus; your long jump distance increases by a number of feet equal to your Strength modifier." },
+        { "id": "additional_fighting_style", "name": "Additional Fighting Style", "level": 10, "description": "You can choose a second option from the Fighting Style feature." },
+        { "id": "superior_critical", "name": "Superior Critical", "level": 15, "description": "Your weapon attacks score a critical hit on a roll of 18–20." },
+        { "id": "survivor", "name": "Survivor", "level": 18, "description": "You regain hit points at the start of each of your turns equal to 5 + your Constitution modifier if you have no more than half of your hit points left and you aren’t at 0 hit points." }
+      ]
+    }
+  ]
+}

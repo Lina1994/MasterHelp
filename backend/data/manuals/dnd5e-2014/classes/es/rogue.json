@@ -1,0 +1,158 @@
+{
+  "id": "rogue",
+  "name": "Pícaro",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 por nivel de pícaro",
+    "at1stLevel": "8 + tu modificador de Constitución",
+    "atHigherLevels": "1d8 (o 5) + tu modificador de Constitución por cada nivel de pícaro después del 1º"
+  },
+  "primaryAbilities": ["dex"],
+  "savingThrows": ["dex", "int"],
+  "proficiencies": {
+    "armor": ["Armadura ligera"],
+    "weapons": ["Armas simples", "Ballestas de mano", "Espadas largas", "Roperas", "Espadas cortas"],
+    "tools": ["Herramientas de ladrón"]
+  },
+  "skills": { "choose": 4, "from": [
+    "Acrobacias", "Atletismo", "Engaño", "Perspicacia", "Intimidación", "Investigación", "Percepción", "Actuación", "Persuasión", "Juego de Manos", "Sigilo"
+  ]},
+  "equipment": [
+    { "choose": 1, "options": [
+      { "id": "rapier", "description": "Una ropera" },
+      { "id": "shortsword", "description": "Una espada corta" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "shortbow_quiver", "description": "Un arco corto y una aljaba con 20 flechas" },
+      { "id": "shortsword_2", "description": "Una espada corta" }
+    ]},
+    { "choose": 1, "options": [
+      { "id": "burglars_pack", "description": "Mochila de Ladrón" },
+      { "id": "dungeoneers_pack", "description": "Mochila de Mazmorrero" },
+      { "id": "explorers_pack", "description": "Mochila de Explorador" }
+    ]},
+    { "id": "leather_armor", "description": "Armadura de cuero" },
+    { "id": "dagger_x2", "description": "Dos dagas" },
+    { "id": "thieves_tools", "description": "Herramientas de ladrón" }
+  ],
+  "features": [
+    {
+      "id": "expertise",
+      "name": "Pericia",
+      "level": 1,
+      "description": "Elige dos de tus competencias en habilidades (o una habilidad y tu competencia con herramientas de ladrón). Tu bonificador de competencia se duplica en las pruebas de característica que usen esas competencias elegidas."
+    },
+    {
+      "id": "sneak_attack",
+      "name": "Ataque Furtivo",
+      "level": 1,
+      "description": "Sabes dónde golpear con sutileza y explotar distracciones del enemigo. Una vez por turno, infliges daño adicional si tienes ventaja en la tirada de ataque o cumples otras condiciones.",
+      "effects": [ { "type": "sneak_attack", "dice": "1d6", "scalesAt": { "3": "2d6", "5": "3d6", "7": "4d6", "9": "5d6", "11": "6d6", "13": "7d6", "15": "8d6", "17": "9d6", "19": "10d6" } } ]
+    },
+    {
+      "id": "thieves_cant",
+      "name": "Caló de los Ladrones",
+      "level": 1,
+      "description": "Conoces el caló de los ladrones, una mezcla secreta de jerga y códigos para ocultar mensajes en conversaciones normales."
+    },
+    {
+      "id": "cunning_action",
+      "name": "Acción Astuta",
+      "level": 2,
+      "description": "Tu rapidez mental y agilidad te permiten actuar con celeridad. Puedes usar Correr, Desengancharte u Ocultarte como acción adicional en cada uno de tus turnos.",
+      "effects": [ { "type": "bonus_action_options", "actions": ["Dash", "Disengage", "Hide"] } ]
+    },
+    {
+      "id": "roguish_archetype",
+      "name": "Arquetipo de Pícaro",
+      "level": 3,
+      "description": "Eliges un arquetipo que emular en tus técnicas pícaras (p. ej., Ladrón).",
+      "effects": [ { "type": "choose_subclass", "atLevel": 3 } ]
+    },
+    {
+      "id": "uncanny_dodge",
+      "name": "Esquiva Asombrosa",
+      "level": 5,
+      "description": "Cuando un atacante que puedes ver te golpea, puedes usar tu reacción para reducir a la mitad el daño que te inflige.",
+      "effects": [ { "type": "reaction_halve_damage", "condition": "cuando te impacta un atacante que puedes ver" } ]
+    },
+    {
+      "id": "evasion",
+      "name": "Evasión",
+      "level": 7,
+      "description": "Esquivas hábilmente ciertos efectos de área: no recibes daño con TS de DES exitosa y solo la mitad con TS fallida.",
+      "effects": [ { "type": "evasion", "save": "dex" } ]
+    },
+    {
+      "id": "reliable_talent",
+      "name": "Talento Fiable",
+      "level": 11,
+      "description": "Siempre que hagas una prueba con competencia, tratas un d20 de 9 o menos como un 10."
+    },
+    {
+      "id": "blindsense",
+      "name": "Sentido Cegador",
+      "level": 14,
+      "description": "Si puedes oír, percibes la ubicación de criaturas ocultas o invisibles a 10 pies de ti.",
+      "effects": [ { "type": "blindsense", "range": 10 } ]
+    },
+    {
+      "id": "slippery_mind",
+      "name": "Mente Escurridiza",
+      "level": 15,
+      "description": "Ganas competencia en tiradas de salvación de Sabiduría.",
+      "effects": [ { "type": "gain_save_proficiency", "ability": "wis" } ]
+    },
+    {
+      "id": "elusive",
+      "name": "Esquivo",
+      "level": 18,
+      "description": "Ninguna tirada de ataque tiene ventaja contra ti mientras no estés incapacitado."
+    },
+    {
+      "id": "stroke_of_luck",
+      "name": "Golpe de Suerte",
+      "level": 20,
+      "description": "Si fallas un ataque contra un objetivo a tu alcance, puedes convertir el fallo en acierto. O si fallas una prueba de característica, tratas el d20 como un 20 (1/descanso corto o largo).",
+      "effects": [ { "type": "once_per_rest_luck", "per": "short_rest" } ]
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["pericia", "sneak_attack", "thieves_cant"] },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["cunning_action"] },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["roguish_archetype"] },
+    { "level": 4,  "proficiencyBonus": 2, "features": [] },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["uncanny_dodge"] },
+    { "level": 6,  "proficiencyBonus": 3, "features": [] },
+    { "level": 7,  "proficiencyBonus": 3, "features": ["evasion"] },
+    { "level": 8,  "proficiencyBonus": 3, "features": [] },
+    { "level": 9,  "proficiencyBonus": 4, "features": [] },
+    { "level": 10, "proficiencyBonus": 4, "features": [] },
+    { "level": 11, "proficiencyBonus": 4, "features": ["reliable_talent"] },
+    { "level": 12, "proficiencyBonus": 4, "features": [] },
+    { "level": 13, "proficiencyBonus": 5, "features": [] },
+    { "level": 14, "proficiencyBonus": 5, "features": ["blindsense"] },
+    { "level": 15, "proficiencyBonus": 5, "features": ["slippery_mind"] },
+    { "level": 16, "proficiencyBonus": 5, "features": [] },
+    { "level": 17, "proficiencyBonus": 6, "features": [] },
+    { "level": 18, "proficiencyBonus": 6, "features": ["elusive"] },
+    { "level": 19, "proficiencyBonus": 6, "features": [] },
+    { "level": 20, "proficiencyBonus": 6, "features": ["stroke_of_luck"] }
+  ],
+  "subclasses": [
+    {
+      "id": "thief",
+      "name": "Ladrón",
+      "grantedAtLevel": 3,
+      "description": "Los Ladrones son rápidos y ágiles, centrados en el sigilo, la agilidad y aprovechar oportunidades.",
+      "features": [
+        { "id": "fast_hands", "name": "Manos Rápidas", "level": 3, "description": "Puedes usar la acción adicional de Acción Astuta para hacer Juego de Manos (DES), usar herramientas de ladrón para desarmar trampas o abrir cerraduras, o usar un objeto." },
+        { "id": "second_story_work", "name": "Trabajo de Segunda Planta", "level": 3, "description": "Subes más rápido; trepar ya no cuesta movimiento adicional y tus saltos de carrera aumentan en pies iguales a tu modificador de DES." },
+        { "id": "supreme_sneak", "name": "Sigilo Supremo", "level": 9, "description": "Tienes ventaja en Sigilo si te mueves no más de la mitad de tu velocidad en el mismo turno." },
+        { "id": "use_magic_device", "name": "Usar Dispositivo Mágico", "level": 13, "description": "Puedes sintonizar con cualquier objeto mágico e ignorar requisitos de clase, raza o nivel al usar objetos mágicos." },
+        { "id": "thieves_reflexes", "name": "Reflejos de Ladrón", "level": 17, "description": "Puedes tomar dos turnos durante la primera ronda de cada combate: el primero a tu iniciativa y el segundo a tu iniciativa menos 10." }
+      ]
+    }
+  ]
+}
