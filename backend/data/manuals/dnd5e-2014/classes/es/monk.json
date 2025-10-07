@@ -1,0 +1,67 @@
+{
+  "id": "monk",
+  "name": "Monje",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 por nivel de monje",
+    "at1stLevel": "8 + tu modificador de Constitución",
+    "atHigherLevels": "1d8 (o 5) + tu modificador de Constitución por nivel de monje tras el 1º"
+  },
+  "primaryAbilities": ["dex", "wis"],
+  "savingThrows": ["fuer", "des"],
+  "proficiencies": {
+    "armor": [],
+    "weapons": ["Armas Sencillas", "Espadas Cortas"],
+    "tools": ["Herramientas de Artesano (una)", "Instrumento Musical (uno)"]
+  },
+  "skills": { "choose": 2, "from": ["Acrobacias", "Atletismo", "Historia", "Perspicacia", "Religión", "Sigilo"] },
+  "equipment": [
+    { "choose": 1, "options": [ { "id": "shortsword", "description": "Una espada corta" }, { "id": "simple_weapon", "description": "Cualquier arma sencilla" } ] },
+    { "choose": 1, "options": [ { "id": "dungeoneers_pack", "description": "Equipo de Mazmorrero" }, { "id": "explorers_pack", "description": "Equipo de Explorador" } ] },
+    { "id": "10_darts", "description": "10 dardos" }
+  ],
+  "features": [
+    { "id": "unarmored_defense_monk", "name": "Defensa sin Armadura", "level": 1, "description": "Sin armadura ni escudo, tu CA es 10 + MOD DES + MOD SAB." },
+    { "id": "martial_arts", "name": "Artes Marciales", "level": 1, "description": "Puedes usar DES en lugar de FUE para golpes sin armas y ataques con armas de monje; usas un d4 en lugar del daño normal y puedes hacer un golpe sin armas como acción adicional tras Atacar (escala por nivel)." },
+    { "id": "ki", "name": "Ki", "level": 2, "description": "Tu entrenamiento te permite canalizar energía mística. Tienes puntos de ki iguales a tu nivel de monje, se recuperan en descansos cortos o largos. Usas Rafaga de Golpes, Defensa Paciente y Paso del Viento." },
+    { "id": "unarmored_movement", "name": "Movimiento sin Armadura", "level": 2, "description": "Tu velocidad aumenta sin armadura ni escudo; el bono aumenta con el nivel." },
+    { "id": "monastic_tradition", "name": "Tradición Monástica", "level": 3, "description": "Elige una tradición: Camino de la Mano Abierta, de la Sombra o de los Cuatro Elementos.", "effects": [ { "type": "choose_subclass", "atLevel": 3 } ] },
+    { "id": "deflect_missiles", "name": "Desviar Proyectiles", "level": 3, "description": "Usa tu reacción para desviar o atrapar un proyectil al ser impactado por un ataque a distancia." },
+    { "id": "ability_score_improvement", "name": "Mejora de Característica", "level": 4, "description": "A 4º nivel, y de nuevo a 8º, 12º, 16º y 19º, aumenta una característica en 2 o dos en 1, o toma un dote si se usan." },
+    { "id": "slow_fall", "name": "Caída Lenta", "level": 4, "description": "Usa tu reacción para reducir el daño de caída en 5 × tu nivel de monje." },
+    { "id": "extra_attack", "name": "Ataque Adicional", "level": 5, "description": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno.", "effects": [ { "type": "extra_attack", "count": 1 } ] },
+    { "id": "stunning_strike", "name": "Golpe Aturdidor", "level": 5, "description": "Al impactar con un ataque cuerpo a cuerpo, puedes gastar 1 ki para intentar aturdir al objetivo." },
+    { "id": "ki_empowered_strikes", "name": "Golpes Potenciados por Ki", "level": 6, "description": "Tus golpes sin armas cuentan como mágicos para superar resistencias e inmunidades a ataques no mágicos." },
+    { "id": "evasion", "name": "Evasión", "level": 7, "description": "Esquivas con agilidad efectos de área; con TS DES exitosa recibes 0 de daño, con fallo la mitad." },
+    { "id": "stillness_of_mind", "name": "Quietud de la Mente", "level": 7, "description": "Usa tu acción para terminar un efecto que te hechiza o asusta." },
+    { "id": "purity_of_body", "name": "Pureza del Cuerpo", "level": 10, "description": "Eres inmune a enfermedad y veneno." },
+    { "id": "tongue_of_the_sun_and_moon", "name": "Lengua del Sol y la Luna", "level": 13, "description": "Comprendes todos los idiomas hablados y cualquier criatura te entiende a ti." },
+    { "id": "diamond_soul", "name": "Alma de Diamante", "level": 14, "description": "Ganas competencia en todas las TS. Además, al fallar una TS, puedes gastar 1 ki para repetirla." },
+    { "id": "timeless_body", "name": "Cuerpo Eterno", "level": 15, "description": "Tu ki te sostiene para no sufrir la fragilidad de la vejez; puedes pasar más tiempo sin comida y agua." },
+    { "id": "empty_body", "name": "Cuerpo Vacío", "level": 18, "description": "Puedes volverte invisible y obtener resistencia a todo daño excepto de fuerza durante 1 minuto; puedes gastar 8 ki para lanzar proyección astral sin componentes materiales (solo tú)." },
+    { "id": "perfect_self", "name": "Yo Perfecto", "level": 20, "description": "Cuando tiras iniciativa y no te quedan puntos de ki, recuperas 4 puntos de ki." }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["unarmored_defense_monk", "martial_arts"] },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["ki", "unarmored_movement"] },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["monastic_tradition", "deflect_missiles"] },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement", "slow_fall"] },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["extra_attack", "stunning_strike"] },
+    { "level": 6,  "proficiencyBonus": 3, "features": ["ki_empowered_strikes"] },
+    { "level": 7,  "proficiencyBonus": 3, "features": ["evasion", "stillness_of_mind"] },
+    { "level": 8,  "proficiencyBonus": 3, "features": [] },
+    { "level": 9,  "proficiencyBonus": 4, "features": [] },
+    { "level": 10, "proficiencyBonus": 4, "features": ["purity_of_body"] },
+    { "level": 11, "proficiencyBonus": 4, "features": [] },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"] },
+    { "level": 13, "proficiencyBonus": 5, "features": ["tongue_of_the_sun_and_moon"] },
+    { "level": 14, "proficiencyBonus": 5, "features": ["diamond_soul"] },
+    { "level": 15, "proficiencyBonus": 5, "features": ["timeless_body"] },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"] },
+    { "level": 17, "proficiencyBonus": 6, "features": [] },
+    { "level": 18, "proficiencyBonus": 6, "features": ["empty_body"] },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"] },
+    { "level": 20, "proficiencyBonus": 6, "features": ["perfect_self"] }
+  ]
+}

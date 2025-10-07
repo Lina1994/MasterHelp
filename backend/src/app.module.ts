@@ -14,6 +14,7 @@ import { ManualsModule } from './manuals/manuals.module';
 import { SpellsModule } from './spells/spells.module';
 import { RacesModule } from './races/races.module';
 import { ClassesModule } from './classes/classes.module';
+import { MonstersModule } from './monsters/monsters.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ClassesModule } from './classes/classes.module';
     SpellsModule,
     RacesModule,
     ClassesModule,
+    MonstersModule,
   ],
   controllers: [],
   providers: [],

@@ -1,0 +1,160 @@
+{
+  "id": "warlock",
+  "name": "Brujo",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 por nivel de brujo",
+    "at1stLevel": "8 + tu modificador de Constitución",
+    "atHigherLevels": "1d8 (o 5) + tu modificador de Constitución por nivel de brujo tras el 1º"
+  },
+  "primaryAbilities": ["cha"],
+  "savingThrows": ["sab", "cha"],
+  "proficiencies": {
+    "armor": ["Armadura Ligera"],
+    "weapons": ["Armas Sencillas"],
+    "tools": []
+  },
+  "skills": { "choose": 2, "from": ["Arcanos", "Engaño", "Historia", "Intimidación", "Investigación", "Naturaleza", "Religión"] },
+  "equipment": [
+    { "choose": 1, "options": [ { "id": "light_crossbow", "description": "Una ballesta ligera y 20 virotes" }, { "id": "simple_weapon", "description": "Cualquier arma sencilla" } ] },
+    { "choose": 1, "options": [ { "id": "component_pouch", "description": "Una bolsa de componentes" }, { "id": "arcane_focus", "description": "Un foco arcano" } ] },
+    { "choose": 1, "options": [ { "id": "scholars_pack", "description": "Equipo de Erudito" }, { "id": "dungeoneers_pack", "description": "Equipo de Mazmorrero" } ] },
+    { "id": "leather_armor", "description": "Armadura de cuero" },
+    { "id": "simple_weapon", "description": "Cualquier arma sencilla" },
+    { "id": "dagger", "description": "Dos dagas" }
+  ],
+  "features": [
+    {
+      "id": "otherworldly_patron",
+      "name": "Patrón de Otro Mundo",
+      "level": 1,
+      "description": "Has forjado un pacto con un ser de otro mundo; elige un patrón como El Demonio, El Archifeérico o El Gran Antiguo.",
+      "effects": [ { "type": "choose_subclass", "atLevel": 1 } ]
+    },
+    {
+      "id": "pact_magic",
+      "name": "Magia de Pacto",
+      "level": 1,
+      "description": "Canalizas el poder de tu patrón para lanzar conjuros. CAR es tu característica de conjuro. Conoces conjuros y trucos y usas espacios de Magia de Pacto que se recuperan en descansos cortos.",
+      "effects": [ { "type": "spellcasting", "ability": "cha", "progression": "pact", "ritualCasting": false } ]
+    },
+    {
+      "id": "eldritch_invocations",
+      "name": "Invocaciones Arcanas",
+      "level": 2,
+      "description": "Aprendes invocaciones arcanas, mejoras místicas que te conceden habilidades mágicas."
+    },
+    {
+      "id": "pact_boon",
+      "name": "Dádiva del Pacto",
+      "level": 3,
+      "description": "Tu patrón te concede una dádiva: Pacto de la Cadena, de la Espada o del Tomo."
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Mejora de Característica",
+      "level": 4,
+      "description": "A 4º nivel, y de nuevo a 8º, 12º, 16º y 19º, aumenta una característica en 2 o dos en 1, o toma un dote si se usan."
+    },
+    {
+      "id": "mystic_arcanum_11",
+      "name": "Arcanum Místico (6º)",
+      "level": 11,
+      "description": "Ganas un conjuro de 6º nivel que puedes lanzar una vez por descanso largo sin gastar un espacio de conjuro."
+    },
+    {
+      "id": "mystic_arcanum_13",
+      "name": "Arcanum Místico (7º)",
+      "level": 13,
+      "description": "Ganas un conjuro de 7º nivel que puedes lanzar una vez por descanso largo sin gastar un espacio de conjuro."
+    },
+    {
+      "id": "mystic_arcanum_15",
+      "name": "Arcanum Místico (8º)",
+      "level": 15,
+      "description": "Ganas un conjuro de 8º nivel que puedes lanzar una vez por descanso largo sin gastar un espacio de conjuro."
+    },
+    {
+      "id": "mystic_arcanum_17",
+      "name": "Arcanum Místico (9º)",
+      "level": 17,
+      "description": "Ganas un conjuro de 9º nivel que puedes lanzar una vez por descanso largo sin gastar un espacio de conjuro."
+    },
+    {
+      "id": "eldritch_master",
+      "name": "Maestro Arcano",
+      "level": 20,
+      "description": "Puedes suplicar a tu patrón durante 1 minuto para recuperar todos tus espacios de Magia de Pacto gastados."
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["otherworldly_patron", "pact_magic"], "cantripsKnown": 2, "knownSpellsCount": 2, "spellSlots": { "1": 1, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["eldritch_invocations"],               "cantripsKnown": 2, "knownSpellsCount": 3, "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["pact_boon"],                          "cantripsKnown": 2, "knownSpellsCount": 4, "spellSlots": { "2": 2, "1": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement"],         "cantripsKnown": 3, "knownSpellsCount": 5, "spellSlots": { "2": 2, "1": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": [],                                       "cantripsKnown": 3, "knownSpellsCount": 6, "spellSlots": { "3": 2, "1": 0, "2": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": [],                                       "cantripsKnown": 3, "knownSpellsCount": 7, "spellSlots": { "3": 2, "1": 0, "2": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [],                                       "cantripsKnown": 3, "knownSpellsCount": 8, "spellSlots": { "4": 2, "1": 0, "2": 0, "3": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": ["ability_score_improvement"],         "cantripsKnown": 3, "knownSpellsCount": 9, "spellSlots": { "4": 2, "1": 0, "2": 0, "3": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [],                                       "cantripsKnown": 3, "knownSpellsCount": 10, "spellSlots": { "5": 2, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": [],                                       "cantripsKnown": 4, "knownSpellsCount": 10, "spellSlots": { "5": 2, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": ["mystic_arcanum_11"],                  "cantripsKnown": 4, "knownSpellsCount": 11, "spellSlots": { "5": 3, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"],         "cantripsKnown": 4, "knownSpellsCount": 11, "spellSlots": { "5": 3, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": ["mystic_arcanum_13"],                  "cantripsKnown": 4, "knownSpellsCount": 12, "spellSlots": { "5": 3, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": [],                                       "cantripsKnown": 4, "knownSpellsCount": 12, "spellSlots": { "5": 3, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": ["mystic_arcanum_15"],                  "cantripsKnown": 4, "knownSpellsCount": 13, "spellSlots": { "5": 3, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"],         "cantripsKnown": 4, "knownSpellsCount": 13, "spellSlots": { "5": 3, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": ["mystic_arcanum_17"],                  "cantripsKnown": 4, "knownSpellsCount": 14, "spellSlots": { "5": 4, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 18, "proficiencyBonus": 6, "features": [],                                       "cantripsKnown": 4, "knownSpellsCount": 14, "spellSlots": { "5": 4, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"],         "cantripsKnown": 4, "knownSpellsCount": 15, "spellSlots": { "5": 4, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 20, "proficiencyBonus": 6, "features": ["eldritch_master"],                    "cantripsKnown": 4, "knownSpellsCount": 15, "spellSlots": { "5": 4, "1": 0, "2": 0, "3": 0, "4": 0, "6": 0, "7": 0, "8": 0, "9": 0 } }
+  ],
+  "spellcasting": {
+    "ability": "cha",
+    "progression": "pact",
+    "ritualCasting": false,
+    "cantripsKnown": 2,
+    "cantripsKnownUpgrades": { "4": 3, "10": 4 },
+    "knownSpellsCount": 2,
+    "knownSpellsCountByLevel": { "2": 3, "3": 4, "4": 5, "5": 6, "6": 7, "7": 8, "8": 9, "9": 10, "10": 10, "11": 11, "12": 11, "13": 12, "14": 12, "15": 13, "16": 13, "17": 14, "18": 14, "19": 15, "20": 15 },
+    "pactSlots": {
+      "levelByCharacterLevel": { "1": 1, "2": 1, "3": 2, "4": 2, "5": 3, "6": 3, "7": 4, "8": 4, "9": 5, "10": 5, "11": 5, "12": 5, "13": 5, "14": 5, "15": 5, "16": 5, "17": 5, "18": 5, "19": 5, "20": 5 },
+      "slotsByCharacterLevel": { "1": 1, "2": 2, "3": 2, "4": 2, "5": 2, "6": 2, "7": 2, "8": 2, "9": 2, "10": 2, "11": 3, "12": 3, "13": 3, "14": 3, "15": 3, "16": 3, "17": 4, "18": 4, "19": 4, "20": 4 }
+    }
+  },
+  "spells": {
+    "byLevel": {
+      "cantrip": [
+        "Amistad", "Amparo de Cuchilla", "Golpe Verdadero", "Ilusión Menor", "Mano de Mago", "Prestidigitación", "Ráfaga Sobrenatural", "Rociada Venenosa", "Toque Helado"
+      ],
+      "1": [
+        "Comprender Idiomas", "Escritura Ilusoria", "Hechizar Persona", "Protección contra el Bien y el Mal", "Rayo de Bruja", "Reprensión Infernal", "Retirada Acelerada", "Servidor Invisible"
+      ],
+      "2": [
+        "Estallar", "Invisibilidad", "Oscuridad", "Paso Brumoso", "Sugerencia", "Sujetar Persona", "Trepar como Araña"
+      ],
+      "3": [
+        "Círculo Mágico", "Contraconjuro", "Disipar Magia", "Forma Gaseosa", "Imagen Mayor", "Imponer Maldición", "Lenguas", "Miedo", "Patrón Hipnótico", "Quitar Maldición", "Toque Vampírico", "Volar"
+      ],
+      "4": [
+        "Destierro", "Puerta Dimensional", "Tizón"
+      ],
+      "5": [
+        "Clariaudiencia/Clarividencia Superior", "Contactar con Otro Plano", "Sueño", "Sujetar Monstruo"
+      ],
+      "6": [
+        "Carne a Piedra", "Círculo de la Muerte", "Picadura Ocular", "Portal Arcano", "Sugerencia en Masa", "Visión Verdadera"
+      ],
+      "7": [
+        "Cambio de Plano", "Eterealidad", "Jaula de Fuerza"
+      ],
+      "8": [
+        "Mente Debilitada", "Palabra de Poder: Aturdir", "Semiplano"
+      ],
+      "9": [
+        "Palabra de Poder: Matar", "Polimorfismo Verdadero", "Proyección Astral"
+      ]
+    }
+  }
+}

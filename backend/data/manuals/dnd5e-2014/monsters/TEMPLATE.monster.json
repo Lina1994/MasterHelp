@@ -1,0 +1,43 @@
+{
+  "id": "<stable-id>",
+  "slug": "<monster-slug>",
+  "lang": "en",
+  "name": "<Monster Name>",
+  "source": "SRD 5.1",
+  "size": "Medium",
+  "type": "humanoid",
+  "subtype": null,
+  "alignment": "any alignment",
+  "armorClass": { "value": 12, "type": null, "notes": null },
+  "hitPoints": { "average": 11, "roll": "2d8+2" },
+  "speed": { "walk": 30 },
+  "abilities": { "str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10 },
+  "savingThrows": { "str": 0, "dex": 0, "con": 0, "int": 0, "wis": 0, "cha": 0 },
+  "skills": { "perception": 2 },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": { "passivePerception": 12 },
+  "languages": "Common",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/4",
+  "traits": [ { "name": "Trait", "text": "Description." } ],
+  "actions": [ { "name": "Dagger", "text": "+4 to hit, reach 5 ft., one target..." } ],
+  "reactions": [],
+  "legendaryActions": [],
+  "lairActions": [],
+  "regionalEffects": [],
+  "spellcasting": [
+    {
+      "header": "Spellcasting",
+      "description": "The monster is a 3rd-level spellcaster...",
+      "atWill": ["mage hand"],
+      "daily": { "1/day": ["shield"], "2/day": [], "3/day": [] },
+      "slots": [ { "level": 1, "slots": 4, "spells": ["magic missile"] } ]
+    }
+  ],
+  "environment": ["dungeon"],
+  "sourcePage": null,
+  "notes": []
+}

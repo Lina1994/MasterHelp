@@ -1,0 +1,82 @@
+{
+  "id": "ranger",
+  "name": "Explorador",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 por nivel de explorador",
+    "at1stLevel": "10 + tu modificador de Constitución",
+    "atHigherLevels": "1d10 (o 6) + tu modificador de Constitución por nivel de explorador tras el 1º"
+  },
+  "primaryAbilities": ["dex", "wis"],
+  "savingThrows": ["fuer", "des"],
+  "proficiencies": {
+    "armor": ["Armadura Ligera", "Armadura Media", "Escudos"],
+    "weapons": ["Armas Sencillas", "Armas Marciales"],
+    "tools": ["Kit de Herboristería"]
+  },
+  "skills": { "choose": 3, "from": ["Adiestrar Animales", "Atletismo", "Perspicacia", "Investigación", "Naturaleza", "Percepción", "Sigilo", "Supervivencia"] },
+  "equipment": [
+    { "choose": 1, "options": [ { "id": "scale_mail", "description": "Cota de escamas" }, { "id": "leather_armor", "description": "Armadura de cuero" } ] },
+    { "choose": 1, "options": [ { "id": "two_shortswords", "description": "Dos espadas cortas" }, { "id": "simple_melee_weapon_x2", "description": "Dos armas sencillas cuerpo a cuerpo" } ] },
+    { "choose": 1, "options": [ { "id": "dungeoneers_pack", "description": "Equipo de Mazmorrero" }, { "id": "explorers_pack", "description": "Equipo de Explorador" } ] },
+    { "id": "longbow_with_quiver_arrows", "description": "Un arco largo y un carcaj con 20 flechas" }
+  ],
+  "features": [
+    { "id": "favored_enemy", "name": "Enemigo Predilecto", "level": 1, "description": "Tienes experiencia significativa estudiando, rastreando, cazando e incluso hablando con un tipo de enemigo." },
+    { "id": "natural_explorer", "name": "Explorador Natural", "level": 1, "description": "Estás especialmente familiarizado con un tipo de entorno natural y eres hábil al viajar y sobrevivir en esas regiones." },
+    { "id": "fighting_style", "name": "Estilo de Combate", "level": 2, "description": "Adoptas un estilo particular de combate como tu especialidad.", "effects": [ { "type": "choose_fighting_style", "styles": ["Arquería", "Defensa", "Duelo", "Combate con Dos Armas"] } ] },
+    { "id": "ranger_spellcasting", "name": "Conjuración", "level": 2, "description": "Aprendes a usar la esencia mágica de la naturaleza para lanzar conjuros. SAB es tu característica de conjuro.", "effects": [ { "type": "spellcasting", "ability": "wis", "progression": "half", "ritualCasting": false } ] },
+    { "id": "primeval_awareness", "name": "Consciencia Primigenia", "level": 3, "description": "Puedes usar tus espacios de conjuro para enfocar tu consciencia en la región a tu alrededor." },
+    { "id": "ranger_archetype", "name": "Arquetipo de Explorador", "level": 3, "description": "Elige un arquetipo que te esfuerzas por emular, como Cazador o Amo de las Bestias.", "effects": [ { "type": "choose_subclass", "atLevel": 3 } ] },
+    { "id": "ability_score_improvement", "name": "Mejora de Característica", "level": 4, "description": "A 4º nivel, y de nuevo a 8º, 12º, 16º y 19º, aumenta una característica en 2 o dos en 1, o toma un dote si se usan." },
+    { "id": "extra_attack", "name": "Ataque Extra", "level": 5, "description": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno.", "effects": [ { "type": "extra_attack", "count": 1 } ] },
+    { "id": "lands_stride", "name": "Zancada Terrenal", "level": 8, "description": "Moverte a través de terreno difícil no mágico no te cuesta movimiento adicional." },
+    { "id": "hide_in_plain_sight", "name": "Ocultarse a Plena Vista", "level": 10, "description": "Puedes intentar ocultarte incluso con ligera cobertura y crear camuflaje." },
+    { "id": "vanish", "name": "Esfumarse", "level": 14, "description": "Puedes usar la acción de Ocultarse como acción adicional en tu turno, y no puedes ser rastreado por medios no mágicos." },
+    { "id": "feral_senses", "name": "Sentidos Ferales", "level": 18, "description": "Obtienes sentidos preternaturales que te ayudan a luchar contra criaturas que no puedes ver." },
+    { "id": "foe_slayer", "name": "Asesino de Enemigos", "level": 20, "description": "Te conviertes en un cazador sin igual; añade tu MOD SAB a ataque o daño una vez por turno." }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["favored_enemy", "natural_explorer"], "spellSlots": { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["fighting_style", "ranger_spellcasting"], "knownSpellsCount": 2, "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["primeval_awareness", "ranger_archetype"], "knownSpellsCount": 3, "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement"], "knownSpellsCount": 3, "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["extra_attack"], "knownSpellsCount": 4, "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": [], "knownSpellsCount": 4, "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [], "knownSpellsCount": 5, "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": ["lands_stride", "ability_score_improvement"], "knownSpellsCount": 5, "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [], "knownSpellsCount": 6, "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": ["hide_in_plain_sight"], "knownSpellsCount": 6, "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": [], "knownSpellsCount": 7, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"], "knownSpellsCount": 7, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": [], "knownSpellsCount": 8, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": ["vanish"], "knownSpellsCount": 8, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": [], "knownSpellsCount": 9, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"], "knownSpellsCount": 9, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": ["feral_senses"], "knownSpellsCount": 10, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 18, "proficiencyBonus": 6, "features": [], "knownSpellsCount": 10, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"], "knownSpellsCount": 11, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 20, "proficiencyBonus": 6, "features": ["foe_slayer"], "knownSpellsCount": 11, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } }
+  ],
+  "spellcasting": { "ability": "wis", "progression": "half", "ritualCasting": false, "knownSpellsCount": 2, "knownSpellsCountByLevel": { "3": 3, "4": 3, "5": 4, "6": 4, "7": 5, "8": 5, "9": 6, "10": 6, "11": 7, "12": 7, "13": 8, "14": 8, "15": 9, "16": 9, "17": 10, "18": 10, "19": 11, "20": 11 } },
+  "spells": {
+    "byLevel": {
+      "1": [
+        "Alarma", "Amistad con los Animales", "Baya Buena", "Curar Heridas", "Detectar Magia", "Detectar Veneno y Enfermedad", "Hablar con los Animales", "Nube de Niebla", "Saltar", "Zancada Larga"
+      ],
+      "2": [
+        "Detectar Trampas", "Localizar Objeto", "Mensajero Animal", "Paso sin Dejar Huella", "Piel de Corteza", "Protección contra el Veneno", "Restauración Menor", "Silencio", "Visión en la Oscuridad"
+      ],
+      "3": [
+        "Caminar sobre el Agua", "Crecimiento Vegetal", "Luz del Día", "Muro de Viento", "No Detección", "Protección contra la Energía", "Respirar Bajo el Agua"
+      ],
+      "4": [
+        "Libertad de Movimiento", "Localizar Criatura", "Piel Pétrea"
+      ],
+      "5": [
+        "Comulgar con la Naturaleza", "Zancada Arbórea"
+      ]
+    }
+  }
+}

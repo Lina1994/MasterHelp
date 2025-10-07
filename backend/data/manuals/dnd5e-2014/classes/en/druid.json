@@ -1,0 +1,136 @@
+{
+  "id": "druid",
+  "name": "Druid",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 per druid level",
+    "at1stLevel": "8 + your Constitution modifier",
+    "atHigherLevels": "1d8 (or 5) + your Constitution modifier per druid level after 1st"
+  },
+  "primaryAbilities": ["wis"],
+  "savingThrows": ["int", "wis"],
+  "proficiencies": {
+    "armor": ["Light Armor (nonmetal)", "Medium Armor (nonmetal)", "Shields (nonmetal)"] ,
+    "weapons": ["Clubs", "Daggers", "Darts", "Javelins", "Maces", "Quarterstaffs", "Scimitars", "Sickles", "Slings", "Spears"],
+    "tools": ["Herbalism Kit"]
+  },
+  "skills": { "choose": 2, "from": ["Arcana", "Animal Handling", "Insight", "Medicine", "Nature", "Perception", "Religion", "Survival"] },
+  "equipment": [
+    { "choose": 1, "options": [ { "id": "shield", "description": "A wooden shield" }, { "id": "simple_weapon", "description": "Any simple weapon" } ] },
+    { "choose": 1, "options": [ { "id": "scimitar", "description": "A scimitar" }, { "id": "simple_melee", "description": "Any simple melee weapon" } ] },
+    { "choose": 1, "options": [ { "id": "explorers_pack", "description": "Explorer's Pack" }, { "id": "dungeoneers_pack", "description": "Dungeoneer's Pack" } ] },
+    { "id": "leather_armor", "description": "Leather armor" },
+    { "id": "herbalism_kit", "description": "A herbalism kit" }
+  ],
+  "features": [
+    {
+      "id": "druid_spellcasting",
+      "name": "Spellcasting",
+      "level": 1,
+      "description": "You can cast druid spells prepared from the druid list. WIS is your spellcasting ability. You can cast druid spells as rituals.",
+      "effects": [ { "type": "spellcasting", "ability": "wis", "progression": "full", "ritualCasting": true, "prepareFormula": "WIS mod + druid level" } ]
+    },
+    {
+      "id": "druidic",
+      "name": "Druidic",
+      "level": 1,
+      "description": "You know Druidic, the secret language of druids. You can leave hidden messages that only druids can spot and decipher."
+    },
+    {
+      "id": "wild_shape",
+      "name": "Wild Shape",
+      "level": 2,
+      "description": "You can use your action to magically assume the shape of a beast that you have seen before, with CR and movement limitations that improve at druid levels 4 and 8.",
+      "effects": [ { "type": "resource", "name": "Wild Shape", "uses": 2, "per": "short_rest" } ]
+    },
+    {
+      "id": "druid_circle",
+      "name": "Druid Circle",
+      "level": 2,
+      "description": "You choose a druid circle, such as Circle of the Land or Circle of the Moon.",
+      "effects": [ { "type": "choose_subclass", "atLevel": 2 } ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "At 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score by 2 or two ability scores by 1, or take a feat if used."
+    },
+    {
+      "id": "timeless_body",
+      "name": "Timeless Body",
+      "level": 18,
+      "description": "Your body ages more slowly, suffering none of the frailty of old age, and you can't be aged magically."
+    },
+    {
+      "id": "beast_spells",
+      "name": "Beast Spells",
+      "level": 18,
+      "description": "You can cast many of your druid spells in any shape you assume using Wild Shape, with material component restrictions."
+    },
+    {
+      "id": "archdruid",
+      "name": "Archdruid",
+      "level": 20,
+      "description": "You can use your Wild Shape an unlimited number of times. Additionally, ignore verbal and somatic components of druid spells while in a beast shape."
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["druid_spellcasting", "druidic"],                 "cantripsKnown": 2, "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["wild_shape", "druid_circle"],                   "cantripsKnown": 2, "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": [],                                                "cantripsKnown": 2, "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement"],                      "cantripsKnown": 3, "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": [],                                                "cantripsKnown": 3, "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": [],                                                "cantripsKnown": 3, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [],                                                "cantripsKnown": 3, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": ["ability_score_improvement"],                      "cantripsKnown": 3, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [],                                                "cantripsKnown": 3, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": [],                                                "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": [],                                                "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"],                      "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": [],                                                "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": [],                                                "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": [],                                                "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"],                      "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": [],                                                "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 18, "proficiencyBonus": 6, "features": ["timeless_body", "beast_spells"],                 "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"],                      "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 1, "8": 1, "9": 1 } },
+    { "level": 20, "proficiencyBonus": 6, "features": ["archdruid"],                                     "cantripsKnown": 4, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 2, "8": 1, "9": 1 } }
+  ],
+  "spellcasting": { "ability": "wis", "progression": "full", "prepareFormula": "WIS mod + druid level", "ritualCasting": true, "cantripsKnown": 2, "cantripsKnownUpgrades": { "4": 3, "10": 4 } },
+  "spells": {
+    "byLevel": {
+      "cantrip": [
+        "Druidcraft", "Guidance", "Mending", "Poison Spray", "Produce Flame", "Resistance", "Shillelagh", "Thorn Whip"
+      ],
+      "1": [
+        "Animal Friendship", "Charm Person", "Create or Destroy Water", "Cure Wounds", "Detect Magic", "Detect Poison and Disease", "Entangle", "Faerie Fire", "Fog Cloud", "Goodberry", "Healing Word", "Jump", "Longstrider", "Purify Food and Drink", "Speak with Animals", "Thunderwave"
+      ],
+      "2": [
+        "Animal Messenger", "Barkskin", "Darkvision", "Enhance Ability", "Find Traps", "Flame Blade", "Flaming Sphere", "Gust of Wind", "Heat Metal", "Hold Person", "Lesser Restoration", "Locate Object", "Moonbeam", "Pass without Trace", "Protection from Poison"
+      ],
+      "3": [
+        "Bestow Curse", "Call Lightning", "Daylight", "Dispel Magic", "Feign Death", "Meld into Stone", "Plant Growth", "Protection from Energy", "Sleet Storm", "Speak with Plants", "Water Breathing", "Water Walk", "Wind Wall"
+      ],
+      "4": [
+        "Blight", "Confusion", "Control Water", "Dominate Beast", "Freedom of Movement", "Giant Insect", "Hallucinatory Terrain", "Ice Storm", "Locate Creature", "Polymorph", "Stone Shape", "Stoneskin", "Wall of Fire"
+      ],
+      "5": [
+        "Antilife Shell", "Awaken", "Commune with Nature", "Conjure Elemental", "Contagion", "Geas", "Greater Restoration", "Insect Plague", "Mass Cure Wounds", "Planar Binding", "Reincarnate", "Scrying", "Tree Stride", "Wall of Stone"
+      ],
+      "6": [
+        "Conjure Fey", "Find the Path", "Flesh to Stone", "Heal", "Heroes' Feast", "Move Earth", "Sunbeam", "Transport via Plants", "Wall of Thorns", "Wind Walk"
+      ],
+      "7": [
+        "Fire Storm", "Mirage Arcane", "Plane Shift", "Regenerate", "Reverse Gravity"
+      ],
+      "8": [
+        "Animal Shapes", "Antipathy/Sympathy", "Control Weather", "Earthquake", "Feeblemind", "Sunburst", "Tsunami"
+      ],
+      "9": [
+        "Foresight", "Shapechange", "Storm of Vengeance"
+      ]
+    }
+  }
+}

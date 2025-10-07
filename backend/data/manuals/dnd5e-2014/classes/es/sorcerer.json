@@ -1,0 +1,135 @@
+{
+  "id": "sorcerer",
+  "name": "Hechicero",
+  "source": "PHB 2014 / SRD 5.1",
+  "hitDie": 6,
+  "hitPoints": {
+    "hitDice": "1d6 por nivel de hechicero",
+    "at1stLevel": "6 + tu modificador de Constitución",
+    "atHigherLevels": "1d6 (o 4) + tu modificador de Constitución por nivel de hechicero tras el 1º"
+  },
+  "primaryAbilities": ["cha"],
+  "savingThrows": ["con", "cha"],
+  "proficiencies": {
+    "armor": [],
+    "weapons": ["Dagas", "Dardos", "Hondas", "Bastones", "Ballestas Ligeras"],
+    "tools": []
+  },
+  "skills": { "choose": 2, "from": ["Arcanos", "Engaño", "Perspicacia", "Intimidación", "Persuasión", "Religión"] },
+  "equipment": [
+    { "choose": 1, "options": [ { "id": "light_crossbow", "description": "Una ballesta ligera y 20 virotes" }, { "id": "simple_weapon", "description": "Cualquier arma sencilla" } ] },
+    { "choose": 1, "options": [ { "id": "component_pouch", "description": "Un bolsa de componentes" }, { "id": "arcane_focus", "description": "Un foco arcano" } ] },
+    { "choose": 1, "options": [ { "id": "dungeoneers_pack", "description": "Equipo de Mazmorrero" }, { "id": "explorers_pack", "description": "Equipo de Explorador" } ] },
+    { "id": "dagger", "description": "Una daga" },
+    { "id": "dagger", "description": "Una daga" }
+  ],
+  "features": [
+    {
+      "id": "sorcerous_origin",
+      "name": "Origen Hechiceril",
+      "level": 1,
+      "description": "Elige un origen hechiceril, como Linaje Dracónico o Magia Salvaje.",
+      "effects": [ { "type": "choose_subclass", "atLevel": 1 } ]
+    },
+    {
+      "id": "sorcerer_spellcasting",
+      "name": "Conjuración",
+      "level": 1,
+      "description": "Conoces un número de conjuros y trucos de hechicero. CAR es tu característica de conjuro. No lanzas rituales por defecto.",
+      "effects": [ { "type": "spellcasting", "ability": "cha", "progression": "full", "ritualCasting": false } ]
+    },
+    {
+      "id": "font_of_magic",
+      "name": "Fuente de Magia",
+      "level": 2,
+      "description": "Obtienes puntos de hechicería para alimentar efectos mágicos y Lanzamiento Flexible."
+    },
+    {
+      "id": "metamagic",
+      "name": "Metamagia",
+      "level": 3,
+      "description": "Obtienes opciones de Metamagia para moldear tus conjuros de maneras únicas."
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Mejora de Característica",
+      "level": 4,
+      "description": "A 4º nivel, y de nuevo a 8º, 12º, 16º y 19º, aumenta una característica en 2 o dos en 1, o toma un dote si se usan."
+    },
+    {
+      "id": "additional_metamagic_10",
+      "name": "Metamagia (Adicional)",
+      "level": 10,
+      "description": "Ganas una opción adicional de Metamagia."
+    },
+    {
+      "id": "additional_metamagic_17",
+      "name": "Metamagia (Adicional)",
+      "level": 17,
+      "description": "Ganas una opción adicional de Metamagia."
+    },
+    {
+      "id": "sorcerous_restoration",
+      "name": "Restauración Hechiceril",
+      "level": 20,
+      "description": "Recuperas 4 puntos de hechicería gastados cuando terminas un descanso corto."
+    }
+  ],
+  "levels": [
+    { "level": 1,  "proficiencyBonus": 2, "features": ["sorcerous_origin", "sorcerer_spellcasting"], "cantripsKnown": 4, "knownSpellsCount": 2,  "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["font_of_magic"],                         "cantripsKnown": 4, "knownSpellsCount": 3,  "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["metamagic"],                             "cantripsKnown": 4, "knownSpellsCount": 4,  "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": ["ability_score_improvement"],            "cantripsKnown": 5, "knownSpellsCount": 5,  "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": [],                                        "cantripsKnown": 5, "knownSpellsCount": 6,  "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": [],                                        "cantripsKnown": 5, "knownSpellsCount": 7,  "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [],                                        "cantripsKnown": 5, "knownSpellsCount": 8,  "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": ["ability_score_improvement"],            "cantripsKnown": 5, "knownSpellsCount": 9,  "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [],                                        "cantripsKnown": 5, "knownSpellsCount": 10, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": ["additional_metamagic_10"],             "cantripsKnown": 6, "knownSpellsCount": 11, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": [],                                        "cantripsKnown": 6, "knownSpellsCount": 12, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": ["ability_score_improvement"],            "cantripsKnown": 6, "knownSpellsCount": 12, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": [],                                        "cantripsKnown": 6, "knownSpellsCount": 13, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": [],                                        "cantripsKnown": 6, "knownSpellsCount": 13, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": [],                                        "cantripsKnown": 6, "knownSpellsCount": 14, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": ["ability_score_improvement"],            "cantripsKnown": 6, "knownSpellsCount": 14, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": ["additional_metamagic_17"],             "cantripsKnown": 6, "knownSpellsCount": 15, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 18, "proficiencyBonus": 6, "features": [],                                        "cantripsKnown": 6, "knownSpellsCount": 15, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 1, "7": 1, "8": 1, "9": 1 } },
+    { "level": 19, "proficiencyBonus": 6, "features": ["ability_score_improvement"],            "cantripsKnown": 6, "knownSpellsCount": 15, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 1, "8": 1, "9": 1 } },
+    { "level": 20, "proficiencyBonus": 6, "features": ["sorcerous_restoration"],               "cantripsKnown": 6, "knownSpellsCount": 15, "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 3, "6": 2, "7": 2, "8": 1, "9": 1 } }
+  ],
+  "spellcasting": { "ability": "cha", "progression": "full", "ritualCasting": false, "cantripsKnown": 4, "cantripsKnownUpgrades": { "4": 5, "10": 6 }, "knownSpellsCount": 2, "knownSpellsCountByLevel": { "2": 3, "3": 4, "4": 5, "5": 6, "6": 7, "7": 8, "8": 9, "9": 10, "10": 11, "11": 12, "12": 12, "13": 13, "14": 13, "15": 14, "16": 14, "17": 15, "18": 15, "19": 15, "20": 15 } },
+  "spells": {
+    "byLevel": {
+      "cantrip": [
+        "Amistad", "Amparo de Cuchilla", "Golpe Verdadero", "Ilusión Menor", "Luces Danzantes", "Luz", "Mano de Mago", "Mensaje", "Prestidigitación", "Rayo de Escarcha", "Rayo de Fuego", "Reparar", "Rociada Venenosa", "Salpicadura Ácida", "Toque Chocante", "Toque Helado"
+      ],
+      "1": [
+        "Armadura de Mago", "Caída de Pluma", "Comprender Idiomas", "Detectar Magia", "Disfrazarse", "Dormir", "Escudo", "Grasa", "Hechizar Persona", "Imagen Silenciosa", "Manos Ardientes", "Nube de Niebla", "Ola Atronadora", "Proyectil Mágico", "Rayo de Bruja", "Rayo de Enfermedad", "Retirada Acelerada", "Rociada de Color", "Saltar", "Vida Falsa", "Zancada Larga"
+      ],
+      "2": [
+        "Agrandar/Encoger", "Alterar Ser", "Apertura", "Ceguera/Sordera", "Desenfoque", "Detectar Pensamientos", "Estallar", "Imagen Múltiple", "Invisibilidad", "Levitar", "Mejorar Característica", "Oscuridad", "Paso Brumoso", "Ráfaga de Viento", "Rayo Abrasador", "Sugerencia", "Sujetar Persona", "Telaraña", "Trepar como Araña", "Ver lo Invisible", "Visión en la Oscuridad"
+      ],
+      "3": [
+        "Bola de Fuego", "Caminar sobre el Agua", "Clarividencia", "Contraconjuro", "Disipar Magia", "Forma Gaseosa", "Imagen Mayor", "Lenguas", "Lentitud", "Luz del Día", "Miedo", "Nube Fétida", "Parpadeo", "Patrón Hipnótico", "Prisa", "Protección contra la Energía", "Rayo Relampagueante", "Respirar Bajo el Agua", "Tormenta de Aguanieve", "Volar"
+      ],
+      "4": [
+        "Asesino Fantasmal", "Confusión", "Destierro", "Dominar Bestia", "Invisibilidad Mayor", "Muro de Fuego", "Piel Pétrea", "Polimorfar", "Puerta Dimensional", "Tizón", "Tormenta de Hielo"
+      ],
+      "5": [
+        "Animar Objetos", "Apariencia", "Círculo de Teletransportación", "Cono de Frío", "Creación", "Dominar Persona", "Nube Mortal", "Sujetar Monstruo", "Telequinesis"
+      ],
+      "6": [
+        "Carne a Piedra", "Círculo de la Muerte", "Desintegrar", "Globo de Invulnerabilidad", "Mover Tierra", "Picadura Ocular", "Portal Arcano", "Rayo en Cadena", "Rayo Solar", "Sugerencia en Masa", "Visión Verdadera"
+      ],
+      "7": [
+        "Bola de Fuego Demorada", "Cambio de Plano", "Dedo de la Muerte", "Gravedad Invertida", "Rociada Prismática", "Teletransporte"
+      ],
+      "8": [
+        "Dominar Monstruo", "Estallido Solar", "Nube Incendiaria", "Palabra de Poder: Aturdir"
+      ],
+      "9": [
+        "Deseo", "Detener el Tiempo", "Horror", "Lluvia de Meteoros", "Palabra de Poder: Matar"
+      ]
+    }
+  }
+}

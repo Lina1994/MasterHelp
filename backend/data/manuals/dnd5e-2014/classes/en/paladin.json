@@ -121,26 +121,26 @@
     }
   ],
   "levels": [
-    { "level": 1,  "proficiencyBonus": 2, "features": ["divine_sense", "lay_on_hands"] },
-    { "level": 2,  "proficiencyBonus": 2, "features": ["fighting_style", "paladin_spellcasting", "divine_smite"] },
-    { "level": 3,  "proficiencyBonus": 2, "features": ["divine_health", "sacred_oath"] },
-    { "level": 4,  "proficiencyBonus": 2, "features": [] },
-    { "level": 5,  "proficiencyBonus": 3, "features": ["extra_attack"] },
-    { "level": 6,  "proficiencyBonus": 3, "features": ["aura_of_protection"] },
-    { "level": 7,  "proficiencyBonus": 3, "features": [] },
-    { "level": 8,  "proficiencyBonus": 3, "features": [] },
-    { "level": 9,  "proficiencyBonus": 4, "features": [] },
-    { "level": 10, "proficiencyBonus": 4, "features": ["aura_of_courage"] },
-    { "level": 11, "proficiencyBonus": 4, "features": ["improved_divine_smite"] },
-    { "level": 12, "proficiencyBonus": 4, "features": [] },
-    { "level": 13, "proficiencyBonus": 5, "features": [] },
-    { "level": 14, "proficiencyBonus": 5, "features": ["cleansing_touch"] },
-    { "level": 15, "proficiencyBonus": 5, "features": [] },
-    { "level": 16, "proficiencyBonus": 5, "features": [] },
-    { "level": 17, "proficiencyBonus": 6, "features": [] },
-    { "level": 18, "proficiencyBonus": 6, "features": [] },
-    { "level": 19, "proficiencyBonus": 6, "features": [] },
-    { "level": 20, "proficiencyBonus": 6, "features": [] }
+    { "level": 1,  "proficiencyBonus": 2, "features": ["divine_sense", "lay_on_hands"], "spellSlots": { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 2,  "proficiencyBonus": 2, "features": ["fighting_style", "paladin_spellcasting", "divine_smite"], "spellSlots": { "1": 2, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 3,  "proficiencyBonus": 2, "features": ["divine_health", "sacred_oath"], "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 4,  "proficiencyBonus": 2, "features": [], "spellSlots": { "1": 3, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 5,  "proficiencyBonus": 3, "features": ["extra_attack"], "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 6,  "proficiencyBonus": 3, "features": ["aura_of_protection"], "spellSlots": { "1": 4, "2": 2, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 7,  "proficiencyBonus": 3, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 8,  "proficiencyBonus": 3, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 9,  "proficiencyBonus": 4, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 10, "proficiencyBonus": 4, "features": ["aura_of_courage"], "spellSlots": { "1": 4, "2": 3, "3": 2, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 11, "proficiencyBonus": 4, "features": ["improved_divine_smite"], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 12, "proficiencyBonus": 4, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 13, "proficiencyBonus": 5, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 14, "proficiencyBonus": 5, "features": ["cleansing_touch"], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 1, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 15, "proficiencyBonus": 5, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 16, "proficiencyBonus": 5, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 2, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 17, "proficiencyBonus": 6, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 18, "proficiencyBonus": 6, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 1, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 19, "proficiencyBonus": 6, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } },
+    { "level": 20, "proficiencyBonus": 6, "features": [], "spellSlots": { "1": 4, "2": 3, "3": 3, "4": 3, "5": 2, "6": 0, "7": 0, "8": 0, "9": 0 } }
   ],
   "subclasses": [
     {
@@ -156,7 +156,7 @@
       ]
     }
   ],
-  "spellcasting": { "ability": "cha", "progression": "half" },
+  "spellcasting": { "ability": "cha", "progression": "half", "ritualCasting": false, "prepareFormula": "CHA mod + half level (rounded down)" },
   "spells": {
     "byLevel": {
       "1": [
