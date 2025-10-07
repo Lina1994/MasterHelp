@@ -1,0 +1,33 @@
+{
+  "id": "ca22717d705c",
+  "slug": "polar-bear",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Polar Bear",
+  "srd": {
+    "name": "Polar Bear",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "12 (Natural Armor)",
+    "Hit Points": "42 (5d10 + 15)",
+    "Speed": "40 ft., swim 30 ft. ",
+    "STR": "20",
+    "STR_mod": "(+5)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "16",
+    "CON_mod": "(+3)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "13",
+    "WIS_mod": "(+1)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Skills": "Perception +3",
+    "Senses": "Passive Perception 13",
+    "Languages": "--",
+    "Challenge": "2 (450 XP)",
+    "Traits": "<p><em><strong>Keen Smell.</strong></em> The bear has advantage on Wisdom (Perception) checks that rely on smell.</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The bear makes two attacks: one with its bite and one with its claws. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +7 to hit, reach 5 ft., one target. <em>Hit:</em> 9 (1d8 + 5) piercing damage. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +7 to hit, reach 5 ft., one target. <em>Hit:</em> 12 (2d6 + 5) slashing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

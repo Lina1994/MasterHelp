@@ -1,0 +1,32 @@
+{
+  "id": "f6d8e37543f3",
+  "slug": "camel",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Camello",
+  "srd": {
+    "name": "Camello",
+    "meta": "Grande bestia, no alineada",
+    "Armor Class": "9 ",
+    "Hit Points": "15 (2d10 + 4)",
+    "Speed": "50 ft. ",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "8",
+    "DEX_mod": "(-1)",
+    "CON": "14",
+    "CON_mod": "(+2)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "8",
+    "WIS_mod": "(-1)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+  "Senses": "Percepción pasiva 9",
+    "Languages": "--",
+  "Challenge": "1/8 (25 PX)",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 2 (1d4) de daño contundente.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": true
+}

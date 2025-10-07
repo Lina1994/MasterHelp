@@ -1,0 +1,33 @@
+{
+  "id": "f87ff01db944",
+  "slug": "hill-giant",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Hill Giant",
+  "srd": {
+    "name": "Hill Giant",
+    "meta": "Huge giant, chaotic evil",
+    "Armor Class": "13 (Natural Armor)",
+    "Hit Points": "105 (10d12 + 40)",
+    "Speed": "40 ft. ",
+    "STR": "21",
+    "STR_mod": "(+5)",
+    "DEX": "8",
+    "DEX_mod": "(-1)",
+    "CON": "19",
+    "CON_mod": "(+4)",
+    "INT": "5",
+    "INT_mod": "(-3)",
+    "WIS": "9",
+    "WIS_mod": "(-1)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Skills": "Perception +2",
+    "Senses": "Passive Perception 12",
+    "Languages": "Giant",
+    "Challenge": "5 (1,800 XP)",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The giant makes two greatclub attacks. </p><p><em><strong>Greatclub.</strong></em> <em>Melee Weapon Attack:</em> +8 to hit, reach 10 ft., one target. <em>Hit:</em> 18 (3d8 + 5) bludgeoning damage. </p><p><em><strong>Rock.</strong></em> <em>Ranged Weapon Attack:</em> +8 to hit, range 60/240 ft., one target. <em>Hit:</em> 21 (3d10 + 5) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/331/315/315/636252776196140305.jpeg"
+  },
+  "translated": false
+}

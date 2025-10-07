@@ -1,0 +1,32 @@
+{
+  "id": "80472de7bfc8",
+  "slug": "warhorse",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Warhorse",
+  "srd": {
+    "name": "Warhorse",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "11 ",
+    "Hit Points": "19 (3d10 + 3)",
+    "Speed": "60 ft. ",
+    "STR": "18",
+    "STR_mod": "(+4)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Senses": "Passive Perception 11",
+    "Languages": "--",
+    "Challenge": "1/2 (100 XP)",
+    "Traits": "<p><em><strong>Trampling Charge.</strong></em> If the horse moves at least 20 feet straight toward a creature and then hits it with a hooves attack on the same turn, that target must succeed on a DC 14 Strength saving throw or be knocked prone. If the target is prone, the horse can make another attack with its hooves against it as a bonus action.</p>",
+    "Actions": "<p><em><strong>Hooves.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one target. <em>Hit:</em> 11 (2d6 + 4) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

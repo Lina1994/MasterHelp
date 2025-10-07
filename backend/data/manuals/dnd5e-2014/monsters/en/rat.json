@@ -1,0 +1,32 @@
+{
+  "id": "2528ae532316",
+  "slug": "rat",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Rat",
+  "srd": {
+    "name": "Rat",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "10 ",
+    "Hit Points": "1 (1d4 - 1)",
+    "Speed": "20 ft. ",
+    "STR": "2",
+    "STR_mod": "(-4)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "9",
+    "CON_mod": "(-1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "4",
+    "CHA_mod": "(-3)",
+    "Senses": "Darkvision 30 ft.,  Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Traits": "<p><em><strong>Keen Smell.</strong></em> The rat has advantage on Wisdom (Perception) checks that rely on smell.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +0 to hit, reach 5 ft., one target. <em>Hit:</em> 1 piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/541/315/315/636376335435407571.jpeg"
+  }
+}

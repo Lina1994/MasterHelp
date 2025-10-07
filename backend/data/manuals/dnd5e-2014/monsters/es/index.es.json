@@ -1,0 +1,2019 @@
+{
+  "items": [
+    {
+      "id": "2ae3239d5090",
+      "slug": "aboleth",
+      "name": "Aboleth",
+      "challengeRating": "10"
+    },
+    {
+      "id": "5472f1c3c539",
+      "slug": "acolyte",
+      "name": "Acólito",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "4e86adcf07e2",
+      "slug": "adult-black-dragon",
+      "name": "Adult Black Dragon",
+      "challengeRating": "14"
+    },
+    {
+      "id": "7879871b65bf",
+      "slug": "adult-blue-dragon",
+      "name": "Adult Blue Dragon",
+      "challengeRating": "16"
+    },
+    {
+      "id": "0ee5c7c90470",
+      "slug": "adult-brass-dragon",
+      "name": "Adult Brass Dragon",
+      "challengeRating": "13"
+    },
+    {
+      "id": "7444a90f7e36",
+      "slug": "adult-bronze-dragon",
+      "name": "Adult Bronze Dragon",
+      "challengeRating": "15"
+    },
+    {
+      "id": "333bb3a308dd",
+      "slug": "adult-copper-dragon",
+      "name": "Adult Copper Dragon",
+      "challengeRating": "14"
+    },
+    {
+      "id": "31d17a2b5c75",
+      "slug": "adult-gold-dragon",
+      "name": "Adult Gold Dragon",
+      "challengeRating": "17"
+    },
+    {
+      "id": "8a19e8302dce",
+      "slug": "adult-green-dragon",
+      "name": "Adult Green Dragon",
+      "challengeRating": "15"
+    },
+    {
+      "id": "3c25cddd88c1",
+      "slug": "adult-red-dragon",
+      "name": "Adult Red Dragon",
+      "challengeRating": "17"
+    },
+    {
+      "id": "63fa84d2279a",
+      "slug": "adult-silver-dragon",
+      "name": "Adult Silver Dragon",
+      "challengeRating": "16"
+    },
+    {
+      "id": "4d6724d4df25",
+      "slug": "adult-white-dragon",
+      "name": "Adult White Dragon",
+      "challengeRating": "13"
+    },
+    {
+      "id": "ab4a5ff806a3",
+      "slug": "air-elemental",
+      "name": "Air Elemental",
+      "challengeRating": "5"
+    },
+    {
+      "id": "8c7f3755255a",
+      "slug": "commoner",
+      "name": "Aldeano",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "bb2c5d711850",
+      "slug": "allosaurus",
+      "name": "Allosaurus",
+      "challengeRating": "2"
+    },
+    {
+      "id": "18605431290e",
+      "slug": "ancient-black-dragon",
+      "name": "Ancient Black Dragon",
+      "challengeRating": "21"
+    },
+    {
+      "id": "083f59943977",
+      "slug": "ancient-blue-dragon",
+      "name": "Ancient Blue Dragon",
+      "challengeRating": "23"
+    },
+    {
+      "id": "015cf6f7fc03",
+      "slug": "ancient-brass-dragon",
+      "name": "Ancient Brass Dragon",
+      "challengeRating": "20"
+    },
+    {
+      "id": "3f2a8faf4739",
+      "slug": "ancient-bronze-dragon",
+      "name": "Ancient Bronze Dragon",
+      "challengeRating": "22"
+    },
+    {
+      "id": "49bc94ec5a76",
+      "slug": "ancient-copper-dragon",
+      "name": "Ancient Copper Dragon",
+      "challengeRating": "21"
+    },
+    {
+      "id": "db9ceb4a4071",
+      "slug": "ancient-gold-dragon",
+      "name": "Ancient Gold Dragon",
+      "challengeRating": "24"
+    },
+    {
+      "id": "e07778646481",
+      "slug": "ancient-green-dragon",
+      "name": "Ancient Green Dragon",
+      "challengeRating": "22"
+    },
+    {
+      "id": "112cf34a3025",
+      "slug": "ancient-red-dragon",
+      "name": "Ancient Red Dragon",
+      "challengeRating": "24"
+    },
+    {
+      "id": "7b5b317ece7b",
+      "slug": "ancient-silver-dragon",
+      "name": "Ancient Silver Dragon",
+      "challengeRating": "23"
+    },
+    {
+      "id": "208ce4d827ef",
+      "slug": "ancient-white-dragon",
+      "name": "Ancient White Dragon",
+      "challengeRating": "20"
+    },
+    {
+      "id": "02f3051c44ed",
+      "slug": "androsphinx",
+      "name": "Androsphinx",
+      "challengeRating": "17"
+    },
+    {
+      "id": "fbae7dbae505",
+      "slug": "animated-armor",
+      "name": "Animated Armor",
+      "challengeRating": "1"
+    },
+    {
+      "id": "d40a40bcd847",
+      "slug": "ankheg",
+      "name": "Ankheg",
+      "challengeRating": "2"
+    },
+    {
+      "id": "6b0256bedfe7",
+      "slug": "ankylosaurus",
+      "name": "Ankylosaurus",
+      "challengeRating": "3"
+    },
+    {
+      "id": "cf8b443db2e7",
+      "slug": "ape",
+      "name": "Ape",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "4f4ce1ee741e",
+      "slug": "giant-spider",
+      "name": "Araña gigante",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
+      "id": "56a952815078",
+      "slug": "giant-wolf-spider",
+      "name": "Araña lobo gigante",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "bda642bfbeb7",
+      "slug": "archmage",
+      "name": "Archimago",
+      "challengeRating": "12",
+      "translated": true
+    },
+    {
+      "id": "af50e9bb0b53",
+      "slug": "assassin",
+      "name": "Assassin",
+      "challengeRating": "8"
+    },
+    {
+      "id": "8773bbe0fcda",
+      "slug": "awakened-shrub",
+      "name": "Awakened Shrub",
+      "challengeRating": "0"
+    },
+    {
+      "id": "e7f696c9d897",
+      "slug": "awakened-tree",
+      "name": "Awakened Tree",
+      "challengeRating": "2"
+    },
+    {
+      "id": "057258b06544",
+      "slug": "axe-beak",
+      "name": "Axe Beak",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "42b2df9363ed",
+      "slug": "azer",
+      "name": "Azer",
+      "challengeRating": "2"
+    },
+    {
+      "id": "3c4614604b67",
+      "slug": "baboon",
+      "name": "Baboon",
+      "challengeRating": "0"
+    },
+    {
+      "id": "2ed9366c2c2b",
+      "slug": "badger",
+      "name": "Badger",
+      "challengeRating": "0"
+    },
+    {
+      "id": "5a9d21bdc1b8",
+      "slug": "balor",
+      "name": "Balor",
+      "challengeRating": "19"
+    },
+    {
+      "id": "862cfd51162b",
+      "slug": "bandit",
+      "name": "Bandido",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "225243c8ef51",
+      "slug": "banshee",
+      "name": "Banshee",
+      "challengeRating": "4"
+    },
+    {
+      "id": "46f02b739ab6",
+      "slug": "barbed-devil",
+      "name": "Barbed Devil",
+      "challengeRating": "5"
+    },
+    {
+      "id": "cf96e9b04988",
+      "slug": "basilisk",
+      "name": "Basilisk",
+      "challengeRating": "3"
+    },
+    {
+      "id": "4a6be5b247ca",
+      "slug": "bat",
+      "name": "Bat",
+      "challengeRating": "0"
+    },
+    {
+      "id": "cc1179cc828a",
+      "slug": "bearded-devil",
+      "name": "Bearded Devil",
+      "challengeRating": "3"
+    },
+    {
+      "id": "2a7a5f67b9d1",
+      "slug": "behir",
+      "name": "Behir",
+      "challengeRating": "11"
+    },
+    {
+      "id": "5d42531a5534",
+      "slug": "berserker",
+      "name": "Berserker",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "208b0e3ff5b3",
+      "slug": "black-bear",
+      "name": "Black Bear",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "64290030e780",
+      "slug": "black-dragon-wyrmling",
+      "name": "Black Dragon Wyrmling",
+      "challengeRating": "2"
+    },
+    {
+      "id": "c2f2cc797ab4",
+      "slug": "black-pudding",
+      "name": "Black Pudding",
+      "challengeRating": "4"
+    },
+    {
+      "id": "e5188944f6fc",
+      "slug": "blink-dog",
+      "name": "Blink Dog",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "6d329436dbb4",
+      "slug": "blood-hawk",
+      "name": "Blood Hawk",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "ee740fff9b55",
+      "slug": "blue-dragon-wyrmling",
+      "name": "Blue Dragon Wyrmling",
+      "challengeRating": "3"
+    },
+    {
+      "id": "0b8ebfa5440e",
+      "slug": "boar",
+      "name": "Boar",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "2ce3c2af3da5",
+      "slug": "bone-devil",
+      "name": "Bone Devil",
+      "challengeRating": "9"
+    },
+    {
+      "id": "676e38240eb9",
+      "slug": "brass-dragon-wyrmling",
+      "name": "Brass Dragon Wyrmling",
+      "challengeRating": "1"
+    },
+    {
+      "id": "dfcbd4750a35",
+      "slug": "bronze-dragon-wyrmling",
+      "name": "Bronze Dragon Wyrmling",
+      "challengeRating": "2"
+    },
+    {
+      "id": "629af1850e39",
+      "slug": "brown-bear",
+      "name": "Brown Bear",
+      "challengeRating": "1"
+    },
+    {
+      "id": "fb1b5495278a",
+      "slug": "bugbear",
+      "name": "Bugbear",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
+      "id": "ace461c43519",
+      "slug": "bulette",
+      "name": "Bulette",
+      "challengeRating": "5"
+    },
+    {
+      "id": "60e6d677ad0e",
+      "slug": "knight",
+      "name": "Caballero",
+      "challengeRating": "3",
+      "translated": true
+    },
+    {
+      "id": "80472de7bfc8",
+      "slug": "warhorse",
+      "name": "Caballo de guerra",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "b00c083394d3",
+      "slug": "riding-horse",
+      "name": "Caballo de monta",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "df40b0a9ad0e",
+      "slug": "draft-horse",
+      "name": "Caballo de tiro",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "a064df91b8ef",
+      "slug": "goat",
+      "name": "Cabra",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "f6d8e37543f3",
+      "slug": "camel",
+      "name": "Camello",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "32c9fbe76fed",
+      "slug": "bandit-captain",
+      "name": "Capitán bandido",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "220451fc4ade",
+      "slug": "cat",
+      "name": "Cat",
+      "challengeRating": "0"
+    },
+    {
+      "id": "bdd31bb236e8",
+      "slug": "centaur",
+      "name": "Centaur",
+      "challengeRating": "2"
+    },
+    {
+      "id": "fa699b37ca46",
+      "slug": "chain-devil",
+      "name": "Chain Devil",
+      "challengeRating": "8"
+    },
+    {
+      "id": "3dde1eada891",
+      "slug": "chimera",
+      "name": "Chimera",
+      "challengeRating": "6"
+    },
+    {
+      "id": "253cc64b144b",
+      "slug": "chuul",
+      "name": "Chuul",
+      "challengeRating": "4"
+    },
+    {
+      "id": "dda021b970c6",
+      "slug": "deer",
+      "name": "Ciervo",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "aec29d4fae97",
+      "slug": "clay-golem",
+      "name": "Clay Golem",
+      "challengeRating": "9"
+    },
+    {
+      "id": "8f28d0ebe0c4",
+      "slug": "cloaker",
+      "name": "Cloaker",
+      "challengeRating": "8"
+    },
+    {
+      "id": "33b298a16e7a",
+      "slug": "cloud-giant",
+      "name": "Cloud Giant",
+      "challengeRating": "9"
+    },
+    {
+      "id": "19bf55fd36dd",
+      "slug": "cockatrice",
+      "name": "Cockatrice",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "1dc09ecdbdcd",
+      "slug": "constrictor-snake",
+      "name": "Constrictor Snake",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "53369db26418",
+      "slug": "copper-dragon-wyrmling",
+      "name": "Copper Dragon Wyrmling",
+      "challengeRating": "1"
+    },
+    {
+      "id": "41976aced181",
+      "slug": "couatl",
+      "name": "Couatl",
+      "challengeRating": "4"
+    },
+    {
+      "id": "3c9dd5f9e34d",
+      "slug": "crab",
+      "name": "Crab",
+      "challengeRating": "0"
+    },
+    {
+      "id": "07be1dbb2098",
+      "slug": "crocodile",
+      "name": "Crocodile",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "ccc49456cf57",
+      "slug": "cultist",
+      "name": "Cultista",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "4af451825fd6",
+      "slug": "cyclops",
+      "name": "Cyclops",
+      "challengeRating": "6"
+    },
+    {
+      "id": "b00772784258",
+      "slug": "darkmantle",
+      "name": "Darkmantle",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "8184047c2903",
+      "slug": "death-dog",
+      "name": "Death Dog",
+      "challengeRating": "1"
+    },
+    {
+      "id": "012e719afdf9",
+      "slug": "deep-gnome-svirfneblin",
+      "name": "Deep Gnome (Svirfneblin)",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "531017bbf680",
+      "slug": "deva",
+      "name": "Deva",
+      "challengeRating": "10"
+    },
+    {
+      "id": "06d2aea6eb9e",
+      "slug": "dire-wolf",
+      "name": "Dire Wolf",
+      "challengeRating": "1"
+    },
+    {
+      "id": "0136f9e9cbd6",
+      "slug": "djinni",
+      "name": "Djinni",
+      "challengeRating": "11"
+    },
+    {
+      "id": "0b8431a3fb7d",
+      "slug": "doppelganger",
+      "name": "Doppelganger",
+      "challengeRating": "3"
+    },
+    {
+      "id": "cd49f9d0e660",
+      "slug": "dragon-turtle",
+      "name": "Dragon Turtle",
+      "challengeRating": "17"
+    },
+    {
+      "id": "da9158a2b7d1",
+      "slug": "dretch",
+      "name": "Dretch",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "8e1c9f12a4c4",
+      "slug": "drider",
+      "name": "Drider",
+      "challengeRating": "6"
+    },
+    {
+      "id": "41585450992c",
+      "slug": "drow",
+      "name": "Drow",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "2eb4b55065c6",
+      "slug": "druid",
+      "name": "Druida",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "48e356c5525b",
+      "slug": "dryad",
+      "name": "Dryad",
+      "challengeRating": "1"
+    },
+    {
+      "id": "26a28342cb40",
+      "slug": "duergar",
+      "name": "Duergar",
+      "challengeRating": "1"
+    },
+    {
+      "id": "c9247057ca5b",
+      "slug": "dust-mephit",
+      "name": "Dust Mephit",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "46fb2a84e299",
+      "slug": "eagle",
+      "name": "Eagle",
+      "challengeRating": "0"
+    },
+    {
+      "id": "687769ee6970",
+      "slug": "earth-elemental",
+      "name": "Earth Elemental",
+      "challengeRating": "5"
+    },
+    {
+      "id": "8cf2cb81f65e",
+      "slug": "efreeti",
+      "name": "Efreeti",
+      "challengeRating": "11"
+    },
+    {
+      "id": "ef094ed09402",
+      "slug": "elephant",
+      "name": "Elephant",
+      "challengeRating": "4"
+    },
+    {
+      "id": "76a9c478eb31",
+      "slug": "elk",
+      "name": "Elk",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "ce36173e9b2a",
+      "slug": "erinyes",
+      "name": "Erinyes",
+      "challengeRating": "12"
+    },
+    {
+      "id": "c9564138bd24",
+      "slug": "wight",
+      "name": "Espectro",
+      "challengeRating": "3",
+      "translated": true
+    },
+    {
+      "id": "6e1a563c8253",
+      "slug": "spy",
+      "name": "Espía",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
+      "id": "1e9a2a4f9673",
+      "slug": "skeleton",
+      "name": "Esqueleto",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "f65e7a3509b0",
+      "slug": "ettercap",
+      "name": "Ettercap",
+      "challengeRating": "2"
+    },
+    {
+      "id": "4fa5319687f5",
+      "slug": "ettin",
+      "name": "Ettin",
+      "challengeRating": "4"
+    },
+    {
+      "id": "c4da9208e011",
+      "slug": "scout",
+      "name": "Explorador",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "77752cad118e",
+      "slug": "cult-fanatic",
+      "name": "Fanático del culto",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "a4b45ef45c96",
+      "slug": "fire-elemental",
+      "name": "Fire Elemental",
+      "challengeRating": "5"
+    },
+    {
+      "id": "746db0e159b2",
+      "slug": "fire-giant",
+      "name": "Fire Giant",
+      "challengeRating": "9"
+    },
+    {
+      "id": "7e57b58b77b2",
+      "slug": "flameskull",
+      "name": "Flameskull",
+      "challengeRating": "4"
+    },
+    {
+      "id": "cc83e1019f47",
+      "slug": "flesh-golem",
+      "name": "Flesh Golem",
+      "challengeRating": "5"
+    },
+    {
+      "id": "27329491b9da",
+      "slug": "flying-snake",
+      "name": "Flying Snake",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "19eebe3568f3",
+      "slug": "flying-sword",
+      "name": "Flying Sword",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "a91d8288d461",
+      "slug": "frog",
+      "name": "Frog",
+      "challengeRating": "0"
+    },
+    {
+      "id": "7dedaa37fa70",
+      "slug": "frost-giant",
+      "name": "Frost Giant",
+      "challengeRating": "8"
+    },
+    {
+      "id": "262b185f3453",
+      "slug": "gargoyle",
+      "name": "Gargoyle",
+      "challengeRating": "2"
+    },
+    {
+      "id": "6c63e5a365b8",
+      "slug": "gelatinous-cube",
+      "name": "Gelatinous Cube",
+      "challengeRating": "2"
+    },
+    {
+      "id": "e209fa3347b9",
+      "slug": "ghast",
+      "name": "Ghast",
+      "challengeRating": "2"
+    },
+    {
+      "id": "a81e7c61552d",
+      "slug": "ghost",
+      "name": "Ghost",
+      "challengeRating": "4"
+    },
+    {
+      "id": "1207ff5996ee",
+      "slug": "ghoul",
+      "name": "Ghoul",
+      "challengeRating": "1"
+    },
+    {
+      "id": "aba434cd2c30",
+      "slug": "giant-ape",
+      "name": "Giant Ape",
+      "challengeRating": "7"
+    },
+    {
+      "id": "7ac7e6ad635e",
+      "slug": "giant-badger",
+      "name": "Giant Badger",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "e1ba542231e0",
+      "slug": "giant-bat",
+      "name": "Giant Bat",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "d418b7df850b",
+      "slug": "giant-centipede",
+      "name": "Giant Centipede",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "7e71620f353d",
+      "slug": "giant-constrictor-snake",
+      "name": "Giant Constrictor Snake",
+      "challengeRating": "2"
+    },
+    {
+      "id": "3626e68accf0",
+      "slug": "giant-crab",
+      "name": "Giant Crab",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "bb625c4eb85f",
+      "slug": "giant-crocodile",
+      "name": "Giant Crocodile",
+      "challengeRating": "5"
+    },
+    {
+      "id": "34bd13d82811",
+      "slug": "giant-eagle",
+      "name": "Giant Eagle",
+      "challengeRating": "1"
+    },
+    {
+      "id": "46972dc37af9",
+      "slug": "giant-elk",
+      "name": "Giant Elk",
+      "challengeRating": "2"
+    },
+    {
+      "id": "fa2ecc73da6f",
+      "slug": "giant-fire-beetle",
+      "name": "Giant Fire Beetle",
+      "challengeRating": "0"
+    },
+    {
+      "id": "965f9edb01d9",
+      "slug": "giant-frog",
+      "name": "Giant Frog",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "3141499a717d",
+      "slug": "giant-goat",
+      "name": "Giant Goat",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "30228ab6cea0",
+      "slug": "giant-hyena",
+      "name": "Giant Hyena",
+      "challengeRating": "1"
+    },
+    {
+      "id": "bb246c97eb60",
+      "slug": "giant-lizard",
+      "name": "Giant Lizard",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "5dae0b3e0f37",
+      "slug": "giant-octopus",
+      "name": "Giant Octopus",
+      "challengeRating": "1"
+    },
+    {
+      "id": "9034810e9e42",
+      "slug": "giant-owl",
+      "name": "Giant Owl",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "641176df055a",
+      "slug": "giant-poisonous-snake",
+      "name": "Giant Poisonous Snake",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "2924e428c11c",
+      "slug": "giant-scorpion",
+      "name": "Giant Scorpion",
+      "challengeRating": "3"
+    },
+    {
+      "id": "189705cbeeb3",
+      "slug": "giant-sea-horse",
+      "name": "Giant Sea Horse",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "37396247c803",
+      "slug": "giant-shark",
+      "name": "Giant Shark",
+      "challengeRating": "5"
+    },
+    {
+      "id": "a7b57ab905e3",
+      "slug": "giant-toad",
+      "name": "Giant Toad",
+      "challengeRating": "1"
+    },
+    {
+      "id": "5ccab094aa61",
+      "slug": "giant-vulture",
+      "name": "Giant Vulture",
+      "challengeRating": "1"
+    },
+    {
+      "id": "106f243ebd5e",
+      "slug": "giant-wasp",
+      "name": "Giant Wasp",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "9ec165a4d16c",
+      "slug": "giant-weasel",
+      "name": "Giant Weasel",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "a83df72c7fcc",
+      "slug": "gibbering-mouther",
+      "name": "Gibbering Mouther",
+      "challengeRating": "2"
+    },
+    {
+      "id": "ad759af23652",
+      "slug": "glabrezu",
+      "name": "Glabrezu",
+      "challengeRating": "9"
+    },
+    {
+      "id": "27dfcbc1a352",
+      "slug": "gladiator",
+      "name": "Gladiator",
+      "challengeRating": "5"
+    },
+    {
+      "id": "937d3f54c553",
+      "slug": "gnoll",
+      "name": "Gnoll",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "397daeada8c4",
+      "slug": "goblin",
+      "name": "Goblin",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "29813ef0f2bf",
+      "slug": "gold-dragon-wyrmling",
+      "name": "Gold Dragon Wyrmling",
+      "challengeRating": "3"
+    },
+    {
+      "id": "797cf68263dc",
+      "slug": "gorgon",
+      "name": "Gorgon",
+      "challengeRating": "5"
+    },
+    {
+      "id": "6e0076b7fa75",
+      "slug": "gray-ooze",
+      "name": "Gray Ooze",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "947882468f40",
+      "slug": "green-dragon-wyrmling",
+      "name": "Green Dragon Wyrmling",
+      "challengeRating": "2"
+    },
+    {
+      "id": "415730b55d57",
+      "slug": "green-hag",
+      "name": "Green Hag",
+      "challengeRating": "3"
+    },
+    {
+      "id": "9d286baae687",
+      "slug": "grick",
+      "name": "Grick",
+      "challengeRating": "2"
+    },
+    {
+      "id": "ba0e5f57d208",
+      "slug": "griffon",
+      "name": "Griffon",
+      "challengeRating": "2"
+    },
+    {
+      "id": "8d3af5c94296",
+      "slug": "grimlock",
+      "name": "Grimlock",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "186060b7bf52",
+      "slug": "guard",
+      "name": "Guardia",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "cecef25821d3",
+      "slug": "guardian-naga",
+      "name": "Guardian Naga",
+      "challengeRating": "10"
+    },
+    {
+      "id": "1466c00eab28",
+      "slug": "tribal-warrior",
+      "name": "Guerrero tribal",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "e50c3f77de15",
+      "slug": "gynosphinx",
+      "name": "Gynosphinx",
+      "challengeRating": "11"
+    },
+    {
+      "id": "f4e03540426f",
+      "slug": "half-red-dragon-veteran",
+      "name": "Half-Red Dragon Veteran",
+      "challengeRating": "5"
+    },
+    {
+      "id": "94c8af52468a",
+      "slug": "harpy",
+      "name": "Harpy",
+      "challengeRating": "1"
+    },
+    {
+      "id": "7f60a2a47afa",
+      "slug": "hawk",
+      "name": "Hawk",
+      "challengeRating": "0"
+    },
+    {
+      "id": "38ef25e8efbf",
+      "slug": "hell-hound",
+      "name": "Hell Hound",
+      "challengeRating": "3"
+    },
+    {
+      "id": "5b1023362e37",
+      "slug": "hezrou",
+      "name": "Hezrou",
+      "challengeRating": "8"
+    },
+    {
+      "id": "f87ff01db944",
+      "slug": "hill-giant",
+      "name": "Hill Giant",
+      "challengeRating": "5"
+    },
+    {
+      "id": "6029a07a65e9",
+      "slug": "hippogriff",
+      "name": "Hippogriff",
+      "challengeRating": "1"
+    },
+    {
+      "id": "c0080c887155",
+      "slug": "hobgoblin",
+      "name": "Hobgoblin",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "841e3e828ca2",
+      "slug": "homunculus",
+      "name": "Homunculus",
+      "challengeRating": "0"
+    },
+    {
+      "id": "f3df41df5140",
+      "slug": "horned-devil",
+      "name": "Horned Devil",
+      "challengeRating": "11"
+    },
+    {
+      "id": "f0b7963fa034",
+      "slug": "hunter-shark",
+      "name": "Hunter Shark",
+      "challengeRating": "2"
+    },
+    {
+      "id": "067c75e73cbc",
+      "slug": "hydra",
+      "name": "Hydra",
+      "challengeRating": "8"
+    },
+    {
+      "id": "03c7bfb9a9cc",
+      "slug": "hyena",
+      "name": "Hyena",
+      "challengeRating": "0"
+    },
+    {
+      "id": "4e17d4d0e075",
+      "slug": "ice-devil",
+      "name": "Ice Devil",
+      "challengeRating": "14"
+    },
+    {
+      "id": "9eb0bca51143",
+      "slug": "ice-mephit",
+      "name": "Ice Mephit",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "b86aa854c47e",
+      "slug": "imp",
+      "name": "Imp",
+      "challengeRating": "1"
+    },
+    {
+      "id": "bff15aebac9c",
+      "slug": "invisible-stalker",
+      "name": "Invisible Stalker",
+      "challengeRating": "6"
+    },
+    {
+      "id": "e32cb1beca62",
+      "slug": "iron-golem",
+      "name": "Iron Golem",
+      "challengeRating": "16"
+    },
+    {
+      "id": "1b3b4b17e29c",
+      "slug": "giant-boar",
+      "name": "Jabalí gigante",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "54e81257de6c",
+      "slug": "jackal",
+      "name": "Jackal",
+      "challengeRating": "0"
+    },
+    {
+      "id": "4ae5939d0294",
+      "slug": "killer-whale",
+      "name": "Killer Whale",
+      "challengeRating": "3"
+    },
+    {
+      "id": "58764391eb8f",
+      "slug": "kobold",
+      "name": "Kobold",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "826cd7c4a3f1",
+      "slug": "kraken",
+      "name": "Kraken",
+      "challengeRating": "23"
+    },
+    {
+      "id": "3a30ac2a1409",
+      "slug": "lamia",
+      "name": "Lamia",
+      "challengeRating": "4"
+    },
+    {
+      "id": "fbadaebbd02b",
+      "slug": "lemure",
+      "name": "Lemure",
+      "challengeRating": "0"
+    },
+    {
+      "id": "daeb5f4f1f1f",
+      "slug": "lion",
+      "name": "León",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
+      "id": "835254720a71",
+      "slug": "lich",
+      "name": "Lich",
+      "challengeRating": "21"
+    },
+    {
+      "id": "da42e9514764",
+      "slug": "lizard",
+      "name": "Lizard",
+      "challengeRating": "0"
+    },
+    {
+      "id": "61aa78f97c07",
+      "slug": "lizardfolk",
+      "name": "Lizardfolk",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "a969b08f62a4",
+      "slug": "wolf",
+      "name": "Lobo",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "df0df78f4f19",
+      "slug": "magma-mephit",
+      "name": "Magma Mephit",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "9c343404e322",
+      "slug": "magmin",
+      "name": "Magmin",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "98b480f2b361",
+      "slug": "mage",
+      "name": "Mago",
+      "challengeRating": "6",
+      "translated": true
+    },
+    {
+      "id": "aa8a5df01767",
+      "slug": "mammoth",
+      "name": "Mammoth",
+      "challengeRating": "6"
+    },
+    {
+      "id": "c5fa4e263ceb",
+      "slug": "manticore",
+      "name": "Manticore",
+      "challengeRating": "3"
+    },
+    {
+      "id": "c453a31a0852",
+      "slug": "marilith",
+      "name": "Marilith",
+      "challengeRating": "16"
+    },
+    {
+      "id": "8485d93d6727",
+      "slug": "mastiff",
+      "name": "Mastín",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "2bf7ecbdda7b",
+      "slug": "thug",
+      "name": "Matón",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "5c3c13031f82",
+      "slug": "medusa",
+      "name": "Medusa",
+      "challengeRating": "6"
+    },
+    {
+      "id": "e0276a323228",
+      "slug": "merfolk",
+      "name": "Merfolk",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "9e0970961c75",
+      "slug": "merrow",
+      "name": "Merrow",
+      "challengeRating": "2"
+    },
+    {
+      "id": "b167dc5c5075",
+      "slug": "mimic",
+      "name": "Mímico",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "5ee5e7f1577e",
+      "slug": "minotaur",
+      "name": "Minotaur",
+      "challengeRating": "3"
+    },
+    {
+      "id": "ef5b2db7550c",
+      "slug": "minotaur-skeleton",
+      "name": "Minotaur Skeleton",
+      "challengeRating": "2"
+    },
+    {
+      "id": "3681f6d18ffa",
+      "slug": "mule",
+      "name": "Mula",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "c67e27340fc0",
+      "slug": "mummy",
+      "name": "Mummy",
+      "challengeRating": "3"
+    },
+    {
+      "id": "5c83c5389d22",
+      "slug": "mummy-lord",
+      "name": "Mummy Lord",
+      "challengeRating": "15"
+    },
+    {
+      "id": "7723c3734d95",
+      "slug": "nalfeshnee",
+      "name": "Nalfeshnee",
+      "challengeRating": "13"
+    },
+    {
+      "id": "7ced13d81c47",
+      "slug": "night-hag",
+      "name": "Night Hag",
+      "challengeRating": "5"
+    },
+    {
+      "id": "05b2d0a36e40",
+      "slug": "nightmare",
+      "name": "Nightmare",
+      "challengeRating": "3"
+    },
+    {
+      "id": "86ad674a81ca",
+      "slug": "noble",
+      "name": "Noble",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "7d3eec3aaa20",
+      "slug": "nothic",
+      "name": "Nothic",
+      "challengeRating": "2"
+    },
+    {
+      "id": "073ed7068027",
+      "slug": "ochre-jelly",
+      "name": "Ochre Jelly",
+      "challengeRating": "2"
+    },
+    {
+      "id": "1713f1a625b5",
+      "slug": "octopus",
+      "name": "Octopus",
+      "challengeRating": "0"
+    },
+    {
+      "id": "0fed359c37ea",
+      "slug": "ogre-zombie",
+      "name": "Ogre Zombie",
+      "challengeRating": "2"
+    },
+    {
+      "id": "be10e1038447",
+      "slug": "ogre",
+      "name": "Ogro",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "56edfdedfdaa",
+      "slug": "oni",
+      "name": "Oni",
+      "challengeRating": "7"
+    },
+    {
+      "id": "6d2668f0d6d8",
+      "slug": "orc",
+      "name": "Orco",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "d15d6d2906e4",
+      "slug": "otyugh",
+      "name": "Otyugh",
+      "challengeRating": "5"
+    },
+    {
+      "id": "abd3baa2ef5d",
+      "slug": "owl",
+      "name": "Owl",
+      "challengeRating": "0"
+    },
+    {
+      "id": "06d95bc5c072",
+      "slug": "owlbear",
+      "name": "Owlbear",
+      "challengeRating": "3"
+    },
+    {
+      "id": "a20db29134e6",
+      "slug": "panther",
+      "name": "Pantera",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "d7a62e704ce9",
+      "slug": "pegasus",
+      "name": "Pegasus",
+      "challengeRating": "2"
+    },
+    {
+      "id": "f8b2e82021e9",
+      "slug": "phase-spider",
+      "name": "Phase Spider",
+      "challengeRating": "3"
+    },
+    {
+      "id": "75acb1de55ab",
+      "slug": "pit-fiend",
+      "name": "Pit Fiend",
+      "challengeRating": "20"
+    },
+    {
+      "id": "bcb19b6b5316",
+      "slug": "planetar",
+      "name": "Planetar",
+      "challengeRating": "16"
+    },
+    {
+      "id": "5dfac3088c38",
+      "slug": "plesiosaurus",
+      "name": "Plesiosaurus",
+      "challengeRating": "2"
+    },
+    {
+      "id": "bea59ae918a7",
+      "slug": "poisonous-snake",
+      "name": "Poisonous Snake",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "ca22717d705c",
+      "slug": "polar-bear",
+      "name": "Polar Bear",
+      "challengeRating": "2"
+    },
+    {
+      "id": "8b4fe1078d47",
+      "slug": "pony",
+      "name": "Pony",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "bf77cf402314",
+      "slug": "pseudodragon",
+      "name": "Pseudodragon",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "ac4801b38c2e",
+      "slug": "pteranodon",
+      "name": "Pteranodon",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "fe9385999843",
+      "slug": "purple-worm",
+      "name": "Purple Worm",
+      "challengeRating": "15"
+    },
+    {
+      "id": "5337dd84d003",
+      "slug": "quasit",
+      "name": "Quasit",
+      "challengeRating": "1"
+    },
+    {
+      "id": "c99ae8d029f6",
+      "slug": "quipper",
+      "name": "Quipper",
+      "challengeRating": "0"
+    },
+    {
+      "id": "a17ea68fd898",
+      "slug": "rakshasa",
+      "name": "Rakshasa",
+      "challengeRating": "13"
+    },
+    {
+      "id": "2528ae532316",
+      "slug": "rat",
+      "name": "Rat",
+      "challengeRating": "0"
+    },
+    {
+      "id": "90021958df83",
+      "slug": "giant-rat",
+      "name": "Rata gigante",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "9250834b7037",
+      "slug": "raven",
+      "name": "Raven",
+      "challengeRating": "0"
+    },
+    {
+      "id": "63565db4d7b1",
+      "slug": "red-dragon-wyrmling",
+      "name": "Red Dragon Wyrmling",
+      "challengeRating": "4"
+    },
+    {
+      "id": "6eb60fabf939",
+      "slug": "reef-shark",
+      "name": "Reef Shark",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "e5ed30034586",
+      "slug": "remorhaz",
+      "name": "Remorhaz",
+      "challengeRating": "11"
+    },
+    {
+      "id": "9ae859dd0c87",
+      "slug": "rhinoceros",
+      "name": "Rhinoceros",
+      "challengeRating": "2"
+    },
+    {
+      "id": "f8108096856d",
+      "slug": "roc",
+      "name": "Roc",
+      "challengeRating": "11"
+    },
+    {
+      "id": "28adfb7e4369",
+      "slug": "roper",
+      "name": "Roper",
+      "challengeRating": "5"
+    },
+    {
+      "id": "49eefe9213f3",
+      "slug": "rug-of-smothering",
+      "name": "Rug of Smothering",
+      "challengeRating": "2"
+    },
+    {
+      "id": "2d8aecc1161c",
+      "slug": "rust-monster",
+      "name": "Rust Monster",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "0e6c92149d6d",
+      "slug": "saber-toothed-tiger",
+      "name": "Saber-Toothed Tiger",
+      "challengeRating": "2"
+    },
+    {
+      "id": "3ce0f9d377ce",
+      "slug": "priest",
+      "name": "Sacerdote",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "6b2cd491220d",
+      "slug": "sahuagin",
+      "name": "Sahuagin",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "01a9552d9421",
+      "slug": "salamander",
+      "name": "Salamander",
+      "challengeRating": "5"
+    },
+    {
+      "id": "3f814b583571",
+      "slug": "satyr",
+      "name": "Satyr",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "763af99b3dd7",
+      "slug": "scorpion",
+      "name": "Scorpion",
+      "challengeRating": "0"
+    },
+    {
+      "id": "e8dd0894086a",
+      "slug": "sea-hag",
+      "name": "Sea Hag",
+      "challengeRating": "2"
+    },
+    {
+      "id": "ee5d49b3d005",
+      "slug": "sea-horse",
+      "name": "Sea Horse",
+      "challengeRating": "0"
+    },
+    {
+      "id": "d2a1bd807ed2",
+      "slug": "shadow",
+      "name": "Shadow",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "3b9c07fa986d",
+      "slug": "shambling-mound",
+      "name": "Shambling Mound",
+      "challengeRating": "5"
+    },
+    {
+      "id": "09e8506756a9",
+      "slug": "shield-guardian",
+      "name": "Shield Guardian",
+      "challengeRating": "7"
+    },
+    {
+      "id": "00649fa0807f",
+      "slug": "shrieker",
+      "name": "Shrieker",
+      "challengeRating": "0"
+    },
+    {
+      "id": "d8a6509d3941",
+      "slug": "silver-dragon-wyrmling",
+      "name": "Silver Dragon Wyrmling",
+      "challengeRating": "2"
+    },
+    {
+      "id": "a4f6af67e4a7",
+      "slug": "solar",
+      "name": "Solar",
+      "challengeRating": "21"
+    },
+    {
+      "id": "49f289010a04",
+      "slug": "spectator",
+      "name": "Spectator",
+      "challengeRating": "3"
+    },
+    {
+      "id": "c838e8c9ab6c",
+      "slug": "specter",
+      "name": "Specter",
+      "challengeRating": "1"
+    },
+    {
+      "id": "29dcfa3e5387",
+      "slug": "spider",
+      "name": "Spider",
+      "challengeRating": "0"
+    },
+    {
+      "id": "6d76ede67faa",
+      "slug": "spirit-naga",
+      "name": "Spirit Naga",
+      "challengeRating": "8"
+    },
+    {
+      "id": "92bef0f1c3d5",
+      "slug": "sprite",
+      "name": "Sprite",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "",
+      "slug": "srd_5e_monsters",
+      "name": "srd_5e_monsters",
+      "challengeRating": ""
+    },
+    {
+      "id": "840c788b02bf",
+      "slug": "steam-mephit",
+      "name": "Steam Mephit",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "150917301db0",
+      "slug": "stirge",
+      "name": "Stirge",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "928d418e363c",
+      "slug": "stone-giant",
+      "name": "Stone Giant",
+      "challengeRating": "7"
+    },
+    {
+      "id": "873a5a0aac14",
+      "slug": "stone-golem",
+      "name": "Stone Golem",
+      "challengeRating": "10"
+    },
+    {
+      "id": "3d71e6ce11a9",
+      "slug": "storm-giant",
+      "name": "Storm Giant",
+      "challengeRating": "13"
+    },
+    {
+      "id": "aaba8b77b194",
+      "slug": "succubus-incubus",
+      "name": "Succubus/Incubus",
+      "challengeRating": "4"
+    },
+    {
+      "id": "e84f1412954c",
+      "slug": "swarm-of-bats",
+      "name": "Swarm of Bats",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "690c79518c6b",
+      "slug": "swarm-of-insects",
+      "name": "Swarm of Insects",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "3af3fbde717a",
+      "slug": "swarm-of-poisonous-snakes",
+      "name": "Swarm of Poisonous Snakes",
+      "challengeRating": "2"
+    },
+    {
+      "id": "b686e7f45110",
+      "slug": "swarm-of-quippers",
+      "name": "Swarm of Quippers",
+      "challengeRating": "1"
+    },
+    {
+      "id": "e94314264fd5",
+      "slug": "swarm-of-rats",
+      "name": "Swarm of Rats",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "a03a70579cd1",
+      "slug": "swarm-of-ravens",
+      "name": "Swarm of Ravens",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "068175bfb2ae",
+      "slug": "tarrasque",
+      "name": "Tarrasque",
+      "challengeRating": "30"
+    },
+    {
+      "id": "7d15c7a9ed7c",
+      "slug": "tiger",
+      "name": "Tiger",
+      "challengeRating": "1"
+    },
+    {
+      "id": "fddee62ffe3e",
+      "slug": "treant",
+      "name": "Treant",
+      "challengeRating": "9"
+    },
+    {
+      "id": "e2fde3a2cc44",
+      "slug": "triceratops",
+      "name": "Triceratops",
+      "challengeRating": "5"
+    },
+    {
+      "id": "f3b2cbca0c94",
+      "slug": "troll",
+      "name": "Troll",
+      "challengeRating": "5"
+    },
+    {
+      "id": "6892cde7c6b1",
+      "slug": "twig-blight",
+      "name": "Twig Blight",
+      "challengeRating": "1/8"
+    },
+    {
+      "id": "c6e42209323a",
+      "slug": "tyrannosaurus-rex",
+      "name": "Tyrannosaurus Rex",
+      "challengeRating": "8"
+    },
+    {
+      "id": "5aebc89869e6",
+      "slug": "unicorn",
+      "name": "Unicorn",
+      "challengeRating": "5"
+    },
+    {
+      "id": "08ea9358ee0d",
+      "slug": "vampire",
+      "name": "Vampire",
+      "challengeRating": "13"
+    },
+    {
+      "id": "5ba614d04ef9",
+      "slug": "vampire-spawn",
+      "name": "Vampire Spawn",
+      "challengeRating": "5"
+    },
+    {
+      "id": "a40e5bce533a",
+      "slug": "veteran",
+      "name": "Veterano",
+      "challengeRating": "3",
+      "translated": true
+    },
+    {
+      "id": "1e5ab6a31464",
+      "slug": "violet-fungus",
+      "name": "Violet Fungus",
+      "challengeRating": "1/4"
+    },
+    {
+      "id": "963e904eff25",
+      "slug": "vrock",
+      "name": "Vrock",
+      "challengeRating": "6"
+    },
+    {
+      "id": "b1777475879d",
+      "slug": "vulture",
+      "name": "Vulture",
+      "challengeRating": "0"
+    },
+    {
+      "id": "1cd228bd8591",
+      "slug": "warhorse-skeleton",
+      "name": "Warhorse Skeleton",
+      "challengeRating": "1/2"
+    },
+    {
+      "id": "a54ad20b9ff1",
+      "slug": "water-elemental",
+      "name": "Water Elemental",
+      "challengeRating": "5"
+    },
+    {
+      "id": "80d6e2d9517b",
+      "slug": "weasel",
+      "name": "Weasel",
+      "challengeRating": "0"
+    },
+    {
+      "id": "1e17cf52360a",
+      "slug": "werebear",
+      "name": "Werebear",
+      "challengeRating": "5"
+    },
+    {
+      "id": "7ce3330d1214",
+      "slug": "wereboar",
+      "name": "Wereboar",
+      "challengeRating": "4"
+    },
+    {
+      "id": "483565906102",
+      "slug": "wererat",
+      "name": "Wererat",
+      "challengeRating": "2"
+    },
+    {
+      "id": "8d3392e06c87",
+      "slug": "weretiger",
+      "name": "Weretiger",
+      "challengeRating": "4"
+    },
+    {
+      "id": "617e0e2ba02b",
+      "slug": "werewolf",
+      "name": "Werewolf",
+      "challengeRating": "3"
+    },
+    {
+      "id": "a53c1a1f288b",
+      "slug": "white-dragon-wyrmling",
+      "name": "White Dragon Wyrmling",
+      "challengeRating": "2"
+    },
+    {
+      "id": "5b93d4f9b195",
+      "slug": "will-o-wisp",
+      "name": "Will-o'-Wisp",
+      "challengeRating": "2"
+    },
+    {
+      "id": "ae16f88fde48",
+      "slug": "winter-wolf",
+      "name": "Winter Wolf",
+      "challengeRating": "3"
+    },
+    {
+      "id": "f158056219fc",
+      "slug": "worg",
+      "name": "Worg",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "19ad0e0fc16b",
+      "slug": "wraith",
+      "name": "Wraith",
+      "challengeRating": "5"
+    },
+    {
+      "id": "793f8f6c6877",
+      "slug": "wyvern",
+      "name": "Wyvern",
+      "challengeRating": "6"
+    },
+    {
+      "id": "736cec57dc3a",
+      "slug": "xorn",
+      "name": "Xorn",
+      "challengeRating": "5"
+    },
+    {
+      "id": "80a4986e9769",
+      "slug": "yeti",
+      "name": "Yeti",
+      "challengeRating": "3"
+    },
+    {
+      "id": "ee6178993b20",
+      "slug": "young-black-dragon",
+      "name": "Young Black Dragon",
+      "challengeRating": "7"
+    },
+    {
+      "id": "ef057a049fa4",
+      "slug": "young-blue-dragon",
+      "name": "Young Blue Dragon",
+      "challengeRating": "9"
+    },
+    {
+      "id": "d4b1afdd1b62",
+      "slug": "young-brass-dragon",
+      "name": "Young Brass Dragon",
+      "challengeRating": "6"
+    },
+    {
+      "id": "376f34cdb4f8",
+      "slug": "young-bronze-dragon",
+      "name": "Young Bronze Dragon",
+      "challengeRating": "8"
+    },
+    {
+      "id": "421c175b74d8",
+      "slug": "young-copper-dragon",
+      "name": "Young Copper Dragon",
+      "challengeRating": "7"
+    },
+    {
+      "id": "6d961a490391",
+      "slug": "young-gold-dragon",
+      "name": "Young Gold Dragon",
+      "challengeRating": "10"
+    },
+    {
+      "id": "96099046272b",
+      "slug": "young-green-dragon",
+      "name": "Young Green Dragon",
+      "challengeRating": "8"
+    },
+    {
+      "id": "28b09250276a",
+      "slug": "young-red-dragon",
+      "name": "Young Red Dragon",
+      "challengeRating": "10"
+    },
+    {
+      "id": "9e1a07824ea1",
+      "slug": "young-silver-dragon",
+      "name": "Young Silver Dragon",
+      "challengeRating": "9"
+    },
+    {
+      "id": "b8bb608b2e6c",
+      "slug": "young-white-dragon",
+      "name": "Young White Dragon",
+      "challengeRating": "6"
+    },
+    {
+      "id": "b22fef6ad656",
+      "slug": "zombie",
+      "name": "Zombi",
+      "challengeRating": "1/4",
+      "translated": true
+    }
+  ]
+}

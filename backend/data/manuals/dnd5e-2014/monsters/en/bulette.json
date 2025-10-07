@@ -1,0 +1,33 @@
+{
+  "id": "ace461c43519",
+  "slug": "bulette",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Bulette",
+  "srd": {
+    "name": "Bulette",
+    "meta": "Large monstrosity, unaligned",
+    "Armor Class": "17 (Natural Armor)",
+    "Hit Points": "94 (9d10 + 45)",
+    "Speed": "40 ft., burrow 40 ft. ",
+    "STR": "19",
+    "STR_mod": "(+4)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "21",
+    "CON_mod": "(+5)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+    "Skills": "Perception +6",
+    "Senses": "Darkvision 60 ft., Tremorsense 60 ft.,  Passive Perception 16",
+    "Languages": "--",
+    "Challenge": "5 (1,800 XP)",
+    "Traits": "<p><em><strong>Standing Leap.</strong></em> The bulette's long jump is up to 30 feet and its high jump is up to 15 feet, with or without a running start.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +7 to hit, reach 5 ft., one target. <em>Hit:</em> 30 (4d12 + 4) piercing damage. </p><p><em><strong>Deadly Leap.</strong></em> If the bulette jumps at least 15 feet as part of its movement, it can then use this action to land on its feet in a space that contains one or more other creatures. Each of those creatures must succeed on a DC 16 Strength or Dexterity saving throw (target's choice) or be knocked prone and take 14 (3d6 + 4) bludgeoning damage plus 14 (3d6 + 4) slashing damage. On a successful save, the creature takes only half the damage, isn't knocked prone, and is pushed 5 feet out of the bulette's space into an unoccupied space of the creature's choice. If no unoccupied space is within range, the creature instead falls prone in the bulette's space.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/223/315/315/636252765369632881.jpeg"
+  }
+}

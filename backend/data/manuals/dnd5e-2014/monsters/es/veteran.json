@@ -1,0 +1,33 @@
+{
+  "id": "a40e5bce533a",
+  "slug": "veteran",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Veterano",
+  "srd": {
+    "name": "Veterano",
+    "meta": "Mediano humanoide, cualquiera",
+    "Armor Class": "17 (Lóriga segmentada)",
+    "Hit Points": "58 (9d8 + 18)",
+    "Speed": "a pie 30 ft.",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "13",
+    "DEX_mod": "(+1)",
+    "CON": "14",
+    "CON_mod": "(+2)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+  "Skills": "Atletismo +5, Percepción +2",
+  "Senses": "Percepción pasiva 12",
+  "Languages": "Cualquier idioma (normalmente Común)",
+  "Challenge": "3 (700 PX)",
+  "Actions": "<p><em><strong>Multiataque.</strong></em> El veterano realiza dos ataques con espada larga. Si tiene una espada corta desenvainada, también puede realizar un ataque con espada corta. </p><p><em><strong>Espada larga.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 7 (1d8 + 3) de daño cortante, o 8 (1d10 + 3) de daño cortante si se usa a dos manos. </p><p><em><strong>Espada corta.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 6 (1d6 + 3) de daño perforante. </p><p><em><strong>Ballesta pesada.</strong></em> <em>Ataque de arma a distancia:</em> +3 al ataque, alcance 100/400 ft., un objetivo. <em>Impacto:</em> 6 (1d10 + 1) de daño perforante.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/656/humanoid.jpg"
+  },
+  "translated": true
+}

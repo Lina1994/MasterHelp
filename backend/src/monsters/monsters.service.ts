@@ -6,8 +6,8 @@ import type { LanguageCode, MonsterDetail, MonsterIndexItem } from './monster.ty
 export class MonstersService {
   private readonly repo = new MonstersRepository();
 
-  list(lang: LanguageCode, filters?: { q?: string; type?: string; size?: string; crMin?: string; crMax?: string }): MonsterIndexItem[] {
-    const items = this.repo.list(lang);
+  list(manualId: string, lang: LanguageCode, filters?: { q?: string; type?: string; size?: string; crMin?: string; crMax?: string }): MonsterIndexItem[] {
+    const items = this.repo.list(lang, manualId);
 
     const normalized = (s?: string) => s?.toString().trim().toLowerCase();
     const parseCr = (s?: string) => {
@@ -37,7 +37,7 @@ export class MonstersService {
     });
   }
 
-  get(lang: LanguageCode, slug: string): MonsterDetail | null {
-    return this.repo.get(lang, slug);
+  get(manualId: string, lang: LanguageCode, slug: string): MonsterDetail | null {
+    return this.repo.get(lang, slug, manualId);
   }
 }

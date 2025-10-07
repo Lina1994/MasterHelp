@@ -1,0 +1,33 @@
+{
+  "id": "186060b7bf52",
+  "slug": "guard",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Guardia",
+  "srd": {
+    "name": "Guardia",
+    "meta": "Mediano humanoide, cualquiera",
+    "Armor Class": "16 (Camisa de mallas, escudo)",
+    "Hit Points": "11 (2d8 + 2)",
+    "Speed": "a pie 30 ft.",
+    "STR": "13",
+    "STR_mod": "(+1)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+    "Skills": "Perception +2",
+  "Senses": "Percepción pasiva 12",
+  "Languages": "Cualquier idioma (normalmente Común)",
+  "Challenge": "1/8 (25 PX)",
+  "Actions": "<p><em><strong>Lanza.</strong></em> <em>Ataque de arma cuerpo a cuerpo o a distancia:</em> +3 al ataque, alcance 5 ft. o alcance 20/60 ft., un objetivo. <em>Impacto:</em> 4 (1d6 + 1) de daño perforante, o 5 (1d8 + 1) de daño perforante si se usa a dos manos para hacer un ataque cuerpo a cuerpo.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/656/humanoid.jpg"
+  },
+  "translated": true
+}

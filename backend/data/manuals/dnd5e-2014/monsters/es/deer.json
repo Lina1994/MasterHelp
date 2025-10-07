@@ -1,0 +1,32 @@
+{
+  "id": "dda021b970c6",
+  "slug": "deer",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Ciervo",
+  "srd": {
+    "name": "Ciervo",
+    "meta": "Mediana bestia, no alineada",
+    "Armor Class": "13 ",
+    "Hit Points": "4 (1d8)",
+    "Speed": "50 ft. ",
+    "STR": "11",
+    "STR_mod": "(+0)",
+    "DEX": "16",
+    "DEX_mod": "(+3)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "14",
+    "WIS_mod": "(+2)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+  "Senses": "Percepción pasiva 12",
+    "Languages": "--",
+  "Challenge": "0 (10 PX)",
+  "Actions": "<p><em><strong>Embestida.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 2 (1d4) de daño perforante.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": true
+}

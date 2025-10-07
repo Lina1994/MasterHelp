@@ -1,0 +1,33 @@
+{
+  "id": "1b3b4b17e29c",
+  "slug": "giant-boar",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Jabalí gigante",
+  "srd": {
+    "name": "Jabalí gigante",
+    "meta": "Grande bestia, no alineado",
+    "Armor Class": "12 (Armadura natural)",
+    "Hit Points": "42 (5d10 + 15)",
+    "Speed": "a pie 40 ft.",
+    "STR": "17",
+    "STR_mod": "(+3)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "16",
+    "CON_mod": "(+3)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "7",
+    "WIS_mod": "(-2)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+  "Senses": "Percepción pasiva 8",
+    "Languages": "--",
+  "Challenge": "2 (450 PX)",
+  "Traits": "<p><em><strong>Carga.</strong></em> Si el jabalí se mueve al menos 20 ft. en línea recta hacia un objetivo y luego lo golpea con un ataque de colmillos en el mismo turno, el objetivo recibe 7 (2d6) puntos de daño cortante adicionales. Si el objetivo es una criatura, debe superar una tirada de salvación de Fuerza CD 13 o caer derribado. </p><p><em><strong>Implacable (Recarga tras un descanso corto o largo).</strong></em> Si el jabalí recibe 10 puntos de daño o menos que lo reducirían a 0 PG, queda reducido a 1 PG en su lugar.</p>",
+  "Actions": "<p><em><strong>Colmillos.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 10 (2d6 + 3) de daño cortante.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": true
+}

@@ -1,0 +1,31 @@
+{
+  "id": "ee5d49b3d005",
+  "slug": "sea-horse",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Sea Horse",
+  "srd": {
+    "name": "Sea Horse",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "11 ",
+    "Hit Points": "1 (1d4 - 1)",
+    "Speed": "0 ft., swim 20 ft. ",
+    "STR": "1",
+    "STR_mod": "(-5)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "8",
+    "CON_mod": "(-1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "2",
+    "CHA_mod": "(-4)",
+    "Senses": "Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Traits": "<p><em><strong>Water Breathing.</strong></em> The sea horse can breathe only underwater.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

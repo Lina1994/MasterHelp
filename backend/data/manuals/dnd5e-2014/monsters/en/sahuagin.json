@@ -1,0 +1,33 @@
+{
+  "id": "6b2cd491220d",
+  "slug": "sahuagin",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Sahuagin",
+  "srd": {
+    "name": "Sahuagin",
+    "meta": "Medium humanoid, lawful evil",
+    "Armor Class": "12 (Natural Armor)",
+    "Hit Points": "22 (4d8 + 4)",
+    "Speed": "30 ft., swim 40 ft. ",
+    "STR": "13",
+    "STR_mod": "(+1)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "12",
+    "INT_mod": "(+1)",
+    "WIS": "13",
+    "WIS_mod": "(+1)",
+    "CHA": "9",
+    "CHA_mod": "(-1)",
+    "Skills": "Perception +5",
+    "Senses": "Darkvision 120 ft.,  Passive Perception 15",
+    "Languages": "Sahuagin",
+    "Challenge": "1/2 (100 XP)",
+    "Traits": "<p><em><strong>Blood Frenzy.</strong></em> The sahuagin has advantage on melee attack rolls against any creature that doesn't have all its hit points. </p><p><em><strong>Limited Amphibiousness.</strong></em> The sahuagin can breathe air and water, but it needs to be submerged at least once every 4 hours to avoid suffocating. </p><p><em><strong>Shark Telepathy.</strong></em> The sahuagin can magically command any shark within 120 feet of it, using a limited telepathy.</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The sahuagin makes two melee attacks: one with its bite and one with its claws or spear. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 3 (1d4 + 1) piercing damage. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 3 (1d4 + 1) slashing damage. </p><p><em><strong>Spear.</strong></em> <em>Melee or <em>Ranged Weapon Attack:</em></em> +3 to hit, reach 5 ft. or range 20/60 ft., one target. <em>Hit:</em> 4 (1d6 + 1) piercing damage, or 5 (1d8 + 1) piercing damage if used with two hands to make a melee attack.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/177/1000/1000/636252761683746719.jpeg"
+  }
+}

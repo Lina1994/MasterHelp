@@ -1,0 +1,33 @@
+{
+  "id": "61aa78f97c07",
+  "slug": "lizardfolk",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Lizardfolk",
+  "srd": {
+    "name": "Lizardfolk",
+    "meta": "Medium humanoid, neutral",
+    "Armor Class": "15 (Natural Armor, Shield)",
+    "Hit Points": "22 (4d8 + 4)",
+    "Speed": "30 ft., swim 30 ft. ",
+    "STR": "15",
+    "STR_mod": "(+2)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "7",
+    "INT_mod": "(-2)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Skills": "Perception +3, Stealth +2, Survival +5",
+    "Senses": "Passive Perception 13",
+    "Languages": "Draconic",
+    "Challenge": "1/2 (100 XP)",
+    "Traits": "<p><em><strong>Hold Breath.</strong></em> The lizardfolk can hold its breath for 15 minutes.</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The lizardfolk makes two melee attacks, each one with a different weapon. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 5 (1d6 + 2) piercing damage. </p><p><em><strong>Heavy Club.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 5 (1d6 + 2) bludgeoning damage. </p><p><em><strong>Javelin.</strong></em> <em>Melee or <em>Ranged Weapon Attack:</em></em> +4 to hit, reach 5 ft. or range 30/120 ft., one target. <em>Hit:</em> 5 (1d6 + 2) piercing damage. </p><p><em><strong>Spiked Shield.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 5 (1d6 + 2) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/233/315/315/636252766314905259.jpeg"
+  }
+}

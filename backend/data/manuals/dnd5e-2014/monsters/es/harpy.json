@@ -1,0 +1,32 @@
+{
+  "id": "94c8af52468a",
+  "slug": "harpy",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Harpy",
+  "srd": {
+    "name": "Harpy",
+    "meta": "Medium monstrosity, chaotic evil",
+    "Armor Class": "11 ",
+    "Hit Points": "38 (7d8 + 7)",
+    "Speed": "20 ft., fly 40 ft. ",
+    "STR": "12",
+    "STR_mod": "(+1)",
+    "DEX": "13",
+    "DEX_mod": "(+1)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "7",
+    "INT_mod": "(-2)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "13",
+    "CHA_mod": "(+1)",
+    "Senses": "Passive Perception 10",
+    "Languages": "Common",
+    "Challenge": "1 (200 XP)",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The harpy makes two attacks: one with its claws and one with its club. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (2d4 + 1) slashing damage. </p><p><em><strong>Club.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 3 (1d4 + 1) bludgeoning damage. </p><p><em><strong>Luring Song.</strong></em> The harpy sings a magical melody. Every humanoid and giant within 300 feet of the harpy that can hear the song must succeed on a DC 11 Wisdom saving throw or be charmed until the song ends. The harpy must take a bonus action on its subsequent turns to continue singing. It can stop singing at any time. The song ends if the harpy is incapacitated.</p><p>While charmed by the harpy, a target is incapacitated and ignores the songs of other harpies. If the charmed target is more than 5 feet away from the harpy, the target must move on its turn toward the harpy by the most direct route, trying to get within 5 feet. It doesn't avoid opportunity attacks, but before moving into damaging terrain, such as lava or a pit, and whenever it takes damage from a source other than the harpy, the target can repeat the saving throw. A charmed target can also repeat the saving throw at the end of each of its turns. If the saving throw is successful, the effect ends on it.</p><p>A target that successfully saves is immune to this harpy's song for the next 24 hours.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/391/315/315/636252781955908234.jpeg"
+  },
+  "translated": false
+}

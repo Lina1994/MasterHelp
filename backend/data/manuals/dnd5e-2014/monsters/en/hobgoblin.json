@@ -1,0 +1,32 @@
+{
+  "id": "c0080c887155",
+  "slug": "hobgoblin",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Hobgoblin",
+  "srd": {
+    "name": "Hobgoblin",
+    "meta": "Medium humanoid, lawful evil",
+    "Armor Class": "18 (Chain Mail, Shield)",
+    "Hit Points": "11 (2d8 + 2)",
+    "Speed": "30 ft. ",
+    "STR": "13",
+    "STR_mod": "(+1)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "9",
+    "CHA_mod": "(-1)",
+    "Senses": "Darkvision 60 ft.,  Passive Perception 10",
+    "Languages": "Common, Goblin",
+    "Challenge": "1/2 (100 XP)",
+    "Traits": "<p><em><strong>Martial Advantage.</strong></em> Once per turn, the hobgoblin can deal an extra 7 (2d6) damage to a creature it hits with a weapon attack if that creature is within 5 feet of an ally of the hobgoblin that isn't incapacitated.</p>",
+    "Actions": "<p><em><strong>Longsword.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 5 (1d8 + 1) slashing damage, or 6 (1d10 + 1) slashing damage if used with two hands. </p><p><em><strong>Longbow.</strong></em> <em>Ranged Weapon Attack:</em> +3 to hit, range 150/600 ft., one target. <em>Hit:</em> 5 (1d8 + 1) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/389/315/315/636252781431932597.jpeg"
+  }
+}

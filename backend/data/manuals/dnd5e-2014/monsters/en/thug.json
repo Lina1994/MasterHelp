@@ -1,0 +1,33 @@
+{
+  "id": "2bf7ecbdda7b",
+  "slug": "thug",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Thug",
+  "srd": {
+    "name": "Thug",
+    "meta": "Medium humanoid, any",
+    "Armor Class": "11 (Leather Armor)",
+    "Hit Points": "32 (5d8 + 10)",
+    "Speed": "30 ft. ",
+    "STR": "15",
+    "STR_mod": "(+2)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "14",
+    "CON_mod": "(+2)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "11",
+    "CHA_mod": "(+0)",
+    "Skills": "Intimidation +2",
+    "Senses": "Passive Perception 10",
+    "Languages": "Any one language (usually Common)",
+    "Challenge": "1/2 (100 XP)",
+    "Traits": "<p><em><strong>Pack Tactics.</strong></em> The thug has advantage on an attack roll against a creature if at least one of the thug's allies is within 5 feet of the creature and the ally isn't incapacitated.</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The thug makes two melee attacks. </p><p><em><strong>Mace.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 5 (1d6 + 2) bludgeoning damage. </p><p><em><strong>Heavy Crossbow.</strong></em> <em>Ranged Weapon Attack:</em> +2 to hit, range 100/400 ft., one target. <em>Hit:</em> 5 (1d10) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/99/1000/1000/636252741335519081.jpeg"
+  }
+}

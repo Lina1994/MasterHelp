@@ -14,6 +14,8 @@ import ManualViewerPage from '../pages/ManualViewerPage';
 import ClassPage from '../pages/ClassPage';
 import MainLayout from '../layouts/MainLayout';
 import SpellsPage from '../pages/SpellsPage';
+import BestiaryListPage from '../pages/BestiaryListPage';
+import BestiaryDetailPage from '../pages/BestiaryDetailPage';
 
 const router = createBrowserRouter([
   // Single top-level layout so GlobalPlayer stays mounted across all app pages
@@ -41,6 +43,7 @@ const router = createBrowserRouter([
           { path: ':manualId', element: <ManualViewerPage /> },
           { path: ':manualId/section/:nodeId', element: <ManualViewerPage /> },
           { path: ':manualId/classes/:id', element: <ClassPage /> },
+          // Bestiary se sirve via la ruta genérica de sección: :manualId/section/:nodeId (nodeId=bestiary)
         ],
       },
       // Public spells browser

@@ -1,0 +1,31 @@
+{
+  "id": "df40b0a9ad0e",
+  "slug": "draft-horse",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Draft Horse",
+  "srd": {
+    "name": "Draft Horse",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "10 ",
+    "Hit Points": "19 (3d10 + 3)",
+    "Speed": "40 ft. ",
+    "STR": "18",
+    "STR_mod": "(+4)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Senses": "Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Actions": "<p><em><strong>Hooves.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one target. <em>Hit:</em> 9 (2d4 + 4) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

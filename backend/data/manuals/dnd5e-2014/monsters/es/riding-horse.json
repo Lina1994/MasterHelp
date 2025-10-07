@@ -1,0 +1,32 @@
+{
+  "id": "b00c083394d3",
+  "slug": "riding-horse",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Caballo de monta",
+  "srd": {
+    "name": "Caballo de monta",
+    "meta": "Grande bestia, no alineada",
+    "Armor Class": "10 ",
+    "Hit Points": "13 (2d10 + 2)",
+    "Speed": "60 ft. ",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+  "Senses": "Percepción pasiva 10",
+    "Languages": "--",
+  "Challenge": "1/4 (50 PX)",
+  "Actions": "<p><em><strong>Cascos.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 8 (2d4 + 3) de daño contundente.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/904/315/315/636334288913250513.jpeg"
+  },
+  "translated": true
+}

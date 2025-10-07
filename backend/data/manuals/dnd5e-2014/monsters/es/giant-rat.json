@@ -1,0 +1,33 @@
+{
+  "id": "90021958df83",
+  "slug": "giant-rat",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Rata gigante",
+  "srd": {
+    "name": "Rata gigante",
+    "meta": "Pequeño bestia, no alineado",
+    "Armor Class": "12",
+    "Hit Points": "7 (2d6)",
+    "Speed": "a pie 30 ft.",
+    "STR": "7",
+    "STR_mod": "(-2)",
+    "DEX": "15",
+    "DEX_mod": "(+2)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "4",
+    "CHA_mod": "(-3)",
+  "Senses": "visión en la oscuridad 60 ft., Percepción pasiva 10",
+    "Languages": "--",
+  "Challenge": "1/8 (25 PX)",
+  "Traits": "<p><em><strong>Olfato agudo.</strong></em> La rata tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan del olfato. </p><p><em><strong>Tácticas de manada.</strong></em> La rata tiene ventaja en la tirada de ataque contra una criatura si al menos uno de los aliados de la rata está a 5 ft. de la criatura y ese aliado no está incapacitado.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto</em>: 4 (1d4 + 2) de daño perforante.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/538/1000/1000/636376332197953299.jpeg"
+  },
+  "translated": true
+}

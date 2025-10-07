@@ -1,0 +1,33 @@
+{
+  "id": "5ccab094aa61",
+  "slug": "giant-vulture",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Giant Vulture",
+  "srd": {
+    "name": "Giant Vulture",
+    "meta": "Large beast, neutral",
+    "Armor Class": "10 ",
+    "Hit Points": "22 (3d10 + 6)",
+    "Speed": "10 ft., fly 60 ft. ",
+    "STR": "15",
+    "STR_mod": "(+2)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "15",
+    "CON_mod": "(+2)",
+    "INT": "6",
+    "INT_mod": "(-2)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Skills": "Perception +3",
+    "Senses": "Passive Perception 13",
+    "Languages": "Understands Common but can't speak  it",
+    "Challenge": "1 (200 XP)",
+    "Traits": "<p><em><strong>Keen Sight and Smell.</strong></em> The vulture has advantage on Wisdom (Perception) checks that rely on sight or smell.</p><p><em><strong>Pack Tactics.</strong></em> The vulture has advantage on an attack roll against a creature if at least one of the vulture's allies is within 5 feet of the creature and the ally isn't incapacitated.</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The vulture makes two attacks: one with its beak and one with its talons. </p><p><em><strong>Beak.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (2d4 + 2) piercing damage. </p><p><em><strong>Talons.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 9 (2d6 + 2) slashing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "fa2ecc73da6f",
+  "slug": "giant-fire-beetle",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Giant Fire Beetle",
+  "srd": {
+    "name": "Giant Fire Beetle",
+    "meta": "Small beast, unaligned",
+    "Armor Class": "13 (Natural Armor)",
+    "Hit Points": "4 (1d6 + 1)",
+    "Speed": "30 ft. ",
+    "STR": "8",
+    "STR_mod": "(-1)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "7",
+    "WIS_mod": "(-2)",
+    "CHA": "3",
+    "CHA_mod": "(-4)",
+    "Senses": "Blindsight 30 ft.,  Passive Perception 8",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Traits": "<p><em><strong>Illumination.</strong></em> The beetle sheds bright light in a 10-foot radius and dim light for an additional 10 feet.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +1 to hit, reach 5 ft., one target. <em>Hit:</em> 2 (1d6 − 1) slashing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/896/1000/1000/636334287498492864.jpeg"
+  }
+}

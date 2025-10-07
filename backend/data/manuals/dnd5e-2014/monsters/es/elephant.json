@@ -1,0 +1,33 @@
+{
+  "id": "ef094ed09402",
+  "slug": "elephant",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Elephant",
+  "srd": {
+    "name": "Elephant",
+    "meta": "Huge beast, unaligned",
+    "Armor Class": "12 (Natural Armor)",
+    "Hit Points": "76 (8d12 + 24)",
+    "Speed": "40 ft. ",
+    "STR": "22",
+    "STR_mod": "(+6)",
+    "DEX": "9",
+    "DEX_mod": "(-1)",
+    "CON": "17",
+    "CON_mod": "(+3)",
+    "INT": "3",
+    "INT_mod": "(-4)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Senses": "Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "4 (1,100 XP)",
+    "Traits": "<p><em><strong>Trampling Charge.</strong></em> If the elephant moves at least 20 feet straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 12 Strength saving throw or be knocked prone. If the target is prone, the elephant can make one stomp attack against it as a bonus action.</p>",
+    "Actions": "<p><em><strong>Gore.</strong></em> <em>Melee Weapon Attack:</em> +8 to hit, reach 5 ft., one target. <em>Hit:</em> 19 (3d8 + 6) piercing damage. </p><p><em><strong>Stomp.</strong></em> <em>Melee Weapon Attack:</em> +8 to hit, reach 5 ft., one prone creature. <em>Hit:</em> 22 (3d10 + 6) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}

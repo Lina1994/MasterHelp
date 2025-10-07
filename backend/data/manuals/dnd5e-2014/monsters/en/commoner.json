@@ -1,0 +1,31 @@
+{
+  "id": "8c7f3755255a",
+  "slug": "commoner",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Commoner",
+  "srd": {
+    "name": "Commoner",
+    "meta": "Medium humanoid, any",
+    "Armor Class": "10 ",
+    "Hit Points": "4 (1d8)",
+    "Speed": "30 ft. ",
+    "STR": "10",
+    "STR_mod": "(+0)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "10",
+    "CON_mod": "(+0)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+    "Senses": "Passive Perception 10",
+    "Languages": "Any one language (usually Common)",
+    "Challenge": "0 (10 XP)",
+    "Actions": "<p><em><strong>Club.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one target. <em>Hit:</em> 2 (1d4) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/656/humanoid.jpg"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "dda021b970c6",
+  "slug": "deer",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Deer",
+  "srd": {
+    "name": "Deer",
+    "meta": "Medium beast, unaligned",
+    "Armor Class": "13 ",
+    "Hit Points": "4 (1d8)",
+    "Speed": "50 ft. ",
+    "STR": "11",
+    "STR_mod": "(+0)",
+    "DEX": "16",
+    "DEX_mod": "(+3)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "14",
+    "WIS_mod": "(+2)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+    "Senses": "Passive Perception 12",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one target. <em>Hit:</em> 2 (1d4) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

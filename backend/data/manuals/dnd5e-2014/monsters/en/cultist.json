@@ -1,0 +1,33 @@
+{
+  "id": "ccc49456cf57",
+  "slug": "cultist",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Cultist",
+  "srd": {
+    "name": "Cultist",
+    "meta": "Medium humanoid, any",
+    "Armor Class": "12 (Leather Armor)",
+    "Hit Points": "9 (2d8)",
+    "Speed": "30 ft. ",
+    "STR": "11",
+    "STR_mod": "(+0)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "10",
+    "CON_mod": "(+0)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+    "Skills": "Deception +2, Religion +2",
+    "Senses": "Passive Perception 10",
+    "Languages": "Any one language (usually Common)",
+    "Challenge": "1/8 (25 XP)",
+    "Traits": "<p><em><strong>Dark Devotion.</strong></em> The cultist has advantage on saving throws against being charmed or frightened.</p>",
+    "Actions": "<p><em><strong>Scimitar.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one creature. <em>Hit:</em> 4 (1d6 + 1) slashing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/14/481/1000/1000/636364323106021375.png"
+  }
+}

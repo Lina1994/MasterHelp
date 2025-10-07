@@ -1,0 +1,32 @@
+{
+  "id": "8c7f3755255a",
+  "slug": "commoner",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Aldeano",
+  "srd": {
+    "name": "Aldeano",
+    "meta": "Mediano humanoide, cualquiera",
+    "Armor Class": "10 ",
+    "Hit Points": "4 (1d8)",
+    "Speed": "a pie 30 ft.",
+    "STR": "10",
+    "STR_mod": "(+0)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "10",
+    "CON_mod": "(+0)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+  "Senses": "Percepción pasiva 10",
+  "Languages": "Cualquier idioma (normalmente Común)",
+  "Challenge": "0 (10 PX)",
+  "Actions": "<p><em><strong>Garrote.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 2 (1d4) de daño contundente.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/656/humanoid.jpg"
+  },
+  "translated": true
+}

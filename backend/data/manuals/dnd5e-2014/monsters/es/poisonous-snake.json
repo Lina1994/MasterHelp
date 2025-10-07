@@ -1,0 +1,32 @@
+{
+  "id": "bea59ae918a7",
+  "slug": "poisonous-snake",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Poisonous Snake",
+  "srd": {
+    "name": "Poisonous Snake",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "13 ",
+    "Hit Points": "2 (1d4)",
+    "Speed": "30 ft., swim 30 ft. ",
+    "STR": "2",
+    "STR_mod": "(-4)",
+    "DEX": "16",
+    "DEX_mod": "(+3)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "3",
+    "CHA_mod": "(-4)",
+    "Senses": "Blindsight 10 ft.,  Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "1/8 (25 XP)",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 1 piercing damage, and the target must make a DC 10 Constitution saving throw, taking 5 (2d4) poison damage on a failed save, or half as much damage on a successful one.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}

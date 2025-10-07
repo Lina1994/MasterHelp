@@ -1,0 +1,33 @@
+{
+  "id": "e0276a323228",
+  "slug": "merfolk",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Merfolk",
+  "srd": {
+    "name": "Merfolk",
+    "meta": "Medium humanoid, neutral",
+    "Armor Class": "11 ",
+    "Hit Points": "11 (2d8 + 2)",
+    "Speed": "10 ft., swim 40 ft. ",
+    "STR": "10",
+    "STR_mod": "(+0)",
+    "DEX": "13",
+    "DEX_mod": "(+1)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "11",
+    "INT_mod": "(+0)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "12",
+    "CHA_mod": "(+1)",
+    "Skills": "Perception +2",
+    "Senses": "Passive Perception 12",
+    "Languages": "Aquan, Common",
+    "Challenge": "1/8 (25 XP)",
+    "Traits": "<p><em><strong>Amphibious.</strong></em> The merfolk can breathe air and water.</p>",
+    "Actions": "<p><em><strong>Spear.</strong></em> <em>Melee or <em>Ranged Weapon Attack:</em></em> +2 to hit, reach 5 ft. or range 20/60 ft., one target. <em>Hit:</em> 3 (1d6) piercing damage, or 4 (1d8) piercing damage if used with two hands to make a melee attack.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/197/1000/1000/636252763841141413.jpeg"
+  }
+}

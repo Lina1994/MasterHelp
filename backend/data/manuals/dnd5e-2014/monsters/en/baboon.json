@@ -1,0 +1,32 @@
+{
+  "id": "3c4614604b67",
+  "slug": "baboon",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Baboon",
+  "srd": {
+    "name": "Baboon",
+    "meta": "Small beast, unaligned",
+    "Armor Class": "12 ",
+    "Hit Points": "3 (1d6)",
+    "Speed": "30 ft., climb 30 ft. ",
+    "STR": "8",
+    "STR_mod": "(-1)",
+    "DEX": "14",
+    "DEX_mod": "(+2)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "4",
+    "INT_mod": "(-3)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Senses": "Passive Perception 11",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Traits": "<p><em><strong>Pack Tactics.</strong></em> The baboon has advantage on an attack roll against a creature if at least one of the baboon's allies is within 5 feet of the creature and the ally isn't incapacitated.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +1 to hit, reach 5 ft., one target. <em>Hit:</em> 1 (1d4 − 1) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "86ad674a81ca",
+  "slug": "noble",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Noble",
+  "srd": {
+    "name": "Noble",
+    "meta": "Medium humanoid, any",
+    "Armor Class": "15 (Breastplate)",
+    "Hit Points": "9 (2d8)",
+    "Speed": "30 ft. ",
+    "STR": "11",
+    "STR_mod": "(+0)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "12",
+    "INT_mod": "(+1)",
+    "WIS": "14",
+    "WIS_mod": "(+2)",
+    "CHA": "16",
+    "CHA_mod": "(+3)",
+    "Skills": "Deception +5, Insight +4, Persuasion +5",
+    "Senses": "Passive Perception 12",
+    "Languages": "Any two languages",
+    "Challenge": "1/8 (25 XP)",
+    "Actions": "<p><em><strong>Rapier.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 5 (1d8 + 1) piercing damage.</p>",
+    "Reactions": "<p><em><strong>Parry.</strong></em> The noble adds 2 to its AC against one melee attack that would hit it. To do so, the noble must see the attacker and be wielding a melee weapon.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/277/1000/1000/636252769861281900.jpeg"
+  }
+}

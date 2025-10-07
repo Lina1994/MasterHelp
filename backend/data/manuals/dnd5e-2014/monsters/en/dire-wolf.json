@@ -1,0 +1,33 @@
+{
+  "id": "06d2aea6eb9e",
+  "slug": "dire-wolf",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Dire Wolf",
+  "srd": {
+    "name": "Dire Wolf",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "14 (Natural Armor)",
+    "Hit Points": "37 (5d10 + 10)",
+    "Speed": "50 ft. ",
+    "STR": "17",
+    "STR_mod": "(+3)",
+    "DEX": "15",
+    "DEX_mod": "(+2)",
+    "CON": "15",
+    "CON_mod": "(+2)",
+    "INT": "3",
+    "INT_mod": "(-4)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Skills": "Perception +3, Stealth +4",
+    "Senses": "Passive Perception 13",
+    "Languages": "--",
+    "Challenge": "1 (200 XP)",
+    "Traits": "<p><em><strong>Keen Hearing and Smell.</strong></em> The wolf has advantage on Wisdom (Perception) checks that rely on hearing or smell.</p><p><em><strong>Pack Tactics.</strong></em> The wolf has advantage on an attack roll against a creature if at least one of the wolf's allies is within 5 feet of the creature and the ally isn't incapacitated.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 10 (2d6 + 3) piercing damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/484/315/315/636376300478361995.jpeg"
+  }
+}

@@ -9,6 +9,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SpellsBrowser from '../components/spells/SpellsBrowser';
 import RacesBrowser from '../components/races/RacesBrowser';
 import ClassesBrowser from '../components/classes/ClassesBrowser';
+import BestiaryListPage from './BestiaryListPage';
 
 interface TocNode { id: string; title: string; children?: TocNode[] }
 interface SectionDto { id: string; title: string; format?: 'markdown'|'html'; markdown?: string; html?: string; }
@@ -64,6 +65,10 @@ export default function ManualViewerPage() {
           </Box>
           <Divider />
           <List dense>
+            {/* Enlace contextual al Bestiario dentro del manual */}
+            <ListItemButton component={RouterLink} to={`/manuals/${manualId}/section/bestiary`}>
+              <ListItemText primary="Bestiary" />
+            </ListItemButton>
             {flat.map(n => (
               <ListItemButton key={n.id} component={RouterLink} to={`/manuals/${manualId}/section/${n.id}`} selected={n.id === (nodeId || 'intro')}>
                 <ListItemText primary={n.title} />
@@ -74,7 +79,7 @@ export default function ManualViewerPage() {
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
-        <Typography variant="h4" gutterBottom>{section?.title || 'Sección'}</Typography>
+  <Typography variant="h4" gutterBottom>{(nodeId === 'bestiary' && !section?.title) ? 'Bestiary' : (section?.title || 'Sección')}</Typography>
         {/* Renderizador normal de markdown */}
         {section?.format === 'markdown' && section?.markdown && (
           <Box sx={{
@@ -102,6 +107,12 @@ export default function ManualViewerPage() {
         {nodeId === 'classes' && (
           <Box sx={{ mt: 3 }}>
             <ClassesBrowser manualId={manualId} />
+          </Box>
+        )}
+        {/* Inserta el bestiario dentro del manual */}
+        {nodeId === 'bestiary' && (
+          <Box sx={{ mt: 3 }}>
+            <BestiaryListPage />
           </Box>
         )}
         {section?.format === 'html' && section?.html && (

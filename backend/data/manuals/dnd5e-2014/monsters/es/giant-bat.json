@@ -1,0 +1,33 @@
+{
+  "id": "e1ba542231e0",
+  "slug": "giant-bat",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Giant Bat",
+  "srd": {
+    "name": "Giant Bat",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "13 ",
+    "Hit Points": "22 (4d10)",
+    "Speed": "10 ft., fly 60 ft. ",
+    "STR": "15",
+    "STR_mod": "(+2)",
+    "DEX": "16",
+    "DEX_mod": "(+3)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Senses": "Blindsight 60 ft.,  Passive Perception 11",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Traits": "<p><em><strong>Echolocation.</strong></em> The bat can't use its blindsight while deafened.</p><p><em><strong>Keen Hearing.</strong></em> The bat has advantage on Wisdom (Perception) checks that rely on hearing.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 5 (1d6 + 2) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}

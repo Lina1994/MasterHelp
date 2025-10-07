@@ -1,0 +1,31 @@
+{
+  "id": "f6d8e37543f3",
+  "slug": "camel",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Camel",
+  "srd": {
+    "name": "Camel",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "9 ",
+    "Hit Points": "15 (2d10 + 4)",
+    "Speed": "50 ft. ",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "8",
+    "DEX_mod": "(-1)",
+    "CON": "14",
+    "CON_mod": "(+2)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "8",
+    "WIS_mod": "(-1)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+    "Senses": "Passive Perception 9",
+    "Languages": "--",
+    "Challenge": "1/8 (25 XP)",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 2 (1d4) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

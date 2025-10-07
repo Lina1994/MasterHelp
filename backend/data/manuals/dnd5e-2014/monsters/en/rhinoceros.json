@@ -1,0 +1,32 @@
+{
+  "id": "9ae859dd0c87",
+  "slug": "rhinoceros",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Rhinoceros",
+  "srd": {
+    "name": "Rhinoceros",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "11 (Natural Armor)",
+    "Hit Points": "45 (6d10 + 12)",
+    "Speed": "40 ft. ",
+    "STR": "21",
+    "STR_mod": "(+5)",
+    "DEX": "8",
+    "DEX_mod": "(-1)",
+    "CON": "15",
+    "CON_mod": "(+2)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Senses": "Passive Perception 11",
+    "Languages": "--",
+    "Challenge": "2 (450 XP)",
+    "Traits": "<p><em><strong>Charge.</strong></em> If the rhinoceros moves at least 20 feet straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) bludgeoning damage. If the target is a creature, it must succeed on a DC 15 Strength saving throw or be knocked prone.</p>",
+    "Actions": "<p><em><strong>Gore.</strong></em> <em>Melee Weapon Attack:</em> +7 to hit, reach 5 ft., one target. <em>Hit:</em> 14 (2d8 + 5) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

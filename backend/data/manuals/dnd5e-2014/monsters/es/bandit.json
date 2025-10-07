@@ -1,0 +1,32 @@
+{
+  "id": "862cfd51162b",
+  "slug": "bandit",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Bandido",
+  "srd": {
+    "name": "Bandido",
+    "meta": "Mediano humanoide, cualquiera",
+    "Armor Class": "12 (Armadura de cuero)",
+    "Hit Points": "11 (2d8 + 2)",
+    "Speed": "a pie 30 ft.",
+    "STR": "11",
+    "STR_mod": "(+0)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+  "Senses": "Percepción pasiva 10",
+  "Languages": "Cualquier idioma (normalmente Común)",
+  "Challenge": "1/8 (25 PX)",
+  "Actions": "<p><em><strong>Cimitarra.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +3 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 4 (1d6 + 1) de daño cortante. </p><p><em><strong>Ballesta ligera.</strong></em> <em>Ataque de arma a distancia:</em> +3 al ataque, alcance 80/320 ft., un objetivo. <em>Impacto:</em> 5 (1d8 + 1) de daño perforante.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/656/humanoid.jpg"
+  },
+  "translated": true
+}

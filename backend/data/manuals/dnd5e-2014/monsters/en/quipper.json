@@ -1,0 +1,32 @@
+{
+  "id": "c99ae8d029f6",
+  "slug": "quipper",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Quipper",
+  "srd": {
+    "name": "Quipper",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "13 ",
+    "Hit Points": "1 (1d4 - 1)",
+    "Speed": "0 ft., swim 40 ft. ",
+    "STR": "2",
+    "STR_mod": "(-4)",
+    "DEX": "16",
+    "DEX_mod": "(+3)",
+    "CON": "9",
+    "CON_mod": "(-1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "7",
+    "WIS_mod": "(-2)",
+    "CHA": "2",
+    "CHA_mod": "(-4)",
+    "Senses": "Darkvision 60 ft.,  Passive Perception 8",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Traits": "<p><em><strong>Blood Frenzy.</strong></em> The quipper has advantage on melee attack rolls against any creature that doesn't have all its hit points. </p><p><em><strong>Water Breathing.</strong></em> The quipper can breathe only underwater.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 1 piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/253/1000/1000/636252767919065233.jpeg"
+  }
+}

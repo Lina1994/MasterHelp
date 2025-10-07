@@ -1,0 +1,32 @@
+{
+  "id": "937d3f54c553",
+  "slug": "gnoll",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Gnoll",
+  "srd": {
+    "name": "Gnoll",
+    "meta": "Medium humanoid, chaotic evil",
+    "Armor Class": "15 (Hide Armor, Shield)",
+    "Hit Points": "22 (5d8)",
+    "Speed": "30 ft. ",
+    "STR": "14",
+    "STR_mod": "(+2)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "6",
+    "INT_mod": "(-2)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Senses": "Darkvision 60 ft.,  Passive Perception 10",
+    "Languages": "Gnoll",
+    "Challenge": "1/2 (100 XP)",
+    "Traits": "<p><em><strong>Rampage.</strong></em> When the gnoll reduces a creature to 0 hit points with a melee attack on its turn, the gnoll can take a bonus action to move up to half its speed and make a bite attack.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 4 (1d4 + 2) piercing damage. </p><p><em><strong>Spear.</strong></em> <em>Melee or <em>Ranged Weapon Attack:</em></em> +4 to hit, reach 5 ft. or range 20/60 ft., one target. <em>Hit:</em> 5 (1d6 + 2) piercing damage, or 6 (1d8 + 2) piercing damage if used with two hands to make a melee attack. </p><p><em><strong>Longbow.</strong></em> <em>Ranged Weapon Attack:</em> +3 to hit, range 150/600 ft., one target. <em>Hit:</em> 5 (1d8 + 1) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/345/1000/1000/636252777224997611.jpeg"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "48e356c5525b",
+  "slug": "dryad",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Dryad",
+  "srd": {
+    "name": "Dryad",
+    "meta": "Medium fey, neutral",
+    "Armor Class": "11 (16 With Barkskin)",
+    "Hit Points": "22 (5d8)",
+    "Speed": "30 ft. ",
+    "STR": "10",
+    "STR_mod": "(+0)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "14",
+    "INT_mod": "(+2)",
+    "WIS": "15",
+    "WIS_mod": "(+2)",
+    "CHA": "18",
+    "CHA_mod": "(+4)",
+    "Skills": "Perception +4, Stealth +5",
+    "Senses": "Darkvision 60 ft.,  Passive Perception 14",
+    "Languages": "Elvish, Sylvan",
+    "Challenge": "1 (200 XP)",
+    "Traits": "<p><em><strong>Innate Spellcasting.</strong></em> The dryad's innate spellcasting ability is Charisma (spell save DC 14). The dryad can innately cast the following spells, requiring no material components: </p><p>At will: druidcraft </p><p>3/day each: entangle, goodberry </p><p>1/day each: barkskin, pass without trace, shillelagh </p><p><em><strong>Magic Resistance.</strong></em> The dryad has advantage on saving throws against spells and other magical effects. </p><p><em><strong>Speak with Beasts and Plants.</strong></em> The dryad can communicate with beasts and plants as if they shared a language. </p><p><em><strong>Tree Stride.</strong></em> Once on her turn, the dryad can use 10 feet of her movement to step magically into one living tree within her reach and emerge from a second living tree within 60 feet of the first tree, appearing in an unoccupied space within 5 feet of the second tree. Both trees must be Large or bigger.</p>",
+    "Actions": "<p><em><strong>Club.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit (+6 to hit with shillelagh), reach 5 ft., one target. <em>Hit:</em> 2 (1d4) bludgeoning damage, or 8 (1d8 + 4) bludgeoning damage with shillelagh. </p><p><em><strong>Fey Charm.</strong></em> The dryad targets one humanoid or beast that she can see within 30 feet of her. If the target can see the dryad, it must succeed on a DC 14 Wisdom saving throw or be magically charmed. The charmed creature regards the dryad as a trusted friend to be heeded and protected. Although the target isn't under the dryad's control, it takes the dryad's requests or actions in the most favorable way it can.</p><p>Each time the dryad or its allies do anything harmful to the target, it can repeat the saving throw, ending the effect on itself on a success. Otherwise, the effect lasts 24 hours or until the dryad dies, is on a different plane of existence from the target, or ends the effect as a bonus action. If a target's saving throw is successful, the target is immune to the dryad's Fey Charm for the next 24 hours. </p><p>The dryad can have no more than one humanoid and up to three beasts charmed at a time.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/307/1000/1000/636252771953950206.jpeg"
+  }
+}

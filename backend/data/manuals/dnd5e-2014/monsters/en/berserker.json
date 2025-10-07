@@ -1,0 +1,32 @@
+{
+  "id": "5d42531a5534",
+  "slug": "berserker",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Berserker",
+  "srd": {
+    "name": "Berserker",
+    "meta": "Medium humanoid, any",
+    "Armor Class": "13 (Hide Armor)",
+    "Hit Points": "67 (9d8 + 27)",
+    "Speed": "30 ft. ",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "17",
+    "CON_mod": "(+3)",
+    "INT": "9",
+    "INT_mod": "(-1)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "9",
+    "CHA_mod": "(-1)",
+    "Senses": "Passive Perception 10",
+    "Languages": "Any one language (usually Common)",
+    "Challenge": "2 (450 XP)",
+    "Traits": "<p><em><strong>Reckless.</strong></em> At the start of its turn, the berserker can gain advantage on all melee weapon attack rolls during that turn, but attack rolls against it have advantage until the start of its next turn.</p>",
+    "Actions": "<p><em><strong>Greataxe.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 9 (1d12 + 3) slashing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/656/humanoid.jpg"
+  }
+}

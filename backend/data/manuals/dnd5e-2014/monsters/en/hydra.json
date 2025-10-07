@@ -1,0 +1,33 @@
+{
+  "id": "067c75e73cbc",
+  "slug": "hydra",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Hydra",
+  "srd": {
+    "name": "Hydra",
+    "meta": "Huge monstrosity, unaligned",
+    "Armor Class": "15 (Natural Armor)",
+    "Hit Points": "172 (15d12 + 75)",
+    "Speed": "30 ft., swim 30 ft. ",
+    "STR": "20",
+    "STR_mod": "(+5)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "20",
+    "CON_mod": "(+5)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Skills": "Perception +6",
+    "Senses": "Darkvision 60 ft.,  Passive Perception 16",
+    "Languages": "--",
+    "Challenge": "8 (3,900 XP)",
+    "Traits": "<p><em><strong>Hold Breath.</strong></em> The hydra can hold its breath for 1 hour. </p><p><em><strong>Multiple Heads.</strong></em> The hydra has five heads. While it has more than one head, the hydra has advantage on saving throws against being blinded, charmed, deafened, frightened, stunned, and knocked unconscious.</p><p>Whenever the hydra takes 25 or more damage in a single turn, one of its heads dies. If all its heads die, the hydra dies.</p><p>At the end of its turn, it grows two heads for each of its heads that died since its last turn, unless it has taken fire damage since its last turn. The hydra regains 10 hit points for each head regrown in this way. </p><p><em><strong>Reactive Heads.</strong></em> For each head the hydra has beyond one, it gets an extra reaction that can be used only for opportunity attacks. </p><p><em><strong>Wakeful.</strong></em> While the hydra sleeps, at least one of its heads is awake.</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The hydra makes as many bite attacks as it has heads. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +8 to hit, reach 10 ft., one target. <em>Hit:</em> 10 (1d10 + 5) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/349/315/315/636252777669218389.jpeg"
+  }
+}

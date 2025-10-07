@@ -1,0 +1,33 @@
+{
+  "id": "a7b57ab905e3",
+  "slug": "giant-toad",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Giant Toad",
+  "srd": {
+    "name": "Giant Toad",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "11 ",
+    "Hit Points": "39 (6d10 + 6)",
+    "Speed": "20 ft., swim 40 ft. ",
+    "STR": "15",
+    "STR_mod": "(+2)",
+    "DEX": "13",
+    "DEX_mod": "(+1)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "3",
+    "CHA_mod": "(-4)",
+    "Senses": "Darkvision 30 ft.,  Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "1 (200 XP)",
+    "Traits": "<p><em><strong>Amphibious.</strong></em> The toad can breathe air and water.</p><p><em><strong>Standing Leap.</strong></em> The toad's long jump is up to 20 feet and its high jump is up to 10 feet, with or without a running start.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (1d10 + 2) piercing damage plus 5 (1d10) poison damage, and the target is grappled (escape DC 13). Until this grapple ends, the target is restrained, and the toad can't bite another target. </p><p><em><strong>Swallow.</strong></em> The toad makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the toad, and it takes 10 (3d6) acid damage at the start of each of the toad's turns. The toad can have only one target swallowed at a time. If the toad dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 5 feet of movement, exiting prone.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}

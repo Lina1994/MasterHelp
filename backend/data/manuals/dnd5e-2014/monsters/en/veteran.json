@@ -1,0 +1,32 @@
+{
+  "id": "a40e5bce533a",
+  "slug": "veteran",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Veteran",
+  "srd": {
+    "name": "Veteran",
+    "meta": "Medium humanoid, any",
+    "Armor Class": "17 (Splint)",
+    "Hit Points": "58 (9d8 + 18)",
+    "Speed": "30 ft. ",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "13",
+    "DEX_mod": "(+1)",
+    "CON": "14",
+    "CON_mod": "(+2)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+    "Skills": "Athletics +5, Perception +2",
+    "Senses": "Passive Perception 12",
+    "Languages": "Any one language (usually Common)",
+    "Challenge": "3 (700 XP)",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The veteran makes two longsword attacks. If it has a shortsword drawn, it can also make a shortsword attack. </p><p><em><strong>Longsword.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (1d8 + 3) slashing damage, or 8 (1d10 + 3) slashing damage if used with two hands. </p><p><em><strong>Shortsword.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (1d6 + 3) piercing damage. </p><p><em><strong>Heavy Crossbow.</strong></em> <em>Ranged Weapon Attack:</em> +3 to hit, range 100/400 ft., one target. <em>Hit:</em> 6 (1d10 + 1) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/656/humanoid.jpg"
+  }
+}

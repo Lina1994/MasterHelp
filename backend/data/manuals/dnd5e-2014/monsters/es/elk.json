@@ -1,0 +1,33 @@
+{
+  "id": "76a9c478eb31",
+  "slug": "elk",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Elk",
+  "srd": {
+    "name": "Elk",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "10 ",
+    "Hit Points": "13 (2d10 + 2)",
+    "Speed": "50 ft. ",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Senses": "Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Traits": "<p><em><strong>Charge.</strong></em> If the elk moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.</p>",
+    "Actions": "<p><em><strong>Ram.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (1d6 + 3) bludgeoning damage. </p><p><em><strong>Hooves.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one prone creature. <em>Hit:</em> 8 (2d4 + 3) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}

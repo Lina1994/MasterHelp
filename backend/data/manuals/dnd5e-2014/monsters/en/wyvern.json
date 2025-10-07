@@ -1,0 +1,32 @@
+{
+  "id": "793f8f6c6877",
+  "slug": "wyvern",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Wyvern",
+  "srd": {
+    "name": "Wyvern",
+    "meta": "Large dragon, unaligned",
+    "Armor Class": "13 (Natural Armor)",
+    "Hit Points": "110 (13d10 + 39)",
+    "Speed": "20 ft., fly 80 ft. ",
+    "STR": "19",
+    "STR_mod": "(+4)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "16",
+    "CON_mod": "(+3)",
+    "INT": "5",
+    "INT_mod": "(-3)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Skills": "Perception +4",
+    "Senses": "Darkvision 60 ft.,  Passive Perception 14",
+    "Languages": "--",
+    "Challenge": "6 (2,300 XP)",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The wyvern makes two attacks: one with its bite and one with its stinger. While flying, it can use its claws in place of one other attack. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +7 to hit, reach 10 ft., one creature. <em>Hit:</em> 11 (2d6 + 4) piercing damage. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +7 to hit, reach 5 ft., one target. <em>Hit:</em> 13 (2d8 + 4) slashing damage. </p><p><em><strong>Stinger.</strong></em> <em>Melee Weapon Attack:</em> +7 to hit, reach 10 ft., one creature. <em>Hit:</em> 11 (2d6 + 4) piercing damage. The target must make a DC 15 Constitution saving throw, taking 24 (7d6) poison damage on a failed save, or half as much damage on a successful one.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/48/315/315/636252723695596000.jpeg"
+  }
+}

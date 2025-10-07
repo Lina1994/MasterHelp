@@ -1,0 +1,33 @@
+{
+  "id": "5dae0b3e0f37",
+  "slug": "giant-octopus",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Giant Octopus",
+  "srd": {
+    "name": "Giant Octopus",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "11 ",
+    "Hit Points": "52 (8d10 + 8)",
+    "Speed": "10 ft., swim 60 ft. ",
+    "STR": "17",
+    "STR_mod": "(+3)",
+    "DEX": "13",
+    "DEX_mod": "(+1)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "4",
+    "INT_mod": "(-3)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "4",
+    "CHA_mod": "(-3)",
+    "Skills": "Perception +4, Stealth +5",
+    "Senses": "Darkvision 60 ft.,  Passive Perception 14",
+    "Languages": "--",
+    "Challenge": "1 (200 XP)",
+    "Traits": "<p><em><strong>Hold Breath.</strong></em> While out of water, the octopus can hold its breath for 1 hour. </p><p><em><strong>Underwater Camouflage.</strong></em> The octopus has advantage on Dexterity (Stealth) checks made while underwater.</p><p><em><strong>Water Breathing.</strong></em> The octopus can breathe only underwater.</p>",
+    "Actions": "<p><em><strong>Tentacles.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 15 ft., one target. <em>Hit:</em> 10 (2d6 + 3) bludgeoning damage. If the target is a creature, it is grappled (escape DC 16). Until this grapple ends, the target is restrained, and the octopus can't use its tentacles on another target. </p><p><em><strong>Ink Cloud (Recharges after a Short or Long Rest).</strong></em> A 20- foot-radius cloud of ink extends all around the octopus if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the octopus can use the Dash action as a bonus action.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/898/315/315/636334288003435302.jpeg"
+  }
+}

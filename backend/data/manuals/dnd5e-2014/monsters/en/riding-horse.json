@@ -1,0 +1,31 @@
+{
+  "id": "b00c083394d3",
+  "slug": "riding-horse",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Riding Horse",
+  "srd": {
+    "name": "Riding Horse",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "10 ",
+    "Hit Points": "13 (2d10 + 2)",
+    "Speed": "60 ft. ",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Senses": "Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Actions": "<p><em><strong>Hooves.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 8 (2d4 + 3) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/904/315/315/636334288913250513.jpeg"
+  }
+}

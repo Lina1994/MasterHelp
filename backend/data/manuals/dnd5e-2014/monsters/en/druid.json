@@ -1,0 +1,33 @@
+{
+  "id": "2eb4b55065c6",
+  "slug": "druid",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Druid",
+  "srd": {
+    "name": "Druid",
+    "meta": "Medium humanoid, any",
+    "Armor Class": "11 (16 With Barkskin)",
+    "Hit Points": "27 (5d8 + 5)",
+    "Speed": "30 ft. ",
+    "STR": "10",
+    "STR_mod": "(+0)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "12",
+    "INT_mod": "(+1)",
+    "WIS": "15",
+    "WIS_mod": "(+2)",
+    "CHA": "11",
+    "CHA_mod": "(+0)",
+    "Skills": "Medicine +4, Nature +3, Perception +4",
+    "Senses": "Passive Perception 14",
+    "Languages": "Druidic plus any two languages",
+    "Challenge": "2 (450 XP)",
+    "Traits": "<p><em><strong>Spellcasting.</strong></em> The druid is a 4th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). It has the following druid spells prepared: </p><p>Cantrips (at will): druidcraft, produce flame, shillelagh </p><p>1st level (4 slots): entangle, longstrider, speak with animals, thunderwave </p><p>2nd level (3 slots): animal messenger, barkskin</p>",
+    "Actions": "<p><em><strong>Quarterstaff.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit (+4 to hit with shillelagh), reach 5 ft., one target. <em>Hit:</em> 3 (1d6) bludgeoning damage, 4 (1d8) bludgeoning damage if wielded with two hands, or 6 (1d8 + 2) bludgeoning damage with shillelagh.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/299/1000/1000/636252771583275655.jpeg"
+  }
+}

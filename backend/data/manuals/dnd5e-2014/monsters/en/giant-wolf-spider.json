@@ -1,0 +1,33 @@
+{
+  "id": "56a952815078",
+  "slug": "giant-wolf-spider",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Giant Wolf Spider",
+  "srd": {
+    "name": "Giant Wolf Spider",
+    "meta": "Medium beast, unaligned",
+    "Armor Class": "13 ",
+    "Hit Points": "11 (2d8 + 2)",
+    "Speed": "40 ft., climb 40 ft. ",
+    "STR": "12",
+    "STR_mod": "(+1)",
+    "DEX": "16",
+    "DEX_mod": "(+3)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "3",
+    "INT_mod": "(-4)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "4",
+    "CHA_mod": "(-3)",
+    "Skills": "Perception +3, Stealth +7",
+    "Senses": "Blindsight 10 ft., Darkvision 60 ft.,  Passive Perception 13",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Traits": "<p><em><strong>Spider Climb.</strong></em> The spider can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check.</p><p><em><strong>Web Sense.</strong></em> While in contact with a web, the spider knows the exact location of any other creature in contact with the same web.</p><p><em><strong>Web Walker.</strong></em> The spider ignores movement restrictions caused by webbing.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one creature. <em>Hit:</em> 4 (1d6 + 1) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 7 (2d6) poison damage on a failed save, or half as much damage on a successful one. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

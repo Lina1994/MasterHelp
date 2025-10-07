@@ -1,0 +1,32 @@
+{
+  "id": "a91d8288d461",
+  "slug": "frog",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Frog",
+  "srd": {
+    "name": "Frog",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "11 ",
+    "Hit Points": "1 (1d4 - 1)",
+    "Speed": "20 ft., swim 20 ft. ",
+    "STR": "1",
+    "STR_mod": "(-5)",
+    "DEX": "13",
+    "DEX_mod": "(+1)",
+    "CON": "8",
+    "CON_mod": "(-1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "8",
+    "WIS_mod": "(-1)",
+    "CHA": "3",
+    "CHA_mod": "(-4)",
+    "Skills": "Perception +1, Stealth +3",
+    "Senses": "Darkvision 30 ft.,  Passive Perception 11",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Traits": "<p><em><strong>Amphibious.</strong></em> The frog can breathe air and water. </p><p><em><strong>Standing Leap.</strong></em> The frog's long jump is up to 10 feet and its high jump is up to 5 feet, with or without a running start.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/523/315/315/636376321230650501.jpeg"
+  }
+}

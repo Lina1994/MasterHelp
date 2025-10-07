@@ -1,0 +1,32 @@
+{
+  "id": "3681f6d18ffa",
+  "slug": "mule",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Mule",
+  "srd": {
+    "name": "Mule",
+    "meta": "Medium beast, unaligned",
+    "Armor Class": "10 ",
+    "Hit Points": "11 (2d8 + 2)",
+    "Speed": "40 ft. ",
+    "STR": "14",
+    "STR_mod": "(+2)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+    "Senses": "Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "1/8 (25 XP)",
+    "Traits": "<p><em><strong>Beast of Burden.</strong></em> The mule is considered to be a Large animal for the purpose of determining its carrying capacity. </p><p><em><strong>Sure-Footed.</strong></em> The mule has advantage on Strength and Dexterity saving throws made against effects that would knock it prone.</p>",
+    "Actions": "<p><em><strong>Hooves.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one target. <em>Hit:</em> 4 (1d4 + 2) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

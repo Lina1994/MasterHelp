@@ -1,0 +1,33 @@
+{
+  "id": "937d3f54c553",
+  "slug": "gnoll",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Gnoll",
+  "srd": {
+    "name": "Gnoll",
+    "meta": "Mediano humanoide, malvado caótico",
+    "Armor Class": "15 (Armadura de piel, escudo)",
+    "Hit Points": "22 (5d8)",
+    "Speed": "a pie 30 ft.",
+    "STR": "14",
+    "STR_mod": "(+2)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "6",
+    "INT_mod": "(-2)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+  "Senses": "visión en la oscuridad 60 ft., Percepción pasiva 10",
+  "Languages": "Gnoll",
+  "Challenge": "1/2 (100 PX)",
+  "Traits": "<p><em><strong>Desenfreno.</strong></em> Cuando el gnoll reduce a 0 puntos de golpe a una criatura con un ataque cuerpo a cuerpo en su turno, puede usar una acción adicional para moverse hasta la mitad de su velocidad y realizar un ataque de mordisco.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 4 (1d4 + 2) de daño perforante. </p><p><em><strong>Lanza.</strong></em> <em>Ataque de arma cuerpo a cuerpo o a distancia:</em> +4 al ataque, alcance 5 ft. o alcance 20/60 ft., un objetivo. <em>Impacto:</em> 5 (1d6 + 2) de daño perforante, o 6 (1d8 + 2) de daño perforante si se usa a dos manos para hacer un ataque cuerpo a cuerpo. </p><p><em><strong>Arco largo.</strong></em> <em>Ataque de arma a distancia:</em> +3 al ataque, alcance 150/600 ft., un objetivo. <em>Impacto:</em> 5 (1d8 + 1) de daño perforante.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/345/1000/1000/636252777224997611.jpeg"
+  },
+  "translated": true
+}

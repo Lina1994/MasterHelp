@@ -1,0 +1,32 @@
+{
+  "id": "1dc09ecdbdcd",
+  "slug": "constrictor-snake",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Constrictor Snake",
+  "srd": {
+    "name": "Constrictor Snake",
+    "meta": "Large beast, unaligned",
+    "Armor Class": "12 ",
+    "Hit Points": "13 (2d10 + 2)",
+    "Speed": "30 ft., swim 30 ft. ",
+    "STR": "15",
+    "STR_mod": "(+2)",
+    "DEX": "14",
+    "DEX_mod": "(+2)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "3",
+    "CHA_mod": "(-4)",
+    "Senses": "Blindsight 10 ft.,  Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 5 (1d6 + 2) piercing damage. </p><p><em><strong>Constrict.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 6 (1d8 + 2) bludgeoning damage, and the target is grappled (escape DC 14). Until this grapple ends, the creature is restrained, and the snake can't constrict another target.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}

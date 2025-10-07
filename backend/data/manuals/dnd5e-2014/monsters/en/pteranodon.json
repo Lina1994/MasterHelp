@@ -1,0 +1,32 @@
+{
+  "id": "ac4801b38c2e",
+  "slug": "pteranodon",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Pteranodon",
+  "srd": {
+    "name": "Pteranodon",
+    "meta": "Medium beast, unaligned",
+    "Armor Class": "13 Natural Armor",
+    "Hit Points": "13 (3d8)",
+    "Speed": "10 ft., fly 60 ft. ",
+    "STR": "12",
+    "STR_mod": "(+1)",
+    "DEX": "15",
+    "DEX_mod": "(+2)",
+    "CON": "10",
+    "CON_mod": "(+0)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "9",
+    "WIS_mod": "(-1)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+    "Senses": "Passive Perception 11",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Traits": "<div><p><em><strong>Flyby.</strong></em> The pteranodon doesn’t provoke an opportunity attack when it flies out of an enemy’s reach.</p></div>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (2d4 + 1) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

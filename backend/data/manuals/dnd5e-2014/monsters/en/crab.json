@@ -1,0 +1,33 @@
+{
+  "id": "3c9dd5f9e34d",
+  "slug": "crab",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Crab",
+  "srd": {
+    "name": "Crab",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "11 (Natural Armor)",
+    "Hit Points": "2 (1d4)",
+    "Speed": "20 ft., swim 20 ft. ",
+    "STR": "2",
+    "STR_mod": "(-4)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "10",
+    "CON_mod": "(+0)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "8",
+    "WIS_mod": "(-1)",
+    "CHA": "2",
+    "CHA_mod": "(-4)",
+    "Skills": "Stealth +2",
+    "Senses": "Blindsight 30 ft.,  Passive Perception 9",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Traits": "<p><em><strong>Amphibious.</strong></em> The crab can breathe air and water.</p>",
+    "Actions": "<p><em><strong>Claw.</strong></em> <em>Melee Weapon Attack:</em> +0 to hit, reach 5 ft., one target. <em>Hit:</em> 1 bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

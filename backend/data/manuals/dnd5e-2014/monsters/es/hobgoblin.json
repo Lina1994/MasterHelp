@@ -1,0 +1,33 @@
+{
+  "id": "c0080c887155",
+  "slug": "hobgoblin",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Hobgoblin",
+  "srd": {
+    "name": "Hobgoblin",
+    "meta": "Mediano humanoide, malvado legal",
+    "Armor Class": "18 (Cota de malla, escudo)",
+    "Hit Points": "11 (2d8 + 2)",
+    "Speed": "a pie 30 ft.",
+    "STR": "13",
+    "STR_mod": "(+1)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "9",
+    "CHA_mod": "(-1)",
+  "Senses": "visión en la oscuridad 60 ft., Percepción pasiva 10",
+  "Languages": "Común, Goblin",
+  "Challenge": "1/2 (100 PX)",
+  "Traits": "<p><em><strong>Ventaja marcial.</strong></em> Una vez por turno, el hobgoblin puede infligir 7 (2d6) puntos de daño adicionales a una criatura a la que golpee con un ataque de arma si esa criatura está a 5 ft. de un aliado del hobgoblin que no esté incapacitado.</p>",
+  "Actions": "<p><em><strong>Espada larga.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +3 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 5 (1d8 + 1) de daño cortante, o 6 (1d10 + 1) de daño cortante si se usa a dos manos. </p><p><em><strong>Arco largo.</strong></em> <em>Ataque de arma a distancia:</em> +3 al ataque, alcance 150/600 ft., un objetivo. <em>Impacto:</em> 5 (1d8 + 1) de daño perforante.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/389/315/315/636252781431932597.jpeg"
+  },
+  "translated": true
+}

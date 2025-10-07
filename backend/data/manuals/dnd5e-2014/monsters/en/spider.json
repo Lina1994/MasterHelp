@@ -1,0 +1,33 @@
+{
+  "id": "29dcfa3e5387",
+  "slug": "spider",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Spider",
+  "srd": {
+    "name": "Spider",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "12 ",
+    "Hit Points": "1 (1d4 - 1)",
+    "Speed": "20 ft., climb 20 ft. ",
+    "STR": "2",
+    "STR_mod": "(-4)",
+    "DEX": "14",
+    "DEX_mod": "(+2)",
+    "CON": "8",
+    "CON_mod": "(-1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "2",
+    "CHA_mod": "(-4)",
+    "Skills": "Stealth +4",
+    "Senses": "Darkvision 30 ft.,  Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Traits": "<p><em><strong>Spider Climb.</strong></em> The spider can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check. </p><p><em><strong>Web Sense.</strong></em> While in contact with a web, the spider knows the exact location of any other creature in contact with the same web. </p><p><em><strong>Web Walker.</strong></em> The spider ignores movement restrictions caused by webbing.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 1 piercing damage, and the target must succeed on a DC 9 Constitution saving throw or take 2 (1d4) poison damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/575/315/315/636376359864842950.jpeg"
+  }
+}

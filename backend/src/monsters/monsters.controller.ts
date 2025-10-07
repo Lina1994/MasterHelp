@@ -10,7 +10,7 @@ export class MonstersController {
   list(@Param('manualId') manualId: string, @Query() query: ListMonstersDto) {
     const lang = (query.lang || 'en');
     const { q, type, size, crMin, crMax, page = 1, pageSize = 20 } = query;
-    const items = this.service.list(lang, { q, type, size, crMin, crMax });
+    const items = this.service.list(manualId, lang, { q, type, size, crMin, crMax });
 
     // Paginación en memoria (suficiente para el SRD y primera versión)
     const total = items.length;
@@ -22,6 +22,6 @@ export class MonstersController {
 
   @Get('manuals/:manualId/monsters/:slug')
   get(@Param('manualId') manualId: string, @Param('slug') slug: string, @Query('lang') lang: 'en' | 'es' = 'en') {
-    return this.service.get(lang, slug);
+    return this.service.get(manualId, lang, slug);
   }
 }

@@ -1,0 +1,33 @@
+{
+  "id": "77752cad118e",
+  "slug": "cult-fanatic",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Cult Fanatic",
+  "srd": {
+    "name": "Cult Fanatic",
+    "meta": "Medium humanoid, any",
+    "Armor Class": "13 (Leather Armor)",
+    "Hit Points": "33 (6d8 + 6)",
+    "Speed": "30 ft. ",
+    "STR": "11",
+    "STR_mod": "(+0)",
+    "DEX": "14",
+    "DEX_mod": "(+2)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "10",
+    "INT_mod": "(+0)",
+    "WIS": "13",
+    "WIS_mod": "(+1)",
+    "CHA": "14",
+    "CHA_mod": "(+2)",
+    "Skills": "Deception +4, Persuasion +4, Religion +2",
+    "Senses": "Passive Perception 11",
+    "Languages": "Any one language (usually Common)",
+    "Challenge": "2 (450 XP)",
+    "Traits": "<p><em><strong>Dark Devotion.</strong></em> The fanatic has advantage on saving throws against being charmed or frightened. </p><p><em><strong>Spellcasting.</strong></em> The fanatic is a 4th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 11, +3 to hit with spell attacks). The fanatic has the following cleric spells prepared: </p><p>Cantrips (at will): light, sacred flame, thaumaturgy </p><p>1st level (4 slots): command, inflict wounds, shield of faith </p><p>2nd level (3 slots): hold person, spiritual weapon</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The fanatic makes two melee attacks. </p><p><em><strong>Dagger.</strong></em> <em>Melee or <em>Ranged Weapon Attack:</em></em> +4 to hit, reach 5 ft. or range 20/60 ft., one creature. <em>Hit:</em> 4 (1d4 + 2) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/259/1000/1000/636252768307230924.jpeg"
+  }
+}

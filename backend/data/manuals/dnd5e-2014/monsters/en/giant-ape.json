@@ -1,0 +1,32 @@
+{
+  "id": "aba434cd2c30",
+  "slug": "giant-ape",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Giant Ape",
+  "srd": {
+    "name": "Giant Ape",
+    "meta": "Huge beast, unaligned",
+    "Armor Class": "12 ",
+    "Hit Points": "157 (15d12 + 60)",
+    "Speed": "40 ft., climb 40 ft. ",
+    "STR": "23",
+    "STR_mod": "(+6)",
+    "DEX": "14",
+    "DEX_mod": "(+2)",
+    "CON": "18",
+    "CON_mod": "(+4)",
+    "INT": "7",
+    "INT_mod": "(-2)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+    "Skills": "Athletics +9, Perception +4",
+    "Senses": "Passive Perception 14",
+    "Languages": "--",
+    "Challenge": "7 (2,900 XP)",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The ape makes two fist attacks. </p><p><em><strong>Fist.</strong></em> <em>Melee Weapon Attack:</em> +9 to hit, reach 10 ft., one target. <em>Hit:</em> 22 (3d10 + 6) bludgeoning damage. </p><p><em><strong>Rock.</strong></em> <em>Ranged Weapon Attack:</em> +9 to hit, range 50/100 ft., one target. <em>Hit:</em> 30 (7d6 + 6) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

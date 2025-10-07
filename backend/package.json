@@ -21,7 +21,12 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "spells:check": "node scripts/check-spells-parity.cjs",
     "spells:ahl-audit": "node scripts/check-ahl.cjs",
-    "validate:class-spells": "node scripts/validate-class-spell-lists.cjs"
+    "validate:class-spells": "node scripts/validate-class-spell-lists.cjs",
+    "monsters:split:en": "node scripts/split-monsters.cjs --manual dnd5e-2014",
+    "monsters:seed:es": "node scripts/seed-monsters-es.cjs --manual dnd5e-2014",
+  "monsters:mark-translated:es": "node scripts/mark-translated-es.cjs --manual dnd5e-2014",
+    "monsters:reindex:es": "node scripts/reindex-monsters.cjs --manual dnd5e-2014 --lang es",
+    "monsters:validate": "node scripts/validate-monsters.cjs --manual dnd5e-2014"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

@@ -1,0 +1,31 @@
+{
+  "id": "d418b7df850b",
+  "slug": "giant-centipede",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Giant Centipede",
+  "srd": {
+    "name": "Giant Centipede",
+    "meta": "Small beast, unaligned",
+    "Armor Class": "13 (Natural Armor)",
+    "Hit Points": "4 (1d6 + 1)",
+    "Speed": "30 ft., climb 30 ft. ",
+    "STR": "5",
+    "STR_mod": "(-3)",
+    "DEX": "14",
+    "DEX_mod": "(+2)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "7",
+    "WIS_mod": "(-2)",
+    "CHA": "3",
+    "CHA_mod": "(-4)",
+    "Senses": "Blindsight 30 ft.,  Passive Perception 8",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 4 (1d4 + 2) piercing damage, and the target must succeed on a DC 11 Constitution saving throw or take 10 (3d6) poison damage. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

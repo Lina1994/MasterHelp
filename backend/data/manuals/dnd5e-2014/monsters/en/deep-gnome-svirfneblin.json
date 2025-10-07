@@ -1,0 +1,33 @@
+{
+  "id": "012e719afdf9",
+  "slug": "deep-gnome-svirfneblin",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Deep Gnome (Svirfneblin)",
+  "srd": {
+    "name": "Deep Gnome (Svirfneblin)",
+    "meta": "Small humanoid, neutral good",
+    "Armor Class": "15 (Chain Shirt)",
+    "Hit Points": "16 (3d6 + 6)",
+    "Speed": "20 ft. ",
+    "STR": "15",
+    "STR_mod": "(+2)",
+    "DEX": "14",
+    "DEX_mod": "(+2)",
+    "CON": "14",
+    "CON_mod": "(+2)",
+    "INT": "12",
+    "INT_mod": "(+1)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "9",
+    "CHA_mod": "(-1)",
+    "Skills": "Investigation +3, Perception +2, Stealth +4",
+    "Senses": "Darkvision 120 ft.,  Passive Perception 12",
+    "Languages": "Gnomish, Terran, Undercommon",
+    "Challenge": "1/2 (100 XP)",
+    "Traits": "<p><em><strong>Stone Camouflage.</strong></em> The gnome has advantage on Dexterity (Stealth) checks made to hide in rocky terrain.</p><p><em><strong>Gnome Cunning.</strong></em> The gnome has advantage on Intelligence, Wisdom, and Charisma saving throws against magic.</p><p><em><strong>Innate Spellcasting.</strong></em> The gnome’s innate spellcasting ability is Intelligence (spell save DC 11). It can innately cast the following spells, requiring no material components:</p><p>At will: nondetection (self only)</p><p>1/day each: blindness/deafness, blur, disguise self</p>",
+    "Actions": "<p><em><strong>War Pick.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. Hit: 6 (1d8 + 2) piercing damage.</p><p><em><strong>Poisoned Dart.</strong></em> <em>Ranged Weapon Attack:</em> +4 to hit, range 30/120 ft., one creature. Hit: 4 (1d4 + 2) piercing damage, and the target must succeed on a DC 12 Constitution saving throw or be poisoned for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/112/1000/1000/636323610009818415.jpeg"
+  }
+}

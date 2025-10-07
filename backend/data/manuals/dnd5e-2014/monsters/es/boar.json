@@ -1,0 +1,33 @@
+{
+  "id": "0b8ebfa5440e",
+  "slug": "boar",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Boar",
+  "srd": {
+    "name": "Boar",
+    "meta": "Medium beast, unaligned",
+    "Armor Class": "11 (Natural Armor)",
+    "Hit Points": "11 (2d8 + 2)",
+    "Speed": "40 ft. ",
+    "STR": "13",
+    "STR_mod": "(+1)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "9",
+    "WIS_mod": "(-1)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+    "Senses": "Passive Perception 9",
+    "Languages": "--",
+    "Challenge": "1/4 (50 XP)",
+    "Traits": "<p><em><strong>Charge.</strong></em> If the boar moves at least 20 feet straight toward a target and then hits it with a tusk attack on the same turn, the target takes an extra 3 (1d6) slashing damage. If the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone. </p><p><em><strong>Relentless (Recharges after a Short or Long Rest).</strong></em> If the boar takes 7 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead.</p>",
+    "Actions": "<p><em><strong>Tusk.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 4 (1d6 + 1) slashing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}

@@ -62,6 +62,7 @@ const MainLayout = () => {
             <ListItemText primary={t('manuals', 'Manuales')} />
           </ListItemButton>
         </ListItem>
+        {/* Bestiary: accesible dentro de cada manual, no en el sidebar global */}
         {/* Más items aquí */}
       </List>
     </>

@@ -1,0 +1,32 @@
+{
+  "id": "763af99b3dd7",
+  "slug": "scorpion",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Scorpion",
+  "srd": {
+    "name": "Scorpion",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "11 (Natural Armor)",
+    "Hit Points": "1 (1d4 - 1)",
+    "Speed": "10 ft. ",
+    "STR": "2",
+    "STR_mod": "(-4)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "8",
+    "CON_mod": "(-1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "8",
+    "WIS_mod": "(-1)",
+    "CHA": "2",
+    "CHA_mod": "(-4)",
+    "Senses": "Blindsight 10 ft.,  Passive Perception 9",
+    "Languages": "--",
+    "Challenge": "0 (10 XP)",
+    "Actions": "<p><em><strong>Sting.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one creature. <em>Hit:</em> 1 piercing damage, and the target must make a DC 9 Constitution saving throw, taking 4 (1d8) poison damage on a failed save, or half as much damage on a successful one.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}

@@ -1,0 +1,33 @@
+{
+  "id": "4af451825fd6",
+  "slug": "cyclops",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Cyclops",
+  "srd": {
+    "name": "Cyclops",
+    "meta": "Huge giant, chaotic neutral",
+    "Armor Class": "14 Natural Armor",
+    "Hit Points": "138 (12d12 + 60)",
+    "Speed": "30 ft. ",
+    "STR": "22",
+    "STR_mod": "(+6)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "20",
+    "CON_mod": "(+5)",
+    "INT": "8",
+    "INT_mod": "(-1)",
+    "WIS": "6",
+    "WIS_mod": "(-2)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+    "Senses": "Passive Perception 8",
+    "Languages": "Giant",
+    "Challenge": "6 (2,300 XP)",
+    "Traits": "<p><em><strong>Poor Depth Perception.</strong></em> The cyclops has disadvantage on any attack roll against a target more than 30 feet away.</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The cyclops makes two greatclub attacks.</p><p><em><strong>Greatclub.</strong></em> <em>Melee Weapon Attack:</em> +9 to hit, reach 10 ft., one target. <em>Hit:</em> 19 (3d8 + 6) bludgeoning damage.</p><p><em><strong>Rock.</strong></em> <em>Ranged Weapon Attack:</em> +9 to hit, range 30/120 ft., one target. <em>Hit:</em> 28 (4d10 + 6) bludgeoning damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/470/1000/1000/636376290137285130.jpeg"
+  },
+  "translated": false
+}

@@ -1,0 +1,33 @@
+{
+  "id": "37396247c803",
+  "slug": "giant-shark",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Giant Shark",
+  "srd": {
+    "name": "Giant Shark",
+    "meta": "Huge beast, unaligned",
+    "Armor Class": "13 (Natural Armor)",
+    "Hit Points": "126 (11d12 + 55)",
+    "Speed": "0 ft., swim 50 ft. ",
+    "STR": "23",
+    "STR_mod": "(+6)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "21",
+    "CON_mod": "(+5)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "5",
+    "CHA_mod": "(-3)",
+    "Skills": "Perception +3",
+    "Senses": "Blindsight 60 ft.,  Passive Perception 13",
+    "Languages": "--",
+    "Challenge": "5 (1,800 XP)",
+    "Traits": "<p><em><strong>Blood Frenzy.</strong></em> The shark has advantage on melee attack rolls against any creature that doesn't have all its hit points. </p><p><em><strong>Water Breathing.</strong></em> The shark can breathe only underwater.</p>",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +9 to hit, reach 5 ft., one target. <em>Hit:</em> 22 (3d10 + 6) piercing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  }
+}

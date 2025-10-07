@@ -1,0 +1,32 @@
+{
+  "id": "d40a40bcd847",
+  "slug": "ankheg",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Ankheg",
+  "srd": {
+    "name": "Ankheg",
+    "meta": "Large monstrosity, unaligned",
+    "Armor Class": "14 (Natural Armor), 11 While Prone",
+    "Hit Points": "39 (6d10 + 6)",
+    "Speed": "30 ft., burrow 10 ft. ",
+    "STR": "17",
+    "STR_mod": "(+3)",
+    "DEX": "11",
+    "DEX_mod": "(+0)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "13",
+    "WIS_mod": "(+1)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Senses": "Darkvision 60 ft., Tremorsense 60 ft.,  Passive Perception 11",
+    "Languages": "--",
+    "Challenge": "2 (450 XP)",
+    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 10 (2d6 + 3) slashing damage plus 3 (1d6) acid damage. If the target is a Large or smaller creature, it is grappled (escape DC 13). Until this grapple ends, the ankheg can bite only the grappled creature and has advantage on attack rolls to do so. </p><p><em><strong>Acid Spray (Recharge 6).</strong></em> The ankheg spits acid in a line that is 30 feet long and 5 feet wide, provided that it has no creature grappled. Each creature in that line must make a DC 13 Dexterity saving throw, taking 10 (3d6) acid damage on a failed save, or half as much damage on a successful one.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/161/315/315/636252759871983921.jpeg"
+  },
+  "translated": false
+}

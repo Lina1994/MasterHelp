@@ -1,0 +1,32 @@
+{
+  "id": "df40b0a9ad0e",
+  "slug": "draft-horse",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Caballo de tiro",
+  "srd": {
+    "name": "Caballo de tiro",
+    "meta": "Grande bestia, no alineada",
+    "Armor Class": "10 ",
+    "Hit Points": "19 (3d10 + 3)",
+    "Speed": "40 ft. ",
+    "STR": "18",
+    "STR_mod": "(+4)",
+    "DEX": "10",
+    "DEX_mod": "(+0)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "11",
+    "WIS_mod": "(+0)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+  "Senses": "Percepción pasiva 10",
+    "Languages": "--",
+  "Challenge": "1/4 (50 PX)",
+  "Actions": "<p><em><strong>Cascos.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 9 (2d4 + 4) de daño contundente.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": true
+}

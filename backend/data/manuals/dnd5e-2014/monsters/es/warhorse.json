@@ -1,0 +1,33 @@
+{
+  "id": "80472de7bfc8",
+  "slug": "warhorse",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Caballo de guerra",
+  "srd": {
+    "name": "Caballo de guerra",
+    "meta": "Grande bestia, no alineada",
+    "Armor Class": "11 ",
+    "Hit Points": "19 (3d10 + 3)",
+    "Speed": "60 ft. ",
+    "STR": "18",
+    "STR_mod": "(+4)",
+    "DEX": "12",
+    "DEX_mod": "(+1)",
+    "CON": "13",
+    "CON_mod": "(+1)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "12",
+    "WIS_mod": "(+1)",
+    "CHA": "7",
+    "CHA_mod": "(-2)",
+  "Senses": "Percepción pasiva 11",
+    "Languages": "--",
+  "Challenge": "1/2 (100 PX)",
+  "Traits": "<p><em><strong>Carga aplastante.</strong></em> Si el caballo se mueve al menos 20 ft. en línea recta hacia una criatura y luego la golpea con un ataque de cascos en el mismo turno, ese objetivo debe superar una tirada de salvación de Fuerza CD 14 o quedará derribado. Si el objetivo está derribado, el caballo puede realizar otro ataque con los cascos contra él como acción adicional.</p>",
+  "Actions": "<p><em><strong>Cascos.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 11 (2d6 + 4) de daño contundente.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": true
+}

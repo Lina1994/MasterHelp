@@ -1,0 +1,31 @@
+{
+  "id": "150917301db0",
+  "slug": "stirge",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Stirge",
+  "srd": {
+    "name": "Stirge",
+    "meta": "Tiny beast, unaligned",
+    "Armor Class": "14 (Natural Armor)",
+    "Hit Points": "2 (1d4)",
+    "Speed": "10 ft., fly 40 ft. ",
+    "STR": "4",
+    "STR_mod": "(-3)",
+    "DEX": "16",
+    "DEX_mod": "(+3)",
+    "CON": "11",
+    "CON_mod": "(+0)",
+    "INT": "2",
+    "INT_mod": "(-4)",
+    "WIS": "8",
+    "WIS_mod": "(-1)",
+    "CHA": "6",
+    "CHA_mod": "(-2)",
+    "Senses": "Darkvision 60 ft.,  Passive Perception 9",
+    "Languages": "--",
+    "Challenge": "1/8 (25 XP)",
+    "Actions": "<p><em><strong>Blood Drain.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one creature. <em>Hit:</em> 5 (1d4 + 3) piercing damage, and the stirge attaches to the target. While attached, the stirge doesn't attack. Instead, at the start of each of the stirge's turns, the target loses 5 (1d4 + 3) hit points due to blood loss.</p><p>The stirge can detach itself by spending 5 feet of its movement. It does so after it drains 10 hit points of blood from the target or the target dies. A creature, including the target, can use its action to detach the stirge.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/111/1000/1000/636252745395103202.jpeg"
+  }
+}

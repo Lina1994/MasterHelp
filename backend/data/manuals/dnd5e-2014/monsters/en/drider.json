@@ -1,0 +1,33 @@
+{
+  "id": "8e1c9f12a4c4",
+  "slug": "drider",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Drider",
+  "srd": {
+    "name": "Drider",
+    "meta": "Large monstrosity, chaotic evil",
+    "Armor Class": "19 (Natural Armor)",
+    "Hit Points": "123 (13d10 + 52)",
+    "Speed": "30 ft., climb 30 ft. ",
+    "STR": "16",
+    "STR_mod": "(+3)",
+    "DEX": "16",
+    "DEX_mod": "(+3)",
+    "CON": "18",
+    "CON_mod": "(+4)",
+    "INT": "13",
+    "INT_mod": "(+1)",
+    "WIS": "14",
+    "WIS_mod": "(+2)",
+    "CHA": "12",
+    "CHA_mod": "(+1)",
+    "Skills": "Perception +5, Stealth +9",
+    "Senses": "Darkvision 120 ft.,  Passive Perception 15",
+    "Languages": "Elvish, Undercommon",
+    "Challenge": "6 (2,300 XP)",
+    "Traits": "<p><em><strong>Fey Ancestry.</strong></em> The drider has advantage on saving throws against being charmed, and magic can't put the drider to sleep. </p><p><em><strong>Innate Spellcasting.</strong></em> The drider's innate spellcasting ability is Wisdom (spell save DC 13). The drider can innately cast the following spells, requiring no material components: </p><p>At will: dancing lights </p><p>1/day each: darkness, faerie fire </p><p><em><strong>Spider Climb.</strong></em> The drider can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check.</p><p><em><strong>Sunlight Sensitivity.</strong></em> While in sunlight, the drider has disadvantage on attack rolls, as well as on Wisdom (Perception) checks that rely on sight. </p><p><em><strong>Web Walker.</strong></em> The drider ignores movement restrictions caused by webbing.</p>",
+    "Actions": "<p><em><strong>Multiattack.</strong></em> The drider makes three attacks, either with its longsword or its longbow. It can replace one of those attacks with a bite attack. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one creature. <em>Hit:</em> 2 (1d4) piercing damage plus 9 (2d8) poison damage. </p><p><em><strong>Longsword.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (1d8 + 3) slashing damage, or 8 (1d10 + 3) slashing damage if used with two hands. </p><p><em><strong>Longbow.</strong></em> <em>Ranged Weapon Attack:</em> +6 to hit, range 150/600 ft., one target. <em>Hit:</em> 7 (1d8 + 3) piercing damage plus 4 (1d8) poison damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/295/1000/1000/636252771409285458.jpeg"
+  }
+}

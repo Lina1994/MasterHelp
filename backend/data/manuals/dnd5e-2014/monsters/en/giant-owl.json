@@ -1,0 +1,33 @@
+{
+  "id": "9034810e9e42",
+  "slug": "giant-owl",
+  "lang": "en",
+  "source": "SRD 5.1",
+  "name": "Giant Owl",
+  "srd": {
+    "name": "Giant Owl",
+    "meta": "Large beast, neutral",
+    "Armor Class": "12 ",
+    "Hit Points": "19 (3d10 + 3)",
+    "Speed": "5 ft., fly 60 ft. ",
+    "STR": "13",
+    "STR_mod": "(+1)",
+    "DEX": "15",
+    "DEX_mod": "(+2)",
+    "CON": "12",
+    "CON_mod": "(+1)",
+    "INT": "8",
+    "INT_mod": "(-1)",
+    "WIS": "13",
+    "WIS_mod": "(+1)",
+    "CHA": "10",
+    "CHA_mod": "(+0)",
+    "Skills": "Perception +5, Stealth +4",
+    "Senses": "Darkvision 120 ft.,  Passive Perception 15",
+    "Languages": "Elvish, Giant Owl  and Sylvan but can't speak them",
+    "Challenge": "1/4 (50 XP)",
+    "Traits": "<p><em><strong>Flyby.</strong></em> The owl doesn't provoke opportunity attacks when it flies out of an enemy's reach. </p><p><em><strong>Keen Hearing and Sight.</strong></em> The owl has advantage on Wisdom (Perception) checks that rely on hearing or sight.</p>",
+    "Actions": "<p><em><strong>Talons.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 8 (2d6 + 1) slashing damage.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/535/1000/1000/636376331788287090.jpeg"
+  }
+}

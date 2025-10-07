@@ -1,0 +1,32 @@
+{
+  "id": "106f243ebd5e",
+  "slug": "giant-wasp",
+  "lang": "es",
+  "source": "SRD 5.1",
+  "name": "Giant Wasp",
+  "srd": {
+    "name": "Giant Wasp",
+    "meta": "Medium beast, unaligned",
+    "Armor Class": "12 ",
+    "Hit Points": "13 (3d8)",
+    "Speed": "10 ft., fly 50 ft. ",
+    "STR": "10",
+    "STR_mod": "(+0)",
+    "DEX": "14",
+    "DEX_mod": "(+2)",
+    "CON": "10",
+    "CON_mod": "(+0)",
+    "INT": "1",
+    "INT_mod": "(-5)",
+    "WIS": "10",
+    "WIS_mod": "(+0)",
+    "CHA": "3",
+    "CHA_mod": "(-4)",
+    "Senses": "Passive Perception 10",
+    "Languages": "--",
+    "Challenge": "1/2 (100 XP)",
+    "Actions": "<p><em><strong>Sting.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 5 (1d6 + 2) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much damage on a successful one. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.</p>",
+    "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
+  },
+  "translated": false
+}
