@@ -3,13 +3,13 @@
   "slug": "pteranodon",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Pteranodon",
+  "name": "Pteranodón",
   "srd": {
-    "name": "Pteranodon",
-    "meta": "Medium beast, unaligned",
-    "Armor Class": "13 Natural Armor",
+    "name": "Pteranodón",
+    "meta": "Bestia mediana, no alineada",
+    "Armor Class": "13 (Armadura natural)",
     "Hit Points": "13 (3d8)",
-    "Speed": "10 ft., fly 60 ft. ",
+  "Speed": "10 ft., volar 60 ft. ",
     "STR": "12",
     "STR_mod": "(+1)",
     "DEX": "15",
@@ -22,12 +22,12 @@
     "WIS_mod": "(-1)",
     "CHA": "5",
     "CHA_mod": "(-3)",
-    "Senses": "Passive Perception 11",
+  "Senses": "Percepción pasiva 11",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Traits": "<div><p><em><strong>Flyby.</strong></em> The pteranodon doesn’t provoke an opportunity attack when it flies out of an enemy’s reach.</p></div>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (2d4 + 1) piercing damage.</p>",
+  "Challenge": "1/4 (50 PX)",
+  "Traits": "<div><p><em><strong>Vuelo rasante.</strong></em> El pteranodón no provoca ataques de oportunidad cuando sale volando del alcance de un enemigo.</p></div>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +3 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 6 (2d4 + 1) de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

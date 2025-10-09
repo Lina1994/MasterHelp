@@ -3,13 +3,13 @@
   "slug": "giant-crocodile",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Crocodile",
+  "name": "Cocodrilo gigante",
   "srd": {
-    "name": "Giant Crocodile",
-    "meta": "Huge beast, unaligned",
-    "Armor Class": "14 (Natural Armor)",
+    "name": "Cocodrilo gigante",
+    "meta": "Bestia enorme, no alineada",
+  "Armor Class": "14 (Armadura natural)",
     "Hit Points": "85 (9d12 + 27)",
-    "Speed": "30 ft., swim 50 ft. ",
+  "Speed": "30 ft., nadar 50 ft. ",
     "STR": "21",
     "STR_mod": "(+5)",
     "DEX": "9",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+0)",
     "CHA": "7",
     "CHA_mod": "(-2)",
-    "Skills": "Stealth +5",
-    "Senses": "Passive Perception 10",
+  "Skills": "Sigilo +5",
+  "Senses": "Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "5 (1,800 XP)",
-    "Traits": "<p><em><strong>Hold Breath.</strong></em> The crocodile can hold its breath for 30 minutes.</p>",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The crocodile makes two attacks: one with its bite and one with its tail. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +8 to hit, reach 5 ft., one target. <em>Hit:</em> 21 (3d10 + 5) piercing damage, and the target is grappled (escape DC 16). Until this grapple ends, the target is restrained, and the crocodile can't bite another target. </p><p><em><strong>Tail.</strong></em> <em>Melee Weapon Attack:</em> +8 to hit, reach 10 ft., one target not grappled by the crocodile. <em>Hit:</em> 14 (2d8 + 5) bludgeoning damage. If the target is a creature, it must succeed on a DC 16 Strength saving throw or be knocked prone.</p>",
+  "Challenge": "5 (1,800 PX)",
+  "Traits": "<p><em><strong>Contener la respiración.</strong></em> El cocodrilo puede contener la respiración durante 30 minutos.</p>",
+  "Actions": "<p><em><strong>Multiataque.</strong></em> El cocodrilo realiza dos ataques: uno con su mordisco y otro con la cola. </p><p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +8 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 21 (3d10 + 5) de daño perforante, y el objetivo queda agarrado (Escape CD 16). Hasta que termine este agarre, el objetivo está restringido y el cocodrilo no puede morder a otro objetivo. </p><p><em><strong>Cola.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +8 al ataque, alcance 10 ft., un objetivo que no esté agarrado por el cocodrilo. <em>Impacto:</em> 14 (2d8 + 5) de daño contundente. Si el objetivo es una criatura, debe superar una tirada de salvación de Fuerza CD 16 o quedar derribado.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

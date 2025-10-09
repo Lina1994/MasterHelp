@@ -3,13 +3,13 @@
   "slug": "griffon",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Griffon",
+  "name": "Grifo",
   "srd": {
-    "name": "Griffon",
-    "meta": "Large monstrosity, unaligned",
+    "name": "Grifo",
+    "meta": "Monstruosidad grande, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "59 (7d10 + 21)",
-    "Speed": "30 ft., fly 80 ft. ",
+  "Speed": "30 ft., volar 80 ft. ",
     "STR": "18",
     "STR_mod": "(+4)",
     "DEX": "15",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "8",
     "CHA_mod": "(-1)",
-    "Skills": "Perception +5",
-    "Senses": "Darkvision 60 ft.,  Passive Perception 15",
+  "Skills": "Percepción +5",
+  "Senses": "Visión en la oscuridad 60 ft.,  Percepción pasiva 15",
     "Languages": "--",
-    "Challenge": "2 (450 XP)",
-    "Traits": "<p><em><strong>Keen Sight.</strong></em> The griffon has advantage on Wisdom (Perception) checks that rely on sight.</p>",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The griffon makes two attacks: one with its beak and one with its claws. </p><p><em><strong>Beak.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one target. <em>Hit:</em> 8 (1d8 + 4) piercing damage. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one target. <em>Hit:</em> 11 (2d6 + 4) slashing damage.</p>",
+  "Challenge": "2 (450 PX)",
+  "Traits": "<p><em><strong>Vista aguda.</strong></em> El grifo tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan de la vista.</p>",
+  "Actions": "<p><em><strong>Multiataque.</strong></em> El grifo realiza dos ataques: uno con el pico y otro con las garras. </p><p><em><strong>Pico.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 8 (1d8 + 4) de daño perforante. </p><p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 11 (2d6 + 4) de daño cortante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/373/315/315/636252779693862725.jpeg"
   },
-  "translated": false
+  "translated": true
 }

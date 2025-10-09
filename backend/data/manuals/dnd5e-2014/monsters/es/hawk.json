@@ -3,13 +3,13 @@
   "slug": "hawk",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Hawk",
+  "name": "Halcón",
   "srd": {
-    "name": "Hawk",
-    "meta": "Tiny beast, unaligned",
+    "name": "Halcón",
+    "meta": "Diminuta bestia, no alineada",
     "Armor Class": "13 ",
     "Hit Points": "1 (1d4 - 1)",
-    "Speed": "10 ft., fly 60 ft. ",
+    "Speed": "a pie 10 ft., volar 60 ft.",
     "STR": "5",
     "STR_mod": "(-3)",
     "DEX": "16",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+2)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Skills": "Perception +4",
-    "Senses": "Passive Perception 14",
+  "Skills": "Percepción +4",
+  "Senses": "Percepción pasiva 14",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Keen Sight.</strong></em> The hawk has advantage on Wisdom (Perception) checks that rely on sight.</p>",
-    "Actions": "<p><em><strong>Talons.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 1 slashing damage.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Vista aguda.</strong></em> El halcón tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan de la vista.</p>",
+  "Actions": "<p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño cortante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/900/1000/1000/636334288270143064.jpeg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "frog",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Frog",
+  "name": "Rana",
   "srd": {
-    "name": "Frog",
-    "meta": "Tiny beast, unaligned",
+    "name": "Rana",
+    "meta": "Diminuta bestia, no alineada",
     "Armor Class": "11 ",
     "Hit Points": "1 (1d4 - 1)",
-    "Speed": "20 ft., swim 20 ft. ",
+  "Speed": "a pie 20 ft., nadar 20 ft. ",
     "STR": "1",
     "STR_mod": "(-5)",
     "DEX": "13",
@@ -22,12 +22,12 @@
     "WIS_mod": "(-1)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Skills": "Perception +1, Stealth +3",
-    "Senses": "Darkvision 30 ft.,  Passive Perception 11",
+  "Skills": "Percepción +1, Sigilo +3",
+  "Senses": "Visión en la oscuridad 30 ft.,  Percepción pasiva 11",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Amphibious.</strong></em> The frog can breathe air and water. </p><p><em><strong>Standing Leap.</strong></em> The frog's long jump is up to 10 feet and its high jump is up to 5 feet, with or without a running start.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Anfibio.</strong></em> La rana puede respirar aire y agua. </p><p><em><strong>Salto desde parado.</strong></em> El salto de longitud de la rana es de hasta 10 pies y su salto de altura de hasta 5 pies, con o sin carrera previa.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/523/315/315/636376321230650501.jpeg"
   },
-  "translated": false
+  "translated": true
 }

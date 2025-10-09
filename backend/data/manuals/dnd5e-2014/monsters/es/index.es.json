@@ -74,10 +74,38 @@
       "challengeRating": "13"
     },
     {
+      "id": "46fb2a84e299",
+      "slug": "eagle",
+      "name": "Águila",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "34bd13d82811",
+      "slug": "giant-eagle",
+      "name": "Águila gigante",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
       "id": "ab4a5ff806a3",
       "slug": "air-elemental",
       "name": "Air Elemental",
       "challengeRating": "5"
+    },
+    {
+      "id": "76a9c478eb31",
+      "slug": "elk",
+      "name": "Alce",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "46972dc37af9",
+      "slug": "giant-elk",
+      "name": "Alce gigante",
+      "challengeRating": "2",
+      "translated": true
     },
     {
       "id": "8c7f3755255a",
@@ -183,6 +211,13 @@
       "challengeRating": "1/2"
     },
     {
+      "id": "29dcfa3e5387",
+      "slug": "spider",
+      "name": "Araña",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
       "id": "4f4ce1ee741e",
       "slug": "giant-spider",
       "name": "Araña gigante",
@@ -208,6 +243,13 @@
       "slug": "assassin",
       "name": "Assassin",
       "challengeRating": "8"
+    },
+    {
+      "id": "106f243ebd5e",
+      "slug": "giant-wasp",
+      "name": "Avispa gigante",
+      "challengeRating": "1/2",
+      "translated": true
     },
     {
       "id": "8773bbe0fcda",
@@ -326,12 +368,6 @@
       "challengeRating": "1/4"
     },
     {
-      "id": "6d329436dbb4",
-      "slug": "blood-hawk",
-      "name": "Blood Hawk",
-      "challengeRating": "1/8"
-    },
-    {
       "id": "ee740fff9b55",
       "slug": "blue-dragon-wyrmling",
       "name": "Blue Dragon Wyrmling",
@@ -375,6 +411,34 @@
       "translated": true
     },
     {
+      "id": "abd3baa2ef5d",
+      "slug": "owl",
+      "name": "Búho",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "9034810e9e42",
+      "slug": "giant-owl",
+      "name": "Búho gigante",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "b1777475879d",
+      "slug": "vulture",
+      "name": "Buitre",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "5ccab094aa61",
+      "slug": "giant-vulture",
+      "name": "Buitre gigante",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
       "id": "ace461c43519",
       "slug": "bulette",
       "name": "Bulette",
@@ -385,6 +449,20 @@
       "slug": "knight",
       "name": "Caballero",
       "challengeRating": "3",
+      "translated": true
+    },
+    {
+      "id": "ee5d49b3d005",
+      "slug": "sea-horse",
+      "name": "Caballito de mar",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "189705cbeeb3",
+      "slug": "giant-sea-horse",
+      "name": "Caballito de mar gigante",
+      "challengeRating": "1/2",
       "translated": true
     },
     {
@@ -416,9 +494,30 @@
       "translated": true
     },
     {
+      "id": "3141499a717d",
+      "slug": "giant-goat",
+      "name": "Cabra gigante",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
       "id": "f6d8e37543f3",
       "slug": "camel",
       "name": "Camello",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "3c9dd5f9e34d",
+      "slug": "crab",
+      "name": "Cangrejo",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "3626e68accf0",
+      "slug": "giant-crab",
+      "name": "Cangrejo gigante",
       "challengeRating": "1/8",
       "translated": true
     },
@@ -428,12 +527,6 @@
       "name": "Capitán bandido",
       "challengeRating": "2",
       "translated": true
-    },
-    {
-      "id": "220451fc4ade",
-      "slug": "cat",
-      "name": "Cat",
-      "challengeRating": "0"
     },
     {
       "id": "bdd31bb236e8",
@@ -491,10 +584,25 @@
       "challengeRating": "1/2"
     },
     {
-      "id": "1dc09ecdbdcd",
-      "slug": "constrictor-snake",
-      "name": "Constrictor Snake",
-      "challengeRating": "1/4"
+      "id": "07be1dbb2098",
+      "slug": "crocodile",
+      "name": "Cocodrilo",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "bb625c4eb85f",
+      "slug": "giant-crocodile",
+      "name": "Cocodrilo gigante",
+      "challengeRating": "5",
+      "translated": true
+    },
+    {
+      "id": "80d6e2d9517b",
+      "slug": "weasel",
+      "name": "Comadreja",
+      "challengeRating": "0",
+      "translated": true
     },
     {
       "id": "53369db26418",
@@ -509,16 +617,11 @@
       "challengeRating": "4"
     },
     {
-      "id": "3c9dd5f9e34d",
-      "slug": "crab",
-      "name": "Crab",
-      "challengeRating": "0"
-    },
-    {
-      "id": "07be1dbb2098",
-      "slug": "crocodile",
-      "name": "Crocodile",
-      "challengeRating": "1/2"
+      "id": "9250834b7037",
+      "slug": "raven",
+      "name": "Cuervo",
+      "challengeRating": "0",
+      "translated": true
     },
     {
       "id": "ccc49456cf57",
@@ -625,12 +728,6 @@
       "challengeRating": "1/2"
     },
     {
-      "id": "46fb2a84e299",
-      "slug": "eagle",
-      "name": "Eagle",
-      "challengeRating": "0"
-    },
-    {
       "id": "687769ee6970",
       "slug": "earth-elemental",
       "name": "Earth Elemental",
@@ -645,20 +742,50 @@
     {
       "id": "ef094ed09402",
       "slug": "elephant",
-      "name": "Elephant",
-      "challengeRating": "4"
+      "name": "Elefante",
+      "challengeRating": "4",
+      "translated": true
     },
     {
-      "id": "76a9c478eb31",
-      "slug": "elk",
-      "name": "Elk",
-      "challengeRating": "1/4"
+      "id": "a03a70579cd1",
+      "slug": "swarm-of-ravens",
+      "name": "Enjambre de cuervos",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "e84f1412954c",
+      "slug": "swarm-of-bats",
+      "name": "Enjambre de murciélagos",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "b686e7f45110",
+      "slug": "swarm-of-quippers",
+      "name": "Enjambre de pirañas",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
+      "id": "e94314264fd5",
+      "slug": "swarm-of-rats",
+      "name": "Enjambre de ratas",
+      "challengeRating": "1/4",
+      "translated": true
     },
     {
       "id": "ce36173e9b2a",
       "slug": "erinyes",
       "name": "Erinyes",
       "challengeRating": "12"
+    },
+    {
+      "id": "763af99b3dd7",
+      "slug": "scorpion",
+      "name": "Escorpión",
+      "challengeRating": "0",
+      "translated": true
     },
     {
       "id": "c9564138bd24",
@@ -732,22 +859,10 @@
       "challengeRating": "5"
     },
     {
-      "id": "27329491b9da",
-      "slug": "flying-snake",
-      "name": "Flying Snake",
-      "challengeRating": "1/8"
-    },
-    {
       "id": "19eebe3568f3",
       "slug": "flying-sword",
       "name": "Flying Sword",
       "challengeRating": "1/4"
-    },
-    {
-      "id": "a91d8288d461",
-      "slug": "frog",
-      "name": "Frog",
-      "challengeRating": "0"
     },
     {
       "id": "7dedaa37fa70",
@@ -760,6 +875,13 @@
       "slug": "gargoyle",
       "name": "Gargoyle",
       "challengeRating": "2"
+    },
+    {
+      "id": "220451fc4ade",
+      "slug": "cat",
+      "name": "Gato",
+      "challengeRating": "0",
+      "translated": true
     },
     {
       "id": "6c63e5a365b8",
@@ -798,12 +920,6 @@
       "challengeRating": "1/4"
     },
     {
-      "id": "e1ba542231e0",
-      "slug": "giant-bat",
-      "name": "Giant Bat",
-      "challengeRating": "1/4"
-    },
-    {
       "id": "d418b7df850b",
       "slug": "giant-centipede",
       "name": "Giant Centipede",
@@ -816,46 +932,10 @@
       "challengeRating": "2"
     },
     {
-      "id": "3626e68accf0",
-      "slug": "giant-crab",
-      "name": "Giant Crab",
-      "challengeRating": "1/8"
-    },
-    {
-      "id": "bb625c4eb85f",
-      "slug": "giant-crocodile",
-      "name": "Giant Crocodile",
-      "challengeRating": "5"
-    },
-    {
-      "id": "34bd13d82811",
-      "slug": "giant-eagle",
-      "name": "Giant Eagle",
-      "challengeRating": "1"
-    },
-    {
-      "id": "46972dc37af9",
-      "slug": "giant-elk",
-      "name": "Giant Elk",
-      "challengeRating": "2"
-    },
-    {
       "id": "fa2ecc73da6f",
       "slug": "giant-fire-beetle",
       "name": "Giant Fire Beetle",
       "challengeRating": "0"
-    },
-    {
-      "id": "965f9edb01d9",
-      "slug": "giant-frog",
-      "name": "Giant Frog",
-      "challengeRating": "1/4"
-    },
-    {
-      "id": "3141499a717d",
-      "slug": "giant-goat",
-      "name": "Giant Goat",
-      "challengeRating": "1/2"
     },
     {
       "id": "30228ab6cea0",
@@ -864,64 +944,10 @@
       "challengeRating": "1"
     },
     {
-      "id": "bb246c97eb60",
-      "slug": "giant-lizard",
-      "name": "Giant Lizard",
-      "challengeRating": "1/4"
-    },
-    {
-      "id": "5dae0b3e0f37",
-      "slug": "giant-octopus",
-      "name": "Giant Octopus",
-      "challengeRating": "1"
-    },
-    {
-      "id": "9034810e9e42",
-      "slug": "giant-owl",
-      "name": "Giant Owl",
-      "challengeRating": "1/4"
-    },
-    {
-      "id": "641176df055a",
-      "slug": "giant-poisonous-snake",
-      "name": "Giant Poisonous Snake",
-      "challengeRating": "1/4"
-    },
-    {
       "id": "2924e428c11c",
       "slug": "giant-scorpion",
       "name": "Giant Scorpion",
       "challengeRating": "3"
-    },
-    {
-      "id": "189705cbeeb3",
-      "slug": "giant-sea-horse",
-      "name": "Giant Sea Horse",
-      "challengeRating": "1/2"
-    },
-    {
-      "id": "37396247c803",
-      "slug": "giant-shark",
-      "name": "Giant Shark",
-      "challengeRating": "5"
-    },
-    {
-      "id": "a7b57ab905e3",
-      "slug": "giant-toad",
-      "name": "Giant Toad",
-      "challengeRating": "1"
-    },
-    {
-      "id": "5ccab094aa61",
-      "slug": "giant-vulture",
-      "name": "Giant Vulture",
-      "challengeRating": "1"
-    },
-    {
-      "id": "106f243ebd5e",
-      "slug": "giant-wasp",
-      "name": "Giant Wasp",
-      "challengeRating": "1/2"
     },
     {
       "id": "9ec165a4d16c",
@@ -1000,8 +1026,9 @@
     {
       "id": "ba0e5f57d208",
       "slug": "griffon",
-      "name": "Griffon",
-      "challengeRating": "2"
+      "name": "Grifo",
+      "challengeRating": "2",
+      "translated": true
     },
     {
       "id": "8d3af5c94296",
@@ -1036,6 +1063,20 @@
       "challengeRating": "11"
     },
     {
+      "id": "7f60a2a47afa",
+      "slug": "hawk",
+      "name": "Halcón",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "6d329436dbb4",
+      "slug": "blood-hawk",
+      "name": "Halcón sanguinario",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
       "id": "f4e03540426f",
       "slug": "half-red-dragon-veteran",
       "name": "Half-Red Dragon Veteran",
@@ -1046,12 +1087,6 @@
       "slug": "harpy",
       "name": "Harpy",
       "challengeRating": "1"
-    },
-    {
-      "id": "7f60a2a47afa",
-      "slug": "hawk",
-      "name": "Hawk",
-      "challengeRating": "0"
     },
     {
       "id": "38ef25e8efbf",
@@ -1074,8 +1109,9 @@
     {
       "id": "6029a07a65e9",
       "slug": "hippogriff",
-      "name": "Hippogriff",
-      "challengeRating": "1"
+      "name": "Hipogrifo",
+      "challengeRating": "1",
+      "translated": true
     },
     {
       "id": "c0080c887155",
@@ -1095,12 +1131,6 @@
       "slug": "horned-devil",
       "name": "Horned Devil",
       "challengeRating": "11"
-    },
-    {
-      "id": "f0b7963fa034",
-      "slug": "hunter-shark",
-      "name": "Hunter Shark",
-      "challengeRating": "2"
     },
     {
       "id": "067c75e73cbc",
@@ -1158,12 +1188,6 @@
       "challengeRating": "0"
     },
     {
-      "id": "4ae5939d0294",
-      "slug": "killer-whale",
-      "name": "Killer Whale",
-      "challengeRating": "3"
-    },
-    {
       "id": "58764391eb8f",
       "slug": "kobold",
       "name": "Kobold",
@@ -1175,6 +1199,20 @@
       "slug": "kraken",
       "name": "Kraken",
       "challengeRating": "23"
+    },
+    {
+      "id": "da42e9514764",
+      "slug": "lizard",
+      "name": "Lagarto",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "bb246c97eb60",
+      "slug": "giant-lizard",
+      "name": "Lagarto gigante",
+      "challengeRating": "1/4",
+      "translated": true
     },
     {
       "id": "3a30ac2a1409",
@@ -1200,12 +1238,6 @@
       "slug": "lich",
       "name": "Lich",
       "challengeRating": "21"
-    },
-    {
-      "id": "da42e9514764",
-      "slug": "lizard",
-      "name": "Lizard",
-      "challengeRating": "0"
     },
     {
       "id": "61aa78f97c07",
@@ -1242,8 +1274,9 @@
     {
       "id": "aa8a5df01767",
       "slug": "mammoth",
-      "name": "Mammoth",
-      "challengeRating": "6"
+      "name": "Mamut",
+      "challengeRating": "6",
+      "translated": true
     },
     {
       "id": "c5fa4e263ceb",
@@ -1328,6 +1361,13 @@
       "challengeRating": "15"
     },
     {
+      "id": "e1ba542231e0",
+      "slug": "giant-bat",
+      "name": "Murciélago gigante",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
       "id": "7723c3734d95",
       "slug": "nalfeshnee",
       "name": "Nalfeshnee",
@@ -1365,12 +1405,6 @@
       "challengeRating": "2"
     },
     {
-      "id": "1713f1a625b5",
-      "slug": "octopus",
-      "name": "Octopus",
-      "challengeRating": "0"
-    },
-    {
       "id": "0fed359c37ea",
       "slug": "ogre-zombie",
       "name": "Ogre Zombie",
@@ -1390,6 +1424,13 @@
       "challengeRating": "7"
     },
     {
+      "id": "4ae5939d0294",
+      "slug": "killer-whale",
+      "name": "Orca",
+      "challengeRating": "3",
+      "translated": true
+    },
+    {
       "id": "6d2668f0d6d8",
       "slug": "orc",
       "name": "Orco",
@@ -1401,12 +1442,6 @@
       "slug": "otyugh",
       "name": "Otyugh",
       "challengeRating": "5"
-    },
-    {
-      "id": "abd3baa2ef5d",
-      "slug": "owl",
-      "name": "Owl",
-      "challengeRating": "0"
     },
     {
       "id": "06d95bc5c072",
@@ -1424,14 +1459,22 @@
     {
       "id": "d7a62e704ce9",
       "slug": "pegasus",
-      "name": "Pegasus",
-      "challengeRating": "2"
+      "name": "Pegaso",
+      "challengeRating": "2",
+      "translated": true
     },
     {
       "id": "f8b2e82021e9",
       "slug": "phase-spider",
       "name": "Phase Spider",
       "challengeRating": "3"
+    },
+    {
+      "id": "c99ae8d029f6",
+      "slug": "quipper",
+      "name": "Piraña",
+      "challengeRating": "0",
+      "translated": true
     },
     {
       "id": "75acb1de55ab",
@@ -1452,12 +1495,6 @@
       "challengeRating": "2"
     },
     {
-      "id": "bea59ae918a7",
-      "slug": "poisonous-snake",
-      "name": "Poisonous Snake",
-      "challengeRating": "1/8"
-    },
-    {
       "id": "ca22717d705c",
       "slug": "polar-bear",
       "name": "Polar Bear",
@@ -1466,8 +1503,9 @@
     {
       "id": "8b4fe1078d47",
       "slug": "pony",
-      "name": "Pony",
-      "challengeRating": "1/8"
+      "name": "Poni",
+      "challengeRating": "1/8",
+      "translated": true
     },
     {
       "id": "bf77cf402314",
@@ -1478,8 +1516,23 @@
     {
       "id": "ac4801b38c2e",
       "slug": "pteranodon",
-      "name": "Pteranodon",
-      "challengeRating": "1/4"
+      "name": "Pteranodón",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "1713f1a625b5",
+      "slug": "octopus",
+      "name": "Pulpo",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "5dae0b3e0f37",
+      "slug": "giant-octopus",
+      "name": "Pulpo gigante",
+      "challengeRating": "1",
+      "translated": true
     },
     {
       "id": "fe9385999843",
@@ -1494,22 +1547,31 @@
       "challengeRating": "1"
     },
     {
-      "id": "c99ae8d029f6",
-      "slug": "quipper",
-      "name": "Quipper",
-      "challengeRating": "0"
-    },
-    {
       "id": "a17ea68fd898",
       "slug": "rakshasa",
       "name": "Rakshasa",
       "challengeRating": "13"
     },
     {
+      "id": "a91d8288d461",
+      "slug": "frog",
+      "name": "Rana",
+      "challengeRating": "0",
+      "translated": true
+    },
+    {
+      "id": "965f9edb01d9",
+      "slug": "giant-frog",
+      "name": "Rana gigante",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
       "id": "2528ae532316",
       "slug": "rat",
-      "name": "Rat",
-      "challengeRating": "0"
+      "name": "Rata",
+      "challengeRating": "0",
+      "translated": true
     },
     {
       "id": "90021958df83",
@@ -1519,22 +1581,10 @@
       "translated": true
     },
     {
-      "id": "9250834b7037",
-      "slug": "raven",
-      "name": "Raven",
-      "challengeRating": "0"
-    },
-    {
       "id": "63565db4d7b1",
       "slug": "red-dragon-wyrmling",
       "name": "Red Dragon Wyrmling",
       "challengeRating": "4"
-    },
-    {
-      "id": "6eb60fabf939",
-      "slug": "reef-shark",
-      "name": "Reef Shark",
-      "challengeRating": "1/2"
     },
     {
       "id": "e5ed30034586",
@@ -1545,14 +1595,16 @@
     {
       "id": "9ae859dd0c87",
       "slug": "rhinoceros",
-      "name": "Rhinoceros",
-      "challengeRating": "2"
+      "name": "Rinoceronte",
+      "challengeRating": "2",
+      "translated": true
     },
     {
       "id": "f8108096856d",
       "slug": "roc",
       "name": "Roc",
-      "challengeRating": "11"
+      "challengeRating": "11",
+      "translated": true
     },
     {
       "id": "28adfb7e4369",
@@ -1599,16 +1651,17 @@
       "challengeRating": "5"
     },
     {
+      "id": "a7b57ab905e3",
+      "slug": "giant-toad",
+      "name": "Sapo gigante",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
       "id": "3f814b583571",
       "slug": "satyr",
       "name": "Satyr",
       "challengeRating": "1/2"
-    },
-    {
-      "id": "763af99b3dd7",
-      "slug": "scorpion",
-      "name": "Scorpion",
-      "challengeRating": "0"
     },
     {
       "id": "e8dd0894086a",
@@ -1617,10 +1670,32 @@
       "challengeRating": "2"
     },
     {
-      "id": "ee5d49b3d005",
-      "slug": "sea-horse",
-      "name": "Sea Horse",
-      "challengeRating": "0"
+      "id": "1dc09ecdbdcd",
+      "slug": "constrictor-snake",
+      "name": "Serpiente constrictora",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "bea59ae918a7",
+      "slug": "poisonous-snake",
+      "name": "Serpiente venenosa",
+      "challengeRating": "1/8",
+      "translated": true
+    },
+    {
+      "id": "641176df055a",
+      "slug": "giant-poisonous-snake",
+      "name": "Serpiente venenosa gigante",
+      "challengeRating": "1/4",
+      "translated": true
+    },
+    {
+      "id": "27329491b9da",
+      "slug": "flying-snake",
+      "name": "Serpiente voladora",
+      "challengeRating": "1/8",
+      "translated": true
     },
     {
       "id": "d2a1bd807ed2",
@@ -1671,12 +1746,6 @@
       "challengeRating": "1"
     },
     {
-      "id": "29dcfa3e5387",
-      "slug": "spider",
-      "name": "Spider",
-      "challengeRating": "0"
-    },
-    {
       "id": "6d76ede67faa",
       "slug": "spirit-naga",
       "name": "Spirit Naga",
@@ -1704,7 +1773,8 @@
       "id": "150917301db0",
       "slug": "stirge",
       "name": "Stirge",
-      "challengeRating": "1/8"
+      "challengeRating": "1/8",
+      "translated": true
     },
     {
       "id": "928d418e363c",
@@ -1731,12 +1801,6 @@
       "challengeRating": "4"
     },
     {
-      "id": "e84f1412954c",
-      "slug": "swarm-of-bats",
-      "name": "Swarm of Bats",
-      "challengeRating": "1/4"
-    },
-    {
       "id": "690c79518c6b",
       "slug": "swarm-of-insects",
       "name": "Swarm of Insects",
@@ -1749,28 +1813,31 @@
       "challengeRating": "2"
     },
     {
-      "id": "b686e7f45110",
-      "slug": "swarm-of-quippers",
-      "name": "Swarm of Quippers",
-      "challengeRating": "1"
-    },
-    {
-      "id": "e94314264fd5",
-      "slug": "swarm-of-rats",
-      "name": "Swarm of Rats",
-      "challengeRating": "1/4"
-    },
-    {
-      "id": "a03a70579cd1",
-      "slug": "swarm-of-ravens",
-      "name": "Swarm of Ravens",
-      "challengeRating": "1/4"
-    },
-    {
       "id": "068175bfb2ae",
       "slug": "tarrasque",
       "name": "Tarrasque",
       "challengeRating": "30"
+    },
+    {
+      "id": "f0b7963fa034",
+      "slug": "hunter-shark",
+      "name": "Tiburón cazador",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "6eb60fabf939",
+      "slug": "reef-shark",
+      "name": "Tiburón de arrecife",
+      "challengeRating": "1/2",
+      "translated": true
+    },
+    {
+      "id": "37396247c803",
+      "slug": "giant-shark",
+      "name": "Tiburón gigante",
+      "challengeRating": "5",
+      "translated": true
     },
     {
       "id": "7d15c7a9ed7c",
@@ -1846,12 +1913,6 @@
       "challengeRating": "6"
     },
     {
-      "id": "b1777475879d",
-      "slug": "vulture",
-      "name": "Vulture",
-      "challengeRating": "0"
-    },
-    {
       "id": "1cd228bd8591",
       "slug": "warhorse-skeleton",
       "name": "Warhorse Skeleton",
@@ -1862,12 +1923,6 @@
       "slug": "water-elemental",
       "name": "Water Elemental",
       "challengeRating": "5"
-    },
-    {
-      "id": "80d6e2d9517b",
-      "slug": "weasel",
-      "name": "Weasel",
-      "challengeRating": "0"
     },
     {
       "id": "1e17cf52360a",

@@ -3,13 +3,13 @@
   "slug": "giant-vulture",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Vulture",
+  "name": "Buitre gigante",
   "srd": {
-    "name": "Giant Vulture",
-    "meta": "Large beast, neutral",
+    "name": "Buitre gigante",
+    "meta": "Grande bestia, neutral",
     "Armor Class": "10 ",
     "Hit Points": "22 (3d10 + 6)",
-    "Speed": "10 ft., fly 60 ft. ",
+  "Speed": "a pie 10 ft., volar 60 ft. ",
     "STR": "15",
     "STR_mod": "(+2)",
     "DEX": "10",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "7",
     "CHA_mod": "(-2)",
-    "Skills": "Perception +3",
-    "Senses": "Passive Perception 13",
-    "Languages": "Understands Common but can't speak  it",
-    "Challenge": "1 (200 XP)",
-    "Traits": "<p><em><strong>Keen Sight and Smell.</strong></em> The vulture has advantage on Wisdom (Perception) checks that rely on sight or smell.</p><p><em><strong>Pack Tactics.</strong></em> The vulture has advantage on an attack roll against a creature if at least one of the vulture's allies is within 5 feet of the creature and the ally isn't incapacitated.</p>",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The vulture makes two attacks: one with its beak and one with its talons. </p><p><em><strong>Beak.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (2d4 + 2) piercing damage. </p><p><em><strong>Talons.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 9 (2d6 + 2) slashing damage.</p>",
+  "Skills": "Percepción +3",
+  "Senses": "Percepción pasiva 13",
+  "Languages": "Entiende Común pero no puede hablarlo",
+  "Challenge": "1 (200 PX)",
+  "Traits": "<p><em><strong>Vista y olfato agudos.</strong></em> El buitre tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan de la vista o del olfato.</p><p><em><strong>Tácticas de manada.</strong></em> El buitre tiene ventaja en la tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 ft. de la criatura y dicho aliado no está incapacitado.</p>",
+  "Actions": "<p><em><strong>Multiataque.</strong></em> El buitre realiza dos ataques: uno con el pico y otro con las garras. </p><p><em><strong>Pico.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 7 (2d4 + 2) de daño perforante. </p><p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 9 (2d6 + 2) de daño cortante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

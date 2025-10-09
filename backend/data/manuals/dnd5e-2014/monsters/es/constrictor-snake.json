@@ -3,13 +3,13 @@
   "slug": "constrictor-snake",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Constrictor Snake",
+  "name": "Serpiente constrictora",
   "srd": {
-    "name": "Constrictor Snake",
-    "meta": "Large beast, unaligned",
+    "name": "Serpiente constrictora",
+    "meta": "Grande bestia, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "13 (2d10 + 2)",
-    "Speed": "30 ft., swim 30 ft. ",
+  "Speed": "a pie 30 ft., nadar 30 ft. ",
     "STR": "15",
     "STR_mod": "(+2)",
     "DEX": "14",
@@ -22,11 +22,11 @@
     "WIS_mod": "(+0)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Senses": "Blindsight 10 ft.,  Passive Perception 10",
+  "Senses": "Sentido ciego 10 ft.,  Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 5 (1d6 + 2) piercing damage. </p><p><em><strong>Constrict.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 6 (1d8 + 2) bludgeoning damage, and the target is grappled (escape DC 14). Until this grapple ends, the creature is restrained, and the snake can't constrict another target.</p>",
+  "Challenge": "1/4 (50 PX)",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 5 (1d6 + 2) de daño perforante. </p><p><em><strong>Constricción.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 6 (1d8 + 2) de daño contundente, y el objetivo queda agarrado (escape CD 14). Hasta que este agarre termine, la criatura queda apresada, y la serpiente no puede constreñir a otro objetivo.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

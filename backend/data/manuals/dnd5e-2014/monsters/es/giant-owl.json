@@ -3,13 +3,13 @@
   "slug": "giant-owl",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Owl",
+  "name": "Búho gigante",
   "srd": {
-    "name": "Giant Owl",
-    "meta": "Large beast, neutral",
+    "name": "Búho gigante",
+    "meta": "Gran bestia, neutral",
     "Armor Class": "12 ",
     "Hit Points": "19 (3d10 + 3)",
-    "Speed": "5 ft., fly 60 ft. ",
+  "Speed": "a pie 5 ft., volar 60 ft. ",
     "STR": "13",
     "STR_mod": "(+1)",
     "DEX": "15",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "10",
     "CHA_mod": "(+0)",
-    "Skills": "Perception +5, Stealth +4",
-    "Senses": "Darkvision 120 ft.,  Passive Perception 15",
-    "Languages": "Elvish, Giant Owl  and Sylvan but can't speak them",
-    "Challenge": "1/4 (50 XP)",
-    "Traits": "<p><em><strong>Flyby.</strong></em> The owl doesn't provoke opportunity attacks when it flies out of an enemy's reach. </p><p><em><strong>Keen Hearing and Sight.</strong></em> The owl has advantage on Wisdom (Perception) checks that rely on hearing or sight.</p>",
-    "Actions": "<p><em><strong>Talons.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 8 (2d6 + 1) slashing damage.</p>",
+  "Skills": "Percepción +5, Sigilo +4",
+  "Senses": "Visión en la oscuridad 120 ft.,  Percepción pasiva 15",
+  "Languages": "Élfico, Búho gigante y Silvano, aunque no puede hablarlos",
+  "Challenge": "1/4 (50 PX)",
+  "Traits": "<p><em><strong>Vuelo rasante.</strong></em> El búho no provoca ataques de oportunidad cuando vuela fuera del alcance de un enemigo. </p><p><em><strong>Oído y vista agudos.</strong></em> El búho tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan del oído o de la vista.</p>",
+  "Actions": "<p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +3 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 8 (2d6 + 1) de daño cortante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/535/1000/1000/636376331788287090.jpeg"
   },
-  "translated": false
+  "translated": true
 }

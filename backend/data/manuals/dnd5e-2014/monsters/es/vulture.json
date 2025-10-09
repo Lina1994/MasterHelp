@@ -3,13 +3,13 @@
   "slug": "vulture",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Vulture",
+  "name": "Buitre",
   "srd": {
-    "name": "Vulture",
-    "meta": "Medium beast, unaligned",
+    "name": "Buitre",
+    "meta": "Bestia mediana, no alineada",
     "Armor Class": "10 ",
     "Hit Points": "5 (1d8 + 1)",
-    "Speed": "10 ft., fly 50 ft. ",
+  "Speed": "a pie 10 ft., volar 50 ft. ",
     "STR": "7",
     "STR_mod": "(-2)",
     "DEX": "10",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "4",
     "CHA_mod": "(-3)",
-    "Skills": "Perception +3",
-    "Senses": "Passive Perception 13",
+  "Skills": "Percepción +3",
+  "Senses": "Percepción pasiva 13",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Keen Sight and Smell.</strong></em> The vulture has advantage on Wisdom (Perception) checks that rely on sight or smell. </p><p><em><strong>Pack Tactics.</strong></em> The vulture has advantage on an attack roll against a creature if at least one of the vulture's allies is within 5 feet of the creature and the ally isn't incapacitated.</p>",
-    "Actions": "<p><em><strong>Beak.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one target. <em>Hit:</em> 2 (1d4) piercing damage.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Vista y olfato agudos.</strong></em> El buitre tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan de la vista o del olfato. </p><p><em><strong>Tácticas de manada.</strong></em> El buitre tiene ventaja en la tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 ft. de la criatura y dicho aliado no está incapacitado.</p>",
+  "Actions": "<p><em><strong>Pico.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 2 (1d4) de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

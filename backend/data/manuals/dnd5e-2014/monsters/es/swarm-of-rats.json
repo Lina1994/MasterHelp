@@ -3,10 +3,10 @@
   "slug": "swarm-of-rats",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Swarm of Rats",
+  "name": "Enjambre de ratas",
   "srd": {
-    "name": "Swarm of Rats",
-    "meta": "Medium beast, unaligned",
+    "name": "Enjambre de ratas",
+    "meta": "Bestia mediana, no alineada",
     "Armor Class": "10 ",
     "Hit Points": "24 (7d8 - 7)",
     "Speed": "30 ft. ",
@@ -22,14 +22,14 @@
     "WIS_mod": "(+0)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Damage Resistances": "Bludgeoning, Piercing, Slashing",
-    "Condition Immunities": "Charmed, Frightened, Grappled, Paralyzed, Petrified, Prone, Restrained, Stunned",
-    "Senses": "Darkvision 30 ft.,  Passive Perception 10",
+  "Damage Resistances": "Contundente, Perforante, Cortante",
+  "Condition Immunities": "Hechizado, Asustado, Agarrado, Paralizado, Petrificado, Derribado, Restringido, Aturdido",
+  "Senses": "Visión en la oscuridad 30 ft.,  Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Traits": "<p><em><strong>Keen Smell.</strong></em> The swarm has advantage on Wisdom (Perception) checks that rely on smell. </p><p><em><strong>Swarm.</strong></em> The swarm can occupy another creature's space and vice versa, and the swarm can move through any opening large enough for a Tiny rat. The swarm can't regain hit points or gain temporary hit points.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em>. <em>Melee Weapon Attack:</em> +2 to hit, reach 0 ft., one target in the swarm's space. <em>Hit:</em> 7 (2d6) piercing damage, or 3 (1d6) piercing damage if the swarm has half of its hit points or fewer.</p>",
+  "Challenge": "1/4 (50 PX)",
+  "Traits": "<p><em><strong>Olfato agudo.</strong></em> El enjambre tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan del olfato. </p><p><em><strong>Enjambre.</strong></em> El enjambre puede ocupar el espacio de otra criatura y viceversa, y puede moverse a través de cualquier abertura lo suficientemente grande para una rata diminuta. El enjambre no puede recuperar puntos de golpe ni obtener puntos de golpe temporales.</p>",
+  "Actions": "<p><em><strong>Mordiscos.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 0 ft., un objetivo en el espacio del enjambre. <em>Impacto:</em> 7 (2d6) de daño perforante, o 3 (1d6) de daño perforante si el enjambre tiene la mitad o menos de sus puntos de golpe.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/908/315/315/636334289541603972.jpeg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "giant-shark",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Shark",
+  "name": "Tiburón gigante",
   "srd": {
-    "name": "Giant Shark",
-    "meta": "Huge beast, unaligned",
-    "Armor Class": "13 (Natural Armor)",
+    "name": "Tiburón gigante",
+    "meta": "Bestia enorme, no alineada",
+  "Armor Class": "13 (Armadura natural)",
     "Hit Points": "126 (11d12 + 55)",
-    "Speed": "0 ft., swim 50 ft. ",
+  "Speed": "0 ft., nadar 50 ft. ",
     "STR": "23",
     "STR_mod": "(+6)",
     "DEX": "11",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+0)",
     "CHA": "5",
     "CHA_mod": "(-3)",
-    "Skills": "Perception +3",
-    "Senses": "Blindsight 60 ft.,  Passive Perception 13",
+  "Skills": "Percepción +3",
+  "Senses": "Sentido ciego 60 ft.,  Percepción pasiva 13",
     "Languages": "--",
-    "Challenge": "5 (1,800 XP)",
-    "Traits": "<p><em><strong>Blood Frenzy.</strong></em> The shark has advantage on melee attack rolls against any creature that doesn't have all its hit points. </p><p><em><strong>Water Breathing.</strong></em> The shark can breathe only underwater.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +9 to hit, reach 5 ft., one target. <em>Hit:</em> 22 (3d10 + 6) piercing damage.</p>",
+  "Challenge": "5 (1,800 PX)",
+  "Traits": "<p><em><strong>Frenesí de sangre.</strong></em> El tiburón tiene ventaja en las tiradas de ataque cuerpo a cuerpo contra cualquier criatura que no tenga todos sus puntos de golpe. </p><p><em><strong>Respirar agua.</strong></em> El tiburón solo puede respirar bajo el agua.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +9 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 22 (3d10 + 6) de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

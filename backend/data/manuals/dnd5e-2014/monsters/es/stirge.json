@@ -6,10 +6,10 @@
   "name": "Stirge",
   "srd": {
     "name": "Stirge",
-    "meta": "Tiny beast, unaligned",
-    "Armor Class": "14 (Natural Armor)",
+    "meta": "Diminuta bestia, no alineada",
+    "Armor Class": "14 (Armadura natural)",
     "Hit Points": "2 (1d4)",
-    "Speed": "10 ft., fly 40 ft. ",
+  "Speed": "a pie 10 ft., volar 40 ft. ",
     "STR": "4",
     "STR_mod": "(-3)",
     "DEX": "16",
@@ -22,11 +22,11 @@
     "WIS_mod": "(-1)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Senses": "Darkvision 60 ft.,  Passive Perception 9",
+  "Senses": "Visión en la oscuridad 60 ft.,  Percepción pasiva 9",
     "Languages": "--",
-    "Challenge": "1/8 (25 XP)",
-    "Actions": "<p><em><strong>Blood Drain.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one creature. <em>Hit:</em> 5 (1d4 + 3) piercing damage, and the stirge attaches to the target. While attached, the stirge doesn't attack. Instead, at the start of each of the stirge's turns, the target loses 5 (1d4 + 3) hit points due to blood loss.</p><p>The stirge can detach itself by spending 5 feet of its movement. It does so after it drains 10 hit points of blood from the target or the target dies. A creature, including the target, can use its action to detach the stirge.</p>",
+  "Challenge": "1/8 (25 PX)",
+  "Actions": "<p><em><strong>Drenaje de sangre.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 5 (1d4 + 3) de daño perforante, y el stirge se adhiere al objetivo. Mientras esté adherido, el stirge no ataca. En su lugar, al comienzo de cada uno de los turnos del stirge, el objetivo pierde 5 (1d4 + 3) puntos de golpe por pérdida de sangre.</p><p>El stirge puede desprenderse gastando 5 pies de su movimiento. Lo hace después de drenar 10 puntos de golpe de sangre del objetivo o si el objetivo muere. Una criatura, incluido el propio objetivo, puede usar su acción para desprender al stirge.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/111/1000/1000/636252745395103202.jpeg"
   },
-  "translated": false
+  "translated": true
 }

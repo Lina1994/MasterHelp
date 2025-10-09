@@ -3,11 +3,11 @@
   "slug": "giant-elk",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Elk",
+  "name": "Alce gigante",
   "srd": {
-    "name": "Giant Elk",
-    "meta": "Huge beast, unaligned",
-    "Armor Class": "14 (Natural Armor)",
+    "name": "Alce gigante",
+    "meta": "Bestia enorme, no alineada",
+    "Armor Class": "14 (Armadura natural)",
     "Hit Points": "42 (5d12 + 10)",
     "Speed": "60 ft. ",
     "STR": "19",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+2)",
     "CHA": "10",
     "CHA_mod": "(+0)",
-    "Skills": "Perception +4",
-    "Senses": "Passive Perception 14",
-    "Languages": "Elvish, Giant Elk  and Sylvan but can't speak them",
-    "Challenge": "2 (450 XP)",
-    "Traits": "<p><em><strong>Charge.</strong></em> If the elk moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 14 Strength saving throw or be knocked prone.</p>",
-    "Actions": "<p><em><strong>Ram.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 10 ft., one target. <em>Hit:</em> 11 (2d6 + 4) bludgeoning damage. </p><p><em><strong>Hooves.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one prone creature. <em>Hit:</em> 22 (4d8 + 4) bludgeoning damage.</p>",
+  "Skills": "Percepción +4",
+  "Senses": "Percepción pasiva 14",
+  "Languages": "Entiende élfico y silvano, pero no puede hablarlos",
+  "Challenge": "2 (450 PX)",
+  "Traits": "<p><em><strong>Carga.</strong></em> Si el alce se mueve al menos 20 pies en línea recta hacia un objetivo y luego lo golpea con una embestida en el mismo turno, el objetivo recibe 7 (2d6) puntos de daño adicionales. Si el objetivo es una criatura, debe superar una tirada de salvación de Fuerza CD 14 o caer derribada.</p>",
+  "Actions": "<p><em><strong>Embestida.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 10 ft., un objetivo. <em>Impacto:</em> 11 (2d6 + 4) de daño contundente. </p><p><em><strong>Pezuñas.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 5 ft., una criatura derribada. <em>Impacto:</em> 22 (4d8 + 4) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "lizard",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Lizard",
+  "name": "Lagarto",
   "srd": {
-    "name": "Lizard",
-    "meta": "Tiny beast, unaligned",
+    "name": "Lagarto",
+    "meta": "Diminuta bestia, no alineada",
     "Armor Class": "10 ",
     "Hit Points": "2 (1d4)",
-    "Speed": "20 ft., climb 20 ft. ",
+  "Speed": "a pie 20 ft., trepar 20 ft. ",
     "STR": "2",
     "STR_mod": "(-4)",
     "DEX": "11",
@@ -22,11 +22,11 @@
     "WIS_mod": "(-1)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Senses": "Darkvision 30 ft.,  Passive Perception 9",
+  "Senses": "Visión en la oscuridad 30 ft.,  Percepción pasiva 9",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +0 to hit, reach 5 ft., one target. <em>Hit:</em> 1 piercing damage.</p>",
+  "Challenge": "0 (10 PX)",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +0 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "crocodile",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Crocodile",
+  "name": "Cocodrilo",
   "srd": {
-    "name": "Crocodile",
-    "meta": "Large beast, unaligned",
-    "Armor Class": "12 (Natural Armor)",
+    "name": "Cocodrilo",
+    "meta": "Bestia grande, no alineada",
+  "Armor Class": "12 (Armadura natural)",
     "Hit Points": "19 (3d10 + 3)",
-    "Speed": "20 ft., swim 30 ft. ",
+  "Speed": "20 ft., nadar 30 ft. ",
     "STR": "15",
     "STR_mod": "(+2)",
     "DEX": "10",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+0)",
     "CHA": "5",
     "CHA_mod": "(-3)",
-    "Skills": "Stealth +2",
-    "Senses": "Passive Perception 10",
+  "Skills": "Sigilo +2",
+  "Senses": "Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "1/2 (100 XP)",
-    "Traits": "<p><em><strong>Hold Breath.</strong></em> The crocodile can hold its breath for 15 minutes.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 7 (1d10 + 2) piercing damage, and the target is grappled (escape DC 12). Until this grapple ends, the target is restrained, and the crocodile can't bite another target.</p>",
+  "Challenge": "1/2 (100 PX)",
+  "Traits": "<p><em><strong>Contener la respiración.</strong></em> El cocodrilo puede contener la respiración durante 15 minutos.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 7 (1d10 + 2) de daño perforante, y el objetivo queda agarrado (Escape CD 12). Hasta que termine este agarre, el objetivo está restringido y el cocodrilo no puede morder a otro objetivo.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

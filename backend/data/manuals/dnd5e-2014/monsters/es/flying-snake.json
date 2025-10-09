@@ -3,13 +3,13 @@
   "slug": "flying-snake",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Flying Snake",
+  "name": "Serpiente voladora",
   "srd": {
-    "name": "Flying Snake",
-    "meta": "Tiny beast, unaligned",
+    "name": "Serpiente voladora",
+    "meta": "Bestia diminuta, no alineada",
     "Armor Class": "14 ",
     "Hit Points": "5 (2d4)",
-    "Speed": "30 ft., fly 60 ft., swim 30 ft. ",
+  "Speed": "30 ft., volar 60 ft., nadar 30 ft. ",
     "STR": "4",
     "STR_mod": "(-3)",
     "DEX": "18",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "5",
     "CHA_mod": "(-3)",
-    "Senses": "Blindsight 10 ft.,  Passive Perception 11",
+  "Senses": "Sentido ciego 10 ft.,  Percepción pasiva 11",
     "Languages": "--",
-    "Challenge": "1/8 (25 XP)",
-    "Traits": "<p><em><strong>Flyby.</strong></em> The snake doesn't provoke opportunity attacks when it flies out of an enemy's reach.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one target. <em>Hit:</em> 1 piercing damage plus 7 (3d4) poison damage.</p>",
+  "Challenge": "1/8 (25 PX)",
+  "Traits": "<p><em><strong>Vuelo rasante.</strong></em> La serpiente no provoca ataques de oportunidad cuando sale volando del alcance de un enemigo.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño perforante más 7 (3d4) de daño por veneno.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/517/1000/1000/636376319640572721.jpeg"
   },
-  "translated": false
+  "translated": true
 }

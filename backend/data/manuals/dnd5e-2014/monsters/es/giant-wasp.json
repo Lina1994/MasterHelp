@@ -3,13 +3,13 @@
   "slug": "giant-wasp",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Wasp",
+  "name": "Avispa gigante",
   "srd": {
-    "name": "Giant Wasp",
-    "meta": "Medium beast, unaligned",
+    "name": "Avispa gigante",
+    "meta": "Bestia mediana, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "13 (3d8)",
-    "Speed": "10 ft., fly 50 ft. ",
+  "Speed": "a pie 10 ft., volar 50 ft. ",
     "STR": "10",
     "STR_mod": "(+0)",
     "DEX": "14",
@@ -22,11 +22,11 @@
     "WIS_mod": "(+0)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Senses": "Passive Perception 10",
+  "Senses": "Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "1/2 (100 XP)",
-    "Actions": "<p><em><strong>Sting.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 5 (1d6 + 2) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much damage on a successful one. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.</p>",
+  "Challenge": "1/2 (100 PX)",
+  "Actions": "<p><em><strong>Aguijón.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 5 (1d6 + 2) de daño perforante, y el objetivo debe hacer una tirada de salvación de Constitución CD 11; si falla, sufre 10 (3d6) de daño por veneno, o la mitad si tiene éxito. Si el daño por veneno reduce al objetivo a 0 PG, queda estable pero envenenado durante 1 hora, incluso tras recuperar puntos de golpe, y queda paralizado mientras esté envenenado de esta manera.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

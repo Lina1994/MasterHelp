@@ -3,11 +3,11 @@
   "slug": "rhinoceros",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Rhinoceros",
+  "name": "Rinoceronte",
   "srd": {
-    "name": "Rhinoceros",
-    "meta": "Large beast, unaligned",
-    "Armor Class": "11 (Natural Armor)",
+    "name": "Rinoceronte",
+    "meta": "Bestia grande, no alineada",
+    "Armor Class": "11 (Armadura natural)",
     "Hit Points": "45 (6d10 + 12)",
     "Speed": "40 ft. ",
     "STR": "21",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Senses": "Passive Perception 11",
+  "Senses": "Percepción pasiva 11",
     "Languages": "--",
-    "Challenge": "2 (450 XP)",
-    "Traits": "<p><em><strong>Charge.</strong></em> If the rhinoceros moves at least 20 feet straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) bludgeoning damage. If the target is a creature, it must succeed on a DC 15 Strength saving throw or be knocked prone.</p>",
-    "Actions": "<p><em><strong>Gore.</strong></em> <em>Melee Weapon Attack:</em> +7 to hit, reach 5 ft., one target. <em>Hit:</em> 14 (2d8 + 5) bludgeoning damage.</p>",
+  "Challenge": "2 (450 PX)",
+  "Traits": "<p><em><strong>Carga.</strong></em> Si el rinoceronte se mueve al menos 20 pies en línea recta hacia un objetivo y luego lo golpea con una cornada en el mismo turno, el objetivo recibe 9 (2d8) puntos de daño contundente adicionales. Si el objetivo es una criatura, debe superar una tirada de salvación de Fuerza CD 15 o caer derribada.</p>",
+  "Actions": "<p><em><strong>Cornada.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +7 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 14 (2d8 + 5) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "sea-horse",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Sea Horse",
+  "name": "Caballito de mar",
   "srd": {
-    "name": "Sea Horse",
-    "meta": "Tiny beast, unaligned",
+    "name": "Caballito de mar",
+    "meta": "Bestia diminuta, no alineada",
     "Armor Class": "11 ",
     "Hit Points": "1 (1d4 - 1)",
-    "Speed": "0 ft., swim 20 ft. ",
+  "Speed": "0 ft., nadar 20 ft. ",
     "STR": "1",
     "STR_mod": "(-5)",
     "DEX": "12",
@@ -22,11 +22,11 @@
     "WIS_mod": "(+0)",
     "CHA": "2",
     "CHA_mod": "(-4)",
-    "Senses": "Passive Perception 10",
+  "Senses": "Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Water Breathing.</strong></em> The sea horse can breathe only underwater.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Respirar agua.</strong></em> El caballito de mar solo puede respirar bajo el agua.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

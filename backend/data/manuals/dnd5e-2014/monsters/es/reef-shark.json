@@ -3,13 +3,13 @@
   "slug": "reef-shark",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Reef Shark",
+  "name": "Tiburón de arrecife",
   "srd": {
-    "name": "Reef Shark",
-    "meta": "Medium beast, unaligned",
-    "Armor Class": "12 (Natural Armor)",
+    "name": "Tiburón de arrecife",
+    "meta": "Bestia mediana, no alineada",
+  "Armor Class": "12 (Armadura natural)",
     "Hit Points": "22 (4d8 + 4)",
-    "Speed": "0 ft., swim 40 ft. ",
+  "Speed": "0 ft., nadar 40 ft. ",
     "STR": "14",
     "STR_mod": "(+2)",
     "DEX": "13",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+0)",
     "CHA": "4",
     "CHA_mod": "(-3)",
-    "Skills": "Perception +2",
-    "Senses": "Blindsight 30 ft.,  Passive Perception 12",
+  "Skills": "Percepción +2",
+  "Senses": "Sentido ciego 30 ft.,  Percepción pasiva 12",
     "Languages": "--",
-    "Challenge": "1/2 (100 XP)",
-    "Traits": "<p><em><strong>Pack Tactics.</strong></em> The shark has advantage on an attack roll against a creature if at least one of the shark's allies is within 5 feet of the creature and the ally isn't incapacitated. </p><p><em><strong>Water Breathing.</strong></em> The shark can breathe only underwater.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (1d8 + 2) piercing damage.</p>",
+  "Challenge": "1/2 (100 PX)",
+  "Traits": "<p><em><strong>Tácticas de manada.</strong></em> El tiburón tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 pies de la criatura y dicho aliado no está incapacitado. </p><p><em><strong>Respirar agua.</strong></em> El tiburón solo puede respirar bajo el agua.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 6 (1d8 + 2) de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

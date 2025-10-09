@@ -3,10 +3,10 @@
   "slug": "raven",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Raven",
+  "name": "Cuervo",
   "srd": {
-    "name": "Raven",
-    "meta": "Tiny beast, unaligned",
+    "name": "Cuervo",
+    "meta": "Diminuta bestia, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "1 (1d4 - 1)",
     "Speed": "10 ft., fly 50 ft. ",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Skills": "Perception +3",
-    "Senses": "Passive Perception 13",
+  "Skills": "Percepción +3",
+  "Senses": "Percepción pasiva 13",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Mimicry.</strong></em> The raven can mimic simple sounds it has heard, such as a person whispering, a baby crying, or an animal chittering. A creature that hears the sounds can tell they are imitations with a successful DC 10 Wisdom (Insight) check.</p>",
-    "Actions": "<p><em><strong>Beak.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 1 piercing damage.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Mimetismo.</strong></em> El cuervo puede imitar sonidos simples que haya escuchado, como susurros de una persona, el llanto de un bebé o el gorjeo de un animal. Una criatura que oiga los sonidos puede detectar que son imitaciones con una prueba de Sabiduría (Perspicacia) CD 10.</p>",
+  "Actions": "<p><em><strong>Pico.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/553/1000/1000/636376341568391037.jpeg"
   },
-  "translated": false
+  "translated": true
 }

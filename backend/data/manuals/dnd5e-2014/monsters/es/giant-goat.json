@@ -3,11 +3,11 @@
   "slug": "giant-goat",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Goat",
+  "name": "Cabra gigante",
   "srd": {
-    "name": "Giant Goat",
-    "meta": "Large beast, unaligned",
-    "Armor Class": "11 (Natural Armor)",
+    "name": "Cabra gigante",
+    "meta": "Bestia grande, no alineada",
+    "Armor Class": "11 (Armadura natural)",
     "Hit Points": "19 (3d10 + 3)",
     "Speed": "40 ft. ",
     "STR": "17",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Senses": "Passive Perception 11",
+  "Senses": "Percepción pasiva 11",
     "Languages": "--",
-    "Challenge": "1/2 (100 XP)",
-    "Traits": "<p><em><strong>Charge.</strong></em> If the goat moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 5 (2d4) bludgeoning damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone. </p><p><em><strong>Sure-Footed.</strong></em> The goat has advantage on Strength and Dexterity saving throws made against effects that would knock it prone.</p>",
-    "Actions": "<p><em><strong>Ram.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 8 (2d4 + 3) bludgeoning damage.</p>",
+  "Challenge": "1/2 (100 PX)",
+  "Traits": "<p><em><strong>Carga.</strong></em> Si la cabra se mueve al menos 20 pies en línea recta hacia un objetivo y luego lo golpea con una embestida en el mismo turno, el objetivo recibe 5 (2d4) puntos de daño contundente adicionales. Si el objetivo es una criatura, debe superar una tirada de salvación de Fuerza CD 13 o caer derribada. </p><p><em><strong>Paso seguro.</strong></em> La cabra tiene ventaja en las tiradas de salvación de Fuerza y Destreza contra efectos que pudieran derribarla.</p>",
+  "Actions": "<p><em><strong>Embestida.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 8 (2d4 + 3) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

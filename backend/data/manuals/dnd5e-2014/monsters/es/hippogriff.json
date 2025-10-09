@@ -3,13 +3,13 @@
   "slug": "hippogriff",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Hippogriff",
+  "name": "Hipogrifo",
   "srd": {
-    "name": "Hippogriff",
-    "meta": "Large monstrosity, unaligned",
+    "name": "Hipogrifo",
+    "meta": "Monstruosidad grande, no alineada",
     "Armor Class": "11 ",
     "Hit Points": "19 (3d10 + 3)",
-    "Speed": "40 ft., fly 60 ft. ",
+  "Speed": "40 ft., volar 60 ft. ",
     "STR": "17",
     "STR_mod": "(+3)",
     "DEX": "13",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "8",
     "CHA_mod": "(-1)",
-    "Skills": "Perception +5",
-    "Senses": "Passive Perception 15",
+  "Skills": "Percepción +5",
+  "Senses": "Percepción pasiva 15",
     "Languages": "--",
-    "Challenge": "1 (200 XP)",
-    "Traits": "<p><em><strong>Keen Sight.</strong></em> The hippogriff has advantage on Wisdom (Perception) checks that rely on sight.</p>",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The hippogriff makes two attacks: one with its beak and one with its claws. </p><p><em><strong>Beak.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 8 (1d10 + 3) piercing damage. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 10 (2d6 + 3) slashing damage.</p>",
+  "Challenge": "1 (200 PX)",
+  "Traits": "<p><em><strong>Vista aguda.</strong></em> El hipogrifo tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan de la vista.</p>",
+  "Actions": "<p><em><strong>Multiataque.</strong></em> El hipogrifo realiza dos ataques: uno con el pico y otro con las garras. </p><p><em><strong>Pico.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 8 (1d10 + 3) de daño perforante. </p><p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 10 (2d6 + 3) de daño cortante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/335/315/315/636252776578605778.jpeg"
   },
-  "translated": false
+  "translated": true
 }

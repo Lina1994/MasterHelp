@@ -3,13 +3,13 @@
   "slug": "giant-crab",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Crab",
+  "name": "Cangrejo gigante",
   "srd": {
-    "name": "Giant Crab",
-    "meta": "Medium beast, unaligned",
-    "Armor Class": "15 (Natural Armor)",
+    "name": "Cangrejo gigante",
+    "meta": "Bestia mediana, no alineada",
+    "Armor Class": "15 (Armadura natural)",
     "Hit Points": "13 (3d8)",
-    "Speed": "30 ft., swim 30 ft. ",
+  "Speed": "30 ft., nadar 30 ft. ",
     "STR": "13",
     "STR_mod": "(+1)",
     "DEX": "15",
@@ -22,13 +22,13 @@
     "WIS_mod": "(-1)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Skills": "Stealth +4",
-    "Senses": "Blindsight 30 ft.,  Passive Perception 9",
+  "Skills": "Sigilo +4",
+  "Senses": "Sentido ciego 30 ft.,  Percepción pasiva 9",
     "Languages": "--",
-    "Challenge": "1/8 (25 XP)",
-    "Traits": "<p><em><strong>Amphibious.</strong></em> The crab can breathe air and water.</p>",
-    "Actions": "<p><em><strong>Claw.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 4 (1d6 + 1) bludgeoning damage, and the target is grappled (escape DC 11). The crab has two claws, each of which can grapple only one target.</p>",
+  "Challenge": "1/8 (25 PX)",
+  "Traits": "<p><em><strong>Anfibio.</strong></em> El cangrejo puede respirar aire y agua.</p>",
+  "Actions": "<p><em><strong>Pinza.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +3 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 4 (1d6 + 1) de daño contundente, y el objetivo queda agarrado (Escape CD 11). El cangrejo tiene dos pinzas, y cada una de ellas solo puede agarrar a un objetivo.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,10 +3,10 @@
   "slug": "swarm-of-bats",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Swarm of Bats",
+  "name": "Enjambre de murciélagos",
   "srd": {
-    "name": "Swarm of Bats",
-    "meta": "Medium beast, unaligned",
+    "name": "Enjambre de murciélagos",
+    "meta": "Bestia mediana, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "22 (5d8)",
     "Speed": "0 ft., fly 30 ft. ",
@@ -22,14 +22,14 @@
     "WIS_mod": "(+1)",
     "CHA": "4",
     "CHA_mod": "(-3)",
-    "Damage Resistances": "Bludgeoning, Piercing, Slashing",
-    "Condition Immunities": "Charmed, Frightened, Grappled, Paralyzed, Petrified, Prone, Restrained, Stunned",
-    "Senses": "Blindsight 60 ft.,  Passive Perception 11",
+  "Damage Resistances": "Contundente, Perforante, Cortante",
+  "Condition Immunities": "Hechizado, Asustado, Agarrado, Paralizado, Petrificado, Derribado, Restringido, Aturdido",
+  "Senses": "Sentido ciego 60 ft.,  Percepción pasiva 11",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Traits": "<p><em><strong>Echolocation.</strong></em> The swarm can’t use its blindsight while deafened.</p><p><em><strong>Keen Hearing.</strong></em> The swarm has advantage on Wisdom (Perception) checks that rely on hearing.</p><p><em><strong>Swarm.</strong></em> The swarm can occupy another creature’s space and vice versa, and the swarm can move through any opening large enough for a Tiny bat. The swarm can’t regain hit points or gain temporary hit points.</p>",
-    "Actions": "<p><em><strong>Bite. </strong></em><em>Melee Weapon Attack:</em> +4 to hit, reach 0 ft., one creature in the swarm's space. <em>Hit:</em> 5 (2d4) piercing damage, or 2 (1d4) piercing damage if the swarm has half of its hit points or fewer.</p>",
+  "Challenge": "1/4 (50 PX)",
+  "Traits": "<p><em><strong>Ecolocalización.</strong></em> El enjambre no puede usar su sentido ciego mientras esté ensordecido.</p><p><em><strong>Oído agudo.</strong></em> El enjambre tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan del oído.</p><p><em><strong>Enjambre.</strong></em> El enjambre puede ocupar el espacio de otra criatura y viceversa, y puede moverse a través de cualquier abertura lo suficientemente grande para un murciélago diminuto. El enjambre no puede recuperar puntos de golpe ni obtener puntos de golpe temporales.</p>",
+  "Actions": "<p><em><strong>Mordiscos.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 0 ft., una criatura en el espacio del enjambre. <em>Impacto:</em> 5 (2d4) de daño perforante, o 2 (1d4) de daño perforante si el enjambre tiene la mitad o menos de sus puntos de golpe.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/906/315/315/636334289313689439.jpeg"
   },
-  "translated": false
+  "translated": true
 }

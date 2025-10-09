@@ -3,13 +3,13 @@
   "slug": "octopus",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Octopus",
+  "name": "Pulpo",
   "srd": {
-    "name": "Octopus",
-    "meta": "Small beast, unaligned",
+    "name": "Pulpo",
+    "meta": "Bestia pequeña, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "3 (1d6)",
-    "Speed": "5 ft., swim 30 ft. ",
+  "Speed": "5 ft., nadar 30 ft. ",
     "STR": "4",
     "STR_mod": "(-3)",
     "DEX": "15",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+0)",
     "CHA": "4",
     "CHA_mod": "(-3)",
-    "Skills": "Perception +2, Stealth +4",
-    "Senses": "Darkvision 30 ft.,  Passive Perception 12",
+  "Skills": "Percepción +2, Sigilo +4",
+  "Senses": "Visión en la oscuridad 30 ft.,  Percepción pasiva 12",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Hold Breath.</strong></em> While out of water, the octopus can hold its breath for 30 minutes. </p><p><em><strong>Underwater Camouflage.</strong></em> The octopus has advantage on Dexterity (Stealth) checks made while underwater. </p><p><em><strong>Water Breathing.</strong></em> The octopus can breathe only underwater.</p>",
-    "Actions": "<p><em><strong>Tentacles.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 1 bludgeoning damage, and the target is grappled (escape DC 10). Until this grapple ends, the octopus can't use its tentacles on another target. </p><p><em><strong>Ink Cloud (Recharges after a Short or Long Rest).</strong></em> A 5-foot-radius cloud of ink extends all around the octopus if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the octopus can use the Dash action as a bonus action.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Contener la respiración.</strong></em> Fuera del agua, el pulpo puede contener la respiración durante 30 minutos. </p><p><em><strong>Camuflaje submarino.</strong></em> El pulpo tiene ventaja en las pruebas de Destreza (Sigilo) realizadas bajo el agua. </p><p><em><strong>Respirar agua.</strong></em> El pulpo solo puede respirar bajo el agua.</p>",
+  "Actions": "<p><em><strong>Tentáculos.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño contundente, y el objetivo queda agarrado (Escape CD 10). Hasta que termine este agarre, el pulpo no puede usar sus tentáculos sobre otro objetivo. </p><p><em><strong>Nube de tinta (Recarga tras un descanso corto o largo).</strong></em> Si está bajo el agua, una nube de tinta de 5 pies de radio se extiende a su alrededor. La zona queda fuertemente oscurecida durante 1 minuto, aunque una corriente significativa puede dispersar la tinta. Tras liberar la tinta, el pulpo puede usar la acción Correr como acción adicional.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/9/921/315/315/636334602449110996.jpeg"
   },
-  "translated": false
+  "translated": true
 }

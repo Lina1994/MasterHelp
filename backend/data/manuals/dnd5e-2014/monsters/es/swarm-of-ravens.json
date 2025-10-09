@@ -3,10 +3,10 @@
   "slug": "swarm-of-ravens",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Swarm of Ravens",
+  "name": "Enjambre de cuervos",
   "srd": {
-    "name": "Swarm of Ravens",
-    "meta": "Medium beast, unaligned",
+    "name": "Enjambre de cuervos",
+    "meta": "Bestia mediana, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "24 (7d8 - 7)",
     "Speed": "10 ft., fly 50 ft. ",
@@ -22,15 +22,15 @@
     "WIS_mod": "(+1)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Skills": "Perception +5",
-    "Damage Resistances": "Bludgeoning, Piercing, Slashing",
-    "Condition Immunities": "Charmed, Frightened, Grappled, Paralyzed, Petrified, Prone, Restrained, Stunned",
-    "Senses": "Passive Perception 15",
+  "Skills": "Percepción +5",
+  "Damage Resistances": "Contundente, Perforante, Cortante",
+  "Condition Immunities": "Hechizado, Asustado, Agarrado, Paralizado, Petrificado, Derribado, Restringido, Aturdido",
+  "Senses": "Percepción pasiva 15",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Traits": "<p><em><strong>Swarm.</strong></em> The swarm can occupy another creature's space and vice versa, and the swarm can move through any opening large enough for a Tiny raven. The swarm can't regain hit points or gain temporary hit points.</p>",
-    "Actions": "<p><em><strong>Beaks.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target in the swarm's space. <em>Hit:</em> 7 (2d6) piercing damage, or 3 (1d6) piercing damage if the swarm has half of its hit points or fewer.</p>",
+  "Challenge": "1/4 (50 PX)",
+  "Traits": "<p><em><strong>Enjambre.</strong></em> El enjambre puede ocupar el espacio de otra criatura y viceversa, y puede moverse a través de cualquier abertura lo suficientemente grande para un cuervo diminuto. El enjambre no puede recuperar puntos de golpe ni obtener puntos de golpe temporales.</p>",
+  "Actions": "<p><em><strong>Picos.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo en el espacio del enjambre. <em>Impacto:</em> 7 (2d6) de daño perforante, o 3 (1d6) de daño perforante si el enjambre tiene la mitad o menos de sus puntos de golpe.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/555/315/315/636376341743427326.jpeg"
   },
-  "translated": false
+  "translated": true
 }

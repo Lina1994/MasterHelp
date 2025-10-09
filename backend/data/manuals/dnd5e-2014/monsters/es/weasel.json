@@ -3,13 +3,13 @@
   "slug": "weasel",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Weasel",
+  "name": "Comadreja",
   "srd": {
-    "name": "Weasel",
-    "meta": "Tiny beast, unaligned",
+    "name": "Comadreja",
+    "meta": "Diminuta bestia, no alineada",
     "Armor Class": "13 ",
     "Hit Points": "1 (1d4 - 1)",
-    "Speed": "30 ft. ",
+  "Speed": "a pie 30 ft. ",
     "STR": "3",
     "STR_mod": "(-4)",
     "DEX": "16",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Skills": "Perception +3, Stealth +5",
-    "Senses": "Passive Perception 13",
+  "Skills": "Percepción +3, Sigilo +5",
+  "Senses": "Percepción pasiva 13",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Keen Hearing and Smell.</strong></em> The weasel has advantage on Wisdom (Perception) checks that rely on hearing or smell.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 1 piercing damage.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Oído y olfato agudos.</strong></em> La comadreja tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan del oído o del olfato.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

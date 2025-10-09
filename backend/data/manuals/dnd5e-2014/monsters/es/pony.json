@@ -3,10 +3,10 @@
   "slug": "pony",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Pony",
+  "name": "Poni",
   "srd": {
-    "name": "Pony",
-    "meta": "Medium beast, unaligned",
+    "name": "Poni",
+    "meta": "Bestia mediana, no alineada",
     "Armor Class": "10 ",
     "Hit Points": "11 (2d8 + 2)",
     "Speed": "40 ft. ",
@@ -22,11 +22,11 @@
     "WIS_mod": "(+0)",
     "CHA": "7",
     "CHA_mod": "(-2)",
-    "Senses": "Passive Perception 10",
+  "Senses": "Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "1/8 (25 XP)",
-    "Actions": "<p><em><strong>Hooves.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (2d4 + 2) bludgeoning damage.</p>",
+  "Challenge": "1/8 (25 PX)",
+  "Actions": "<p><em><strong>Pezuñas.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 7 (2d4 + 2) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

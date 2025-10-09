@@ -3,13 +3,13 @@
   "slug": "crab",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Crab",
+  "name": "Cangrejo",
   "srd": {
-    "name": "Crab",
-    "meta": "Tiny beast, unaligned",
-    "Armor Class": "11 (Natural Armor)",
+    "name": "Cangrejo",
+    "meta": "Bestia diminuta, no alineada",
+  "Armor Class": "11 (Armadura natural)",
     "Hit Points": "2 (1d4)",
-    "Speed": "20 ft., swim 20 ft. ",
+  "Speed": "20 ft., nadar 20 ft. ",
     "STR": "2",
     "STR_mod": "(-4)",
     "DEX": "11",
@@ -22,13 +22,13 @@
     "WIS_mod": "(-1)",
     "CHA": "2",
     "CHA_mod": "(-4)",
-    "Skills": "Stealth +2",
-    "Senses": "Blindsight 30 ft.,  Passive Perception 9",
+  "Skills": "Sigilo +2",
+  "Senses": "Sentido ciego 30 ft.,  Percepción pasiva 9",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Amphibious.</strong></em> The crab can breathe air and water.</p>",
-    "Actions": "<p><em><strong>Claw.</strong></em> <em>Melee Weapon Attack:</em> +0 to hit, reach 5 ft., one target. <em>Hit:</em> 1 bludgeoning damage.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Anfibio.</strong></em> El cangrejo puede respirar aire y agua.</p>",
+  "Actions": "<p><em><strong>Pinza.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +0 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

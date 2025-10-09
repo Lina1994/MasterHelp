@@ -3,13 +3,13 @@
   "slug": "giant-toad",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Toad",
+  "name": "Sapo gigante",
   "srd": {
-    "name": "Giant Toad",
-    "meta": "Large beast, unaligned",
+    "name": "Sapo gigante",
+    "meta": "Grande bestia, no alineada",
     "Armor Class": "11 ",
     "Hit Points": "39 (6d10 + 6)",
-    "Speed": "20 ft., swim 40 ft. ",
+  "Speed": "a pie 20 ft., nadar 40 ft. ",
     "STR": "15",
     "STR_mod": "(+2)",
     "DEX": "13",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+0)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Senses": "Darkvision 30 ft.,  Passive Perception 10",
+  "Senses": "Visión en la oscuridad 30 ft.,  Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "1 (200 XP)",
-    "Traits": "<p><em><strong>Amphibious.</strong></em> The toad can breathe air and water.</p><p><em><strong>Standing Leap.</strong></em> The toad's long jump is up to 20 feet and its high jump is up to 10 feet, with or without a running start.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (1d10 + 2) piercing damage plus 5 (1d10) poison damage, and the target is grappled (escape DC 13). Until this grapple ends, the target is restrained, and the toad can't bite another target. </p><p><em><strong>Swallow.</strong></em> The toad makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the toad, and it takes 10 (3d6) acid damage at the start of each of the toad's turns. The toad can have only one target swallowed at a time. If the toad dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 5 feet of movement, exiting prone.</p>",
+  "Challenge": "1 (200 PX)",
+  "Traits": "<p><em><strong>Anfibio.</strong></em> El sapo puede respirar aire y agua.</p><p><em><strong>Salto desde parado.</strong></em> El salto de longitud del sapo es de hasta 20 pies y su salto de altura de hasta 10 pies, con o sin carrera previa.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 7 (1d10 + 2) de daño perforante más 5 (1d10) de daño por veneno, y el objetivo queda agarrado (escape CD 13). Hasta que este agarre termine, el objetivo queda apresado, y el sapo no puede morder a otro objetivo. </p><p><em><strong>Tragar.</strong></em> El sapo realiza un ataque de mordisco contra un objetivo Mediano o menor al que esté agarrando. Si el ataque impacta, el objetivo es tragado y el agarre termina. El objetivo tragado queda cegado y apresado, tiene cobertura total contra ataques y otros efectos fuera del sapo, y sufre 10 (3d6) de daño por ácido al comienzo de cada turno del sapo. El sapo solo puede tener un objetivo tragado a la vez. Si el sapo muere, una criatura tragada deja de estar apresada por él y puede escapar del cadáver usando 5 pies de movimiento, saliendo tumbada.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

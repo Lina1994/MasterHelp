@@ -3,13 +3,13 @@
   "slug": "blood-hawk",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Blood Hawk",
+  "name": "Halcón sanguinario",
   "srd": {
-    "name": "Blood Hawk",
-    "meta": "Small beast, unaligned",
+    "name": "Halcón sanguinario",
+    "meta": "Pequeña bestia, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "7 (2d6)",
-    "Speed": "10 ft., fly 60 ft. ",
+  "Speed": "a pie 10 ft., volar 60 ft. ",
     "STR": "6",
     "STR_mod": "(-2)",
     "DEX": "14",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+2)",
     "CHA": "5",
     "CHA_mod": "(-3)",
-    "Skills": "Perception +4",
-    "Senses": "Passive Perception 14",
+  "Skills": "Percepción +4",
+  "Senses": "Percepción pasiva 14",
     "Languages": "--",
-    "Challenge": "1/8 (25 XP)",
-    "Traits": "<p><em><strong>Keen Sight.</strong></em> The hawk has advantage on Wisdom (Perception) checks that rely on sight. </p><p><em><strong>Pack Tactics.</strong></em> The hawk has advantage on an attack roll against a creature if at least one of the hawk's allies is within 5 feet of the creature and the ally isn't incapacitated.</p>",
-    "Actions": "<p><em><strong>Beak.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 4 (1d4 + 2) piercing damage.</p>",
+  "Challenge": "1/8 (25 PX)",
+  "Traits": "<p><em><strong>Vista aguda.</strong></em> El halcón tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan de la vista. </p><p><em><strong>Tácticas de manada.</strong></em> El halcón tiene ventaja en la tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 ft. de la criatura y dicho aliado no está incapacitado.</p>",
+  "Actions": "<p><em><strong>Pico.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 4 (1d4 + 2) de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

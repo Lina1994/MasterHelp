@@ -3,13 +3,13 @@
   "slug": "poisonous-snake",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Poisonous Snake",
+  "name": "Serpiente venenosa",
   "srd": {
-    "name": "Poisonous Snake",
-    "meta": "Tiny beast, unaligned",
+    "name": "Serpiente venenosa",
+    "meta": "Diminuta bestia, no alineada",
     "Armor Class": "13 ",
     "Hit Points": "2 (1d4)",
-    "Speed": "30 ft., swim 30 ft. ",
+  "Speed": "a pie 30 ft., nadar 30 ft. ",
     "STR": "2",
     "STR_mod": "(-4)",
     "DEX": "16",
@@ -22,11 +22,11 @@
     "WIS_mod": "(+0)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Senses": "Blindsight 10 ft.,  Passive Perception 10",
+  "Senses": "Sentido ciego 10 ft.,  Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "1/8 (25 XP)",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 1 piercing damage, and the target must make a DC 10 Constitution saving throw, taking 5 (2d4) poison damage on a failed save, or half as much damage on a successful one.</p>",
+  "Challenge": "1/8 (25 PX)",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño perforante, y el objetivo debe hacer una tirada de salvación de Constitución CD 10; si falla, sufre 5 (2d4) de daño por veneno, o la mitad si tiene éxito.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

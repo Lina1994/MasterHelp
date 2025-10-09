@@ -3,13 +3,13 @@
   "slug": "giant-poisonous-snake",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Poisonous Snake",
+  "name": "Serpiente venenosa gigante",
   "srd": {
-    "name": "Giant Poisonous Snake",
-    "meta": "Medium beast, unaligned",
+    "name": "Serpiente venenosa gigante",
+    "meta": "Bestia mediana, no alineada",
     "Armor Class": "14 ",
     "Hit Points": "11 (2d8 + 2)",
-    "Speed": "30 ft., swim 30 ft. ",
+  "Speed": "a pie 30 ft., nadar 30 ft. ",
     "STR": "10",
     "STR_mod": "(+0)",
     "DEX": "18",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+0)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Skills": "Perception +2",
-    "Senses": "Blindsight 10 ft.,  Passive Perception 12",
+  "Skills": "Percepción +2",
+  "Senses": "Sentido ciego 10 ft.,  Percepción pasiva 12",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 10 ft., one target. <em>Hit:</em> 6 (1d4 + 4) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much damage on a successful one.</p>",
+  "Challenge": "1/4 (50 PX)",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 10 ft., un objetivo. <em>Impacto:</em> 6 (1d4 + 4) de daño perforante, y el objetivo debe superar una tirada de salvación de Constitución CD 11; si falla, sufre 10 (3d6) de daño por veneno, o la mitad en una salvación exitosa.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

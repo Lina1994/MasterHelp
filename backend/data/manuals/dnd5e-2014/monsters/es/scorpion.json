@@ -3,13 +3,13 @@
   "slug": "scorpion",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Scorpion",
+  "name": "Escorpión",
   "srd": {
-    "name": "Scorpion",
-    "meta": "Tiny beast, unaligned",
-    "Armor Class": "11 (Natural Armor)",
+    "name": "Escorpión",
+    "meta": "Diminuta bestia, no alineada",
+  "Armor Class": "11 (Armadura natural)",
     "Hit Points": "1 (1d4 - 1)",
-    "Speed": "10 ft. ",
+  "Speed": "a pie 10 ft. ",
     "STR": "2",
     "STR_mod": "(-4)",
     "DEX": "11",
@@ -22,11 +22,11 @@
     "WIS_mod": "(-1)",
     "CHA": "2",
     "CHA_mod": "(-4)",
-    "Senses": "Blindsight 10 ft.,  Passive Perception 9",
+  "Senses": "Sentido ciego 10 ft.,  Percepción pasiva 9",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Actions": "<p><em><strong>Sting.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one creature. <em>Hit:</em> 1 piercing damage, and the target must make a DC 9 Constitution saving throw, taking 4 (1d8) poison damage on a failed save, or half as much damage on a successful one.</p>",
+  "Challenge": "0 (10 PX)",
+  "Actions": "<p><em><strong>Aguijón.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 1 de daño perforante, y el objetivo debe hacer una tirada de salvación de Constitución CD 9; si falla, sufre 4 (1d8) de daño por veneno, o la mitad si tiene éxito.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "hunter-shark",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Hunter Shark",
+  "name": "Tiburón cazador",
   "srd": {
-    "name": "Hunter Shark",
-    "meta": "Large beast, unaligned",
-    "Armor Class": "12 (Natural Armor)",
+    "name": "Tiburón cazador",
+    "meta": "Bestia grande, no alineada",
+  "Armor Class": "12 (Armadura natural)",
     "Hit Points": "45 (6d10 + 12)",
-    "Speed": "0 ft., swim 40 ft. ",
+  "Speed": "0 ft., nadar 40 ft. ",
     "STR": "18",
     "STR_mod": "(+4)",
     "DEX": "13",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+0)",
     "CHA": "4",
     "CHA_mod": "(-3)",
-    "Skills": "Perception +2",
-    "Senses": "Blindsight 30 ft.,  Passive Perception 12",
+  "Skills": "Percepción +2",
+  "Senses": "Sentido ciego 30 ft.,  Percepción pasiva 12",
     "Languages": "--",
-    "Challenge": "2 (450 XP)",
-    "Traits": "<p><em><strong>Blood Frenzy.</strong></em> The shark has advantage on melee attack rolls against any creature that doesn't have all its hit points. </p><p><em><strong>Water Breathing.</strong></em> The shark can breathe only underwater.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +6 to hit, reach 5 ft., one target. <em>Hit:</em> 13 (2d8 + 4) piercing damage.</p>",
+  "Challenge": "2 (450 PX)",
+  "Traits": "<p><em><strong>Frenesí de sangre.</strong></em> El tiburón tiene ventaja en las tiradas de ataque cuerpo a cuerpo contra cualquier criatura que no tenga todos sus puntos de golpe. </p><p><em><strong>Respirar agua.</strong></em> El tiburón solo puede respirar bajo el agua.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +6 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 13 (2d8 + 4) de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,11 +3,11 @@
   "slug": "mammoth",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Mammoth",
+  "name": "Mamut",
   "srd": {
-    "name": "Mammoth",
-    "meta": "Huge beast, unaligned",
-    "Armor Class": "13 (Natural Armor)",
+    "name": "Mamut",
+    "meta": "Bestia enorme, no alineada",
+    "Armor Class": "13 (Armadura natural)",
     "Hit Points": "126 (11d12 + 55)",
     "Speed": "40 ft. ",
     "STR": "24",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+0)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Senses": "Passive Perception 10",
+  "Senses": "Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "6 (2,300 XP)",
-    "Traits": "<p><em><strong>Trampling Charge.</strong></em> If the mammoth moves at least 20 feet straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 18 Strength saving throw or be knocked prone. If the target is prone, the mammoth can make one stomp attack against it as a bonus action.</p>",
-    "Actions": "<p><em><strong>Gore.</strong></em> <em>Melee Weapon Attack:</em> +10 to hit, reach 10 ft., one target. <em>Hit:</em> 25 (4d8 + 7) piercing damage. </p><p><em><strong>Stomp.</strong></em> <em>Melee Weapon Attack:</em> +10 to hit, reach 5 ft., one prone creature. <em>Hit:</em> 29 (4d10 + 7) bludgeoning damage.</p>",
+  "Challenge": "6 (2,300 PX)",
+  "Traits": "<p><em><strong>Carga aplastante.</strong></em> Si el mamut se mueve al menos 20 pies en línea recta hacia una criatura y luego la golpea con una cornada en el mismo turno, ese objetivo debe superar una tirada de salvación de Fuerza CD 18 o caer derribado. Si el objetivo está derribado, el mamut puede hacer un ataque de pisotón contra él como acción adicional.</p>",
+  "Actions": "<p><em><strong>Cornada.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +10 al ataque, alcance 10 ft., un objetivo. <em>Impacto:</em> 25 (4d8 + 7) de daño perforante. </p><p><em><strong>Pisotón.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +10 al ataque, alcance 5 ft., una criatura derribada. <em>Impacto:</em> 29 (4d10 + 7) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

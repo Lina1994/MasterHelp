@@ -3,13 +3,13 @@
   "slug": "giant-sea-horse",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Sea Horse",
+  "name": "Caballito de mar gigante",
   "srd": {
-    "name": "Giant Sea Horse",
-    "meta": "Large beast, unaligned",
+    "name": "Caballito de mar gigante",
+    "meta": "Bestia grande, no alineada",
     "Armor Class": "13 (Natural Armor)",
     "Hit Points": "16 (3d10)",
-    "Speed": "0 ft., swim 40 ft. ",
+  "Speed": "0 ft., nadar 40 ft. ",
     "STR": "12",
     "STR_mod": "(+1)",
     "DEX": "15",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "5",
     "CHA_mod": "(-3)",
-    "Senses": "Passive Perception 11",
+  "Senses": "Percepción pasiva 11",
     "Languages": "--",
-    "Challenge": "1/2 (100 XP)",
-    "Traits": "<p><em><strong>Charge.</strong></em> If the sea horse moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) bludgeoning damage. It the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone. </p><p><em><strong>Water Breathing.</strong></em> The sea horse can breathe only underwater.</p>",
-    "Actions": "<p><em><strong>Ram.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 4 (1d6 + 1) bludgeoning damage.</p>",
+  "Challenge": "1/2 (100 PX)",
+  "Traits": "<p><em><strong>Carga.</strong></em> Si el caballito de mar se mueve al menos 20 pies en línea recta hacia un objetivo y luego lo golpea con un ataque de embestida en el mismo turno, el objetivo recibe 7 (2d6) puntos de daño contundente adicionales. Si el objetivo es una criatura, debe superar una tirada de salvación de Fuerza CD 11 o caer derribada. </p><p><em><strong>Respirar agua.</strong></em> El caballito de mar solo puede respirar bajo el agua.</p>",
+  "Actions": "<p><em><strong>Embestida.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +3 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 4 (1d6 + 1) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

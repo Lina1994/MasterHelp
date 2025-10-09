@@ -3,10 +3,10 @@
   "slug": "elk",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Elk",
+  "name": "Alce",
   "srd": {
-    "name": "Elk",
-    "meta": "Large beast, unaligned",
+    "name": "Alce",
+    "meta": "Bestia grande, no alineada",
     "Armor Class": "10 ",
     "Hit Points": "13 (2d10 + 2)",
     "Speed": "50 ft. ",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+0)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Senses": "Passive Perception 10",
+  "Senses": "Percepción pasiva 10",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Traits": "<p><em><strong>Charge.</strong></em> If the elk moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.</p>",
-    "Actions": "<p><em><strong>Ram.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (1d6 + 3) bludgeoning damage. </p><p><em><strong>Hooves.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one prone creature. <em>Hit:</em> 8 (2d4 + 3) bludgeoning damage.</p>",
+  "Challenge": "1/4 (50 PX)",
+  "Traits": "<p><em><strong>Carga.</strong></em> Si el alce se mueve al menos 20 pies en línea recta hacia un objetivo y luego lo golpea con una embestida en el mismo turno, el objetivo recibe 7 (2d6) puntos de daño adicionales. Si el objetivo es una criatura, debe superar una tirada de salvación de Fuerza CD 13 o caer derribada.</p>",
+  "Actions": "<p><em><strong>Embestida.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 6 (1d6 + 3) de daño contundente. </p><p><em><strong>Pezuñas.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., una criatura derribada. <em>Impacto:</em> 8 (2d4 + 3) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }
