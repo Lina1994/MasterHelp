@@ -3,13 +3,13 @@
   "slug": "giant-centipede",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Centipede",
+  "name": "Ciempiés gigante",
   "srd": {
-    "name": "Giant Centipede",
-    "meta": "Small beast, unaligned",
-    "Armor Class": "13 (Natural Armor)",
+    "name": "Ciempiés gigante",
+    "meta": "Pequeña bestia, no alineada",
+    "Armor Class": "13 (Armadura natural)",
     "Hit Points": "4 (1d6 + 1)",
-    "Speed": "30 ft., climb 30 ft. ",
+    "Speed": "a pie 30 ft., trepar 30 ft. ",
     "STR": "5",
     "STR_mod": "(-3)",
     "DEX": "14",
@@ -22,11 +22,11 @@
     "WIS_mod": "(-2)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Senses": "Blindsight 30 ft.,  Passive Perception 8",
+    "Senses": "Sentido ciego 30 ft.,  Percepción pasiva 8",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 4 (1d4 + 2) piercing damage, and the target must succeed on a DC 11 Constitution saving throw or take 10 (3d6) poison damage. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.</p>",
+    "Challenge": "1/4 (50 PX)",
+    "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 4 (1d4 + 2) de daño perforante, y el objetivo debe superar una tirada de salvación de Constitución CD 11 o sufre 10 (3d6) de daño por veneno. Si el daño por veneno reduce al objetivo a 0 PG, queda estable pero envenenado durante 1 hora, incluso después de recuperar puntos de golpe, y queda paralizado mientras esté envenenado de esta manera.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "giant-scorpion",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Scorpion",
+  "name": "Escorpión gigante",
   "srd": {
-    "name": "Giant Scorpion",
-    "meta": "Large beast, unaligned",
-    "Armor Class": "15 (Natural Armor)",
+    "name": "Escorpión gigante",
+    "meta": "Grande bestia, no alineada",
+    "Armor Class": "15 (Armadura natural)",
     "Hit Points": "52 (7d10 + 14)",
-    "Speed": "40 ft. ",
+    "Speed": "a pie 40 ft. ",
     "STR": "15",
     "STR_mod": "(+2)",
     "DEX": "13",
@@ -22,11 +22,11 @@
     "WIS_mod": "(-1)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Senses": "Blindsight 60 ft.,  Passive Perception 9",
+    "Senses": "Sentido ciego 60 ft.,  Percepción pasiva 9",
     "Languages": "--",
-    "Challenge": "3 (700 XP)",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The scorpion makes three attacks: two with its claws and one with its sting. </p><p><em><strong>Claw.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (1d8 + 2) bludgeoning damage, and the target is grappled (escape DC 12). The scorpion has two claws, each of which can grapple only one target. </p><p><em><strong>Sting.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one creature. <em>Hit:</em> 7 (1d10 + 2) piercing damage, and the target must make a DC 12 Constitution saving throw, taking 22 (4d10) poison damage on a failed save, or half as much damage on a successful one.</p>",
+    "Challenge": "3 (700 PX)",
+    "Actions": "<p><em><strong>Multiataque.</strong></em> El escorpión realiza tres ataques: dos con sus pinzas y uno con su aguijón. </p><p><em><strong>Pinza.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 6 (1d8 + 2) de daño contundente, y el objetivo queda agarrado (escape CD 12). El escorpión tiene dos pinzas, cada una de las cuales puede agarrar a un solo objetivo. </p><p><em><strong>Aguijón.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 7 (1d10 + 2) de daño perforante, y el objetivo debe superar una tirada de salvación de Constitución CD 12; si falla, sufre 22 (4d10) de daño por veneno, o la mitad con una salvación exitosa.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

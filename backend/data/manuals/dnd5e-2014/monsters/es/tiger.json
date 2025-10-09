@@ -3,13 +3,13 @@
   "slug": "tiger",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Tiger",
+  "name": "Tigre",
   "srd": {
-    "name": "Tiger",
-    "meta": "Large beast, unaligned",
+    "name": "Tigre",
+    "meta": "Bestia grande, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "37 (5d10 + 10)",
-    "Speed": "40 ft. ",
+  "Speed": "a pie 40 ft. ",
     "STR": "17",
     "STR_mod": "(+3)",
     "DEX": "15",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "8",
     "CHA_mod": "(-1)",
-    "Skills": "Perception +3, Stealth +6",
-    "Senses": "Darkvision 60 ft.,  Passive Perception 13",
+  "Skills": "Percepción +3, Sigilo +6",
+  "Senses": "Visión en la oscuridad 60 ft.,  Percepción pasiva 13",
     "Languages": "--",
-    "Challenge": "1 (200 XP)",
-    "Traits": "<p><em><strong>Keen Smell.</strong></em> The tiger has advantage on Wisdom (Perception) checks that rely on smell. </p><p><em><strong>Pounce.</strong></em> If the tiger moves at least 20 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the tiger can make one bite attack against it as a bonus action.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 8 (1d10 + 3) piercing damage.</p><p><em><strong>Claw.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (1d8 + 3) slashing damage.</p>",
+  "Challenge": "1 (200 PX)",
+  "Traits": "<p><em><strong>Olfato agudo.</strong></em> El tigre tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan del olfato. </p><p><em><strong>Embestida.</strong></em> Si el tigre se mueve al menos 20 ft. en línea recta hacia una criatura y luego la golpea con un ataque de garra en el mismo turno, ese objetivo debe superar una tirada de salvación de Fuerza CD 13 o caer derribado. Si el objetivo está derribado, el tigre puede realizar un ataque de mordisco contra él como acción adicional.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 8 (1d10 + 3) de daño perforante.</p><p><em><strong>Garra.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 7 (1d8 + 3) de daño cortante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

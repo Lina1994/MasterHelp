@@ -3,13 +3,13 @@
   "slug": "white-dragon-wyrmling",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "White Dragon Wyrmling",
+  "name": "Cría de dragón blanco",
   "srd": {
-    "name": "White Dragon Wyrmling",
-    "meta": "Medium dragon, chaotic evil",
-    "Armor Class": "16 (Natural Armor)",
+    "name": "Cría de dragón blanco",
+    "meta": "Mediano dragón, malvado caótico",
+    "Armor Class": "16 (Armadura natural)",
     "Hit Points": "32 (5d8 + 10)",
-    "Speed": "30 ft., burrow 15 ft., fly 60 ft., swim 30 ft. ",
+    "Speed": "a pie 30 ft., cavar 15 ft., volar 60 ft., nadar 30 ft.",
     "STR": "14",
     "STR_mod": "(+2)",
     "DEX": "10",
@@ -26,10 +26,10 @@
     "Skills": "Perception +4, Stealth +2",
     "Damage Immunities": "Cold",
     "Senses": "Blindsight 10 ft., Darkvision 60 ft.,  Passive Perception 14",
-    "Languages": "Draconic",
-    "Challenge": "2 (450 XP)",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (1d10 + 2) piercing damage plus 2 (1d4) cold damage. </p><p><em><strong>Cold Breath (Recharge 5–6).</strong></em> The dragon exhales an icy blast of hail in a 15-foot cone. Each creature in that area must make a DC 12 Constitution saving throw, taking 22 (5d8) cold damage on a failed save, or half as much damage on a successful one.</p>",
+  "Languages": "Dracónico",
+  "Challenge": "2 (450 PX)",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 7 (1d10 + 2) de daño perforante más 2 (1d4) de daño de frío. </p><p><em><strong>Aliento de frío (Recarga 5–6).</strong></em> El dragón exhala una ráfaga helada de granizo en un cono de 15 ft. Cada criatura en el área debe hacer una tirada de salvación de Constitución CD 12, sufriendo 22 (5d8) de daño de frío si falla la tirada, o la mitad del daño si la supera.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/415/1000/1000/636252789083357808.jpeg"
   },
-  "translated": false
+  "translated": true
 }

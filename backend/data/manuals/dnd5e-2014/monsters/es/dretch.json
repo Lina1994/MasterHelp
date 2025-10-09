@@ -6,10 +6,10 @@
   "name": "Dretch",
   "srd": {
     "name": "Dretch",
-    "meta": "Small fiend, chaotic evil",
-    "Armor Class": "11 (Natural Armor)",
+    "meta": "Pequeño infernal, malvado caótico",
+    "Armor Class": "11 (Armadura natural)",
     "Hit Points": "18 (4d6 + 4)",
-    "Speed": "20 ft. ",
+    "Speed": "a pie 20 ft.",
     "STR": "11",
     "STR_mod": "(+0)",
     "DEX": "11",
@@ -22,14 +22,14 @@
     "WIS_mod": "(-1)",
     "CHA": "3",
     "CHA_mod": "(-4)",
-    "Damage Resistances": "Cold, Fire, Lightning",
-    "Damage Immunities": "Poison",
-    "Condition Immunities": "Poisoned",
-    "Senses": "Darkvision 60 ft.,  Passive Perception 9",
-    "Languages": "Abyssal, Telepathy 60 ft.",
-    "Challenge": "1/4 (50 XP)",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The dretch makes two attacks: one with its bite and one with its claws. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one target. <em>Hit:</em> 3 (1d6) piercing damage. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one target. <em>Hit:</em> 5 (2d4) slashing damage. </p><p><em><strong>Fetid Cloud (1/Day).</strong></em> A 10­-foot radius of disgusting green gas extends out from the dretch. The gas spreads around corners, and its area is lightly obscured. It lasts for 1 minute or until a strong wind disperses it. Any creature that starts its turn in that area must succeed on a DC 11 Constitution saving throw or be poisoned until the start of its next turn. While poisoned in this way, the target can take either an action or a bonus action on its turn, not both, and can't take reactions.</p>",
+    "Damage Resistances": "Frío, Fuego, Relámpago",
+    "Damage Immunities": "Veneno",
+    "Condition Immunities": "Envenenado",
+    "Senses": "visión en la oscuridad 60 ft., Percepción pasiva 9",
+    "Languages": "Abisal, Telepatía 60 ft.",
+    "Challenge": "1/4 (50 PX)",
+    "Actions": "<p><em><strong>Multiataque.</strong></em> El dretch realiza dos ataques: uno con su mordisco y otro con sus garras. </p><p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 3 (1d6) de daño perforante. </p><p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 5 (2d4) de daño cortante. </p><p><em><strong>Nube fétida (1/día).</strong></em> Se extiende un radio de 10 pies de gas verde repugnante desde el dretch. El gas se extiende alrededor de las esquinas y su área está ligeramente oscurecida. Dura 1 minuto o hasta que un viento fuerte lo disperse. Cualquier criatura que comience su turno en esa área debe superar una tirada de salvación de Constitución CD 11 o quedar envenenada hasta el inicio de su siguiente turno. Mientras esté envenenado de esta manera, el objetivo puede realizar una acción o una acción adicional en su turno, no ambas, y no puede realizar reacciones.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/293/1000/1000/636252771253285096.jpeg"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "bat",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Bat",
+  "name": "Murciélago",
   "srd": {
-    "name": "Bat",
-    "meta": "Tiny beast, unaligned",
+    "name": "Murciélago",
+    "meta": "Diminuta bestia, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "1 (1d4 - 1)",
-    "Speed": "5 ft., fly 30 ft. ",
+  "Speed": "a pie 5 ft., volar 30 ft. ",
     "STR": "2",
     "STR_mod": "(-4)",
     "DEX": "15",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "4",
     "CHA_mod": "(-3)",
-    "Senses": "Blindsight 60 ft.,  Passive Perception 11",
+  "Senses": "Sentido ciego 60 ft.,  Percepción pasiva 11",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>Echolocation.</strong></em> The bat can't use its blindsight while deafened. </p><p><em><strong>Keen Hearing.</strong></em> The bat has advantage on Wisdom (Perception) checks that rely on hearing.</p>",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +0 to hit, reach 5 ft., one creature. <em>Hit:</em> 1 piercing damage.</p>",
+  "Challenge": "0 (10 PX)",
+  "Traits": "<p><em><strong>Ecolocalización.</strong></em> El murciélago no puede usar su sentido ciego mientras esté ensordecido. </p><p><em><strong>Oído agudo.</strong></em> El murciélago tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan del oído.</p>",
+  "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +0 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 1 de daño perforante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/18/305/1000/1000/636379812593010967.jpeg"
   },
-  "translated": false
+  "translated": true
 }

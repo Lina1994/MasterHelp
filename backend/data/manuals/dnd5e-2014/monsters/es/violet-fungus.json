@@ -3,13 +3,13 @@
   "slug": "violet-fungus",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Violet Fungus",
+  "name": "Hongo violeta",
   "srd": {
-    "name": "Violet Fungus",
-    "meta": "Medium plant, unaligned",
+    "name": "Hongo violeta",
+    "meta": "Planta mediana, no alineada",
     "Armor Class": "5 ",
     "Hit Points": "18 (4d8)",
-    "Speed": "5 ft. ",
+    "Speed": "a pie 5 ft. ",
     "STR": "3",
     "STR_mod": "(-4)",
     "DEX": "1",
@@ -22,13 +22,13 @@
     "WIS_mod": "(-4)",
     "CHA": "1",
     "CHA_mod": "(-5)",
-    "Condition Immunities": "Blinded, Deafened, Frightened",
-    "Senses": "Blindsight 30 ft.,  Passive Perception 6",
+    "Condition Immunities": "Cegado, Ensordecido, Asustado",
+    "Senses": "Sentido ciego 30 ft.,  Percepción pasiva 6",
     "Languages": "--",
-    "Challenge": "1/4 (50 XP)",
-    "Traits": "<p><em><strong>False Appearance.</strong></em> While the violet fungus remains motionless, it is indistinguishable from an ordinary fungus.</p>",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The fungus makes 1d4 Rotting Touch attacks.</p><p><em><strong>Rotting Touch.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 10 ft., one creature. <em>Hit:</em> 4 (1d8) necrotic damage.</p>",
+    "Challenge": "1/4 (50 PX)",
+    "Traits": "<p><em><strong>Apariencia falsa.</strong></em> Mientras el hongo violeta permanezca inmóvil, es indistinguible de un hongo corriente.</p>",
+    "Actions": "<p><em><strong>Multiataque.</strong></em> El hongo realiza 1d4 ataques de Toque pútrido.</p><p><em><strong>Toque pútrido.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 10 ft., una criatura. <em>Impacto:</em> 4 (1d8) de daño necrótico.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/573/315/315/636376357964412799.jpeg"
   },
-  "translated": false
+  "translated": true
 }

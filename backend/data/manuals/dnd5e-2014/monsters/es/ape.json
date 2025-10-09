@@ -3,13 +3,13 @@
   "slug": "ape",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Ape",
+  "name": "Simio",
   "srd": {
-    "name": "Ape",
-    "meta": "Medium beast, unaligned",
+    "name": "Simio",
+    "meta": "Bestia mediana, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "19 (3d8 + 6)",
-    "Speed": "30 ft., climb 30 ft. ",
+  "Speed": "a pie 30 ft., trepar 30 ft. ",
     "STR": "16",
     "STR_mod": "(+3)",
     "DEX": "14",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "7",
     "CHA_mod": "(-2)",
-    "Skills": "Athletics +5, Perception +3",
-    "Senses": "Passive Perception 13",
+  "Skills": "Atletismo +5, Percepción +3",
+  "Senses": "Percepción pasiva 13",
     "Languages": "--",
-    "Challenge": "1/2 (100 XP)",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The ape makes two fist attacks. </p><p><em><strong>Fist.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 6 (1d6 + 3) bludgeoning damage. </p><p><em><strong>Rock.</strong></em> <em>Ranged Weapon Attack:</em> +5 to hit, range 25/50 ft., one target. <em>Hit:</em> 6 (1d6 + 3) bludgeoning damage.</p>",
+  "Challenge": "1/2 (100 PX)",
+  "Actions": "<p><em><strong>Multiataque.</strong></em> El simio realiza dos ataques de puñetazo. </p><p><em><strong>Puñetazo.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 6 (1d6 + 3) de daño contundente. </p><p><em><strong>Roca.</strong></em> <em>Ataque de arma a distancia:</em> +5 al ataque, alcance 25/50 ft., un objetivo. <em>Impacto:</em> 6 (1d6 + 3) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

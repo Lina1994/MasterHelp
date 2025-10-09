@@ -3,13 +3,13 @@
   "slug": "black-bear",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Black Bear",
+  "name": "Oso negro",
   "srd": {
-    "name": "Black Bear",
-    "meta": "Medium beast, unaligned",
-    "Armor Class": "11 (Natural Armor)",
+    "name": "Oso negro",
+    "meta": "Bestia mediana, no alineada",
+    "Armor Class": "11 (Armadura natural)",
     "Hit Points": "19 (3d8 + 6)",
-    "Speed": "40 ft., climb 30 ft. ",
+  "Speed": "a pie 40 ft., trepar 30 ft. ",
     "STR": "15",
     "STR_mod": "(+2)",
     "DEX": "10",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+1)",
     "CHA": "7",
     "CHA_mod": "(-2)",
-    "Skills": "Perception +3",
-    "Senses": "Passive Perception 13",
+  "Skills": "Percepción +3",
+  "Senses": "Percepción pasiva 13",
     "Languages": "--",
-    "Challenge": "1/2 (100 XP)",
-    "Traits": "<p><em><strong>Keen Smell.</strong></em> The bear has advantage on Wisdom (Perception) checks that rely on smell.</p>",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The bear makes two attacks: one with its bite and one with its claws. </p><p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 5 (1d6 + 2) piercing damage. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +3 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (2d4 + 2) slashing damage.</p>",
+  "Challenge": "1/2 (100 PX)",
+  "Traits": "<p><em><strong>Olfato agudo.</strong></em> El oso tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan del olfato.</p>",
+  "Actions": "<p><em><strong>Multiataque.</strong></em> El oso realiza dos ataques: uno de mordisco y otro de garra. </p><p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +3 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 5 (1d6 + 2) de daño perforante. </p><p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +3 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 7 (2d4 + 2) de daño cortante.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }

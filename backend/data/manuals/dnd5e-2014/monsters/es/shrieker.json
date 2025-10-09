@@ -3,10 +3,10 @@
   "slug": "shrieker",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Shrieker",
+  "name": "Chillón",
   "srd": {
-    "name": "Shrieker",
-    "meta": "Medium plant, unaligned",
+    "name": "Chillón",
+    "meta": "Planta mediana, no alineada",
     "Armor Class": "5 ",
     "Hit Points": "13 (3d8)",
     "Speed": "0 ft. ",
@@ -22,13 +22,13 @@
     "WIS_mod": "(-4)",
     "CHA": "1",
     "CHA_mod": "(-5)",
-    "Condition Immunities": "Blinded, Deafened, Frightened",
-    "Senses": "Blindsight 30 ft.,  Passive Perception 6",
+    "Condition Immunities": "Cegado, Ensordecido, Asustado",
+    "Senses": "Sentido ciego 30 ft.,  Percepción pasiva 6",
     "Languages": "--",
-    "Challenge": "0 (10 XP)",
-    "Traits": "<p><em><strong>False Appearance.</strong></em> While the shrieker remains motionless, it is indistinguishable from an ordinary fungus.</p>",
-    "Reactions": "<p><em><strong>Shriek.</strong></em> When bright light or a creature is within 30 feet of the shrieker, it emits a shriek audible within 300 feet of it. The shrieker continues to shriek until the disturbance moves out of range and for 1d4 of the shrieker's turns afterward.</p>",
+    "Challenge": "0 (10 PX)",
+    "Traits": "<p><em><strong>Apariencia falsa.</strong></em> Mientras el chillón permanezca inmóvil, es indistinguible de un hongo corriente.</p>",
+    "Reactions": "<p><em><strong>Chillido.</strong></em> Cuando una luz brillante o una criatura está a 30 pies del chillón, este emite un chillido audible a 300 pies. El chillón continúa chillando hasta que la perturbación sale de alcance y durante 1d4 turnos del chillón adicionales.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/16/571/1000/1000/636376357634308010.jpeg"
   },
-  "translated": false
+  "translated": true
 }

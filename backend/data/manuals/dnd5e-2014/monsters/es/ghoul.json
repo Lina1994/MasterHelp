@@ -3,13 +3,13 @@
   "slug": "ghoul",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Ghoul",
+  "name": "Necrófago",
   "srd": {
-    "name": "Ghoul",
-    "meta": "Medium undead, chaotic evil",
+    "name": "Necrófago",
+    "meta": "Mediano no muerto, caótico malvado",
     "Armor Class": "12 ",
     "Hit Points": "22 (5d8)",
-    "Speed": "30 ft. ",
+    "Speed": "a pie 30 ft. ",
     "STR": "13",
     "STR_mod": "(+1)",
     "DEX": "15",
@@ -22,13 +22,13 @@
     "WIS_mod": "(+0)",
     "CHA": "6",
     "CHA_mod": "(-2)",
-    "Damage Immunities": "Poison",
-    "Condition Immunities": "Charmed, Exhaustion, Poisoned",
-    "Senses": "Darkvision 60 ft.,  Passive Perception 10",
-    "Languages": "Common",
-    "Challenge": "1 (200 XP)",
-    "Actions": "<p><em><strong>Bite.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one creature. <em>Hit:</em> 9 (2d6 + 2) piercing damage. </p><p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +4 to hit, reach 5 ft., one target. <em>Hit:</em> 7 (2d4 + 2) slashing damage. If the target is a creature other than an elf or undead, it must succeed on a DC 10 Constitution saving throw or be paralyzed for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.</p>",
+    "Damage Immunities": "Veneno",
+    "Condition Immunities": "Hechizado, Agotamiento, Envenenado",
+    "Senses": "visión en la oscuridad 60 ft.,  Percepción pasiva 10",
+    "Languages": "Común",
+    "Challenge": "1 (200 PX)",
+    "Actions": "<p><em><strong>Mordisco.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 5 ft., una criatura. <em>Impacto:</em> 9 (2d6 + 2) de daño perforante. </p><p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +4 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 7 (2d4 + 2) de daño cortante. Si el objetivo es una criatura distinta de un elfo o un no muerto, debe superar una tirada de salvación de Constitución CD 10 o queda paralizado durante 1 minuto. El objetivo puede repetir la tirada de salvación al final de cada uno de sus turnos, terminando el efecto en sí mismo si tiene éxito.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/14/483/315/315/636364323937041514.png"
   },
-  "translated": false
+  "translated": true
 }

@@ -3,13 +3,13 @@
   "slug": "giant-ape",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Giant Ape",
+  "name": "Simio gigante",
   "srd": {
-    "name": "Giant Ape",
-    "meta": "Huge beast, unaligned",
+    "name": "Simio gigante",
+    "meta": "Bestia enorme, no alineada",
     "Armor Class": "12 ",
     "Hit Points": "157 (15d12 + 60)",
-    "Speed": "40 ft., climb 40 ft. ",
+  "Speed": "a pie 40 ft., trepar 40 ft. ",
     "STR": "23",
     "STR_mod": "(+6)",
     "DEX": "14",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "7",
     "CHA_mod": "(-2)",
-    "Skills": "Athletics +9, Perception +4",
-    "Senses": "Passive Perception 14",
+  "Skills": "Atletismo +9, Percepción +4",
+  "Senses": "Percepción pasiva 14",
     "Languages": "--",
-    "Challenge": "7 (2,900 XP)",
-    "Actions": "<p><em><strong>Multiattack.</strong></em> The ape makes two fist attacks. </p><p><em><strong>Fist.</strong></em> <em>Melee Weapon Attack:</em> +9 to hit, reach 10 ft., one target. <em>Hit:</em> 22 (3d10 + 6) bludgeoning damage. </p><p><em><strong>Rock.</strong></em> <em>Ranged Weapon Attack:</em> +9 to hit, range 50/100 ft., one target. <em>Hit:</em> 30 (7d6 + 6) bludgeoning damage.</p>",
+  "Challenge": "7 (2,900 PX)",
+  "Actions": "<p><em><strong>Multiataque.</strong></em> El simio realiza dos ataques de puñetazo. </p><p><em><strong>Puñetazo.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +9 al ataque, alcance 10 ft., un objetivo. <em>Impacto:</em> 22 (3d10 + 6) de daño contundente. </p><p><em><strong>Roca.</strong></em> <em>Ataque de arma a distancia:</em> +9 al ataque, alcance 50/100 ft., un objetivo. <em>Impacto:</em> 30 (7d6 + 6) de daño contundente.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/attachments/2/648/beast.jpg"
   },
-  "translated": false
+  "translated": true
 }
