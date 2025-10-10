@@ -11,6 +11,9 @@ import { Campaign } from './campaigns/entities/campaign.entity';
 import { CampaignPlayer } from './campaigns/entities/campaign-player.entity';
 import { Song } from './soundtrack/entities/song.entity';
 import { Playlist } from './soundtrack/entities/playlist.entity';
+import { SoundEffect } from './soundtrack/soundeffects/entities/sound-effect.entity';
+import { SoundPreset } from './soundtrack/soundeffects/entities/sound-preset.entity';
+import { SoundPresetItem } from './soundtrack/soundeffects/entities/sound-preset-item.entity';
 import { ManualsModule } from './manuals/manuals.module';
 import { SpellsModule } from './spells/spells.module';
 import { RacesModule } from './races/races.module';
@@ -30,10 +33,21 @@ import { MonstersModule } from './monsters/monsters.module';
         // Using explicit union of supported driver types instead of casting to any
         type: (configService.get<string>('DB_TYPE') || 'sqlite') as 'sqlite' | 'better-sqlite3',
         database: configService.get<string>('DB_DATABASE'),
-  // Incluir Song para evitar errores de metadata ausente en consultas del módulo Soundtrack
-  entities: [User, Campaign, CampaignPlayer, Song, Playlist],
-        // synchronize: true solo en desarrollo
-        synchronize: configService.get<string>('NODE_ENV') === 'development',
+        // Incluir todas las entidades usadas por módulos (evitar metadata ausente)
+        entities: [
+          User,
+          Campaign,
+          CampaignPlayer,
+          Song,
+          Playlist,
+          SoundEffect,
+          SoundPreset,
+          SoundPresetItem,
+        ],
+        // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
+        autoLoadEntities: true,
+        // synchronize: true en cualquier entorno que no sea producción (facilita dev local)
+        synchronize: configService.get<string>('NODE_ENV') !== 'production',
         logging: false,
       }),
     }),

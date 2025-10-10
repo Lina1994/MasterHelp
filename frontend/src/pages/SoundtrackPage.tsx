@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SoundtrackTabs } from '../components/soundtrack/SoundtrackTabs';
 import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { api } from '../apiBase';
@@ -386,6 +387,7 @@ export const SoundtrackPage = () => {
 
   return (
     <Box>
+      <SoundtrackTabs current="songs" />
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Soundtrack</Typography>
         <Box display="flex" alignItems="center" gap={2}>

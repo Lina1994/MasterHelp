@@ -9,6 +9,7 @@ import ChangePasswordPage from '../pages/ChangePasswordPage'; // Importa la nuev
 import DeleteAccountPage from '../pages/DeleteAccountPage';
 import CampaignPage from '../pages/CampaignPage';
 import SoundtrackPage from '../pages/SoundtrackPage'; // Nueva página soundtrack
+import SoundEffectsPage from '../pages/SoundEffectsPage';
 import ManualsHomePage from '../pages/ManualsHomePage';
 import ManualViewerPage from '../pages/ManualViewerPage';
 import ClassPage from '../pages/ClassPage';
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
           { path: 'delete-account', element: <DeleteAccountPage /> },
           { path: 'campaigns', element: <CampaignPage /> },
           { path: 'soundtrack', element: <SoundtrackPage /> },
+          { path: 'soundtrack/effects', element: <SoundEffectsPage /> },
           // ...other protected routes
         ],
       },

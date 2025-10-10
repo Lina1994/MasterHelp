@@ -7,7 +7,10 @@ import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { GlobalPlayerProvider } from '../components/player/GlobalPlayerContext';
+import { SfxPlayerProvider } from '../components/player/SfxPlayerContext';
+import { PlayerDrawerUiProvider } from '../components/player/PlayerDrawerUiContext';
 import GlobalPlayerDrawerControls from '../components/player/GlobalPlayerDrawerControls';
+import SfxPlayerDrawerControls from '../components/player/SfxPlayerDrawerControls';
 import { InvitationsList } from '../pages/InvitationsList';
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // nuevo icono
 import MenuBookIcon from '@mui/icons-material/MenuBook';
@@ -70,6 +73,8 @@ const MainLayout = () => {
 
   return (
     <GlobalPlayerProvider>
+      <SfxPlayerProvider>
+      <PlayerDrawerUiProvider>
       <Box sx={{ display: 'flex', height: '100vh' }}>
         <Box
           component="nav"
@@ -104,6 +109,7 @@ const MainLayout = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               {drawerContent}
               <GlobalPlayerDrawerControls />
+              <SfxPlayerDrawerControls />
             </Box>
           </Drawer>
         </Box>
@@ -117,6 +123,8 @@ const MainLayout = () => {
             <Outlet />
         </Box>
       </Box>
+      </PlayerDrawerUiProvider>
+      </SfxPlayerProvider>
     </GlobalPlayerProvider>
   );
 };
