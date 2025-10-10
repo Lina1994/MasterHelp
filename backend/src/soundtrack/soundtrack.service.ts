@@ -6,12 +6,16 @@ import { User } from '../users/entities/user.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { CreateSongDto } from './dto/create-song.dto';
 import { UpdateSongDto } from './dto/update-song.dto';
+import { Playlist } from './entities/playlist.entity';
+import { CreatePlaylistDto } from './dto/create-playlist.dto';
+import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 
 @Injectable()
 export class SoundtrackService {
   constructor(
     @InjectRepository(Song) private songsRepo: Repository<Song>,
     @InjectRepository(Campaign) private campaignsRepo: Repository<Campaign>,
+    @InjectRepository(Playlist) private playlistsRepo: Repository<Playlist>,
   ) {}
 
   /**
@@ -71,21 +75,59 @@ export class SoundtrackService {
     return this.songsRepo.save(song);
   }
 
-  async findSectionedForCampaign(user: User | any, campaignId: string, q?: string, group?: string, includeOthers = true) {
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+  async findSectionedForCampaign(
+    user: User | any,
+    campaignId: string,
+    q?: string,
+    _groupDeprecated?: string,
+    includeOthers = true,
+    extra?: { groups?: string[]; artists?: string[]; albums?: string[]; atmospheres?: string[]; isPublic?: boolean },
+    sort?: 'alpha' | 'alpha_desc' | 'newest' | 'oldest' | 'last_used',
+  ) {
+    // Cargar propietario para determinar si el usuario autenticado es el master
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId }, relations: ['owner'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
     const authUserId = this.extractAuthUserId(user);
-    // Associated songs to this campaign
+
+    // Selección común para evitar serializar el binario (song.data)
+    const commonSelect = [
+      'song.id',
+      'song.name',
+      'song.group',
+      'song.artist',
+      'song.album',
+      'song.atmosphere',
+      'song.mimeType',
+      'song.size',
+      'song.isPublic',
+      'song.createdAt',
+      'song.updatedAt',
+      'song.lastPlayedAt',
+    ];
+
+    // Canciones asociadas a esta campaña
     const associatedQB = this.songsRepo
       .createQueryBuilder('song')
       .leftJoin('song.campaigns', 'c')
-      .where('c.id = :campaignId', { campaignId });
-    // Filtering
-    if (q) associatedQB.andWhere('LOWER(song.name) LIKE :q', { q: `%${q.toLowerCase()}%` });
-    if (group) associatedQB.andWhere('song.group = :group', { group });
+      .select(commonSelect)
+      .where('c.id = :campaignId', { campaignId })
+  .orderBy(this.resolveOrder(sort), this.resolveDirection(sort));
+    // Filtros
+    if (q) {
+      const like = `%${q.toLowerCase()}%`;
+      associatedQB.andWhere(
+        '(LOWER(song.name) LIKE :like OR LOWER(song.artist) LIKE :like OR LOWER(song.album) LIKE :like OR LOWER(song.group) LIKE :like OR LOWER(song.atmosphere) LIKE :like)',
+        { like },
+      );
+    }
+  if (extra?.groups && extra.groups.length) associatedQB.andWhere('song.[group] IN (:...groups)', { groups: extra.groups });
+  if (extra?.artists && extra.artists.length) associatedQB.andWhere('song.artist IN (:...artists)', { artists: extra.artists });
+  if (extra?.albums && extra.albums.length) associatedQB.andWhere('song.album IN (:...albums)', { albums: extra.albums });
+  if (extra?.atmospheres && extra.atmospheres.length) associatedQB.andWhere('song.atmosphere IN (:...atmospheres)', { atmospheres: extra.atmospheres });
+    if (typeof extra?.isPublic === 'boolean') associatedQB.andWhere('song.isPublic = :isPublic', { isPublic: extra.isPublic });
 
-    // Players: only public songs
-  const isMaster = campaign.owner.id === authUserId;
+    // Jugadores: solo canciones públicas
+    const isMaster = campaign.owner && campaign.owner.id === authUserId;
     if (!isMaster) {
       associatedQB.andWhere('song.isPublic = :pub', { pub: true });
     }
@@ -97,10 +139,22 @@ export class SoundtrackService {
       const reusableQB = this.songsRepo
         .createQueryBuilder('song')
         .leftJoin('song.campaigns', 'c')
+        .select(commonSelect)
         .where('song.ownerId = :ownerId', { ownerId: authUserId })
-        .andWhere('(c.id IS NULL OR c.id != :campaignId)', { campaignId });
-      if (q) reusableQB.andWhere('LOWER(song.name) LIKE :q', { q: `%${q.toLowerCase()}%` });
-      if (group) reusableQB.andWhere('song.group = :group', { group });
+  .andWhere('(c.id IS NULL OR c.id != :campaignId)', { campaignId })
+  .orderBy(this.resolveOrder(sort), this.resolveDirection(sort));
+      if (q) {
+        const like = `%${q.toLowerCase()}%`;
+        reusableQB.andWhere(
+          '(LOWER(song.name) LIKE :like OR LOWER(song.artist) LIKE :like OR LOWER(song.album) LIKE :like OR LOWER(song.group) LIKE :like OR LOWER(song.atmosphere) LIKE :like)',
+          { like },
+        );
+      }
+  if (extra?.groups && extra.groups.length) reusableQB.andWhere('song.[group] IN (:...groups)', { groups: extra.groups });
+  if (extra?.artists && extra.artists.length) reusableQB.andWhere('song.artist IN (:...artists)', { artists: extra.artists });
+  if (extra?.albums && extra.albums.length) reusableQB.andWhere('song.album IN (:...albums)', { albums: extra.albums });
+  if (extra?.atmospheres && extra.atmospheres.length) reusableQB.andWhere('song.atmosphere IN (:...atmospheres)', { atmospheres: extra.atmospheres });
+      if (typeof extra?.isPublic === 'boolean') reusableQB.andWhere('song.isPublic = :isPublic', { isPublic: extra.isPublic });
       reusable = await reusableQB.getMany();
     }
     return { associated, reusable };
@@ -110,7 +164,13 @@ export class SoundtrackService {
    * Lista todas las canciones propiedad del usuario autenticado (sin contexto de campaña).
    * No devuelve el binario del audio para reducir payload.
    */
-  async listOwned(user: User | any, q?: string, group?: string) {
+  async listOwned(
+    user: User | any,
+    q?: string,
+    _groupDeprecated?: string,
+    extra?: { groups?: string[]; artists?: string[]; albums?: string[]; atmospheres?: string[]; isPublic?: boolean },
+    sort?: 'alpha' | 'alpha_desc' | 'newest' | 'oldest' | 'last_used',
+  ) {
     const authUserId = this.extractAuthUserId(user);
     if (!authUserId) throw new ForbiddenException('Invalid auth context');
     const qb = this.songsRepo
@@ -128,11 +188,114 @@ export class SoundtrackService {
         'song.isPublic',
         'song.createdAt',
         'song.updatedAt',
+        'song.lastPlayedAt',
       ])
-      .orderBy('song.createdAt', 'DESC');
-    if (q) qb.andWhere('LOWER(song.name) LIKE :q', { q: `%${q.toLowerCase()}%` });
-    if (group) qb.andWhere('song.group = :group', { group });
+      .orderBy(this.resolveOrder(sort), this.resolveDirection(sort));
+    if (q) {
+      const like = `%${q.toLowerCase()}%`;
+      qb.andWhere(
+        '(LOWER(song.name) LIKE :like OR LOWER(song.artist) LIKE :like OR LOWER(song.album) LIKE :like OR LOWER(song.group) LIKE :like OR LOWER(song.atmosphere) LIKE :like)',
+        { like },
+      );
+    }
+    if (extra?.groups && extra.groups.length) qb.andWhere('song.[group] IN (:...groups)', { groups: extra.groups });
+    if (extra?.artists && extra.artists.length) qb.andWhere('song.artist IN (:...artists)', { artists: extra.artists });
+    if (extra?.albums && extra.albums.length) qb.andWhere('song.album IN (:...albums)', { albums: extra.albums });
+    if (extra?.atmospheres && extra.atmospheres.length) qb.andWhere('song.atmosphere IN (:...atmospheres)', { atmospheres: extra.atmospheres });
+    if (typeof extra?.isPublic === 'boolean') qb.andWhere('song.isPublic = :isPublic', { isPublic: extra.isPublic });
     return qb.getMany();
+  }
+
+  /** Map sorting token to column */
+  private resolveOrder(sort?: 'alpha' | 'alpha_desc' | 'newest' | 'oldest' | 'last_used') {
+    switch (sort) {
+      case 'alpha':
+      case 'alpha_desc':
+        return 'song.name';
+      case 'oldest':
+      case 'newest':
+        return 'song.createdAt';
+      case 'last_used':
+        return 'song.lastPlayedAt';
+      default:
+        return 'song.createdAt';
+    }
+  }
+
+  /** Map sorting token to direction */
+  private resolveDirection(sort?: 'alpha' | 'alpha_desc' | 'newest' | 'oldest' | 'last_used'): 'ASC' | 'DESC' {
+    switch (sort) {
+      case 'alpha':
+      case 'oldest':
+        return 'ASC';
+      case 'alpha_desc':
+      case 'newest':
+      case 'last_used':
+      default:
+        return 'DESC';
+    }
+  }
+
+  /** Devuelve opciones de filtros (distintos) para construir desplegables en UI. */
+  async getFilterOptions(user: User | any, campaignId?: string) {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const collectDistinct = async (column: 'group' | 'artist' | 'album' | 'atmosphere', qbBase: ReturnType<Repository<Song>['createQueryBuilder']>) => {
+      let colExpr = '';
+      if (column === 'group') colExpr = 'song.[group]'; else colExpr = `song.${column}`;
+      const rows = await qbBase.clone()
+        .select(`DISTINCT ${colExpr}`, 'value')
+        .andWhere(`${colExpr} IS NOT NULL AND TRIM(${colExpr}) != ''`)
+        .orderBy('value', 'ASC')
+        .getRawMany<{ value: string }>();
+      return rows.map(r => r.value);
+    };
+
+    if (!campaignId) {
+      const base = this.songsRepo.createQueryBuilder('song').where('song.ownerId = :ownerId', { ownerId: authUserId });
+      const [groups, artists, albums, atmospheres] = await Promise.all([
+        collectDistinct('group', base),
+        collectDistinct('artist', base),
+        collectDistinct('album', base),
+        collectDistinct('atmosphere', base),
+      ]);
+      return { groups, artists, albums, atmospheres };
+    }
+
+    // Con campaña: opciones de canciones visibles en la campaña + propias
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId }, relations: ['owner'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isMaster = campaign.owner && campaign.owner.id === authUserId;
+
+    const associatedBase = this.songsRepo
+      .createQueryBuilder('song')
+      .leftJoin('song.campaigns', 'c')
+      .where('c.id = :campaignId', { campaignId });
+    if (!isMaster) associatedBase.andWhere('song.isPublic = :pub', { pub: true });
+
+    const ownedBase = this.songsRepo.createQueryBuilder('song').where('song.ownerId = :ownerId', { ownerId: authUserId });
+
+    const [groupsA, artistsA, albumsA, atmospheresA] = await Promise.all([
+      collectDistinct('group', associatedBase),
+      collectDistinct('artist', associatedBase),
+      collectDistinct('album', associatedBase),
+      collectDistinct('atmosphere', associatedBase),
+    ]);
+    const [groupsO, artistsO, albumsO, atmospheresO] = await Promise.all([
+      collectDistinct('group', ownedBase),
+      collectDistinct('artist', ownedBase),
+      collectDistinct('album', ownedBase),
+      collectDistinct('atmosphere', ownedBase),
+    ]);
+
+    const uniq = (arr: string[]) => Array.from(new Set(arr));
+    return {
+      groups: uniq([...groupsA, ...groupsO]),
+      artists: uniq([...artistsA, ...artistsO]),
+      albums: uniq([...albumsA, ...albumsO]),
+      atmospheres: uniq([...atmospheresA, ...atmospheresO]),
+    };
   }
 
   async update(owner: User | any, songId: string, dto: UpdateSongDto) {
@@ -175,11 +338,102 @@ export class SoundtrackService {
     if (!song) throw new NotFoundException('Song not found');
     const authUserId = this.extractAuthUserId(owner);
     if (song.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    // Si tiene asociaciones, limpiarlas automáticamente antes de eliminar
     if (song.campaigns && song.campaigns.length > 0) {
-      throw new ConflictException('Song has active associations');
+      await this.songsRepo
+        .createQueryBuilder()
+        .relation(Song, 'campaigns')
+        .of(song)
+        .set([]);
     }
     await this.songsRepo.remove(song);
     return { message: 'Song deleted' };
+  }
+
+  // ===== Playlists =====
+  private async assertCampaignOwnership(user: any, campaignId: string) {
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId }, relations: ['owner'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId || campaign.owner.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    return campaign;
+  }
+
+  /** Devuelve el uso total de almacenamiento de canciones del usuario autenticado (en bytes). */
+  async getUsage(user: any) {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const raw = await this.songsRepo
+      .createQueryBuilder('song')
+      .where('song.ownerId = :ownerId', { ownerId: authUserId })
+      .select('SUM(song.size)', 'total')
+      .addSelect('COUNT(*)', 'count')
+      .getRawOne<{ total: string | null; count: string | null }>();
+    const totalSize = raw?.total ? parseInt(raw.total, 10) : 0;
+    const count = raw?.count ? parseInt(raw.count, 10) : 0;
+    return { totalSize, count };
+  }
+
+  /** Lista playlists de campaña. */
+  async listPlaylists(user: any, campaignId: string) {
+    await this.assertCampaignOwnership(user, campaignId);
+    const qb = this.playlistsRepo
+      .createQueryBuilder('pl')
+      .leftJoinAndSelect('pl.songs', 'song')
+      .select([
+        'pl.id',
+        'pl.name',
+        'pl.createdAt',
+        'pl.updatedAt',
+        'song.id',
+        'song.name',
+        'song.size',
+        'song.mimeType',
+      ])
+      .where('pl.campaignId = :campaignId', { campaignId })
+      .orderBy('pl.createdAt', 'DESC');
+    return qb.getMany();
+  }
+
+  /** Crea una playlist y valida canciones (del owner y asociadas o propias). */
+  async createPlaylist(user: any, campaignId: string, dto: CreatePlaylistDto) {
+    const campaign = await this.assertCampaignOwnership(user, campaignId);
+    const pl = new Playlist();
+    pl.name = dto.name;
+    pl.campaign = campaign;
+    pl.songs = [];
+    if (dto.songs && dto.songs.length) {
+      const authUserId = this.extractAuthUserId(user);
+      const songs = await this.songsRepo.find({ where: { id: In(dto.songs) }, relations: ['campaigns', 'owner'] });
+      // Estricto: sólo canciones del owner y asociadas a la campaña
+      const valid = songs.filter(s => s.owner.id === authUserId && s.campaigns?.some(c => c.id === campaignId));
+      pl.songs = valid;
+    }
+    return this.playlistsRepo.save(pl);
+  }
+
+  /** Actualiza nombre y/o canciones de playlist. */
+  async updatePlaylist(user: any, campaignId: string, playlistId: string, dto: UpdatePlaylistDto) {
+    await this.assertCampaignOwnership(user, campaignId);
+    const pl = await this.playlistsRepo.findOne({ where: { id: playlistId }, relations: ['campaign', 'songs'] });
+    if (!pl || pl.campaign.id !== campaignId) throw new NotFoundException('Playlist not found');
+    if (dto.name !== undefined) pl.name = dto.name;
+    if (dto.songs) {
+      const authUserId = this.extractAuthUserId(user);
+      const songs = await this.songsRepo.find({ where: { id: In(dto.songs) }, relations: ['campaigns', 'owner'] });
+      const valid = songs.filter(s => s.owner.id === authUserId && s.campaigns?.some(c => c.id === campaignId));
+      pl.songs = valid;
+    }
+    return this.playlistsRepo.save(pl);
+  }
+
+  /** Elimina una playlist. */
+  async deletePlaylist(user: any, campaignId: string, playlistId: string) {
+    await this.assertCampaignOwnership(user, campaignId);
+    const pl = await this.playlistsRepo.findOne({ where: { id: playlistId }, relations: ['campaign'] });
+    if (!pl || pl.campaign.id !== campaignId) throw new NotFoundException('Playlist not found');
+    await this.playlistsRepo.remove(pl);
+    return { message: 'Playlist deleted' };
   }
 
   /**
@@ -227,5 +481,13 @@ export class SoundtrackService {
       return song;
     }
     throw new ForbiddenException('Song not associated with campaign');
+  }
+
+  /** Actualiza lastPlayedAt a ahora si el usuario está autorizado a reproducir la canción. */
+  async markPlayed(user: User | any, songId: string, campaignId?: string) {
+    const song = await this.getStreamable(user, songId, campaignId);
+    song.lastPlayedAt = new Date();
+    await this.songsRepo.save(song);
+    return { message: 'Marked played', lastPlayedAt: song.lastPlayedAt };
   }
 }

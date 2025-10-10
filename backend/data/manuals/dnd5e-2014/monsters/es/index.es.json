@@ -357,6 +357,27 @@
       "challengeRating": "9"
     },
     {
+      "id": "e8dd0894086a",
+      "slug": "sea-hag",
+      "name": "Bruja marina",
+      "challengeRating": "2",
+      "translated": true
+    },
+    {
+      "id": "7ced13d81c47",
+      "slug": "night-hag",
+      "name": "Bruja nocturna",
+      "challengeRating": "5",
+      "translated": true
+    },
+    {
+      "id": "415730b55d57",
+      "slug": "green-hag",
+      "name": "Bruja verde",
+      "challengeRating": "3",
+      "translated": true
+    },
+    {
       "id": "fb1b5495278a",
       "slug": "bugbear",
       "name": "Bugbear",
@@ -803,6 +824,13 @@
       "translated": true
     },
     {
+      "id": "48e356c5525b",
+      "slug": "dryad",
+      "name": "Dríada",
+      "challengeRating": "1",
+      "translated": true
+    },
+    {
       "id": "8e1c9f12a4c4",
       "slug": "drider",
       "name": "Drider",
@@ -822,10 +850,11 @@
       "translated": true
     },
     {
-      "id": "48e356c5525b",
-      "slug": "dryad",
-      "name": "Dryad",
-      "challengeRating": "1"
+      "id": "92bef0f1c3d5",
+      "slug": "sprite",
+      "name": "Duendecillo",
+      "challengeRating": "1/4",
+      "translated": true
     },
     {
       "id": "26a28342cb40",
@@ -1183,12 +1212,6 @@
       "slug": "gorgon",
       "name": "Gorgon",
       "challengeRating": "5"
-    },
-    {
-      "id": "415730b55d57",
-      "slug": "green-hag",
-      "name": "Green Hag",
-      "challengeRating": "3"
     },
     {
       "id": "9d286baae687",
@@ -1549,16 +1572,11 @@
       "translated": true
     },
     {
-      "id": "e0276a323228",
-      "slug": "merfolk",
-      "name": "Merfolk",
-      "challengeRating": "1/8"
-    },
-    {
       "id": "9e0970961c75",
       "slug": "merrow",
       "name": "Merrow",
-      "challengeRating": "2"
+      "challengeRating": "2",
+      "translated": true
     },
     {
       "id": "b167dc5c5075",
@@ -1620,12 +1638,6 @@
       "name": "Necrófago",
       "challengeRating": "1",
       "translated": true
-    },
-    {
-      "id": "7ced13d81c47",
-      "slug": "night-hag",
-      "name": "Night Hag",
-      "challengeRating": "5"
     },
     {
       "id": "05b2d0a36e40",
@@ -1755,8 +1767,9 @@
     {
       "id": "5dfac3088c38",
       "slug": "plesiosaurus",
-      "name": "Plesiosaurus",
-      "challengeRating": "2"
+      "name": "Plesiosaurio",
+      "challengeRating": "2",
+      "translated": true
     },
     {
       "id": "8b4fe1078d47",
@@ -1908,14 +1921,9 @@
     {
       "id": "3f814b583571",
       "slug": "satyr",
-      "name": "Satyr",
-      "challengeRating": "1/2"
-    },
-    {
-      "id": "e8dd0894086a",
-      "slug": "sea-hag",
-      "name": "Sea Hag",
-      "challengeRating": "2"
+      "name": "Sátiro",
+      "challengeRating": "1/2",
+      "translated": true
     },
     {
       "id": "5c83c5389d22",
@@ -1999,12 +2007,6 @@
       "challengeRating": "8"
     },
     {
-      "id": "92bef0f1c3d5",
-      "slug": "sprite",
-      "name": "Sprite",
-      "challengeRating": "1/4"
-    },
-    {
       "id": "",
       "slug": "srd_5e_monsters",
       "name": "srd_5e_monsters",
@@ -2076,6 +2078,13 @@
       "slug": "triceratops",
       "name": "Triceratops",
       "challengeRating": "5"
+    },
+    {
+      "id": "e0276a323228",
+      "slug": "merfolk",
+      "name": "Tritón",
+      "challengeRating": "1/8",
+      "translated": true
     },
     {
       "id": "f3b2cbca0c94",

@@ -43,6 +43,9 @@ export class Song {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Column({ type: 'datetime', nullable: true })
+  lastPlayedAt: Date | null;
+
   @ManyToOne(() => User, { eager: true })
   owner: User;
 

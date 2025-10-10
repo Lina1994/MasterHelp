@@ -7,11 +7,20 @@ import { UpdateSongDto } from './dto/update-song.dto';
 import { AssociateSongDto } from './dto/associate-song.dto';
 import fetch from 'node-fetch';
 import { Response } from 'express';
+import { CreatePlaylistDto } from './dto/create-playlist.dto';
+import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('soundtrack')
 export class SoundtrackController {
   constructor(private readonly service: SoundtrackService) {}
+
+  private toArray(v?: string | string[]): string[] | undefined {
+    if (v === undefined) return undefined;
+    const arr = Array.isArray(v) ? v : (v.includes(',') ? v.split(',') : [v]);
+    const norm = arr.map(s => (s ?? '').trim()).filter(Boolean);
+    return norm.length ? Array.from(new Set(norm)) : undefined;
+  }
 
   @Post('songs')
   @UseInterceptors(FileInterceptor('file'))
@@ -28,14 +37,84 @@ export class SoundtrackController {
   }
 
   @Get('campaigns/:campaignId/songs')
-  async listForCampaign(@Req() req, @Param('campaignId') campaignId: string, @Query('q') q?: string, @Query('group') group?: string) {
-    return this.service.findSectionedForCampaign(req.user, campaignId, q, group, true);
+  async listForCampaign(
+    @Req() req,
+    @Param('campaignId') campaignId: string,
+    @Query('q') q?: string,
+    @Query('sort') sort?: 'alpha' | 'alpha_desc' | 'newest' | 'oldest' | 'last_used',
+    @Query('group') group?: string | string[],
+    @Query('artist') artist?: string | string[],
+    @Query('album') album?: string | string[],
+    @Query('atmosphere') atmosphere?: string | string[],
+    @Query('isPublic') isPublic?: string,
+  ) {
+    const isPublicFilter = typeof isPublic === 'string' ? (isPublic.toLowerCase() === 'true' ? true : isPublic.toLowerCase() === 'false' ? false : undefined) : undefined;
+    const groups = this.toArray(group);
+    const artists = this.toArray(artist);
+    const albums = this.toArray(album);
+    const atmospheres = this.toArray(atmosphere);
+    return this.service.findSectionedForCampaign(req.user, campaignId, q, undefined, true, { groups, artists, albums, atmospheres, isPublic: isPublicFilter }, sort);
   }
 
   @Get('songs')
-  async listOwned(@Req() req, @Query('q') q?: string, @Query('group') group?: string) {
+  async listOwned(
+    @Req() req,
+    @Query('q') q?: string,
+    @Query('sort') sort?: 'alpha' | 'alpha_desc' | 'newest' | 'oldest' | 'last_used',
+    @Query('group') group?: string | string[],
+    @Query('artist') artist?: string | string[],
+    @Query('album') album?: string | string[],
+    @Query('atmosphere') atmosphere?: string | string[],
+    @Query('isPublic') isPublic?: string,
+  ) {
     // Lista canciones propias del usuario (sin separar asociadas) cuando no se especifica campaignId.
-    return this.service.listOwned(req.user, q, group);
+    const isPublicFilter = typeof isPublic === 'string' ? (isPublic.toLowerCase() === 'true' ? true : isPublic.toLowerCase() === 'false' ? false : undefined) : undefined;
+    const groups = this.toArray(group);
+    const artists = this.toArray(artist);
+    const albums = this.toArray(album);
+    const atmospheres = this.toArray(atmosphere);
+    return this.service.listOwned(req.user, q, undefined, { groups, artists, albums, atmospheres, isPublic: isPublicFilter }, sort);
+  }
+
+  @Get('filters')
+  async listOwnedFilters(@Req() req) {
+    return this.service.getFilterOptions(req.user);
+  }
+
+  @Get('campaigns/:campaignId/filters')
+  async listCampaignFilters(@Req() req, @Param('campaignId') campaignId: string) {
+    return this.service.getFilterOptions(req.user, campaignId);
+  }
+
+  @Get('usage')
+  async getUsage(@Req() req) {
+    return this.service.getUsage(req.user);
+  }
+
+  // ===== Playlists =====
+  @Get('campaigns/:campaignId/playlists')
+  async listPlaylists(@Req() req, @Param('campaignId') campaignId: string) {
+    return this.service.listPlaylists(req.user, campaignId);
+  }
+
+  @Post('campaigns/:campaignId/playlists')
+  async createPlaylist(@Req() req, @Param('campaignId') campaignId: string, @Body() dto: CreatePlaylistDto) {
+    return this.service.createPlaylist(req.user, campaignId, dto);
+  }
+
+  @Patch('campaigns/:campaignId/playlists/:playlistId')
+  async updatePlaylist(
+    @Req() req,
+    @Param('campaignId') campaignId: string,
+    @Param('playlistId') playlistId: string,
+    @Body() dto: UpdatePlaylistDto,
+  ) {
+    return this.service.updatePlaylist(req.user, campaignId, playlistId, dto);
+  }
+
+  @Delete('campaigns/:campaignId/playlists/:playlistId')
+  async deletePlaylist(@Req() req, @Param('campaignId') campaignId: string, @Param('playlistId') playlistId: string) {
+    return this.service.deletePlaylist(req.user, campaignId, playlistId);
   }
 
   @Patch('songs/:songId')
@@ -92,5 +171,11 @@ export class SoundtrackController {
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'no-store');
     res.send(buffer);
+  }
+
+  @Post('songs/:songId/played')
+  async markPlayed(@Req() req, @Param('songId') songId: string, @Query('campaignId') campaignId?: string) {
+    const normalizedCampaignId = campaignId && campaignId.trim().length > 0 ? campaignId : undefined;
+    return this.service.markPlayed(req.user, songId, normalizedCampaignId);
   }
 }

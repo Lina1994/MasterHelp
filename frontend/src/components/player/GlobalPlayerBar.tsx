@@ -3,7 +3,7 @@ import { useGlobalPlayer } from './GlobalPlayerContext';
 import { Card, CardContent, Typography, Box, Button, LinearProgress } from '@mui/material';
 
 export const GlobalPlayerBar: React.FC = () => {
-  const { current, loop, toggleLoop, stop, loading } = useGlobalPlayer();
+  const { current, loop, toggleLoop, stop, loading, next } = useGlobalPlayer();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export const GlobalPlayerBar: React.FC = () => {
           controls
           loop={loop}
           style={{ width: '100%', marginTop: 4 }}
-          onEnded={() => { /* loop handled by attr; nothing extra */ }}
+          onEnded={() => { if (!loop) { next().catch(()=>{}); } }}
         />
         <Box mt={1} display="flex" gap={1}>
           <Button size="small" variant={loop ? 'contained' : 'outlined'} onClick={toggleLoop}>

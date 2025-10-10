@@ -3,13 +3,13 @@
   "slug": "sprite",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Sprite",
+  "name": "Duendecillo",
   "srd": {
-    "name": "Sprite",
-    "meta": "Tiny fey, neutral good",
-    "Armor Class": "15 (Leather Armor)",
+    "name": "Duendecillo",
+    "meta": "Diminuto feérico, bueno neutral",
+    "Armor Class": "15 (Armadura de cuero)",
     "Hit Points": "2 (1d4)",
-    "Speed": "10 ft., fly 40 ft. ",
+    "Speed": "a pie 10 ft., volar 40 ft.",
     "STR": "3",
     "STR_mod": "(-4)",
     "DEX": "18",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "11",
     "CHA_mod": "(+0)",
-    "Skills": "Perception +3, Stealth +8",
-    "Senses": "Passive Perception 13",
-    "Languages": "Common, Elvish, Sylvan",
-    "Challenge": "1/4 (50 XP)",
-    "Actions": "<p><em><strong>Longsword.</strong></em> <em>Melee Weapon Attack:</em> +2 to hit, reach 5 ft., one target. <em>Hit:</em> 1 slashing damage. </p><p><em><strong>Shortbow.</strong></em> <em>Ranged Weapon Attack:</em> +6 to hit, range 40/160 ft., one target. <em>Hit:</em> 1 piercing damage, and the target must succeed on a DC 10 Constitution saving throw or become poisoned for 1 minute. If its saving throw result is 5 or lower, the poisoned target falls unconscious for the same duration, or until it takes damage or another creature takes an action to shake it awake. </p><p><em><strong>Heart Sight.</strong></em> The sprite touches a creature and magically knows the creature's current emotional state. If the target fails a DC 10 Charisma saving throw, the sprite also knows the creature's alignment. Celestials, fiends, and undead automatically fail the saving throw. </p><p><em><strong>Invisibility.</strong></em> The sprite magically turns invisible until it attacks or casts a spell, or until its concentration ends (as if concentrating on a spell). Any equipment the sprite wears or carries is invisible with it.</p>",
+    "Skills": "Percepción +3, Sigilo +8",
+    "Senses": "Percepción pasiva 13",
+    "Languages": "Común, Élfico, Silvano",
+    "Challenge": "1/4 (50 PX)",
+    "Actions": "<p><em><strong>Espada larga.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +2 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 1 de daño cortante.</p><p><em><strong>Arco corto.</strong></em> <em>Ataque de arma a distancia:</em> +6 al ataque, alcance 40/160 ft., un objetivo. <em>Impacto:</em> 1 de daño perforante, y el objetivo debe superar una tirada de salvación de Constitución CD 10 o queda envenenado durante 1 minuto. Si el resultado de su salvación es 5 o menos, el objetivo envenenado queda inconsciente por la misma duración, o hasta que reciba daño o otra criatura use una acción para despertarlo agitándolo.</p><p><em><strong>Vista del corazón.</strong></em> El duendecillo toca a una criatura y sabe mágicamente el estado emocional actual de la criatura. Si el objetivo falla una tirada de salvación de Carisma CD 10, el duendecillo también conoce la alineación de la criatura. Celestiales, infernales y no muertos fallan automáticamente esta tirada de salvación.</p><p><em><strong>Invisibilidad.</strong></em> El duendecillo se vuelve invisible mágicamente hasta que ataque o lance un conjuro, o hasta que su concentración termine (como si se concentrara en un conjuro). Cualquier equipo que lleve o transporte también se vuelve invisible con él.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/115/315/315/636252746444973630.jpeg"
   },
-  "translated": false
+  "translated": true
 }

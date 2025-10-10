@@ -3,13 +3,13 @@
   "slug": "sea-hag",
   "lang": "es",
   "source": "SRD 5.1",
-  "name": "Sea Hag",
+  "name": "Bruja marina",
   "srd": {
-    "name": "Sea Hag",
-    "meta": "Medium fey, chaotic evil",
-    "Armor Class": "14 (Natural Armor)",
+    "name": "Bruja marina",
+    "meta": "Mediano feérico, caótico malvado",
+    "Armor Class": "14 (Armadura natural)",
     "Hit Points": "52 (7d8 + 21)",
-    "Speed": "30 ft., swim 40 ft. ",
+    "Speed": "a pie 30 ft., nadar 40 ft.",
     "STR": "16",
     "STR_mod": "(+3)",
     "DEX": "13",
@@ -22,12 +22,12 @@
     "WIS_mod": "(+1)",
     "CHA": "13",
     "CHA_mod": "(+1)",
-    "Senses": "Darkvision 60 ft.,  Passive Perception 11",
-    "Languages": "Aquan, Common, Giant",
-    "Challenge": "2 (450 XP)",
-    "Traits": "<p><em><strong>Amphibious.</strong></em> The hag can breathe air and water. </p><p><em><strong>Horrific Appearance.</strong></em> Any humanoid that starts its turn within 30 feet of the hag and can see the hag's true form must make a DC 11 Wisdom saving throw. On a failed save, the creature is frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the hag is within line of sight, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the hag's Horrific Appearance for the next 24 hours.</p><p>Unless the target is surprised or the revelation of the hag's true form is sudden, the target can avert its eyes and avoid making the initial saving throw. Until the start of its next turn, a creature that averts its eyes has disadvantage on attack rolls against the hag.</p>",
-    "Actions": "<p><em><strong>Claws.</strong></em> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 10 (2d6 + 3) slashing damage. </p><p><em><strong>Death Glare.</strong></em> The hag targets one frightened creature she can see within 30 feet of her. If the target can see the hag, it must succeed on a DC 11 Wisdom saving throw against this magic or drop to 0 hit points. </p><p><em><strong>Illusory Appearance.</strong></em> The hag covers herself and anything she is wearing or carrying with a magical illusion that makes her look like an ugly creature of her general size and humanoid shape. The effect ends if the hag takes a bonus action to end it or if she dies.</p><p>The changes wrought by this effect fail to hold up to physical inspection. For example, the hag could appear to have no claws, but someone touching her hand might feel the claws. Otherwise, a creature must take an action to visually inspect the illusion and succeed on a DC 16 Intelligence (Investigation) check to discern that the hag is disguised.</p>",
+    "Senses": "Visión en la oscuridad 60 ft.; Percepción pasiva 11",
+    "Languages": "Acuano, Común, Gigante",
+    "Challenge": "2 (450 PX)",
+    "Traits": "<p><em><strong>Anfibia.</strong></em> La bruja puede respirar aire y agua. </p><p><em><strong>Apariencia horripilante.</strong></em> Cualquier humanoide que comience su turno a 30 pies o menos de la bruja y pueda ver su verdadera forma debe hacer una tirada de salvación de Sabiduría CD 11. Si falla, queda asustado durante 1 minuto. Puede repetir la tirada al final de cada uno de sus turnos, con desventaja si la bruja está a la vista, terminando el efecto en sí mismo con un éxito. Si una criatura supera la tirada o el efecto termina para ella, es inmune a Apariencia horripilante de la bruja durante las siguientes 24 horas.</p><p>A menos que el objetivo esté sorprendido o la revelación de la verdadera forma sea súbita, el objetivo puede apartar la mirada y evitar hacer la tirada inicial. Hasta el inicio de su siguiente turno, una criatura que aparte la mirada tiene desventaja en las tiradas de ataque contra la bruja.</p>",
+    "Actions": "<p><em><strong>Garras.</strong></em> <em>Ataque de arma cuerpo a cuerpo:</em> +5 al ataque, alcance 5 ft., un objetivo. <em>Impacto:</em> 10 (2d6 + 3) de daño cortante. </p><p><em><strong>Mirada mortal.</strong></em> La bruja elige una criatura asustada que pueda ver a 30 pies o menos de ella. Si el objetivo puede verla, debe superar una tirada de salvación de Sabiduría CD 11 contra esta magia o reducir sus puntos de golpe a 0. </p><p><em><strong>Apariencia ilusoria.</strong></em> La bruja cubre su cuerpo y todo lo que lleva puesto o carga con una ilusión mágica que la hace parecer una criatura fea de su tamaño general y forma humanoide. El efecto termina si la bruja usa una acción adicional para finalizarlo o si muere.</p><p>Los cambios creados por este efecto no resisten una inspección física. Por ejemplo, la bruja puede parecer no tener garras, pero alguien que toque su mano podría sentirlas. De lo contrario, una criatura debe usar una acción para inspeccionar visualmente la ilusión y superar una prueba de Inteligencia (Investigación) CD 16 para discernir que está disfrazada.</p>",
     "img_url": "https://media-waterdeep.cursecdn.com/avatars/thumbnails/0/159/1000/1000/636252759356069260.jpeg"
   },
-  "translated": false
+  "translated": true
 }

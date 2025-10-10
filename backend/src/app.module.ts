@@ -10,6 +10,7 @@ import { User } from './users/entities/user.entity';
 import { Campaign } from './campaigns/entities/campaign.entity';
 import { CampaignPlayer } from './campaigns/entities/campaign-player.entity';
 import { Song } from './soundtrack/entities/song.entity';
+import { Playlist } from './soundtrack/entities/playlist.entity';
 import { ManualsModule } from './manuals/manuals.module';
 import { SpellsModule } from './spells/spells.module';
 import { RacesModule } from './races/races.module';
@@ -30,7 +31,7 @@ import { MonstersModule } from './monsters/monsters.module';
         type: (configService.get<string>('DB_TYPE') || 'sqlite') as 'sqlite' | 'better-sqlite3',
         database: configService.get<string>('DB_DATABASE'),
   // Incluir Song para evitar errores de metadata ausente en consultas del módulo Soundtrack
-  entities: [User, Campaign, CampaignPlayer, Song],
+  entities: [User, Campaign, CampaignPlayer, Song, Playlist],
         // synchronize: true solo en desarrollo
         synchronize: configService.get<string>('NODE_ENV') === 'development',
         logging: false,
