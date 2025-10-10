@@ -9,6 +9,11 @@ export interface SfxPlayOptions {
   randomMinMs?: number; // for random
   randomMaxMs?: number; // for random
   uniquePerEffect?: boolean; // if true, stop existing instances of same effectId before playing
+  // Modifiers
+  echoEnabled?: boolean;
+  echoDelayMs?: number;
+  echoFeedback?: number; // 0..1
+  pitchSemitones?: number; // negative lower, positive higher
 }
 
 export interface SfxListItem {
@@ -30,6 +35,11 @@ interface Controller {
   endedHandler?: () => void;
   pendingTimer?: number | null;
   isWaiting: boolean;
+  ctx?: AudioContext;
+  sourceNode?: MediaElementAudioSourceNode;
+  gainNode?: GainNode;
+  delayNode?: DelayNode;
+  feedbackGain?: GainNode;
 }
 
 interface SfxPlayerContextType {
@@ -79,6 +89,12 @@ export const SfxPlayerProvider: React.FC<{ children: ReactNode }> = ({ children 
       window.clearTimeout(c.pendingTimer);
     }
     c.audio.pause();
+    // teardown Web Audio graph
+    try { if (c.sourceNode) c.sourceNode.disconnect(); } catch {}
+    try { if (c.gainNode) c.gainNode.disconnect(); } catch {}
+    try { if (c.delayNode) c.delayNode.disconnect(); } catch {}
+    try { if (c.feedbackGain) c.feedbackGain.disconnect(); } catch {}
+    try { if (c.ctx) c.ctx.close(); } catch {}
     // revoke and clear
     try { URL.revokeObjectURL(c.objectUrl); } catch {}
     c.audio.src = '';
@@ -132,7 +148,7 @@ export const SfxPlayerProvider: React.FC<{ children: ReactNode }> = ({ children 
       setVersion(v => v + 1);
     }
     const url = await loader();
-    const audio = new Audio(url);
+  const audio = new Audio(url);
     const instanceId = `${meta.effectId}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
     const loopMode = options?.loopMode ?? 'once';
     audio.volume = clamp01(options?.volume ?? 1);
@@ -148,6 +164,40 @@ export const SfxPlayerProvider: React.FC<{ children: ReactNode }> = ({ children 
       pendingTimer: null,
       isWaiting: false,
     };
+
+    // Web Audio modifiers
+    if (options?.echoEnabled || (options?.pitchSemitones && options.pitchSemitones !== 0)) {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const source = ctx.createMediaElementSource(audio);
+        const gain = ctx.createGain();
+        gain.gain.value = 1;
+        let lastNode: AudioNode = source;
+        // pitch via playbackRate (approx)
+        if (options?.pitchSemitones && options.pitchSemitones !== 0) {
+          const ratio = Math.pow(2, (options.pitchSemitones as number) / 12);
+          audio.playbackRate = ratio;
+        }
+        // echo via delay + feedback loop
+        if (options?.echoEnabled) {
+          const delay = ctx.createDelay(5.0);
+          delay.delayTime.value = Math.max(0, (options.echoDelayMs ?? 300) / 1000);
+          const feedback = ctx.createGain();
+          feedback.gain.value = clamp01(options.echoFeedback ?? 0.3);
+          lastNode.connect(delay);
+          delay.connect(feedback);
+          feedback.connect(delay);
+          lastNode = delay;
+          controller.delayNode = delay;
+          controller.feedbackGain = feedback;
+        }
+        lastNode.connect(gain);
+        gain.connect(ctx.destination);
+        controller.ctx = ctx;
+        controller.sourceNode = source;
+        controller.gainNode = gain;
+      } catch {}
+    }
     if (loopMode === 'continuous') {
       audio.loop = true;
     } else {

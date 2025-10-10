@@ -145,6 +145,10 @@ export class SoundEffectsService {
         waitMs: i.waitMs,
         randomMinMs: i.randomMinMs,
         randomMaxMs: i.randomMaxMs,
+        echoEnabled: i.echoEnabled,
+        echoDelayMs: i.echoDelayMs,
+        echoFeedback: i.echoFeedback,
+        pitchSemitones: i.pitchSemitones,
         soundEffect: {
           id: i.soundEffect.id,
           name: i.soundEffect.name,
@@ -176,6 +180,11 @@ export class SoundEffectsService {
         spi.waitMs = item.loopMode === 'fixed' ? (item.waitMs ?? 0) : null;
         spi.randomMinMs = item.loopMode === 'random' ? (item.randomMinMs ?? 0) : null;
         spi.randomMaxMs = item.loopMode === 'random' ? (item.randomMaxMs ?? 0) : null;
+        // modifiers
+        spi.echoEnabled = !!item.echoEnabled;
+        spi.echoDelayMs = item.echoEnabled ? (item.echoDelayMs ?? 300) : null;
+        spi.echoFeedback = item.echoEnabled ? Math.max(0, Math.min(1, Number(item.echoFeedback ?? 0.3))) : null;
+        spi.pitchSemitones = Number.isFinite(item.pitchSemitones as any) ? Number(item.pitchSemitones) : 0;
         spi.preset = preset;
         preset.items.push(spi);
       }
@@ -208,6 +217,11 @@ export class SoundEffectsService {
         spi.waitMs = item.loopMode === 'fixed' ? (item.waitMs ?? 0) : null;
         spi.randomMinMs = item.loopMode === 'random' ? (item.randomMinMs ?? 0) : null;
         spi.randomMaxMs = item.loopMode === 'random' ? (item.randomMaxMs ?? 0) : null;
+        // modifiers
+        spi.echoEnabled = !!item.echoEnabled;
+        spi.echoDelayMs = item.echoEnabled ? (item.echoDelayMs ?? 300) : null;
+        spi.echoFeedback = item.echoEnabled ? Math.max(0, Math.min(1, Number(item.echoFeedback ?? 0.3))) : null;
+        spi.pitchSemitones = Number.isFinite(item.pitchSemitones as any) ? Number(item.pitchSemitones) : 0;
         preset.items.push(spi);
       }
     }

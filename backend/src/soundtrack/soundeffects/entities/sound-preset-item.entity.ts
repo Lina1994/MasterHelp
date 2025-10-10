@@ -29,4 +29,17 @@ export class SoundPresetItem {
 
   @Column('int', { nullable: true })
   randomMaxMs: number | null; // for random
+
+  // Modifiers
+  @Column('boolean', { default: false })
+  echoEnabled: boolean;
+
+  @Column('int', { nullable: true })
+  echoDelayMs: number | null;
+
+  @Column('float', { nullable: true })
+  echoFeedback: number | null; // 0..1
+
+  @Column('float', { default: 0 })
+  pitchSemitones: number; // negative: grave, positive: agudo
 }

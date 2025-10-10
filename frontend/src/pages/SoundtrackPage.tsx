@@ -508,14 +508,24 @@ export const SoundtrackPage = () => {
                   {expandedPlaylists[pl.id] && (
                     <Box px={2} pb={1}>
                       <List dense>
-                        {(pl.songs || []).map((s) => {
+                        {(pl.songs || []).map((s, idx) => {
                           const isCurrent = current?.id === s.id;
                           return (
                             <ListItem
                               key={s.id}
                               secondaryAction={
                                 <Stack direction="row" spacing={1}>
-                                  <IconButton onClick={() => handlePlay(s.id)} size="small" title="Reproducir"><PlayArrowIcon /></IconButton>
+                                  <IconButton onClick={async () => {
+                                    const items = (pl.songs || []).map(x => ({ id: x.id, name: x.name, size: x.size, mimeType: x.mimeType }));
+                                    const startIndex = idx;
+                                    await playQueue(items, async (id: string) => {
+                                      try {
+                                        await api.post(`/soundtrack/songs/${id}/played`, null, { headers: getAuthHeaders(), params: campaignId ? { campaignId } : undefined });
+                                      } catch {}
+                                      const res = await api.get(buildStreamEndpoint(id), { headers: getAuthHeaders(), responseType: 'blob' });
+                                      return URL.createObjectURL(res.data as Blob);
+                                    }, { shuffle: false, startIndex });
+                                  }} size="small" title="Reproducir"><PlayArrowIcon /></IconButton>
                                 </Stack>
                               }
                               sx={isCurrent ? { bgcolor: 'action.selected', borderLeft: '3px solid', borderColor: 'primary.main' } : undefined}

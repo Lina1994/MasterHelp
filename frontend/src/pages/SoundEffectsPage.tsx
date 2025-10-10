@@ -40,6 +40,10 @@ interface PresetItemMeta {
   waitMs?: number | null;
   randomMinMs?: number | null;
   randomMaxMs?: number | null;
+  echoEnabled?: boolean;
+  echoDelayMs?: number | null;
+  echoFeedback?: number | null;
+  pitchSemitones?: number | null;
   soundEffect: SoundEffectMeta;
 }
 
@@ -273,6 +277,10 @@ export default function SoundEffectsPage() {
           waitMs: item.waitMs ?? undefined,
           randomMinMs: item.randomMinMs ?? undefined,
           randomMaxMs: item.randomMaxMs ?? undefined,
+          echoEnabled: !!item.echoEnabled,
+          echoDelayMs: item.echoEnabled ? (item.echoDelayMs ?? 300) : undefined,
+          echoFeedback: item.echoEnabled ? (item.echoFeedback ?? 0.3) : undefined,
+          pitchSemitones: typeof item.pitchSemitones === 'number' ? item.pitchSemitones : 0,
         }
       );
     }
@@ -292,6 +300,11 @@ export default function SoundEffectsPage() {
     waitSec?: number;
     randomMinSec?: number;
     randomMaxSec?: number;
+    // Modifiers
+    echoEnabled?: boolean;
+    echoDelayMs?: number;
+    echoFeedback?: number; // 0..1
+    pitchSemitones?: number; // -24..+24
   };
 
   const [presetItemsDraft, setPresetItemsDraft] = useState<PresetItemInput[]>([]);
@@ -307,6 +320,10 @@ export default function SoundEffectsPage() {
         waitSec: typeof i.waitMs === 'number' ? i.waitMs / 1000 : undefined,
         randomMinSec: typeof i.randomMinMs === 'number' ? i.randomMinMs / 1000 : undefined,
         randomMaxSec: typeof i.randomMaxMs === 'number' ? i.randomMaxMs / 1000 : undefined,
+        echoEnabled: !!i.echoEnabled,
+        echoDelayMs: typeof i.echoDelayMs === 'number' ? i.echoDelayMs : 300,
+        echoFeedback: typeof i.echoFeedback === 'number' ? i.echoFeedback : 0.3,
+        pitchSemitones: typeof i.pitchSemitones === 'number' ? i.pitchSemitones : 0,
       })));
     } else {
       setPresetItemsDraft([]);
@@ -368,6 +385,10 @@ export default function SoundEffectsPage() {
         waitMs: it.loopMode === 'fixed' ? Math.round((it.waitSec ?? 0) * 1000) : undefined,
         randomMinMs: it.loopMode === 'random' ? Math.round((it.randomMinSec ?? 0) * 1000) : undefined,
         randomMaxMs: it.loopMode === 'random' ? Math.round((it.randomMaxSec ?? 0) * 1000) : undefined,
+        echoEnabled: !!it.echoEnabled,
+        echoDelayMs: it.echoEnabled ? Math.max(0, Math.round(it.echoDelayMs ?? 300)) : undefined,
+        echoFeedback: it.echoEnabled ? Math.max(0, Math.min(1, it.echoFeedback ?? 0.3)) : undefined,
+        pitchSemitones: Number.isFinite(it.pitchSemitones as any) ? (it.pitchSemitones as number) : 0,
       }));
       if (editPreset) {
         await api.patch(`/soundtrack/presets/${editPreset.id}`, {
@@ -733,6 +754,17 @@ export default function SoundEffectsPage() {
                             <TextField type="number" size="small" label="Máx (s)" inputProps={{ step: 0.1 }} value={it.randomMaxSec ?? 0} onChange={e => setPresetItemsDraft(d => d.map((x,i) => i===idx? { ...x, randomMaxSec: Math.max(0, Number(e.target.value||0)) } : x))} />
                           </Stack>
                         )}
+                        {/* Modificadores */}
+                        <FormControlLabel control={<Switch size="small" checked={!!it.echoEnabled} onChange={(_, v) => setPresetItemsDraft(d => d.map((x,i)=> i===idx? { ...x, echoEnabled: v } : x))} />} label="Eco" />
+                        {it.echoEnabled && (
+                          <Stack direction="row" spacing={2}>
+                            <TextField type="number" size="small" label="Retardo (ms)" inputProps={{ step: 10 }} value={it.echoDelayMs ?? 300} onChange={e => setPresetItemsDraft(d => d.map((x,i)=> i===idx? { ...x, echoDelayMs: Math.max(0, Number(e.target.value||0)) } : x))} />
+                            <Box display="flex" alignItems="center" gap={1}>
+                              Feedback: <Slider sx={{ width: 120 }} value={it.echoFeedback ?? 0.3} onChange={(_, v)=> setPresetItemsDraft(d => d.map((x,i)=> i===idx? { ...x, echoFeedback: Array.isArray(v)? v[0] as number : v as number } : x))} min={0} max={1} step={0.05} />
+                            </Box>
+                          </Stack>
+                        )}
+                        <TextField type="number" size="small" label="Tono (semitonos)" inputProps={{ step: 1, min: -24, max: 24 }} value={it.pitchSemitones ?? 0} onChange={e => setPresetItemsDraft(d => d.map((x,i)=> i===idx? { ...x, pitchSemitones: Number(e.target.value) } : x))} />
                         <Box>
                           <Button color="error" onClick={() => setPresetItemsDraft(d => d.filter((_,i) => i!==idx))} startIcon={<DeleteIcon />}>Quitar</Button>
                         </Box>
@@ -813,6 +845,17 @@ export default function SoundEffectsPage() {
                             <TextField type="number" size="small" label="Máx (s)" inputProps={{ step: 0.1 }} value={it.randomMaxSec ?? 0} onChange={e => setPresetItemsDraft(d => d.map((x,i) => i===idx? { ...x, randomMaxSec: Math.max(0, Number(e.target.value||0)) } : x))} />
                           </Stack>
                         )}
+                        {/* Modificadores */}
+                        <FormControlLabel control={<Switch size="small" checked={!!it.echoEnabled} onChange={(_, v) => setPresetItemsDraft(d => d.map((x,i)=> i===idx? { ...x, echoEnabled: v } : x))} />} label="Eco" />
+                        {it.echoEnabled && (
+                          <Stack direction="row" spacing={2}>
+                            <TextField type="number" size="small" label="Retardo (ms)" inputProps={{ step: 10 }} value={it.echoDelayMs ?? 300} onChange={e => setPresetItemsDraft(d => d.map((x,i)=> i===idx? { ...x, echoDelayMs: Math.max(0, Number(e.target.value||0)) } : x))} />
+                            <Box display="flex" alignItems="center" gap={1}>
+                              Feedback: <Slider sx={{ width: 120 }} value={it.echoFeedback ?? 0.3} onChange={(_, v)=> setPresetItemsDraft(d => d.map((x,i)=> i===idx? { ...x, echoFeedback: Array.isArray(v)? v[0] as number : v as number } : x))} min={0} max={1} step={0.05} />
+                            </Box>
+                          </Stack>
+                        )}
+                        <TextField type="number" size="small" label="Tono (semitonos)" inputProps={{ step: 1, min: -24, max: 24 }} value={it.pitchSemitones ?? 0} onChange={e => setPresetItemsDraft(d => d.map((x,i)=> i===idx? { ...x, pitchSemitones: Number(e.target.value) } : x))} />
                         <Box>
                           <Button color="error" onClick={() => setPresetItemsDraft(d => d.filter((_,i) => i!==idx))} startIcon={<DeleteIcon />}>Quitar</Button>
                         </Box>

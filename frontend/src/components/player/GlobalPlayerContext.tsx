@@ -13,10 +13,14 @@ interface GlobalPlayerContextType {
   loop: boolean;
   loading: boolean;
   play: (meta: Omit<GlobalPlayerTrackMeta,'objectUrl'>, objectUrlLoader: () => Promise<string>) => Promise<void>;
-  playQueue: (items: Array<Omit<GlobalPlayerTrackMeta,'objectUrl'>>, loader: (id: string) => Promise<string>, opts?: { shuffle?: boolean }) => Promise<void>;
+  playQueue: (items: Array<Omit<GlobalPlayerTrackMeta,'objectUrl'>>, loader: (id: string) => Promise<string>, opts?: { shuffle?: boolean; startIndex?: number }) => Promise<void>;
   stop: () => void;
   toggleLoop: () => void;
   next: () => Promise<void>;
+  nextMode: 'sequential' | 'random';
+  toggleNextMode: () => void;
+  /** Indica si el reproductor está en modo playlist/cola (true) o en reproducción aislada (false). */
+  isQueue: boolean;
 }
 
 const GlobalPlayerContext = createContext<GlobalPlayerContextType | undefined>(undefined);
@@ -34,13 +38,36 @@ export const GlobalPlayerProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [current, setCurrent] = useState<GlobalPlayerTrackMeta | null>(null);
   const [loop, setLoop] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [nextMode, setNextMode] = useState<'sequential' | 'random'>('sequential');
   const queueRef = useRef<Array<Omit<GlobalPlayerTrackMeta,'objectUrl'>>>([]);
   const queueIndexRef = useRef<number>(-1);
   const queueLoaderRef = useRef<((id: string) => Promise<string>) | null>(null);
+  const [queueActive, setQueueActive] = useState(false);
   // Guardar el último objectUrl para revocarlo al cambiar de pista / parar.
   const lastObjectUrlRef = useRef<string | null>(null);
 
+  // Internal: play a track without altering queue/loop flags (for playlist/queue mode)
+  const playQueueItem = useCallback(async (meta: Omit<GlobalPlayerTrackMeta,'objectUrl'>, objectUrlLoader: () => Promise<string>) => {
+    setLoading(true);
+    try {
+      const url = await objectUrlLoader();
+      if (lastObjectUrlRef.current && lastObjectUrlRef.current !== url) {
+        URL.revokeObjectURL(lastObjectUrlRef.current);
+      }
+      lastObjectUrlRef.current = url;
+      setCurrent({ ...meta, objectUrl: url });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const play: GlobalPlayerContextType['play'] = useCallback(async (meta, loader) => {
+    // Single track mode: clear queue and enable loop automatically
+    queueRef.current = [];
+    queueIndexRef.current = -1;
+    queueLoaderRef.current = null;
+    setQueueActive(false);
+    setLoop(true);
     setLoading(true);
     try {
       const url = await loader();
@@ -66,26 +93,38 @@ export const GlobalPlayerProvider: React.FC<{ children: ReactNode }> = ({ childr
     queueRef.current = list;
     queueIndexRef.current = -1;
     queueLoaderRef.current = loader;
+    // Para listas, por defecto desactivar loop para permitir avanzar automáticamente
+    setLoop(false);
+    setQueueActive(true);
     // avanzar al primer elemento
-    const next = list[0];
-    if (!next) return;
-    queueIndexRef.current = 0;
-    await play(next, () => loader(next.id));
-  }, [play]);
+    if (!list.length) return;
+    const startIndex = typeof opts?.startIndex === 'number' && opts.startIndex >= 0 && opts.startIndex < list.length ? opts.startIndex : 0;
+    queueIndexRef.current = startIndex;
+    const startItem = list[startIndex];
+    await playQueueItem(startItem, () => loader(startItem.id));
+  }, [playQueueItem]);
 
   const next = useCallback(async () => {
-    const list = queueRef.current;
-    const loader = queueLoaderRef.current;
-    if (!list || !loader) return;
-    const nextIndex = queueIndexRef.current + 1;
-    if (nextIndex >= list.length) {
-      // fin de cola
-      return;
+  const list = queueRef.current;
+  const loader = queueLoaderRef.current;
+  if (!queueActive || !list || !loader || !list.length) return;
+    let nextIndex: number;
+    if (nextMode === 'sequential') {
+      nextIndex = (queueIndexRef.current + 1) % list.length;
+    } else {
+      if (list.length <= 1) {
+        nextIndex = queueIndexRef.current; // sólo una pista
+      } else {
+        // elegir aleatoria distinta de la actual
+        do {
+          nextIndex = Math.floor(Math.random() * list.length);
+        } while (nextIndex === queueIndexRef.current);
+      }
     }
     queueIndexRef.current = nextIndex;
     const item = list[nextIndex];
-    await play(item, () => loader(item.id));
-  }, [play]);
+    await playQueueItem(item, () => loader(item.id));
+  }, [playQueueItem, nextMode]);
 
   const stop = useCallback(() => {
     setCurrent(prev => {
@@ -95,9 +134,15 @@ export const GlobalPlayerProvider: React.FC<{ children: ReactNode }> = ({ childr
       }
       return null;
     });
+    // stop queue context as well
+    queueRef.current = [];
+    queueIndexRef.current = -1;
+    queueLoaderRef.current = null;
+    setQueueActive(false);
   }, []);
 
   const toggleLoop = useCallback(() => setLoop(l => !l), []);
+  const toggleNextMode = useCallback(() => setNextMode(m => (m === 'sequential' ? 'random' : 'sequential')), []);
 
   // Cleanup general al desmontar provider.
   useEffect(() => () => {
@@ -107,8 +152,21 @@ export const GlobalPlayerProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   }, []);
 
+  // Persistencia de nextMode en localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('globalPlayer.nextMode');
+      if (raw === 'sequential' || raw === 'random') {
+        setNextMode(raw);
+      }
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem('globalPlayer.nextMode', nextMode); } catch {}
+  }, [nextMode]);
+
   return (
-    <GlobalPlayerContext.Provider value={{ current, loop, loading, play, playQueue, stop, toggleLoop, next }}>
+    <GlobalPlayerContext.Provider value={{ current, loop, loading, play, playQueue, stop, toggleLoop, next, nextMode, toggleNextMode, isQueue: queueActive }}>
       {children}
     </GlobalPlayerContext.Provider>
   );

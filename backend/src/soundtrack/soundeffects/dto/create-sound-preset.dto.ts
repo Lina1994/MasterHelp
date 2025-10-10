@@ -34,6 +34,31 @@ export class SoundPresetItemInputDto {
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0)
   randomMaxMs?: number;
+
+  // Modificadores
+  @ApiProperty({ required: false })
+  @IsOptional()
+  echoEnabled?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0)
+  echoDelayMs?: number;
+
+  @ApiProperty({ required: false, description: '0..1' })
+  @IsOptional()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0)
+  @Max(1)
+  echoFeedback?: number;
+
+  @ApiProperty({ required: false, description: 'Semitonos: negativo grave, positivo agudo' })
+  @IsOptional()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(-24)
+  @Max(24)
+  pitchSemitones?: number;
 }
 
 export class CreateSoundPresetDto {
