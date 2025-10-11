@@ -18,6 +18,7 @@ const GlobalPlayerDrawerControls: React.FC = () => {
   const { items: sfxItems } = useSfxPlayer();
   const { sfxExpanded, toggleSfxExpanded } = usePlayerDrawerUi();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const VOLUME_KEY = 'globalPlayer.volume';
 
   useEffect(() => {
     if (audioRef.current && current) {
@@ -36,6 +37,30 @@ const GlobalPlayerDrawerControls: React.FC = () => {
     el.addEventListener('ended', onEnded);
     return () => { el.removeEventListener('ended', onEnded); };
   }, [loop, next, current]);
+
+  // Restore saved volume on mount and when track changes
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    try {
+      const raw = localStorage.getItem(VOLUME_KEY);
+      const v = raw !== null ? Number(raw) : NaN;
+      if (!Number.isNaN(v) && v >= 0 && v <= 1) {
+        el.volume = v;
+      }
+    } catch {}
+  }, [current]);
+
+  // Persist volume changes
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    const onVolume = () => {
+      try { localStorage.setItem(VOLUME_KEY, String(el.volume)); } catch {}
+    };
+    el.addEventListener('volumechange', onVolume);
+    return () => { el.removeEventListener('volumechange', onVolume); };
+  }, []);
 
   // Always render the bar if there is a song; if not, render a minimal row with sfx icon only when there are sfx
   if (!current) {

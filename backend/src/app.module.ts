@@ -19,6 +19,9 @@ import { SpellsModule } from './spells/spells.module';
 import { RacesModule } from './races/races.module';
 import { ClassesModule } from './classes/classes.module';
 import { MonstersModule } from './monsters/monsters.module';
+import { MapsModule } from './maps/maps.module';
+import { MapEntity } from './maps/entities/map.entity';
+import { MapImage } from './maps/entities/map-image.entity';
 
 @Module({
   imports: [
@@ -43,6 +46,8 @@ import { MonstersModule } from './monsters/monsters.module';
           SoundEffect,
           SoundPreset,
           SoundPresetItem,
+          MapEntity,
+          MapImage,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -55,6 +60,7 @@ import { MonstersModule } from './monsters/monsters.module';
     UsersModule,
   CampaignsModule,
   SoundtrackModule,
+  MapsModule,
     ManualsModule,
     SpellsModule,
     RacesModule,

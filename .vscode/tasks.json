@@ -80,6 +80,130 @@
 				"$tsc"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Backend typecheck",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"c:\\CODE V2\\dm-app\\MasterHelp\\backend",
+				"run",
+				"typecheck"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Backend typecheck",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"c:\\CODE V2\\dm-app\\MasterHelp\\backend",
+				"run",
+				"typecheck"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Backend typecheck",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"c:\\CODE V2\\dm-app\\MasterHelp\\backend",
+				"run",
+				"typecheck"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Backend typecheck",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"c:\\CODE V2\\dm-app\\MasterHelp\\backend",
+				"run",
+				"typecheck"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Install backend deps",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"c:\\CODE V2\\dm-app\\MasterHelp\\backend",
+				"install"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Backend typecheck",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"c:\\CODE V2\\dm-app\\MasterHelp\\backend",
+				"run",
+				"typecheck"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Backend typecheck",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"c:\\CODE V2\\dm-app\\MasterHelp\\backend",
+				"run",
+				"typecheck"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Build backend (typecheck)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"c:\\CODE V2\\dm-app\\MasterHelp\\backend",
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
 		}
 	]
 }

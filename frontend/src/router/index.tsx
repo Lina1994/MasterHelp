@@ -17,6 +17,7 @@ import MainLayout from '../layouts/MainLayout';
 import SpellsPage from '../pages/SpellsPage';
 import BestiaryListPage from '../pages/BestiaryListPage';
 import BestiaryDetailPage from '../pages/BestiaryDetailPage';
+import MapsPage from '../pages/MapsPage';
 
 const router = createBrowserRouter([
   // Single top-level layout so GlobalPlayer stays mounted across all app pages
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
           { path: 'campaigns', element: <CampaignPage /> },
           { path: 'soundtrack', element: <SoundtrackPage /> },
           { path: 'soundtrack/effects', element: <SoundEffectsPage /> },
+          { path: 'maps', element: <MapsPage /> },
           // ...other protected routes
         ],
       },

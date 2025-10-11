@@ -14,6 +14,7 @@ import SfxPlayerDrawerControls from '../components/player/SfxPlayerDrawerControl
 import { InvitationsList } from '../pages/InvitationsList';
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // nuevo icono
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import MapIcon from '@mui/icons-material/Map';
 
 const MainLayout = () => {
   const navigate = useNavigate();
@@ -63,6 +64,12 @@ const MainLayout = () => {
           <ListItemButton onClick={() => navigate('/manuals')}>
             <ListItemIcon><MenuBookIcon /></ListItemIcon>
             <ListItemText primary={t('manuals', 'Manuales')} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem key="maps" disablePadding>
+          <ListItemButton onClick={() => navigate('/maps')}>
+            <ListItemIcon><MapIcon /></ListItemIcon>
+            <ListItemText primary={t('maps', 'Mapas')} />
           </ListItemButton>
         </ListItem>
         {/* Bestiary: accesible dentro de cada manual, no en el sidebar global */}
