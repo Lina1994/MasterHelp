@@ -46,6 +46,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // El tiempo de expiración del token se configura en JwtModule (AuthModule)
+    // mediante signOptions.expiresIn. Por defecto: 15 días (configurable vía JWT_EXPIRES_IN).
     const payload = { username: user.username, sub: user.id };
     const access_token = this.jwtService.sign(payload);
     return { access_token };

@@ -15,6 +15,7 @@ export interface Campaign {
   name: string;
   description?: string;
   imageUrl?: string;
+  selectedManualIds?: string[];
   players: CampaignPlayer[];
   owner: User;
   createdAt: string;

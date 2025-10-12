@@ -22,6 +22,9 @@ import { MonstersModule } from './monsters/monsters.module';
 import { MapsModule } from './maps/maps.module';
 import { MapEntity } from './maps/entities/map.entity';
 import { MapImage } from './maps/entities/map-image.entity';
+import { MapSkylineImage } from './maps/entities/map-skyline-image.entity';
+import { CharactersModule } from './characters/characters.module';
+import { Character } from './characters/entities/character.entity';
 
 @Module({
   imports: [
@@ -48,6 +51,8 @@ import { MapImage } from './maps/entities/map-image.entity';
           SoundPresetItem,
           MapEntity,
           MapImage,
+          MapSkylineImage,
+          Character,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -61,6 +66,7 @@ import { MapImage } from './maps/entities/map-image.entity';
   CampaignsModule,
   SoundtrackModule,
   MapsModule,
+  CharactersModule,
     ManualsModule,
     SpellsModule,
     RacesModule,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { SoundtrackTabs } from '../components/soundtrack/SoundtrackTabs';
 import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
@@ -478,8 +478,8 @@ export const SoundtrackPage = () => {
             <CardContent sx={{ p:0 }}>
               <List dense>
                 {playlists.map(pl => (
-                  <>
-                  <ListItem key={pl.id} secondaryAction={
+                  <Fragment key={pl.id}>
+                  <ListItem secondaryAction={
                     <Stack direction="row" spacing={1}>
                       <IconButton size="small" onClick={() => setExpandedPlaylists(prev => ({ ...prev, [pl.id]: !prev[pl.id] }))}>
                         {expandedPlaylists[pl.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -540,7 +540,7 @@ export const SoundtrackPage = () => {
                       </List>
                     </Box>
                   )}
-                  </>
+                  </Fragment>
                 ))}
                 {playlists.length === 0 && (
                   <ListItem><ListItemText primary="No hay listas de reproducción" /></ListItem>

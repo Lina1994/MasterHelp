@@ -7,6 +7,7 @@ import { UpdateMapDto } from './dto/update-map.dto';
 import { User } from '../users/entities/user.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { MapImage } from './entities/map-image.entity';
+import { MapSkylineImage } from './entities/map-skyline-image.entity';
 import sharp from 'sharp';
 
 @Injectable()
@@ -14,15 +15,17 @@ export class MapsService {
   constructor(
     @InjectRepository(MapEntity) private readonly repo: Repository<MapEntity>,
     @InjectRepository(MapImage) private readonly imagesRepo: Repository<MapImage>,
+    @InjectRepository(MapSkylineImage) private readonly skylinesRepo: Repository<MapSkylineImage>,
     @InjectRepository(Campaign) private readonly campaignsRepo: Repository<Campaign>,
   ) {}
 
   /** Generate sharp-based variants. Falls back to only 'full' if processing fails. */
-  private async buildVariants(file: { buffer: Buffer; mimetype: string; size: number }): Promise<MapImage[]> {
+  private async buildVariants(file: { buffer: Buffer; mimetype: string; size: number }, timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null): Promise<MapImage[]> {
     const variants: MapImage[] = [];
     // Full (original)
     const full = new MapImage();
     full.variant = 'full';
+    full.timeOfDay = timeOfDay ?? null;
     full.mimeType = file.mimetype;
     full.size = file.size;
     full.data = file.buffer;
@@ -31,6 +34,7 @@ export class MapsService {
       const previewBuf = await sharp(file.buffer).resize({ width: 1280, withoutEnlargement: true }).toBuffer();
       const preview = new MapImage();
       preview.variant = 'preview';
+      preview.timeOfDay = timeOfDay ?? null;
       preview.mimeType = file.mimetype;
       preview.size = previewBuf.length;
       preview.data = previewBuf;
@@ -38,6 +42,7 @@ export class MapsService {
       const thumbBuf = await sharp(file.buffer).resize({ width: 256, withoutEnlargement: true }).toBuffer();
       const thumb = new MapImage();
       thumb.variant = 'thumb';
+      thumb.timeOfDay = timeOfDay ?? null;
       thumb.mimeType = file.mimetype;
       thumb.size = thumbBuf.length;
       thumb.data = thumbBuf;
@@ -49,20 +54,69 @@ export class MapsService {
     return variants;
   }
 
+  /** Generate skyline variants mirroring map image variants */
+  private async buildSkylineVariants(file: { buffer: Buffer; mimetype: string; size: number }, timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null): Promise<MapSkylineImage[]> {
+    const variants: MapSkylineImage[] = [];
+    const full = new MapSkylineImage();
+    full.variant = 'full';
+    full.timeOfDay = timeOfDay ?? null;
+    full.mimeType = file.mimetype;
+    full.size = file.size;
+    full.data = file.buffer;
+    variants.push(full);
+    try {
+      const previewBuf = await sharp(file.buffer).resize({ width: 1280, withoutEnlargement: true }).toBuffer();
+      const preview = new MapSkylineImage();
+      preview.variant = 'preview';
+      preview.timeOfDay = timeOfDay ?? null;
+      preview.mimeType = file.mimetype;
+      preview.size = previewBuf.length;
+      preview.data = previewBuf;
+      variants.push(preview);
+      const thumbBuf = await sharp(file.buffer).resize({ width: 256, withoutEnlargement: true }).toBuffer();
+      const thumb = new MapSkylineImage();
+      thumb.variant = 'thumb';
+      thumb.timeOfDay = timeOfDay ?? null;
+      thumb.mimeType = file.mimetype;
+      thumb.size = thumbBuf.length;
+      thumb.data = thumbBuf;
+      variants.push(thumb);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('[maps] skyline variant generation failed, using full only', e);
+    }
+    return variants;
+  }
+
   /** Extract consistent user id from JWT payload or entity */
   private extractAuthUserId(user: any): string | number | undefined {
     return user?.id ?? user?.userId;
   }
 
   /**
-   * Returns maps owned by the user, optionally filtered by campaignId and search query.
+  * Returns maps owned by the authenticated user.
+  * - If campaignId is provided, restrict to that campaign.
+  * - Supports optional free-text search (q) by name/description.
    */
   async listOwned(user: User | any, q?: string, campaignId?: string) {
     const authUserId = this.extractAuthUserId(user);
     if (!authUserId) throw new ForbiddenException('Invalid auth context');
     const qb = this.repo.createQueryBuilder('m')
       .leftJoin('m.campaign', 'c')
-      .leftJoinAndSelect('m.images', 'images')
+      .select([
+        'm.id',
+        'm.name',
+        'm.description',
+        'm.group',
+        'm.timeOfDay',
+        'm.isWorldMap',
+        'm.musicConfig',
+        'm.sfxConfig',
+        'm.transform',
+        'm.updatedAt',
+        'm.createdAt',
+        'c.id',
+      ])
       .where('m.ownerId = :ownerId', { ownerId: authUserId });
     if (campaignId) {
       qb.andWhere('c.id = :cid', { cid: campaignId });
@@ -72,6 +126,21 @@ export class MapsService {
     }
     qb.orderBy('m.updatedAt', 'DESC');
     const rows = await qb.getMany();
+    // Compute imageAvailable without fetching BLOBs
+    const imageCounts = await this.imagesRepo.createQueryBuilder('img')
+      .select('img.mapId', 'mapId')
+      .addSelect('COUNT(*)', 'cnt')
+      .where('img.mapId IN (:...ids)', { ids: rows.map(r => r.id) })
+      .groupBy('img.mapId')
+      .getRawMany<{ mapId: string; cnt: string }>();
+    const skylineCounts = await this.skylinesRepo.createQueryBuilder('img')
+      .select('img.mapId', 'mapId')
+      .addSelect('COUNT(*)', 'cnt')
+      .where('img.mapId IN (:...ids)', { ids: rows.map(r => r.id) })
+      .groupBy('img.mapId')
+      .getRawMany<{ mapId: string; cnt: string }>();
+    const countByMap = new Map(imageCounts.map(r => [r.mapId, Number(r.cnt||0)]));
+    const skylineCountByMap = new Map(skylineCounts.map(r => [r.mapId, Number(r.cnt||0)]));
     return rows.map(r => ({
       id: r.id,
       name: r.name,
@@ -81,8 +150,10 @@ export class MapsService {
       isWorldMap: (r as any).isWorldMap ?? false,
       musicConfig: (r as any).musicConfig,
       sfxConfig: (r as any).sfxConfig,
+      transform: (r as any).transform,
       campaignId: r.campaign?.id,
-      imageAvailable: !!r.imageData || (Array.isArray((r as any).images) && (r as any).images.length > 0),
+      imageAvailable: (countByMap.get(r.id) || 0) > 0,
+      skylineAvailable: (skylineCountByMap.get(r.id) || 0) > 0,
       updatedAt: r.updatedAt,
       createdAt: r.createdAt,
     }));
@@ -114,11 +185,12 @@ export class MapsService {
     }
     entity.name = (incomingName || 'Untitled').slice(0, 200);
     entity.description = dto.description;
-  entity.group = dto.group ?? null;
-  entity.timeOfDay = dto.timeOfDay ?? null;
-  entity.isWorldMap = dto.isWorldMap ?? false;
-  entity.musicConfig = dto.musicConfig ?? null;
-  entity.sfxConfig = dto.sfxConfig ?? null;
+    entity.group = dto.group ?? null;
+    entity.timeOfDay = (dto.timeOfDay === '' ? null : dto.timeOfDay) ?? null;
+    entity.isWorldMap = dto.isWorldMap ?? false;
+    entity.musicConfig = dto.musicConfig ?? null;
+    entity.sfxConfig = dto.sfxConfig ?? null;
+    (entity as any).transform = (dto as any).transform ?? null;
     if (dto.campaignId) {
       const c = await this.campaignsRepo.findOne({ where: { id: dto.campaignId } });
       if (!c) throw new NotFoundException('Campaign not found');
@@ -154,19 +226,26 @@ export class MapsService {
     return results;
   }
 
-  async update(user: User | any, id: string, dto: UpdateMapDto, file?: { buffer: Buffer; mimetype: string; size: number } | null) {
-    const entity = await this.repo.findOne({ where: { id } });
+  async update(
+    user: User | any,
+    id: string,
+    dto: UpdateMapDto,
+    file?: { buffer: Buffer; mimetype: string; size: number } | null,
+    imageTimeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null,
+  ) {
+  const entity = await this.repo.findOne({ where: { id }, relations: ['owner'] });
     if (!entity) throw new NotFoundException('Map not found');
     const authUserId = this.extractAuthUserId(user);
     if (!authUserId) throw new ForbiddenException('Invalid auth context');
     if (entity.owner.id !== authUserId) throw new ForbiddenException('Not owner');
     if (dto.name !== undefined) entity.name = dto.name;
     if (dto.description !== undefined) entity.description = dto.description;
-  if (dto.group !== undefined) (entity as any).group = dto.group ?? null;
-  if (dto.timeOfDay !== undefined) (entity as any).timeOfDay = dto.timeOfDay ?? null;
-  if (dto.isWorldMap !== undefined) (entity as any).isWorldMap = dto.isWorldMap;
-  if (dto.musicConfig !== undefined) (entity as any).musicConfig = dto.musicConfig ?? null;
-  if (dto.sfxConfig !== undefined) (entity as any).sfxConfig = dto.sfxConfig ?? null;
+    if (dto.group !== undefined) (entity as any).group = dto.group ?? null;
+    if (dto.timeOfDay !== undefined) (entity as any).timeOfDay = (dto.timeOfDay === '' ? null : dto.timeOfDay) ?? null;
+    if (dto.isWorldMap !== undefined) (entity as any).isWorldMap = dto.isWorldMap;
+    if (dto.musicConfig !== undefined) (entity as any).musicConfig = dto.musicConfig ?? null;
+    if (dto.sfxConfig !== undefined) (entity as any).sfxConfig = dto.sfxConfig ?? null;
+    if ((dto as any).transform !== undefined) (entity as any).transform = (dto as any).transform ?? null;
     if (dto.campaignId !== undefined) {
       if (!dto.campaignId) {
         entity.campaign = null;
@@ -178,21 +257,44 @@ export class MapsService {
       }
     }
     if (file) {
-      entity.imageMimeType = file.mimetype;
-      entity.imageSize = file.size;
-      entity.imageData = file.buffer;
-      // Regenerate all variants
-      await this.imagesRepo.delete({ map: { id } as any });
-      const variants = await this.buildVariants(file);
-      for (const v of variants) v.map = entity as any;
-      await this.imagesRepo.save(variants);
+      // If a specific TOD is requested for the new image, only replace that TOD's variants
+      if (imageTimeOfDay) {
+        // Do NOT touch legacy fields to avoid changing the base image unintentionally
+        await this.imagesRepo.createQueryBuilder()
+          .delete()
+          .from(MapImage)
+          .where('mapId = :id', { id })
+          .andWhere('timeOfDay = :tod', { tod: imageTimeOfDay })
+          .execute();
+        const variants = await this.buildVariants(file, imageTimeOfDay);
+        for (const v of variants) v.map = entity as any;
+        await this.imagesRepo.save(variants);
+      } else {
+        // Replace the base (no TOD) image only, preserving existing TOD-specific variants
+        entity.imageMimeType = file.mimetype;
+        entity.imageSize = file.size;
+        entity.imageData = file.buffer;
+        await this.imagesRepo.createQueryBuilder()
+          .delete()
+          .from(MapImage)
+          .where('mapId = :id', { id })
+          .andWhere('timeOfDay IS NULL')
+          .execute();
+        const variants = await this.buildVariants(file, null);
+        for (const v of variants) v.map = entity as any;
+        await this.imagesRepo.save(variants);
+      }
     } else if (file === null) {
       // Explicit remove image when null is passed
       entity.imageMimeType = null;
       entity.imageSize = null;
       entity.imageData = null;
       // Remove all variants
-      await this.imagesRepo.delete({ map: { id } as any });
+      await this.imagesRepo.createQueryBuilder()
+        .delete()
+        .from(MapImage)
+        .where('mapId = :id', { id })
+        .execute();
     }
     await this.repo.save(entity);
     return { ok: true };
@@ -208,7 +310,13 @@ export class MapsService {
     return { ok: true };
   }
 
-  async streamImage(user: User | any, id: string, size?: 'thumb' | 'preview' | 'full') {
+  async streamImage(
+    user: User | any,
+    id: string,
+    size?: 'thumb' | 'preview' | 'full',
+    timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null,
+    strict?: boolean,
+  ) {
     const entity = await this.repo.findOne({ where: { id } });
     if (!entity) throw new NotFoundException('Map not found');
     // Owner of the map or owner of the campaign can stream. For simplicity use owner check.
@@ -217,10 +325,141 @@ export class MapsService {
     if (entity.owner.id !== authUserId) throw new ForbiddenException('Not allowed');
     // Try variant first
     const variant = size || 'full';
-    const img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant } });
+    // Try to fetch variant matching timeOfDay first (if provided)
+    let img: MapImage | null = null as any;
+    if (timeOfDay !== undefined && timeOfDay !== null) {
+      img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: timeOfDay as any } });
+      if (!strict) {
+        // If not found, try base (null TOD)
+        if (!img) img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: null as any } });
+        // Finally, any TOD
+        if (!img) img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant } });
+      }
+    } else {
+      if (!strict) {
+        // No specific TOD requested: prefer base (null TOD), then any
+        img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: null as any } });
+        if (!img) img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant } });
+      }
+    }
     if (img) return { buffer: img.data, mimeType: img.mimeType };
     // Fallback to legacy
     if (entity.imageData && entity.imageMimeType) return { buffer: entity.imageData, mimeType: entity.imageMimeType };
     throw new NotFoundException('No image');
+  }
+
+  async streamSkyline(
+    user: User | any,
+    id: string,
+    size?: 'thumb' | 'preview' | 'full',
+    timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null,
+    strict?: boolean,
+  ) {
+    const entity = await this.repo.findOne({ where: { id } });
+    if (!entity) throw new NotFoundException('Map not found');
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    if (entity.owner.id !== authUserId) throw new ForbiddenException('Not allowed');
+    const variant = size || 'full';
+    let img: MapSkylineImage | null = null as any;
+    if (timeOfDay !== undefined && timeOfDay !== null) {
+      img = await this.skylinesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: timeOfDay as any } });
+      if (!strict) {
+        if (!img) img = await this.skylinesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: null as any } });
+        if (!img) img = await this.skylinesRepo.findOne({ where: { map: { id } as any, variant } });
+      }
+    } else {
+      if (!strict) {
+        img = await this.skylinesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: null as any } });
+        if (!img) img = await this.skylinesRepo.findOne({ where: { map: { id } as any, variant } });
+      }
+    }
+    if (img) return { buffer: img.data, mimeType: img.mimeType };
+    throw new NotFoundException('No skyline image');
+  }
+
+  /** Attach a new skyline image specifically for a given time-of-day, keeping existing skyline images for other TODs. */
+  async uploadSkylineForTod(user: User | any, id: string, file: { buffer: Buffer; mimetype: string; size: number }, tod: 'dawn' | 'morning' | 'afternoon' | 'night') {
+    const entity = await this.repo.findOne({ where: { id } });
+    if (!entity) throw new NotFoundException('Map not found');
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    if (entity.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    await this.skylinesRepo.createQueryBuilder()
+      .delete()
+      .from(MapSkylineImage)
+      .where('mapId = :id', { id })
+      .andWhere('timeOfDay = :tod', { tod })
+      .execute();
+    const variants = await this.buildSkylineVariants(file, tod);
+    for (const v of variants) v.map = entity as any;
+    await this.skylinesRepo.save(variants);
+    return { ok: true };
+  }
+
+  /** Attach a new image specifically for a given time-of-day, keeping existing images for other TODs. */
+  async uploadImageForTod(user: User | any, id: string, file: { buffer: Buffer; mimetype: string; size: number }, tod: 'dawn' | 'morning' | 'afternoon' | 'night') {
+    const entity = await this.repo.findOne({ where: { id } });
+    if (!entity) throw new NotFoundException('Map not found');
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    if (entity.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    // Remove existing images for this TOD (all variants)
+    await this.imagesRepo.createQueryBuilder()
+      .delete()
+      .from(MapImage)
+      .where('mapId = :id', { id })
+      .andWhere('timeOfDay = :tod', { tod })
+      .execute();
+    const variants = await this.buildVariants(file, tod);
+    for (const v of variants) v.map = entity as any;
+    await this.imagesRepo.save(variants);
+    return { ok: true };
+  }
+
+  /**
+   * Returns total storage usage (in bytes) for all map-related binary data and the count of maps.
+   * - totalSize includes: MapImage variants, MapSkylineImage variants, and legacy MapEntity.imageSize when present.
+   * - Always scoped to the authenticated owner; optionally filtered by campaignId.
+   */
+  async getUsage(user: User | any, campaignId?: string | null): Promise<{ totalSize: number; count: number }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    // Count maps owned by user (optionally within campaign)
+    const mapCountQb = this.repo.createQueryBuilder('map')
+      .where('map.ownerId = :ownerId', { ownerId: authUserId });
+    if (campaignId) mapCountQb.andWhere('map.campaignId = :campaignId', { campaignId });
+    const count = await mapCountQb.getCount();
+
+    // Sum of MapImage.size (join to map for ownership/campaign filter)
+    const imgRaw = await this.imagesRepo.createQueryBuilder('img')
+      .innerJoin('img.map', 'map')
+      .where('map.ownerId = :ownerId', { ownerId: authUserId })
+      .andWhere(campaignId ? 'map.campaignId = :campaignId' : '1=1', { campaignId })
+      .select('SUM(img.size)', 'total')
+      .getRawOne<{ total: string | null }>();
+    const totalImages = imgRaw?.total ? parseInt(imgRaw.total, 10) : 0;
+
+    // Sum of MapSkylineImage.size
+    const skyRaw = await this.skylinesRepo.createQueryBuilder('img')
+      .innerJoin('img.map', 'map')
+      .where('map.ownerId = :ownerId', { ownerId: authUserId })
+      .andWhere(campaignId ? 'map.campaignId = :campaignId' : '1=1', { campaignId })
+      .select('SUM(img.size)', 'total')
+      .getRawOne<{ total: string | null }>();
+    const totalSkylines = skyRaw?.total ? parseInt(skyRaw.total, 10) : 0;
+
+    // Sum of legacy MapEntity.imageSize
+    const legacyRaw = await this.repo.createQueryBuilder('map')
+      .where('map.ownerId = :ownerId', { ownerId: authUserId })
+      .andWhere(campaignId ? 'map.campaignId = :campaignId' : '1=1', { campaignId })
+      .andWhere('map.imageSize IS NOT NULL')
+      .select('SUM(map.imageSize)', 'total')
+      .getRawOne<{ total: string | null }>();
+    const totalLegacy = legacyRaw?.total ? parseInt(legacyRaw.total, 10) : 0;
+
+    const totalSize = (totalImages || 0) + (totalSkylines || 0) + (totalLegacy || 0);
+    return { totalSize, count };
   }
 }

@@ -18,8 +18,21 @@ import SpellsPage from '../pages/SpellsPage';
 import BestiaryListPage from '../pages/BestiaryListPage';
 import BestiaryDetailPage from '../pages/BestiaryDetailPage';
 import MapsPage from '../pages/MapsPage';
+import ProjectionMapPage from '../pages/ProjectionMapPage';
+import ProjectionSkylinePage from '../pages/ProjectionSkylinePage';
+import CharactersPage from '../pages/CharactersPage';
+import CharacterDetailPage from '../pages/CharacterDetailPage';
 
 const router = createBrowserRouter([
+  // Ventana de proyección: ruta al margen del layout principal
+  {
+    path: '/projection/maps',
+    element: <ProjectionMapPage />,
+  },
+  {
+    path: '/projection/skyline',
+    element: <ProjectionSkylinePage />,
+  },
   // Single top-level layout so GlobalPlayer stays mounted across all app pages
   {
     path: '/',
@@ -36,9 +49,12 @@ const router = createBrowserRouter([
           { path: 'soundtrack', element: <SoundtrackPage /> },
           { path: 'soundtrack/effects', element: <SoundEffectsPage /> },
           { path: 'maps', element: <MapsPage /> },
+          { path: 'characters', element: <CharactersPage /> },
+          { path: 'characters/:id', element: <CharacterDetailPage /> },
           // ...other protected routes
         ],
       },
+      // Nota: la ruta de proyección está definida a nivel raíz (fuera de MainLayout) más abajo
       // Public sections (do not require ProtectedLayout)
       {
         path: 'manuals',

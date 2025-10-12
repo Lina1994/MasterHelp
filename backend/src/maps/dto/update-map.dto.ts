@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsObject, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 /**
@@ -26,8 +26,8 @@ export class UpdateMapDto {
   group?: string;
 
   @IsOptional()
-  @IsIn(['dawn', 'morning', 'afternoon', 'night'])
-  timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
+  @IsIn(['', 'dawn', 'morning', 'afternoon', 'night'])
+  timeOfDay?: '' | 'dawn' | 'morning' | 'afternoon' | 'night';
 
   @IsOptional()
   @Transform(({ value }) => {
@@ -43,7 +43,16 @@ export class UpdateMapDto {
   @Transform(({ value }) => {
     if (value === undefined || value === null || value === '') return undefined;
     if (typeof value === 'object') return value;
-    try { return JSON.parse(value); } catch { return undefined; }
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && parsed !== null ? parsed : {};
+      } catch {
+        // Si llega una cadena no parseable, degradamos a objeto vacío para no romper la validación
+        return {};
+      }
+    }
+    return {};
   })
   @IsObject()
   musicConfig?: Record<string, any>;
@@ -52,8 +61,32 @@ export class UpdateMapDto {
   @Transform(({ value }) => {
     if (value === undefined || value === null || value === '') return undefined;
     if (typeof value === 'object') return value;
-    try { return JSON.parse(value); } catch { return undefined; }
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && parsed !== null ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+    return {};
   })
   @IsObject()
   sfxConfig?: Record<string, any>;
+
+  /**
+   * Visual transform for the map. Accepts either object or JSON string.
+   * zoom: >= 0.05, rotationDeg: any number, translateXPct/translateYPct: typically -100..100
+   */
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'object') return value;
+    if (typeof value === 'string') {
+      try { const parsed = JSON.parse(value); return parsed; } catch { return undefined; }
+    }
+    return undefined;
+  })
+  @IsObject()
+  transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
 }

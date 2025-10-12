@@ -78,4 +78,12 @@
   "cantrips": "Trucos",
   "level": "Nivel",
   "lvl_abbr": "Niv"
+  ,
+  "timeOfDay": {
+    "all": "Todo el día",
+    "dawn": "Madrugada",
+    "morning": "Mañana",
+    "afternoon": "Tarde",
+    "night": "Noche"
+  }
 }

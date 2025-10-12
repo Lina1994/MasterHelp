@@ -12,6 +12,11 @@ export class MapImage {
   @Column({ type: 'text' })
   variant: MapImageVariant; // 'thumb' | 'preview' | 'full'
 
+  /** Optional time-of-day tag for this image (per-variant). */
+  @Index()
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null;
+
   @Column()
   mimeType: string;
 

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config'; // Importar ConfigModule
+import { ConfigModule, ConfigService } from '@nestjs/config'; // Importar ConfigModule y ConfigService
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
@@ -12,9 +12,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   imports: [
     ConfigModule, // Añadir ConfigModule aquí
     TypeOrmModule.forFeature([User]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'defaultSecret',
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET') || 'defaultSecret',
+        // Sesión por defecto: 15 días; se puede ajustar con JWT_EXPIRES_IN (ej.: '7d', '12h')
+        signOptions: { expiresIn: config.get<string>('JWT_EXPIRES_IN') || '15d' },
+      }),
     }),
   ],
   controllers: [AuthController],

@@ -105,9 +105,10 @@ export const GlobalPlayerProvider: React.FC<{ children: ReactNode }> = ({ childr
   }, [playQueueItem]);
 
   const next = useCallback(async () => {
+  // Use refs to avoid stale state closures; if there's no active queue, index will be -1 or loader/list missing.
   const list = queueRef.current;
   const loader = queueLoaderRef.current;
-  if (!queueActive || !list || !loader || !list.length) return;
+  if (!list || !loader || queueIndexRef.current < 0 || list.length === 0) return;
     let nextIndex: number;
     if (nextMode === 'sequential') {
       nextIndex = (queueIndexRef.current + 1) % list.length;

@@ -9,12 +9,15 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { GlobalPlayerProvider } from '../components/player/GlobalPlayerContext';
 import { SfxPlayerProvider } from '../components/player/SfxPlayerContext';
 import { PlayerDrawerUiProvider } from '../components/player/PlayerDrawerUiContext';
+import TimeOfDaySidebarControls from '../components/player/TimeOfDaySidebarControls';
 import GlobalPlayerDrawerControls from '../components/player/GlobalPlayerDrawerControls';
 import SfxPlayerDrawerControls from '../components/player/SfxPlayerDrawerControls';
+import MapAudioOrchestrator from '../components/Map/MapAudioOrchestrator';
 import { InvitationsList } from '../pages/InvitationsList';
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // nuevo icono
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MapIcon from '@mui/icons-material/Map';
+import PeopleIcon from '@mui/icons-material/People';
 
 const MainLayout = () => {
   const navigate = useNavigate();
@@ -72,6 +75,12 @@ const MainLayout = () => {
             <ListItemText primary={t('maps', 'Mapas')} />
           </ListItemButton>
         </ListItem>
+        <ListItem key="characters" disablePadding>
+          <ListItemButton onClick={() => navigate('/characters')} disabled={!activeCampaign?.id}>
+            <ListItemIcon><PeopleIcon /></ListItemIcon>
+            <ListItemText primary={t('characters', 'Personajes')} />
+          </ListItemButton>
+        </ListItem>
         {/* Bestiary: accesible dentro de cada manual, no en el sidebar global */}
         {/* Más items aquí */}
       </List>
@@ -83,6 +92,8 @@ const MainLayout = () => {
       <SfxPlayerProvider>
       <PlayerDrawerUiProvider>
       <Box sx={{ display: 'flex', height: '100vh' }}>
+        {/* Headless orchestrator to auto-play map audio based on active map and time-of-day */}
+        <MapAudioOrchestrator />
         <Box
           component="nav"
           sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}
@@ -115,6 +126,7 @@ const MainLayout = () => {
           >
             <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               {drawerContent}
+              <TimeOfDaySidebarControls />
               <GlobalPlayerDrawerControls />
               <SfxPlayerDrawerControls />
             </Box>

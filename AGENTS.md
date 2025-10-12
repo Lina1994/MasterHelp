@@ -51,7 +51,15 @@ Validar siempre que `campaignId` no sea `undefined` antes de invocar endpoints d
 Esta sección permite incorporar nuevas features (p.ej. Soundtrack: listar canciones asociadas/reutilizables, asociar canciones existentes, reproducir streaming) sin redescubrir el mecanismo de contexto.
 
 ### Próximos Ajustes Potenciales
-• Extraer un hook auxiliar `useCampaignId()` que devuelva directamente el ID o lance error si no está definido en vistas protegidas.
+• Extraer un hook auxiliar `useCampaignId()` que devuelva directamente el ID o lance error si no está definido en vistas protegidas. [Ya disponible en `frontend/src/hooks/useCampaignId.ts`]
+    - Uso recomendado en vistas que requieren campaña sí o sí (p.ej., páginas de Soundtrack o proyección que no tienen sentido sin campaña):
+        ```ts
+        import { useCampaignId } from '../../hooks/useCampaignId';
+
+        const campaignId = useCampaignId();
+        // usar campaignId con seguridad
+        ```
+    - En vistas donde sea válido no tener campaña, seguir usando `useActiveCampaign()` y comprobar `activeCampaign?.id` para mostrar estados vacíos/CTA.
 • Sincronizar el ID activo con la URL (ej. `/campaigns/:campaignId/...`) para mejorar deep-linking y SEO.
 • Invalidar automáticamente el `activeCampaignId` almacenado si ya no existe en la lista (cuando una campaña es eliminada).
 

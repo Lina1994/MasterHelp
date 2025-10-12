@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, List, ListItem, ListItemText, IconButton, Typography, Box, Divider } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, List, ListItem, ListItemText, IconButton, Typography, Box, Divider, FormControl, InputLabel, Select, MenuItem, Chip, OutlinedInput, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Campaign, CampaignPlayer } from './types';
 import CampaignInvite from './CampaignInvite';
 import { useDeleteCampaign } from '../../hooks/useDeleteCampaign';
+import { api } from '../../apiBase';
+import { getCampaignManuals, setCampaignManuals } from '../../api/campaigns/manuals';
 
 interface CampaignSettingsModalProps {
   open: boolean;
@@ -35,6 +37,10 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
   const [confirmPlayer, setConfirmPlayer] = useState<CampaignPlayer | null>(null);
   const [confirmDeleteCampaign, setConfirmDeleteCampaign] = useState(false);
   const { removeCampaign, loading: deleteLoading, error: deleteError } = useDeleteCampaign();
+  const [availableManuals, setAvailableManuals] = useState<{ id: string; title: string }[]>([]);
+  const [selectedManualIds, setSelectedManualIds] = useState<string[]>([]);
+  const [savingManuals, setSavingManuals] = useState(false);
+  const [loadingManuals, setLoadingManuals] = useState(false);
 
   const handleRemove = (player: CampaignPlayer) => {
     setConfirmPlayer(player);
@@ -61,11 +67,86 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
     setConfirmDeleteCampaign(false); // Close confirmation dialog
   };
 
+  // Load available manuals and current selection
+  useEffect(() => {
+    if (!open) return;
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingManuals(true);
+        const res = await api.get('/manuals');
+        const manuals = (res.data || []).map((m: any) => ({ id: String(m.id), title: m.title || String(m.id) }));
+        if (!mounted) return;
+        setAvailableManuals(manuals);
+        const current = await getCampaignManuals(campaign.id);
+        if (!mounted) return;
+        setSelectedManualIds(current);
+      } catch (e) {
+        // noop UI: keep empty lists
+      } finally {
+        if (mounted) setLoadingManuals(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [open, campaign.id]);
+
+  const handleSaveManuals = async () => {
+    setSavingManuals(true);
+    try {
+      await setCampaignManuals(campaign.id, selectedManualIds);
+    } finally {
+      setSavingManuals(false);
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
         <DialogTitle>{t('campaign_settings', 'Ajustes de campaña')}</DialogTitle>
         <DialogContent>
+          {/* Manuals selection (owner only) */}
+          {currentUserId && campaign.owner && campaign.owner.id === currentUserId && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>{t('manuals_for_campaign', 'Manuales para esta campaña')}</Typography>
+              {loadingManuals ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={18} />
+                  <Typography variant="body2" color="text.secondary">{t('loading', 'Cargando...')}</Typography>
+                </Box>
+              ) : (
+                <FormControl fullWidth>
+                  <InputLabel id="select-manuals-label">{t('manuals', 'Manuales')}</InputLabel>
+                  <Select
+                    labelId="select-manuals-label"
+                    multiple
+                    value={selectedManualIds}
+                    onChange={(e) => setSelectedManualIds(typeof e.target.value === 'string' ? e.target.value.split(',') : (e.target.value as string[]))}
+                    input={<OutlinedInput id="select-manuals" label={t('manuals', 'Manuales')} />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {(selected as string[]).map((value) => {
+                          const m = availableManuals.find((x) => x.id === value);
+                          return <Chip key={value} label={m?.title || value} />;
+                        })}
+                      </Box>
+                    )}
+                  >
+                    {availableManuals.map((m) => (
+                      <MenuItem key={m.id} value={m.id}>
+                        {m.title}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
+                    <Button size="small" variant="outlined" onClick={() => setSelectedManualIds([])}>{t('clear', 'Limpiar')}</Button>
+                    <Button size="small" variant="contained" onClick={handleSaveManuals} disabled={savingManuals}>
+                      {savingManuals ? t('saving', 'Guardando...') : t('save', 'Guardar')}
+                    </Button>
+                  </Box>
+                </FormControl>
+              )}
+            </Box>
+          )}
           <Typography variant="subtitle1" sx={{ mb: 1 }}>{t('active_players', 'Jugadores activos')}</Typography>
           <List>
             {campaign.players.filter((p: CampaignPlayer) => p.status === 'active').map((player: CampaignPlayer) => (

@@ -16,6 +16,9 @@ import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { InvitePlayerDto } from './dto/invite-player.dto';
 import { RespondInvitationDto } from './dto/respond-invitation.dto';
 import { CampaignOwnerGuard } from './guards/campaign-owner.guard';
+import { MapEntity } from '../maps/entities/map.entity';
+import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
+import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
 
 @Controller('campaigns')
 export class CampaignsController {
@@ -51,6 +54,71 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   remove(@Param('id') id: string) {
     return this.campaignsService.remove(id);
+  }
+
+  // --- Active Map endpoints ---
+  @Get(':id/active-map')
+  @UseGuards(JwtAuthGuard)
+  async getActiveMap(@Request() req, @Param('id') id: string) {
+    // Allow owner or players to read; service will validate membership
+    return this.campaignsService.getActiveMap(req.user.userId, id);
+  }
+
+  @Patch(':id/active-map')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setActiveMap(@Param('id') id: string, @Body() body: { mapId: string | null }) {
+    return this.campaignsService.setActiveMap(id, body?.mapId ?? null);
+  }
+
+  // --- Campaign time-of-day endpoints ---
+  @Get(':id/time-of-day')
+  @UseGuards(JwtAuthGuard)
+  async getTimeOfDay(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getTimeOfDay(req.user.userId, id);
+  }
+
+  @Patch(':id/time-of-day')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setTimeOfDay(@Param('id') id: string, @Body() body: { timeOfDay: 'dawn'|'morning'|'afternoon'|'night' }) {
+    return this.campaignsService.setTimeOfDay(id, body?.timeOfDay as any);
+  }
+
+  // --- GRID OVERLAY SETTINGS ---
+  /**
+   * Read grid overlay settings for a campaign. Owner or players can read.
+   */
+  @Get(':id/grid-overlay')
+  @UseGuards(JwtAuthGuard)
+  async getGridOverlay(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getGridOverlaySettings(req.user.userId, id);
+  }
+
+  /**
+   * Update grid overlay settings for a campaign. Only owner can update.
+   */
+  @Patch(':id/grid-overlay')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setGridOverlay(@Param('id') id: string, @Body() body: GridOverlaySettingsDto) {
+    return this.campaignsService.setGridOverlaySettings(id, body);
+  }
+
+  // --- SELECTED MANUALS ---
+  /**
+   * Read selected manual IDs for this campaign. Owner or players can read.
+   */
+  @Get(':id/manuals')
+  @UseGuards(JwtAuthGuard)
+  async getSelectedManuals(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getSelectedManuals(req.user.userId, id);
+  }
+
+  /**
+   * Update selected manual IDs for this campaign. Only owner can update.
+   */
+  @Patch(':id/manuals')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setSelectedManuals(@Param('id') id: string, @Body() body: UpdateCampaignManualsDto) {
+    return this.campaignsService.setSelectedManuals(id, body);
   }
 
   // --- INVITATION ENDPOINTS ---

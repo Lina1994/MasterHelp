@@ -25,8 +25,8 @@ export class CreateMapDto {
   group?: string;
 
   @IsOptional()
-  @IsIn(['dawn', 'morning', 'afternoon', 'night'])
-  timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
+  @IsIn(['', 'dawn', 'morning', 'afternoon', 'night'])
+  timeOfDay?: '' | 'dawn' | 'morning' | 'afternoon' | 'night';
 
   @IsOptional()
   @Transform(({ value }) => {
@@ -42,7 +42,15 @@ export class CreateMapDto {
   @Transform(({ value }) => {
     if (value === undefined || value === null || value === '') return undefined;
     if (typeof value === 'object') return value;
-    try { return JSON.parse(value); } catch { return undefined; }
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && parsed !== null ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+    return {};
   })
   @IsObject()
   musicConfig?: Record<string, any>;
@@ -51,8 +59,26 @@ export class CreateMapDto {
   @Transform(({ value }) => {
     if (value === undefined || value === null || value === '') return undefined;
     if (typeof value === 'object') return value;
-    try { return JSON.parse(value); } catch { return undefined; }
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && parsed !== null ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+    return {};
   })
   @IsObject()
   sfxConfig?: Record<string, any>;
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'object') return value;
+    if (typeof value === 'string') { try { const o = JSON.parse(value); return o; } catch { return undefined; } }
+    return undefined;
+  })
+  @IsObject()
+  transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
 }

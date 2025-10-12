@@ -7,9 +7,10 @@ type Props = {
   style?: React.CSSProperties;
   className?: string;
   onErrorIcon?: React.ReactNode; // optional fallback icon
+  onLoad?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 };
 
-export default function AuthImage({ src, alt, style, className, onErrorIcon }: Props) {
+export default function AuthImage({ src, alt, style, className, onErrorIcon, onLoad }: Props) {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const lastSrc = useRef<string | null>(null);
@@ -52,5 +53,5 @@ export default function AuthImage({ src, alt, style, className, onErrorIcon }: P
   }
   if (!objectUrl) return null;
   // eslint-disable-next-line jsx-a11y/alt-text
-  return <img src={objectUrl} alt={alt} style={style} className={className} />;
+  return <img src={objectUrl} alt={alt} style={style} className={className} onLoad={onLoad} />;
 }

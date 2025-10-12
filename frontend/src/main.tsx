@@ -6,7 +6,6 @@ import { useState, useMemo } from 'react';
 import CssBaseline from '@mui/material/CssBaseline'; // CssBaseline resetea estilos CSS para consistencia
 
 import App from './App';
-import { ActiveCampaignProvider } from './components/Campaign/ActiveCampaignProvider';
 import './i18n';
 import axios from 'axios';
 import { getCurrentUser } from './utils/getCurrentUser';
@@ -112,7 +111,6 @@ function Main() {
   }
 
   return (
-    <ActiveCampaignProvider>
       <ThemeContext.Provider value={{
         mode,
         setMode: handleSetMode,
@@ -128,7 +126,6 @@ function Main() {
           <App />
         </ThemeProvider>
       </ThemeContext.Provider>
-    </ActiveCampaignProvider>
   );
 }
 

@@ -78,4 +78,12 @@
   "cantrips": "Cantrips",
   "level": "Level",
   "lvl_abbr": "Lvl"
+  ,
+  "timeOfDay": {
+    "all": "All day",
+    "dawn": "Dawn",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "night": "Night"
+  }
 }

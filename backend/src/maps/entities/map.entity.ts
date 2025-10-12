@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Up
 import { User } from '../../users/entities/user.entity';
 import { Campaign } from '../../campaigns/entities/campaign.entity';
 import { MapImage } from './map-image.entity';
+import { MapSkylineImage } from './map-skyline-image.entity';
 
 /**
  * Map
@@ -57,6 +58,13 @@ export class MapEntity {
   @Column({ type: 'simple-json', nullable: true })
   sfxConfig?: Record<string, any> | null;
 
+  /**
+   * Visual transform configuration for this map (persisted per map).
+   * Example: { zoom: 1, rotationDeg: 0, translateXPct: 0, translateYPct: 0 }
+   */
+  @Column({ type: 'simple-json', nullable: true })
+  transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number } | null;
+
   // Legacy single-image fields (kept for backward compatibility; prefer MapImage variants)
   @Column({ nullable: true })
   imageMimeType?: string | null;
@@ -76,9 +84,13 @@ export class MapEntity {
   @ManyToOne(() => User, { eager: true })
   owner: User;
 
-  @ManyToOne(() => Campaign, { nullable: true, eager: true })
+  @ManyToOne(() => Campaign, { nullable: true, eager: false })
   campaign?: Campaign | null;
 
-  @OneToMany(() => MapImage, (img) => img.map, { cascade: true, eager: true })
+  @OneToMany(() => MapImage, (img) => img.map, { cascade: true, eager: false })
   images?: MapImage[];
+
+  /** Optional skyline image variants (per time-of-day), independent from main map images. */
+  @OneToMany(() => MapSkylineImage, (img) => img.map, { cascade: true, eager: false })
+  skylines?: MapSkylineImage[];
 }
