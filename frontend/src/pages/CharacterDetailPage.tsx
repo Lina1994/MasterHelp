@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import { getCharacter, CharacterPayload } from '../api/characters';
+import { CharacterEditorModal } from '../components/characters/CharacterEditorModal';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useTranslation } from 'react-i18next';
 
@@ -31,6 +32,7 @@ const CharacterDetailPage: React.FC = () => {
   const { activeCampaign } = useActiveCampaign();
   const [data, setData] = useState<CharacterPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editorOpen, setEditorOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -46,6 +48,21 @@ const CharacterDetailPage: React.FC = () => {
     })();
     return () => { mounted = false; };
   }, [id, activeCampaign?.id]);
+
+  // Compute campaignPlayers and isMaster for modal
+  const currentUser = (activeCampaign && activeCampaign.owner) ? activeCampaign.owner : null;
+  const isMaster = !!(activeCampaign && currentUser && activeCampaign.owner?.id === currentUser.id);
+  const campaignPlayers = React.useMemo(() => {
+    if (!activeCampaign) return [] as { id: number; label: string }[];
+    const owner = activeCampaign.owner ? [{ id: activeCampaign.owner.id, label: `${activeCampaign.owner.username} (Master)` }] : [];
+    const players = (activeCampaign.players || [])
+      .filter(p => p.status === 'active')
+      .map(p => ({ id: p.user.id, label: p.user.username }));
+    // Deduplicate if owner also appears as player role
+    const map = new Map<number, string>();
+    [...owner, ...players].forEach(({ id, label }) => { if (!map.has(id)) map.set(id, label); });
+    return Array.from(map.entries()).map(([id, label]) => ({ id, label }));
+  }, [activeCampaign]);
 
   if (!activeCampaign) {
     return (
@@ -78,8 +95,16 @@ const CharacterDetailPage: React.FC = () => {
             <Typography>{data.name}</Typography>
           </Breadcrumbs>
         </Stack>
-        <Button startIcon={<EditIcon />} onClick={() => navigate('/characters')}>{t('edit','Editar')}</Button>
+        <Button startIcon={<EditIcon />} onClick={() => setEditorOpen(true)}>{t('edit','Editar')}</Button>
       </Stack>
+      <CharacterEditorModal
+        open={editorOpen}
+        initialDraft={data}
+        onClose={() => setEditorOpen(false)}
+        onSaved={() => { setEditorOpen(false); setLoading(true); getCharacter(id!).then(setData).finally(() => setLoading(false)); }}
+        campaignPlayers={campaignPlayers}
+        isMaster={isMaster}
+      />
 
       <Card variant="outlined" sx={{ mb: 2 }}>
         <CardContent>
