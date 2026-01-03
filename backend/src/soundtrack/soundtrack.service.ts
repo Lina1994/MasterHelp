@@ -344,7 +344,7 @@ export class SoundtrackService {
         .createQueryBuilder()
         .relation(Song, 'campaigns')
         .of(song)
-        .set([]);
+        .remove(song.campaigns.map((c) => c.id));
     }
     await this.songsRepo.remove(song);
     return { message: 'Song deleted' };

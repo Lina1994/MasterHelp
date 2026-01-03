@@ -116,7 +116,8 @@ export class SoundEffectsService {
     const uid = this.userId(user);
     if (se.owner.id !== uid) throw new ForbiddenException('Not owner');
     if (se.campaigns?.length) {
-      await this.effectsRepo.createQueryBuilder().relation(SoundEffect, 'campaigns').of(se).set([]);
+      // Explicitly remove many-to-many join rows before deleting the effect
+      await this.effectsRepo.createQueryBuilder().relation(SoundEffect, 'campaigns').of(se).remove(se.campaigns);
     }
     await this.effectsRepo.remove(se);
     return { message: 'SoundEffect deleted' };
