@@ -15,6 +15,8 @@
     "@mui/material": "^7.3.2",
     "@mui/x-data-grid": "^8.13.1",
     "@types/react-easy-crop": "^1.16.0",
+    "@types/socket.io-client": "^1.4.36",
+    "@types/uuid": "^10.0.0",
     "axios": "^1.6.8",
     "i18next": "^25.5.2",
     "react": "^18.2.0",
@@ -24,6 +26,8 @@
     "react-markdown": "^9.1.0",
     "react-router-dom": "^6.22.3",
     "remark-gfm": "^4.0.1",
+    "socket.io-client": "^4.8.3",
+    "uuid": "^13.0.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

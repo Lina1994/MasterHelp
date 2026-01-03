@@ -24,7 +24,7 @@
     "validate:class-spells": "node scripts/validate-class-spell-lists.cjs",
     "monsters:split:en": "node scripts/split-monsters.cjs --manual dnd5e-2014",
     "monsters:seed:es": "node scripts/seed-monsters-es.cjs --manual dnd5e-2014",
-  "monsters:mark-translated:es": "node scripts/mark-translated-es.cjs --manual dnd5e-2014",
+    "monsters:mark-translated:es": "node scripts/mark-translated-es.cjs --manual dnd5e-2014",
     "monsters:reindex:es": "node scripts/reindex-monsters.cjs --manual dnd5e-2014 --lang es",
     "monsters:validate": "node scripts/validate-monsters.cjs --manual dnd5e-2014"
   },
@@ -36,8 +36,11 @@
     "@nestjs/mapped-types": "^2.0.0",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.20",
     "@nestjs/swagger": "^7.0.0",
     "@nestjs/typeorm": "^10.0.2",
+    "@nestjs/websockets": "^10.4.20",
+    "@types/socket.io": "^3.0.1",
     "bcrypt": "^5.1.1",
     "better-sqlite3": "^12.4.1",
     "class-transformer": "^0.5.1",
@@ -47,9 +50,10 @@
     "reflect-metadata": "^0.1.13",
     "resend": "^6.1.0",
     "rxjs": "^7.8.1",
+    "sharp": "^0.33.2",
+    "socket.io": "^4.8.3",
     "sqlite3": "^5.1.6",
     "typeorm": "^0.3.20",
-    "sharp": "^0.33.2",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

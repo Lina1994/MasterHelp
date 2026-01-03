@@ -24,6 +24,20 @@ import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 
+  // --- Active Skyline Character endpoints ---
+  @Get(':id/active-skyline-character')
+  @UseGuards(JwtAuthGuard)
+  async getActiveSkylineCharacter(@Request() req, @Param('id') id: string) {
+    // Allow owner or players to read; service will validate membership
+    return this.campaignsService.getActiveSkylineCharacter(req.user.userId, id);
+  }
+
+  @Patch(':id/active-skyline-character')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setActiveSkylineCharacter(@Param('id') id: string, @Body() body: { characterId: string | null }) {
+    return this.campaignsService.setActiveSkylineCharacter(id, body?.characterId ?? null);
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard)
   findAll(@Request() req) {

@@ -18,6 +18,14 @@ export interface Campaign {
   selectedManualIds?: string[];
   players: CampaignPlayer[];
   owner: User;
+  activeSkylineCharacter?: {
+    id: string;
+    name?: string;
+    tokenKind?: 'color' | 'image' | null;
+    tokenColor?: string | null;
+    tokenImageUrl?: string | null;
+    characterImageUrl?: string | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

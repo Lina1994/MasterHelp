@@ -1,5 +1,4 @@
-import { User } from '../users/entities/user.entity';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Campaign } from './entities/campaign.entity';
@@ -9,10 +8,11 @@ import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { InvitePlayerDto } from './dto/invite-player.dto';
 import { RespondInvitationDto } from './dto/respond-invitation.dto';
 import { UsersService } from '../users/users.service';
-import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { User } from '../users/entities/user.entity';
 import { MapEntity } from '../maps/entities/map.entity';
 import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
 import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
+import { Character } from '../characters/entities/character.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -26,38 +26,18 @@ export class CampaignsService {
     private readonly usersService: UsersService,
   ) {}
 
-  // --- Eliminar jugador de campaña (solo owner) ---
-  async removePlayer(campaignId: string, playerId: string) {
-    // La propiedad ya fue verificada por CampaignOwnerGuard.
-    // Aún necesitamos la campaña para la lógica interna.
-    const campaign = await this.campaignsRepository.findOne({
-      where: { id: campaignId },
-      relations: ['owner'],
-    });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-
-    const campaignPlayer = await this.campaignPlayersRepository.findOne({
-      where: { id: playerId },
-      relations: ['user', 'campaign'],
-    });
-    if (!campaignPlayer) throw new NotFoundException('Player not found');
-
-    // Lógica de negocio: El owner no puede eliminarse a sí mismo por esta vía.
-    if (campaignPlayer.user.id === campaign.owner.id)
-      throw new ForbiddenException('Owner cannot remove themselves');
-
-    await this.campaignPlayersRepository.delete(playerId);
-    return { message: 'Player removed' };
-  }
-
+  // --- Métodos públicos requeridos por el controller ---
+  /**
+   * Devuelve todas las campañas donde el usuario es owner o player.
+   */
   async findAllForUser(userId: number): Promise<Campaign[]> {
     const asOwner = await this.campaignsRepository.find({
       where: { owner: { id: userId } },
-      relations: ['players', 'players.user', 'owner'],
+      relations: ['players', 'players.user', 'owner', 'activeSkylineCharacter'],
     });
     const asPlayer = await this.campaignPlayersRepository.find({
       where: { user: { id: userId } },
-      relations: ['campaign', 'campaign.owner', 'campaign.players', 'campaign.players.user'],
+      relations: ['campaign', 'campaign.owner', 'campaign.players', 'campaign.players.user', 'campaign.activeSkylineCharacter'],
     });
     const playerCampaigns = asPlayer.map((cp) => cp.campaign);
     const all = [...asOwner, ...playerCampaigns];
@@ -68,7 +48,7 @@ export class CampaignsService {
   async findOne(id: string): Promise<Campaign | undefined> {
     return this.campaignsRepository.findOne({
       where: { id },
-      relations: ['players', 'players.user', 'owner'],
+      relations: ['players', 'players.user', 'owner', 'activeSkylineCharacter'],
     });
   }
 
@@ -81,20 +61,15 @@ export class CampaignsService {
   }
 
   async update(id: string, updateCampaignDto: UpdateCampaignDto): Promise<Campaign> {
-    // La propiedad ya fue verificada por CampaignOwnerGuard.
     await this.campaignsRepository.update(id, updateCampaignDto);
     return this.findOne(id) as Promise<Campaign>;
   }
 
   async remove(id: string): Promise<void> {
-    // La propiedad ya fue verificada por CampaignOwnerGuard.
     await this.campaignsRepository.delete(id);
   }
 
-  // --- INVITATION LOGIC ---
-
   async invitePlayer(campaignId: string, dto: InvitePlayerDto) {
-    // La propiedad ya fue verificada por CampaignOwnerGuard.
     const campaign = await this.campaignsRepository.findOne({
       where: { id: campaignId },
       relations: ['owner', 'players', 'players.user'],
@@ -132,6 +107,26 @@ export class CampaignsService {
     return { message: 'Invitation sent' };
   }
 
+  async removePlayer(campaignId: string, playerId: string) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner'],
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+
+    const campaignPlayer = await this.campaignPlayersRepository.findOne({
+      where: { id: playerId },
+      relations: ['user', 'campaign'],
+    });
+    if (!campaignPlayer) throw new NotFoundException('Player not found');
+
+    if (campaignPlayer.user.id === campaign.owner.id)
+      throw new ForbiddenException('Owner cannot remove themselves');
+
+    await this.campaignPlayersRepository.delete(playerId);
+    return { message: 'Player removed' };
+  }
+
   async respondInvitation(userId: number, dto: RespondInvitationDto) {
     const invitation = await this.campaignPlayersRepository.findOne({
       where: { id: dto.invitationId },
@@ -161,10 +156,52 @@ export class CampaignsService {
     return invitations;
   }
 
+  // --- Active Skyline Character ---
+  async getActiveSkylineCharacter(requestingUserId: number, campaignId: string) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner', 'players', 'players.user', 'activeSkylineCharacter'],
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = (campaign.players || []).some((p) => p.user?.id === requestingUserId);
+    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    return { characterId: campaign.activeSkylineCharacter?.id ?? null };
+  }
+
+  async setActiveSkylineCharacter(campaignId: string, characterId: string | null) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner', 'activeSkylineCharacter'],
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+
+    if (!characterId) {
+      campaign.activeSkylineCharacter = null;
+      await this.campaignsRepository.save(campaign);
+      return { ok: true };
+    }
+
+    const charRepo = this.campaignsRepository.manager.getRepository(Character);
+    const character = await charRepo.findOne({
+      where: { id: characterId },
+      relations: ['campaign', 'createdBy', 'ownerPlayer'],
+    });
+    if (!character) throw new NotFoundException('Character not found');
+
+    const sameCampaign = character.campaign?.id === campaign.id;
+    const createdByOwner = character.createdBy?.id === campaign.owner?.id;
+    const ownedByOwner = character.ownerPlayer?.id === campaign.owner?.id;
+    if (!sameCampaign && !createdByOwner && !ownedByOwner) {
+      throw new ForbiddenException('Character not allowed for this campaign');
+    }
+
+    campaign.activeSkylineCharacter = character;
+    await this.campaignsRepository.save(campaign);
+    return { ok: true };
+  }
+
   // --- Active Map ---
-  /**
-   * Get active map for a campaign. Owner or players can read.
-   */
   async getActiveMap(requestingUserId: number, campaignId: string) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user', 'activeMap'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
@@ -174,9 +211,6 @@ export class CampaignsService {
     return { mapId: campaign.activeMap?.id || null };
   }
 
-  /**
-   * Set active map for a campaign (owner only via guard). If mapId is null, clears the active map.
-   */
   async setActiveMap(campaignId: string, mapId: string | null) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'activeMap'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
@@ -185,11 +219,9 @@ export class CampaignsService {
       await this.campaignsRepository.save(campaign);
       return { ok: true };
     }
-    // Validate the map exists and belongs to the same owner or is linked to this campaign
     const mapRepo = this.campaignsRepository.manager.getRepository(MapEntity);
     const map = await mapRepo.findOne({ where: { id: mapId }, relations: ['owner', 'campaign'] });
     if (!map) throw new NotFoundException('Map not found');
-    // Restrict: the map must either belong to the campaign (campaign.id) or be owned by the same owner as the campaign
     const sameOwner = map.owner?.id === campaign.owner?.id;
     const sameCampaign = map.campaign?.id === campaign.id;
     if (!sameOwner && !sameCampaign) throw new ForbiddenException('Map not allowed for this campaign');
@@ -199,9 +231,6 @@ export class CampaignsService {
   }
 
   // --- Time-of-day ---
-  /**
-   * Get time-of-day for a campaign. Owner or players can read.
-   */
   async getTimeOfDay(requestingUserId: number, campaignId: string) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
@@ -211,9 +240,6 @@ export class CampaignsService {
     return { timeOfDay: (campaign.timeOfDay as any) || null };
   }
 
-  /**
-   * Set time-of-day for a campaign (owner only via guard).
-   */
   async setTimeOfDay(campaignId: string, timeOfDay: 'dawn'|'morning'|'afternoon'|'night') {
     const allowed = ['dawn','morning','afternoon','night'] as const;
     if (!timeOfDay || !allowed.includes(timeOfDay)) {
@@ -227,12 +253,6 @@ export class CampaignsService {
   }
 
   // --- GRID OVERLAY SETTINGS ---
-  /**
-   * Get grid overlay settings for a campaign. Owner or players can read.
-   * @param requestingUserId - ID of the user requesting the settings (to validate membership)
-   * @param campaignId - Campaign ID
-   * @returns The settings object, or a default with enabled=false when not set
-   */
   async getGridOverlaySettings(requestingUserId: number, campaignId: string) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
@@ -243,11 +263,6 @@ export class CampaignsService {
     return { settings: campaign.gridOverlaySettings ?? fallback };
   }
 
-  /**
-   * Set grid overlay settings for a campaign. Only owner via guard.
-   * @param campaignId - Campaign ID
-   * @param dto - Validated settings
-   */
   async setGridOverlaySettings(campaignId: string, dto: GridOverlaySettingsDto) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
@@ -257,9 +272,6 @@ export class CampaignsService {
   }
 
   // --- SELECTED MANUALS ---
-  /**
-   * Read selected manual IDs for a campaign. Owner or players can read.
-   */
   async getSelectedManuals(requestingUserId: number, campaignId: string) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
@@ -269,15 +281,10 @@ export class CampaignsService {
     return { manualIds: campaign.selectedManualIds ?? [] };
   }
 
-  /**
-   * Update selected manuals for a campaign. Owner only via guard.
-   * Validates against backend manuals registry.
-   */
   async setSelectedManuals(campaignId: string, dto: UpdateCampaignManualsDto) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
     const ids = (dto.manualIds || []).map((x) => (x || '').trim()).filter(Boolean);
-    // Validate IDs against manuals registry
     const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
     let validIds: string[] = [];
     if (fs.existsSync(registryPath)) {
@@ -285,7 +292,7 @@ export class CampaignsService {
         const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
         validIds = (raw?.manuals || []).map((m: any) => String(m.id));
       } catch {
-        // ignore parse errors; will treat as empty registry
+        // ignore parse errors
       }
     }
     const unknown = ids.filter((id) => !validIds.includes(id));

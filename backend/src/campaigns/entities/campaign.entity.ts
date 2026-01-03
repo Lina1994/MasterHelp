@@ -10,6 +10,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { CampaignPlayer } from './campaign-player.entity';
 import { MapEntity } from '../../maps/entities/map.entity';
+import { Character } from '../../characters/entities/character.entity';
 
 @Entity()
 export class Campaign {
@@ -37,12 +38,20 @@ export class Campaign {
   @OneToMany(() => CampaignPlayer, (player) => player.campaign, { cascade: true, eager: true })
   players: CampaignPlayer[];
 
+
   /**
-   * Map currently being presented/activo for this campaign.
+   * Map currently being presentado/activo for this campaign.
    * Allows the master to control what players/devices see across sessions.
    */
   @ManyToOne(() => MapEntity, { nullable: true, eager: true })
   activeMap?: MapEntity | null;
+
+  /**
+   * Character currently being presentado/activo in the skyline for this campaign.
+   * Allows the master to control what character image is shown in the skyline window.
+   */
+  @ManyToOne(() => Character, { nullable: true, eager: true })
+  activeSkylineCharacter?: Character | null;
 
   /**
    * Current time-of-day for this campaign. Used to pick TOD-specific assets (maps/music).

@@ -9,7 +9,7 @@ export class Character {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Campaign, { eager: true })
+  @ManyToOne(() => Campaign)
   campaign: Campaign;
 
   /** Owner player for PC; null for NPCs created by the master. */

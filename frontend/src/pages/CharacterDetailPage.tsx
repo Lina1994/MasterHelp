@@ -8,6 +8,8 @@ import { getCharacter, CharacterPayload } from '../api/characters';
 import { CharacterEditorModal } from '../components/characters/CharacterEditorModal';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useTranslation } from 'react-i18next';
+import { setActiveSkylineCharacterId } from '../api/campaigns/activeSkylineCharacter';
+import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 
 const Section: React.FC<{ title: string; children?: React.ReactNode }> = ({ title, children }) => (
   <Card variant="outlined" sx={{ mb: 2 }}>
@@ -30,9 +32,11 @@ const CharacterDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { activeCampaign } = useActiveCampaign();
+  const { fetchCampaigns } = useCampaignsContext();
   const [data, setData] = useState<CharacterPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [settingSkyline, setSettingSkyline] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -84,6 +88,30 @@ const CharacterDetailPage: React.FC = () => {
 
   const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
   const avatarBg = data.tokenColor || '#607d8b';
+  const isActiveInSkyline = activeCampaign?.activeSkylineCharacter?.id === data.id;
+
+  const handleSkylineToggle = async () => {
+    if (!activeCampaign?.id || !id) return;
+    setSettingSkyline(true);
+    try {
+      const nextValue = isActiveInSkyline ? null : id;
+      await setActiveSkylineCharacterId(activeCampaign.id, nextValue);
+      await fetchCampaigns();
+      try {
+        localStorage.setItem('app.skyline.activeCharacterUpdated', JSON.stringify({ campaignId: activeCampaign.id, at: Date.now() }));
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('campaign-sync');
+          bc.postMessage({ type: 'activeSkylineChanged', campaignId: activeCampaign.id });
+          bc.close();
+        }
+        try { (window as any).electronAPI?.projectionPoke?.({ kind: 'activeSkylineChanged', campaignId: activeCampaign.id }); } catch {}
+      } catch {}
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || 'Error al actualizar Skyline');
+    } finally {
+      setSettingSkyline(false);
+    }
+  };
 
   return (
     <Box sx={{ p: 2 }}>
@@ -95,7 +123,19 @@ const CharacterDetailPage: React.FC = () => {
             <Typography>{data.name}</Typography>
           </Breadcrumbs>
         </Stack>
-        <Button startIcon={<EditIcon />} onClick={() => setEditorOpen(true)}>{t('edit','Editar')}</Button>
+        <Stack direction="row" spacing={1}>
+          <Button startIcon={<EditIcon />} onClick={() => setEditorOpen(true)}>{t('edit','Editar')}</Button>
+          {activeCampaign?.id && isMaster && (
+            <Button
+              variant={isActiveInSkyline ? 'outlined' : 'contained'}
+              color={isActiveInSkyline ? 'warning' : 'primary'}
+              disabled={settingSkyline}
+              onClick={handleSkylineToggle}
+            >
+              {isActiveInSkyline ? 'Quitar de Skyline' : 'Enviar a Skyline'}
+            </Button>
+          )}
+        </Stack>
       </Stack>
       <CharacterEditorModal
         open={editorOpen}
