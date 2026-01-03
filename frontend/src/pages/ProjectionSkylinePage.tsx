@@ -142,7 +142,7 @@ const ProjectionSkylinePage: React.FC = () => {
     const avatarBg = skylineCharacter.tokenColor || '#263238';
     const src = skylineCharacter.characterImageUrl || skylineCharacter.tokenImageUrl || undefined;
     return (
-      <StackedCharacterOverlay name={skylineCharacter.name} src={src} initials={initials} bg={avatarBg} />
+      <StackedCharacterOverlay src={src} initials={initials} bg={avatarBg} />
     );
   }, [skylineCharacter]);
 
@@ -167,17 +167,24 @@ const ProjectionSkylinePage: React.FC = () => {
   );
 };
 
-const StackedCharacterOverlay: React.FC<{ name?: string; src?: string; initials: string; bg: string }> = ({ name, src, initials, bg }) => (
-  <Box sx={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-    <Avatar
-      src={src}
-      alt={name}
-      sx={{ width: 176, height: 176, border: '4px solid #ffffff', boxShadow: 6, bgcolor: bg, fontSize: 48 }}
-    >
-      {initials}
-    </Avatar>
-    {name && <Typography variant="h5" color="white" sx={{ textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>{name}</Typography>}
-  </Box>
-);
+const StackedCharacterOverlay: React.FC<{ src?: string; initials: string; bg: string }> = ({ src, initials, bg }) => {
+  const size = '60vh';
+  return (
+    <Box sx={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+      {src ? (
+        <Box sx={{ width: size, height: size, borderRadius: 2, overflow: 'hidden', boxShadow: 4, border: 'none', bgcolor: 'transparent' }}>
+          <img src={src} alt={initials} style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'transparent', display: 'block' }} />
+        </Box>
+      ) : (
+        <Avatar
+          alt={initials}
+          sx={{ width: size, height: size, borderRadius: 2, border: '2px solid rgba(255,255,255,0.4)', boxShadow: 6, bgcolor: bg, fontSize: 64 }}
+        >
+          {initials}
+        </Avatar>
+      )}
+    </Box>
+  );
+};
 
 export default ProjectionSkylinePage;
