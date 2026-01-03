@@ -37,3 +37,5 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     </Dialog>
   );
 };
+
+export default ConfirmDialog;

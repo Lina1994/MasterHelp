@@ -25,6 +25,8 @@ import { MapImage } from './maps/entities/map-image.entity';
 import { MapSkylineImage } from './maps/entities/map-skyline-image.entity';
 import { CharactersModule } from './characters/characters.module';
 import { Character } from './characters/entities/character.entity';
+import { Encounter } from './encounters/entities/encounter.entity';
+import { EncountersModule } from './encounters/encounters.module';
 
 @Module({
   imports: [
@@ -53,6 +55,7 @@ import { Character } from './characters/entities/character.entity';
           MapImage,
           MapSkylineImage,
           Character,
+          Encounter,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -67,6 +70,7 @@ import { Character } from './characters/entities/character.entity';
   SoundtrackModule,
   MapsModule,
   CharactersModule,
+  EncountersModule,
     ManualsModule,
     SpellsModule,
     RacesModule,

@@ -28,12 +28,13 @@ const ProjectionSkylinePage: React.FC = () => {
   useEffect(() => { try { const d = (window as any).electronAPI?.onProjectionPoke?.(async () => { await refreshFromServer(); }); return () => { if (typeof d === 'function') d(); }; } catch {} }, [refreshFromServer]);
 
   const loadSkylineCharacter = useCallback(async () => {
-    let charId = activeCampaign?.activeSkylineCharacter?.id;
+    let charId: string | null | undefined = activeCampaign?.activeSkylineCharacter?.id;
     if (!charId && (campaignIdFromQuery || activeCampaign?.id)) {
       try {
-        charId = await getActiveSkylineCharacterId(campaignIdFromQuery || activeCampaign?.id || '');
+        const fetched = await getActiveSkylineCharacterId(campaignIdFromQuery || activeCampaign?.id || '');
+        charId = fetched ?? undefined;
       } catch {
-        charId = null;
+        charId = undefined;
       }
     }
     if (!charId) { setSkylineCharacter(null); return; }

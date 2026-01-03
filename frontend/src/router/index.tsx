@@ -22,6 +22,7 @@ import ProjectionMapPage from '../pages/ProjectionMapPage';
 import ProjectionSkylinePage from '../pages/ProjectionSkylinePage';
 import CharactersPage from '../pages/CharactersPage';
 import CharacterDetailPage from '../pages/CharacterDetailPage';
+import CombatPage from '../pages/CombatPage';
 
 const router = createBrowserRouter([
   // Ventana de proyección: ruta al margen del layout principal
@@ -49,6 +50,7 @@ const router = createBrowserRouter([
           { path: 'soundtrack', element: <SoundtrackPage /> },
           { path: 'soundtrack/effects', element: <SoundEffectsPage /> },
           { path: 'maps', element: <MapsPage /> },
+          { path: 'combat', element: <CombatPage /> },
           { path: 'characters', element: <CharactersPage /> },
           { path: 'characters/:id', element: <CharacterDetailPage /> },
           // ...other protected routes

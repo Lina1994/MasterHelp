@@ -18,6 +18,7 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote'; // nuevo icono
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MapIcon from '@mui/icons-material/Map';
 import PeopleIcon from '@mui/icons-material/People';
+import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 
 const MainLayout = () => {
   const navigate = useNavigate();
@@ -73,6 +74,12 @@ const MainLayout = () => {
           <ListItemButton onClick={() => navigate('/maps')}>
             <ListItemIcon><MapIcon /></ListItemIcon>
             <ListItemText primary={t('maps', 'Mapas')} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem key="combat" disablePadding>
+          <ListItemButton onClick={() => navigate('/combat')} disabled={!activeCampaign?.id}>
+            <ListItemIcon><SportsKabaddiIcon /></ListItemIcon>
+            <ListItemText primary="Combate" />
           </ListItemButton>
         </ListItem>
         <ListItem key="characters" disablePadding>

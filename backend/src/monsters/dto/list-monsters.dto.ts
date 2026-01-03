@@ -31,7 +31,7 @@ export class ListMonstersDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(500)
   @Type(() => Number)
   pageSize?: number = 20;
 

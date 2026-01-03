@@ -18,6 +18,7 @@ interface PresetDialogProps {
   onClose: () => void;
   onSubmit: () => void;
   onRequestDelete?: () => void;
+  onItemsChange: (next: PresetItemInput[]) => void;
 }
 
 export const PresetDialog: React.FC<PresetDialogProps> = ({
@@ -32,6 +33,7 @@ export const PresetDialog: React.FC<PresetDialogProps> = ({
   onClose,
   onSubmit,
   onRequestDelete,
+  onItemsChange,
 }) => {
   const handleSelectionChange = (_: any, values: SoundEffectMeta[]) => {
     // Preserve existing item settings when possible
@@ -41,11 +43,6 @@ export const PresetDialog: React.FC<PresetDialogProps> = ({
       next.push(map.get(v.id) ?? { soundEffectId: v.id, volume: 1, loopMode: 'continuous' });
     }
     onItemsChange(next);
-  };
-
-  const onItemsChange = (next: PresetItemInput[]) => {
-    // Keep referential updates controlled from parent
-    props.onItemsChange?.(next);
   };
 
   const selectedEffects = items
