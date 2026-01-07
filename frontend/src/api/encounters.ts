@@ -1,6 +1,6 @@
 /**
  * API client para gestión de encuentros y combate.
- * Endpoints pendientes de backend; los métodos están listos para conectarse cuando existan.
+ * Conecta contra los endpoints reales del backend (NestJS) bajo `/campaigns/:campaignId/encounters`.
  */
 import { api } from '../apiBase';
 
@@ -16,6 +16,8 @@ export interface EncounterParticipant {
   maxHp?: number;
   currentHp?: number;
   initiative?: number;
+  monsterManualId?: string;
+  monsterSlug?: string;
 }
 
 export interface EncounterSummary {

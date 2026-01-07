@@ -11,6 +11,7 @@ import { User } from '../../users/entities/user.entity';
 import { CampaignPlayer } from './campaign-player.entity';
 import { MapEntity } from '../../maps/entities/map.entity';
 import { Character } from '../../characters/entities/character.entity';
+import { Encounter } from '../../encounters/entities/encounter.entity';
 
 @Entity()
 export class Campaign {
@@ -52,6 +53,13 @@ export class Campaign {
    */
   @ManyToOne(() => Character, { nullable: true, eager: true })
   activeSkylineCharacter?: Character | null;
+
+  /**
+   * Encounter currently active for this campaign.
+   * Used to sync combat state across devices/windows.
+   */
+  @ManyToOne(() => Encounter, { nullable: true, eager: true })
+  activeEncounter?: Encounter | null;
 
   /**
    * Current time-of-day for this campaign. Used to pick TOD-specific assets (maps/music).

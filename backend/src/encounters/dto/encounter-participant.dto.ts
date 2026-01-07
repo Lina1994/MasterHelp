@@ -48,4 +48,13 @@ export class EncounterParticipantDto {
   @Min(-10)
   @Max(50)
   initiative?: number;
+
+  /** Referencia opcional al monstruo del bestiario (para auto-cálculo de iniciativa). */
+  @IsOptional()
+  @IsString()
+  monsterManualId?: string;
+
+  @IsOptional()
+  @IsString()
+  monsterSlug?: string;
 }

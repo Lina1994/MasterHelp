@@ -13,6 +13,7 @@ import { MapEntity } from '../maps/entities/map.entity';
 import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
 import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
 import { Character } from '../characters/entities/character.entity';
+import { Encounter } from '../encounters/entities/encounter.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -226,6 +227,34 @@ export class CampaignsService {
     const sameCampaign = map.campaign?.id === campaign.id;
     if (!sameOwner && !sameCampaign) throw new ForbiddenException('Map not allowed for this campaign');
     campaign.activeMap = map;
+    await this.campaignsRepository.save(campaign);
+    return { ok: true };
+  }
+
+  // --- Active Encounter ---
+  async getActiveEncounter(requestingUserId: number, campaignId: string) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user', 'activeEncounter'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
+    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    return { encounterId: (campaign as any).activeEncounter?.id || null };
+  }
+
+  async setActiveEncounter(campaignId: string, encounterId: string | null) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'activeEncounter'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (!encounterId) {
+      (campaign as any).activeEncounter = null;
+      await this.campaignsRepository.save(campaign);
+      return { ok: true };
+    }
+    const encRepo = this.campaignsRepository.manager.getRepository(Encounter);
+    const enc = await encRepo.findOne({ where: { id: encounterId }, relations: ['campaign'] });
+    if (!enc) throw new NotFoundException('Encounter not found');
+    const sameCampaign = enc.campaign?.id === campaign.id;
+    if (!sameCampaign) throw new ForbiddenException('Encounter not allowed for this campaign');
+    (campaign as any).activeEncounter = enc;
     await this.campaignsRepository.save(campaign);
     return { ok: true };
   }

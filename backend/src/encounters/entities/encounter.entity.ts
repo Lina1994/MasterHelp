@@ -12,6 +12,11 @@ export interface EncounterParticipant {
   cr?: number;
   maxHp?: number;
   currentHp?: number;
+  /** Orden de iniciativa del participante durante el combate. */
+  initiative?: number;
+  /** Referencia opcional al bestiario para calcular atributos (p.ej., DEX). */
+  monsterManualId?: string;
+  monsterSlug?: string;
 }
 
 @Entity()

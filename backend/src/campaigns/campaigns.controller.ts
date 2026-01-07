@@ -84,6 +84,19 @@ export class CampaignsController {
     return this.campaignsService.setActiveMap(id, body?.mapId ?? null);
   }
 
+  // --- Active Encounter endpoints ---
+  @Get(':id/active-encounter')
+  @UseGuards(JwtAuthGuard)
+  async getActiveEncounter(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getActiveEncounter(req.user.userId, id);
+  }
+
+  @Patch(':id/active-encounter')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setActiveEncounter(@Param('id') id: string, @Body() body: { encounterId: string | null }) {
+    return this.campaignsService.setActiveEncounter(id, body?.encounterId ?? null);
+  }
+
   // --- Campaign time-of-day endpoints ---
   @Get(':id/time-of-day')
   @UseGuards(JwtAuthGuard)

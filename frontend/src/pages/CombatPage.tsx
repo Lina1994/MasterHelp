@@ -34,6 +34,7 @@ import {
   FormControl,
   Card,
   CardContent,
+  LinearProgress,
 } from '@mui/material';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
@@ -50,11 +51,16 @@ import ShieldIcon from '@mui/icons-material/Shield';
 import GroupsIcon from '@mui/icons-material/Groups';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import ProjectedMapMirror from '../components/Map/ProjectedMapMirror';
+import { useActiveMap } from '../components/Map/ActiveMapContext';
+import { useActiveEncounter } from '../components/Encounter/ActiveEncounterContext';
+import { listMaps, MapItemDto, getMapImageUrlSized } from '../api/maps';
+import AuthImage from '../components/common/AuthImage';
+import ImageIcon from '@mui/icons-material/Image';
 import { getCurrentUser } from '../utils/getCurrentUser';
 import { Campaign } from '../components/Campaign/types';
 import { useNavigate } from 'react-router-dom';
 import { EncounterSummary, EncounterDifficulty, listEncounters, createEncounter as apiCreateEncounter, updateEncounter as apiUpdateEncounter, deleteEncounter as apiDeleteEncounter } from '../api/encounters';
-import { CharacterPayload, listCharacters } from '../api/characters';
+import { CharacterPayload, listCharacters, updateCharacter } from '../api/characters';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { listSongsForCampaign, SongLite } from '../api/soundtrack';
 import { fetchMonster, fetchMonsters } from '../api/monsters';
@@ -77,6 +83,9 @@ interface CombatViewProps {
   isMaster: boolean;
   campaign: Campaign;
   songs: SongLite[];
+  onUpdateEncounter: (enc: EncounterSummary) => void;
+  characters: CharacterPayload[];
+  onPatchCharacterLocal: (id: string, patch: Partial<CharacterPayload>) => void;
 }
 
 const placeholderEncounters: EncounterSummary[] = [
@@ -288,18 +297,124 @@ function EncounterList({ encounters, isMaster, onCreate, onEdit, onDelete }: Enc
   );
 }
 
-function CombatView({ encounters, isMaster, campaign, songs }: CombatViewProps) {
+function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, characters, onPatchCharacterLocal }: CombatViewProps) {
   const { play } = useGlobalPlayer();
-  const [selectedEncounterId, setSelectedEncounterId] = useState<string | null>(encounters[0]?.id ?? null);
+  const { activeEncounterId, setActiveEncounterId } = useActiveEncounter();
   const [selectedMapName, setSelectedMapName] = useState<string>('Mapa activo');
   const [prioritizeEncounterMusic, setPrioritizeEncounterMusic] = useState(true);
   const [fogEnabled, setFogEnabled] = useState(true);
+  const [participantsDraft, setParticipantsDraft] = useState<EncounterSummary['participants']>([]);
+  const [savingInitiative, setSavingInitiative] = useState<Record<string, boolean>>({});
+  const [savingHp, setSavingHp] = useState<Record<string, boolean>>({});
+  const { activeMapId, setActiveMapId } = useActiveMap();
+  const [maps, setMaps] = useState<MapItemDto[]>([]);
+  const participantsRef = React.useRef<EncounterSummary['participants']>([]);
+  const charMap = useMemo(() => {
+    const map = new Map<string, CharacterPayload>();
+    (characters || []).forEach((c) => { if (c.id) map.set(c.id, c); });
+    return map;
+  }, [characters]);
 
-  const selectedEncounter = useMemo(() => encounters.find((e) => e.id === selectedEncounterId) || null, [encounters, selectedEncounterId]);
+  const selectedEncounter = useMemo(() => encounters.find((e) => e.id === activeEncounterId) || null, [encounters, activeEncounterId]);
+  const handleSelectEncounter = useCallback((id: string) => {
+    setActiveEncounterId(id);
+  }, [setActiveEncounterId]);
   const orderedParticipants = useMemo(() => {
-    const list = [...(selectedEncounter?.participants || [])];
+    const base = participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || []);
+    const list = [...base];
     return list.sort((a, b) => (b.initiative ?? -999) - (a.initiative ?? -999));
-  }, [selectedEncounter]);
+  }, [selectedEncounter, participantsDraft]);
+
+  const baseParticipants = useMemo(() => (participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || [])), [participantsDraft, selectedEncounter]);
+  const allies = useMemo(() => baseParticipants.filter((p) => p.role !== 'foe'), [baseParticipants]);
+  const foes = useMemo(() => baseParticipants.filter((p) => p.role === 'foe'), [baseParticipants]);
+
+  useEffect(() => {
+    setParticipantsDraft(selectedEncounter?.participants || []);
+  }, [selectedEncounter?.id]);
+
+  // Load maps for current campaign and reflect active map name
+  useEffect(() => {
+    const cid = campaign?.id;
+    let cancelled = false;
+    (async () => {
+      if (!cid) { setMaps([]); setSelectedMapName('Mapa activo'); return; }
+      try {
+        const data = await listMaps({ campaignId: cid });
+        if (!cancelled) setMaps(data || []);
+      } catch { if (!cancelled) setMaps([]); }
+    })();
+    return () => { cancelled = true; };
+  }, [campaign?.id]);
+
+  useEffect(() => {
+    const current = maps.find(m => m.id === activeMapId);
+    setSelectedMapName(current?.name || 'Mapa activo');
+  }, [activeMapId, maps]);
+
+  useEffect(() => {
+    participantsRef.current = participantsDraft;
+  }, [participantsDraft]);
+
+  const setInitiativeLocal = useCallback((pid: string, value: number | undefined) => {
+    setParticipantsDraft((prev) => prev.map((p) => (p.id === pid ? { ...p, initiative: typeof value === 'number' && !Number.isNaN(value) ? value : undefined } : p)));
+  }, []);
+
+  const setHpLocal = useCallback((pid: string, field: 'currentHp' | 'maxHp', value: number | undefined) => {
+    setParticipantsDraft((prev) => prev.map((p) => (p.id === pid ? { ...p, [field]: typeof value === 'number' && !Number.isNaN(value) ? value : undefined } : p)));
+  }, []);
+
+  const updateCharacterHp = useCallback(async (pid: string, patch: { currentHp?: number; tempHp?: number }) => {
+    try {
+      setSavingHp((s) => ({ ...s, [pid]: true }));
+      await updateCharacter(pid, patch);
+      onPatchCharacterLocal(pid, patch as any);
+    } finally {
+      setSavingHp((s) => ({ ...s, [pid]: false }));
+    }
+  }, [onPatchCharacterLocal]);
+
+  // setHp defined after schedulePersistInitiative
+
+  const persistParticipants = useCallback(async () => {
+    if (!selectedEncounter || !campaign?.id) return;
+    // Use ref to avoid stale captures of participantsDraft in debounced saves
+    const payload = { participants: (participantsRef.current || []).map((p) => ({ ...p })) };
+    try {
+      const saved = await apiUpdateEncounter(campaign.id, selectedEncounter.id, payload as any);
+      onUpdateEncounter(saved);
+      // refresh local draft from server to keep canonical order/values
+      setParticipantsDraft(saved.participants || []);
+    } catch (e) {
+      // silently ignore here; UI will keep local until next refresh
+    }
+  }, [campaign?.id, selectedEncounter?.id, onUpdateEncounter]);
+
+  const pendingSaveTimers = React.useRef<Record<string, any>>({});
+  const schedulePersistInitiative = useCallback((pid: string) => {
+    // Debounce per participant to avoid flooding backend
+    const existing = pendingSaveTimers.current[pid];
+    if (existing) clearTimeout(existing);
+    setSavingInitiative((s) => ({ ...s, [pid]: true }));
+    pendingSaveTimers.current[pid] = setTimeout(async () => {
+      try { await persistParticipants(); } finally {
+        setSavingInitiative((s) => ({ ...s, [pid]: false }));
+        delete pendingSaveTimers.current[pid];
+      }
+    }, 400);
+  }, [persistParticipants]);
+
+  const setHp = useCallback((p: EncounterSummary['participants'][number], kind: 'currentHp' | 'tempHp', value: number | undefined) => {
+    if (p.kind === 'character' && p.id) {
+      const payload: any = {};
+      if (kind === 'currentHp') payload.currentHp = value;
+      if (kind === 'tempHp') payload.tempHp = value;
+      updateCharacterHp(p.id, payload);
+    } else {
+      if (kind === 'currentHp') setHpLocal(p.id, 'currentHp', value);
+      schedulePersistInitiative(p.id);
+    }
+  }, [setHpLocal, schedulePersistInitiative, updateCharacterHp]);
 
   const findSong = useCallback((songId?: string) => songs.find((s) => s.id === songId), [songs]);
   const buildSongStreamEndpoint = useCallback((songId: string) => {
@@ -307,6 +422,28 @@ function CombatView({ encounters, isMaster, campaign, songs }: CombatViewProps) 
       ? `${api.defaults.baseURL}/soundtrack/songs/${songId}/stream?campaignId=${campaign.id}`
       : `${api.defaults.baseURL}/soundtrack/songs/${songId}/stream`;
   }, [campaign?.id]);
+
+  function dexMod(score?: number) {
+    if (!score || Number.isNaN(score)) return 0;
+    return Math.floor((score - 10) / 2);
+  }
+
+  const rollEnemyInitiative = useCallback(async (pid: string) => {
+    const p = participantsDraft.find((pp) => pp.id === pid);
+    if (!p) return;
+    let mod = 0;
+    if (p.monsterManualId && p.monsterSlug) {
+      try {
+        const detail = await fetchMonster(p.monsterManualId, p.monsterSlug, 'es').catch(() => fetchMonster(p.monsterManualId!, p.monsterSlug!, 'en'));
+        mod = dexMod(detail?.abilities?.dex);
+      } catch {}
+    }
+    const d20 = 1 + Math.floor(Math.random() * 20);
+    const total = d20 + mod;
+    setInitiativeLocal(pid, total);
+    // Use the same debounced save path as manual edits to avoid stale state
+    schedulePersistInitiative(pid);
+  }, [participantsDraft, schedulePersistInitiative]);
 
   const handleStartBattle = useCallback(async () => {
     if (!selectedEncounter || !prioritizeEncounterMusic) return;
@@ -327,8 +464,91 @@ function CombatView({ encounters, isMaster, campaign, songs }: CombatViewProps) 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
           <Typography variant="h6">Combate</Typography>
-          <Chip icon={<MapIcon />} label={selectedMapName} variant="outlined" />
-          {selectedEncounter && <Chip icon={<SportsKabaddiIcon />} label={selectedEncounter.name} />}
+          {/* Selector de mapa integrado */}
+          <FormControl size="small" sx={{ minWidth: 240 }}>
+            <InputLabel id="select-map-inline-label">Mapa</InputLabel>
+            <Select
+              labelId="select-map-inline-label"
+              label="Mapa"
+              value={activeMapId || ''}
+              onChange={(e) => setActiveMapId(e.target.value as string)}
+              displayEmpty
+              renderValue={(val) => {
+                const m = maps.find((x) => x.id === val);
+                if (!m) return <em>Mapa activo</em>;
+                return (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Box sx={{ width: 24, height: 24, borderRadius: 0.5, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {m.imageAvailable ? (
+                        <AuthImage src={getMapImageUrlSized(m.id, 'thumb')} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onErrorIcon={<ImageIcon fontSize="small" />} />
+                      ) : (
+                        <ImageIcon fontSize="small" />
+                      )}
+                    </Box>
+                    <Typography variant="body2" noWrap>{m.name}</Typography>
+                    {m.musicConfig && <LibraryMusicIcon fontSize="small" color="primary" />}
+                  </Stack>
+                );
+              }}
+            >
+              {maps.length === 0 && (
+                <MenuItem value="" disabled>
+                  <em>Sin mapas</em>
+                </MenuItem>
+              )}
+              {maps.map((m) => (
+                <MenuItem key={m.id} value={m.id}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Box sx={{ width: 24, height: 24, borderRadius: 0.5, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {m.imageAvailable ? (
+                        <AuthImage src={getMapImageUrlSized(m.id, 'thumb')} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onErrorIcon={<ImageIcon fontSize="small" />} />
+                      ) : (
+                        <ImageIcon fontSize="small" />
+                      )}
+                    </Box>
+                    <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>{m.name}</Typography>
+                    {m.musicConfig && <LibraryMusicIcon fontSize="small" color="primary" />}
+                  </Stack>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {/* Selector de encuentro integrado */}
+          <FormControl size="small" sx={{ minWidth: 260 }}>
+            <InputLabel id="select-encounter-inline-label">Encuentro</InputLabel>
+            <Select
+              labelId="select-encounter-inline-label"
+              label="Encuentro"
+              value={activeEncounterId || ''}
+              onChange={(e) => handleSelectEncounter(e.target.value as string)}
+              displayEmpty
+              renderValue={(val) => {
+                const chosen = encounters.find((e) => e.id === val);
+                if (!chosen) return <em>Sin encuentro</em>;
+                return (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2" noWrap>{chosen.name}</Typography>
+                    <Chip size="small" label={chosen.difficulty} color={difficultyColor[chosen.difficulty]} />
+                  </Stack>
+                );
+              }}
+            >
+              {encounters.length === 0 && (
+                <MenuItem value="" disabled>
+                  <em>Sin encuentros</em>
+                </MenuItem>
+              )}
+              {encounters.map((enc) => (
+                <MenuItem key={enc.id} value={enc.id}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>{enc.name}</Typography>
+                    <Chip size="small" label={enc.difficulty} color={difficultyColor[enc.difficulty]} />
+                    <Typography variant="caption" color="text.secondary">{enc.participants.length} integrantes</Typography>
+                  </Stack>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <FormControlLabel
             control={<Switch checked={prioritizeEncounterMusic} onChange={(_, v) => setPrioritizeEncounterMusic(v)} />}
             label="Priorizar música de encuentro"
@@ -347,71 +567,195 @@ function CombatView({ encounters, isMaster, campaign, songs }: CombatViewProps) 
         </Box>
       </Paper>
 
+      {/* Eliminado: selector dedicado; integrados arriba */}
+
+      {/* Participantes por bando con barra de vida e iniciativa editable */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>Seleccionar encuentro</Typography>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+          <Typography variant="subtitle1">Participantes</Typography>
+          {!isMaster && <Chip size="small" label="Solo lectura" />}
+        </Stack>
+        <Stack spacing={2}>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Aliados</Typography>
             <List dense>
-              {encounters.map((enc) => (
-                <ListItem key={enc.id} disablePadding>
-                  <ListItemButton selected={enc.id === selectedEncounterId} onClick={() => setSelectedEncounterId(enc.id)}>
-                    <ListItemText primary={enc.name} secondary={`${enc.participants.length} integrantes · ${enc.difficulty}`} />
-                    <Chip size="small" label={enc.difficulty} color={difficultyColor[enc.difficulty]} />
-                  </ListItemButton>
-                </ListItem>
-              ))}
+              {allies.map((p) => {
+                const char = p.kind === 'character' ? charMap.get(p.id) : undefined;
+                const ch = (char?.currentHp ?? p.currentHp);
+                const mx = (char?.maxHp ?? p.maxHp);
+                const temp = (char?.tempHp);
+                const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
+                const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
+                const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
+                return (
+                  <ListItem key={p.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 1 }}>
+                    <ListItemText
+                      primary={<Typography variant="body1">{p.name}</Typography>}
+                      secondary={
+                        <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                          {percent !== undefined ? (
+                            <Stack spacing={0.5}>
+                              <LinearProgress variant="determinate" value={percent} />
+                              <Typography variant="caption" color="text.secondary">HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{typeof temp === 'number' ? ` · Temp ${temp}` : ''}</Typography>
+                            </Stack>
+                          ) : (
+                            <Typography variant="caption" color="text.secondary">HP —</Typography>
+                          )}
+                        </Stack>
+                      }
+                    />
+                    {isMaster ? (
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <TextField
+                          size="small"
+                          type="number"
+                          label="HP"
+                          inputProps={{ min: 0, style: { width: 64 } }}
+                          value={hasCh ? Number(ch) : ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? undefined : Number(e.target.value);
+                            setHp(p, 'currentHp', val);
+                          }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); /* immediate handled by setHp */ } }}
+                        />
+                        {p.kind === 'character' && (
+                          <TextField
+                            size="small"
+                            type="number"
+                            label="Temp"
+                            inputProps={{ min: 0, style: { width: 64 } }}
+                            value={typeof temp === 'number' ? temp : ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? undefined : Number(e.target.value);
+                              setHp(p, 'tempHp', val);
+                            }}
+                          />
+                        )}
+                        <TextField
+                          size="small"
+                          type="number"
+                          label="Ini"
+                          inputProps={{ min: -10, max: 50, style: { width: 64 } }}
+                          value={p.initiative ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? undefined : Number(e.target.value);
+                            setInitiativeLocal(p.id, val);
+                            schedulePersistInitiative(p.id);
+                          }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                        />
+                        {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
+                      </Stack>
+                    ) : (
+                      <Stack direction="row" spacing={1}>
+                        <Chip size="small" label={`Ini ${p.initiative ?? '—'}`} variant="outlined" />
+                      </Stack>
+                    )}
+                  </ListItem>
+                );
+              })}
             </List>
           </Box>
-          <Divider flexItem orientation="vertical" sx={{ display: { xs: 'none', md: 'block' } }} />
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>Seleccionar mapa</Typography>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Enemigos</Typography>
             <List dense>
-              {['Mapa activo', 'Ruinas nocturnas', 'Bosque brumoso'].map((name) => (
-                <ListItem key={name} disablePadding>
-                  <ListItemButton selected={name === selectedMapName} onClick={() => setSelectedMapName(name)}>
-                    <ListItemText primary={name} />
-                    {name === 'Mapa activo' && <Chip size="small" label="Activo" color="success" />}
-                  </ListItemButton>
-                </ListItem>
-              ))}
+              {foes.map((p) => {
+                const ch = typeof p.currentHp === 'number' ? p.currentHp : undefined;
+                const mx = typeof p.maxHp === 'number' ? p.maxHp : undefined;
+                const percent = ch !== undefined && mx && mx > 0 ? Math.max(0, Math.min(100, (ch / mx) * 100)) : undefined;
+                return (
+                  <ListItem key={p.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 1 }}>
+                    <ListItemText
+                      primary={<Typography variant="body1">{p.name}</Typography>}
+                      secondary={
+                        <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                          {percent !== undefined ? (
+                            <Stack spacing={0.5}>
+                              <LinearProgress variant="determinate" value={percent} />
+                              <Typography variant="caption" color="text.secondary">HP {ch}/{mx}</Typography>
+                            </Stack>
+                          ) : (
+                            <Typography variant="caption" color="text.secondary">HP —</Typography>
+                          )}
+                        </Stack>
+                      }
+                    />
+                    {isMaster ? (
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <TextField
+                          size="small"
+                          type="number"
+                          label="HP"
+                          inputProps={{ min: 0, style: { width: 64 } }}
+                          value={p.currentHp ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? undefined : Number(e.target.value);
+                            setHpLocal(p.id, 'currentHp', val);
+                            schedulePersistInitiative(p.id);
+                          }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                        />
+                        <TextField
+                          size="small"
+                          type="number"
+                          label="Ini"
+                          inputProps={{ min: -10, max: 50, style: { width: 64 } }}
+                          value={p.initiative ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? undefined : Number(e.target.value);
+                            setInitiativeLocal(p.id, val);
+                            schedulePersistInitiative(p.id);
+                          }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                        />
+                        <Button size="small" variant="outlined" onClick={() => rollEnemyInitiative(p.id)}>Auto</Button>
+                        {savingInitiative[p.id] && <Chip size="small" label="Guardando..." />}
+                      </Stack>
+                    ) : (
+                      <Stack direction="row" spacing={1}>
+                        <Chip size="small" label={`Ini ${p.initiative ?? '—'}`} variant="outlined" />
+                      </Stack>
+                    )}
+                  </ListItem>
+                );
+              })}
             </List>
           </Box>
         </Stack>
       </Paper>
 
+      {/* Lista unificada, ordenada por iniciativa */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <Box sx={{ flex: 1 }}>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-              <Typography variant="subtitle1">Iniciativa y turnos</Typography>
-              {!isMaster && <Chip size="small" label="Solo lectura" />}
-            </Stack>
-            <List dense>
-              {orderedParticipants.map((p, idx) => (
-                <ListItem key={p.id} sx={{ border: '1px solid', borderColor: idx === 0 ? 'primary.main' : 'divider', borderRadius: 1, mb: 1 }}>
-                  <ListItemText
-                    primary={<Stack direction="row" spacing={1} alignItems="center"><Typography variant="body1">{p.name}</Typography>{idx === 0 && <Chip size="small" label="Turno actual" color="primary" />}</Stack>}
-                    secondary={p.role === 'foe' ? `Enemigo · Ini ${p.initiative ?? '—'}` : `Aliado · Ini ${p.initiative ?? '—'}`}
-                  />
-                  {isMaster ? <Chip size="small" label="Iniciativa: —" /> : <Chip size="small" label="Iniciativa" variant="outlined" />}
-                </ListItem>
-              ))}
-            </List>
-          </Box>
-          <Divider flexItem orientation="vertical" sx={{ display: { xs: 'none', md: 'block' } }} />
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>Controles de batalla</Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleStartBattle}>Empezar batalla</Button>
-              <Button variant="outlined" startIcon={<OutboundIcon />}>Escapar batalla</Button>
-              <Button variant="outlined" startIcon={<RestartAltIcon />}>Resetear ronda</Button>
-              <Button variant="contained" color="success" startIcon={<EmojiEventsIcon />}>Batalla ganada</Button>
-            </Stack>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Estos botones controlarán música, experiencia y estados cuando se conecten los endpoints de combate.
-            </Typography>
-          </Box>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Orden por iniciativa</Typography>
+        <List dense>
+          {orderedParticipants.map((p, idx) => (
+            <ListItem key={p.id} sx={{ border: '1px solid', borderColor: idx === 0 ? 'primary.main' : 'divider', borderRadius: 1, mb: 1 }}>
+              <ListItemText
+                primary={
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body1">{p.name}</Typography>
+                    {idx === 0 && <Chip size="small" label="Turno actual" color="primary" />}
+                  </Stack>
+                }
+                secondary={(p.role === 'foe' ? 'Enemigo' : 'Aliado') + ` · Ini ${p.initiative ?? '—'}`}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Paper>
+
+      {/* Controles de batalla */}
+      <Paper variant="outlined" sx={{ p: 2 }}>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Controles de batalla</Typography>
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleStartBattle}>Empezar batalla</Button>
+          <Button variant="outlined" startIcon={<OutboundIcon />}>Escapar batalla</Button>
+          <Button variant="outlined" startIcon={<RestartAltIcon />}>Resetear ronda</Button>
+          <Button variant="contained" color="success" startIcon={<EmojiEventsIcon />}>Batalla ganada</Button>
         </Stack>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Estos botones controlarán música, experiencia y estados cuando se conecten los endpoints de combate.
+        </Typography>
       </Paper>
 
       <Paper variant="outlined" sx={{ p: 2 }}>
@@ -434,7 +778,7 @@ const CombatPage: React.FC = () => {
   const { activeCampaign } = useActiveCampaign();
   const user = getCurrentUser();
   const isMaster = useMemo(() => computeIsMaster(activeCampaign, user?.id), [activeCampaign, user?.id]);
-  const [tab, setTab] = useState<'encounters' | 'combat'>('encounters');
+  const [tab, setTab] = useState<'encounters' | 'combat'>('combat');
   const [encounters, setEncounters] = useState<EncounterSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -459,8 +803,6 @@ const CombatPage: React.FC = () => {
         setEncounters(data);
       } catch (err: any) {
         setError(err?.response?.data?.message || 'No se pudieron cargar los encuentros');
-        // Fallback: mostrar ejemplos para no dejar la UI vacía
-        setEncounters(placeholderEncounters);
       } finally {
         setLoading(false);
       }
@@ -575,7 +917,15 @@ const CombatPage: React.FC = () => {
         </Stack>
       )}
       {tab === 'combat' && (
-        <CombatView encounters={encounters.length ? encounters : placeholderEncounters} isMaster={isMaster} campaign={activeCampaign} songs={songs} />
+        <CombatView
+          encounters={encounters.length ? encounters : []}
+          isMaster={isMaster}
+          campaign={activeCampaign}
+          songs={songs}
+          onUpdateEncounter={(enc) => setEncounters((prev) => prev.map((e) => e.id === enc.id ? enc : e))}
+          characters={characters}
+          onPatchCharacterLocal={(id, patch) => setCharacters((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)))}
+        />
       )}
 
       {isMaster && (
@@ -664,8 +1014,8 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
     }
   }, [metrics.suggested, autoDifficulty]);
 
-  const upsertParticipant = (idx: number, patch: Partial<EncounterSummary['participants'][number]>) => {
-    setParticipants((prev) => prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
+  const upsertParticipantById = (pid: string, patch: Partial<EncounterSummary['participants'][number]>) => {
+    setParticipants((prev) => prev.map((p) => (p.id === pid ? { ...p, ...patch } : p)));
   };
 
   const addCharacter = (charId: string, asEnemy = false) => {
@@ -700,11 +1050,21 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
       kind: 'enemy',
       role: 'foe',
       cr: monster?.challengeRating ? Number(monster.challengeRating) : 0,
+      monsterManualId: monster?.manualId,
+      monsterSlug: monster?.slug,
     }]);
   };
 
-  const removeParticipant = (idx: number) => {
-    setParticipants((prev) => prev.filter((_, i) => i !== idx));
+  const duplicateParticipantById = (pid: string) => {
+    const original = participants.find((p) => p.id === pid);
+    if (!original) return;
+    const id = makeUuid();
+    const clone = { ...original, id };
+    setParticipants((prev) => [...prev, clone]);
+  };
+
+  const removeParticipantById = (pid: string) => {
+    setParticipants((prev) => prev.filter((p) => p.id !== pid));
   };
 
   const handleSave = async () => {
@@ -886,14 +1246,14 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
 
           <Stack spacing={2}>
             <Typography variant="subtitle2">Aliados</Typography>
-            {participants.filter(p => p.role !== 'foe').map((p, idx) => (
+            {participants.filter(p => p.role !== 'foe').map((p) => (
               <Paper key={p.id} variant="outlined" sx={{ p: 1.5 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems="flex-start">
                   <TextField
                     label="Nombre"
                     size="small"
                     value={p.name}
-                    onChange={(e) => upsertParticipant(idx, { name: e.target.value })}
+                    onChange={(e) => upsertParticipantById(p.id, { name: e.target.value })}
                     sx={{ minWidth: 200 }}
                   />
                   <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -902,7 +1262,7 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
                       labelId={`kind-${p.id}`}
                       label="Tipo"
                       value={p.kind}
-                      onChange={(e) => upsertParticipant(idx, { kind: e.target.value as any })}
+                      onChange={(e) => upsertParticipantById(p.id, { kind: e.target.value as any })}
                     >
                       <MenuItem value="character">Personaje</MenuItem>
                       <MenuItem value="enemy">Enemigo</MenuItem>
@@ -914,7 +1274,7 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
                       labelId={`role-${p.id}`}
                       label="Rol"
                       value={p.role || ''}
-                      onChange={(e) => upsertParticipant(idx, { role: e.target.value as any })}
+                      onChange={(e) => upsertParticipantById(p.id, { role: e.target.value as any })}
                     >
                       <MenuItem value="ally">Aliado</MenuItem>
                       <MenuItem value="foe">Enemigo</MenuItem>
@@ -926,7 +1286,7 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
                     type="number"
                     inputProps={{ min: 1, max: 30 }}
                     value={p.level ?? ''}
-                    onChange={(e) => upsertParticipant(idx, { level: Number(e.target.value) })}
+                    onChange={(e) => upsertParticipantById(p.id, { level: Number(e.target.value) })}
                     sx={{ width: 120 }}
                   />
                   <TextField
@@ -935,22 +1295,22 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
                     type="number"
                     inputProps={{ min: -10, max: 50 }}
                     value={p.initiative ?? ''}
-                    onChange={(e) => upsertParticipant(idx, { initiative: Number(e.target.value) })}
+                    onChange={(e) => upsertParticipantById(p.id, { initiative: Number(e.target.value) })}
                     sx={{ width: 140 }}
                   />
-                  <Button color="error" size="small" onClick={() => removeParticipant(idx)}>Quitar</Button>
+                  <Button color="error" size="small" onClick={() => removeParticipantById(p.id)}>Quitar</Button>
                 </Stack>
               </Paper>
             ))}
             <Typography variant="subtitle2">Enemigos</Typography>
-            {participants.filter(p => p.role === 'foe').map((p, idx) => (
+            {participants.filter(p => p.role === 'foe').map((p) => (
               <Paper key={p.id} variant="outlined" sx={{ p: 1.5 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems="flex-start">
                   <TextField
                     label="Nombre"
                     size="small"
                     value={p.name}
-                    onChange={(e) => upsertParticipant(idx, { name: e.target.value })}
+                    onChange={(e) => upsertParticipantById(p.id, { name: e.target.value })}
                     sx={{ minWidth: 200 }}
                   />
                   <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -959,7 +1319,7 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
                       labelId={`kind-${p.id}`}
                       label="Tipo"
                       value={p.kind}
-                      onChange={(e) => upsertParticipant(idx, { kind: e.target.value as any })}
+                      onChange={(e) => upsertParticipantById(p.id, { kind: e.target.value as any })}
                     >
                       <MenuItem value="character">Personaje</MenuItem>
                       <MenuItem value="enemy">Enemigo</MenuItem>
@@ -971,7 +1331,7 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
                       labelId={`role-${p.id}`}
                       label="Rol"
                       value={p.role || ''}
-                      onChange={(e) => upsertParticipant(idx, { role: e.target.value as any })}
+                      onChange={(e) => upsertParticipantById(p.id, { role: e.target.value as any })}
                     >
                       <MenuItem value="ally">Aliado</MenuItem>
                       <MenuItem value="foe">Enemigo</MenuItem>
@@ -983,7 +1343,7 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
                     type="number"
                     inputProps={{ min: 0, step: 0.25 }}
                     value={p.cr ?? ''}
-                    onChange={(e) => upsertParticipant(idx, { cr: Number(e.target.value) })}
+                    onChange={(e) => upsertParticipantById(p.id, { cr: Number(e.target.value) })}
                     sx={{ width: 120 }}
                   />
                   <TextField
@@ -992,10 +1352,13 @@ function EncounterFormDialog({ open, mode, encounter, onClose, onSaved, campaign
                     type="number"
                     inputProps={{ min: -10, max: 50 }}
                     value={p.initiative ?? ''}
-                    onChange={(e) => upsertParticipant(idx, { initiative: Number(e.target.value) })}
+                    onChange={(e) => upsertParticipantById(p.id, { initiative: Number(e.target.value) })}
                     sx={{ width: 140 }}
                   />
-                  <Button color="error" size="small" onClick={() => removeParticipant(idx)}>Quitar</Button>
+                  <IconButton aria-label="Duplicar" size="small" color="primary" onClick={() => duplicateParticipantById(p.id)} title="Duplicar este enemigo">
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                  <Button color="error" size="small" onClick={() => removeParticipantById(p.id)}>Quitar</Button>
                 </Stack>
               </Paper>
             ))}
