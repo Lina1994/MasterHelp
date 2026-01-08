@@ -72,6 +72,11 @@ import { getCampaignManuals } from '../api/campaigns/manuals';
 import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
 import { api } from '../apiBase';
 import { getAuthHeaders } from '../utils/auth';
+import { useEncounterAudio } from '../hooks/useEncounterAudio';
+import { useBattleState } from '../hooks/useBattleState';
+import { useTurnOrder } from '../hooks/useTurnOrder';
+import { rollEnemyInitiative as rollEnemyInitiativeUtil, rollAllEnemiesInitiative as rollAllEnemiesInitiativeUtil } from '../utils/initiative';
+import { rollAllEnemiesHp as rollAllEnemiesHpUtil } from '../utils/hpRoll';
 
 interface EncounterListProps {
   encounters: EncounterSummary[];
@@ -302,7 +307,7 @@ function EncounterList({ encounters, isMaster, onCreate, onEdit, onDelete }: Enc
 }
 
 function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, characters, onPatchCharacterLocal, monsters }: CombatViewProps) {
-  const { play } = useGlobalPlayer();
+  const { play, current, stop } = useGlobalPlayer();
   const { activeEncounterId, setActiveEncounterId } = useActiveEncounter();
   const [selectedMapName, setSelectedMapName] = useState<string>('Mapa activo');
   const [prioritizeEncounterMusic, setPrioritizeEncounterMusic] = useState(true);
@@ -312,9 +317,10 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
   const [savingHp, setSavingHp] = useState<Record<string, boolean>>({});
   const { activeMapId, setActiveMapId } = useActiveMap();
   const [maps, setMaps] = useState<MapItemDto[]>([]);
-  const [turnIndex, setTurnIndex] = useState<number>(0);
-  const [round, setRound] = useState<number>(1);
+  const { battleStarted, setBattleStarted, hydrated } = useBattleState(campaign?.id, activeEncounterId);
+  const [prevTrack, setPrevTrack] = useState<{ id: string; name: string; size?: number; mimeType?: string } | null>(null);
   const participantsRef = React.useRef<EncounterSummary['participants']>([]);
+  const turnAlignedRef = React.useRef<boolean>(false);
   const charMap = useMemo(() => {
     const map = new Map<string, CharacterPayload>();
     (characters || []).forEach((c) => { if (c.id) map.set(c.id, c); });
@@ -331,18 +337,18 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
     return list.sort((a, b) => (b.initiative! - a.initiative!));
   }, [selectedEncounter, participantsDraft]);
 
-  useEffect(() => {
-    // Ensure turnIndex remains valid when the ordered list changes
-    if (turnIndex >= orderedParticipants.length) {
-      setTurnIndex(orderedParticipants.length > 0 ? 0 : 0);
-    }
-    if (orderedParticipants.length === 0) {
-      setRound(1);
-      setTurnIndex(0);
-    }
-  }, [orderedParticipants.length]);
+  // Turn manager (handles round/index/currentId + persistence)
+  const sessionKey = useMemo(() => {
+    const cid = campaign?.id;
+    return cid && activeEncounterId ? `${cid}:${activeEncounterId}` : null;
+  }, [campaign?.id, activeEncounterId]);
+  const { round, index: turnIndex, currentId: currentTurnId, hydrated: turnHydrated, nextTurn: nextTurnHook, previousTurn: previousTurnHook, resetToStart } = useTurnOrder(sessionKey, orderedParticipants);
 
-  const currentTurnId = orderedParticipants[turnIndex]?.id;
+  // Remove local alignment logic; handled by useTurnOrder
+
+  // Alignment managed by useTurnOrder
+
+  // Current turn id provided by useTurnOrder
 
   const baseParticipants = useMemo(() => (participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || [])), [participantsDraft, selectedEncounter]);
   const allies = useMemo(() => baseParticipants.filter((p) => p.role !== 'foe'), [baseParticipants]);
@@ -468,32 +474,12 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
   }, [setHpLocal, schedulePersistInitiative, updateCharacterHp]);
 
   const findSong = useCallback((songId?: string) => songs.find((s) => s.id === songId), [songs]);
-  const buildSongStreamEndpoint = useCallback((songId: string) => {
-    return campaign?.id
-      ? `${api.defaults.baseURL}/soundtrack/songs/${songId}/stream?campaignId=${campaign.id}`
-      : `${api.defaults.baseURL}/soundtrack/songs/${songId}/stream`;
-  }, [campaign?.id]);
+  const { buildSongStreamEndpoint } = useEncounterAudio(campaign?.id);
 
-  function dexMod(score?: number) {
-    if (!score || Number.isNaN(score)) return 0;
-    return Math.floor((score - 10) / 2);
-  }
+  
 
   const rollEnemyInitiative = useCallback(async (pid: string) => {
-    const p = participantsDraft.find((pp) => pp.id === pid);
-    if (!p) return;
-    let mod = 0;
-    if (p.monsterManualId && p.monsterSlug) {
-      try {
-        const detail = await fetchMonster(p.monsterManualId, p.monsterSlug, 'es').catch(() => fetchMonster(p.monsterManualId!, p.monsterSlug!, 'en'));
-        mod = dexMod(detail?.abilities?.dex);
-      } catch {}
-    }
-    const d20 = 1 + Math.floor(Math.random() * 20);
-    const total = d20 + mod;
-    setInitiativeLocal(pid, total);
-    // Use the same debounced save path as manual edits to avoid stale state
-    schedulePersistInitiative(pid);
+    await rollEnemyInitiativeUtil(pid, participantsDraft, fetchMonster, setInitiativeLocal, schedulePersistInitiative);
   }, [participantsDraft, schedulePersistInitiative]);
 
   /**
@@ -502,76 +488,25 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
    * (consultando su ficha en el bestiario cuando esté disponible).
    */
   const rollAllEnemiesInitiative = useCallback(async () => {
-    const tasks = foes.map(async (p) => {
-      let mod = 0;
-      if (p.monsterManualId && p.monsterSlug) {
-        try {
-          const detail = await fetchMonster(p.monsterManualId, p.monsterSlug, 'es').catch(() => fetchMonster(p.monsterManualId!, p.monsterSlug!, 'en'));
-          mod = dexMod(detail?.abilities?.dex);
-        } catch {}
-      }
-      const d20 = 1 + Math.floor(Math.random() * 20);
-      const total = d20 + mod;
-      setInitiativeLocal(p.id, total);
-    });
-    await Promise.all(tasks);
-    // Persistir todas las iniciativas calculadas (se usarán los guardados con debounce)
-    foes.forEach((p) => schedulePersistInitiative(p.id));
+    await rollAllEnemiesInitiativeUtil(foes, fetchMonster, setInitiativeLocal, schedulePersistInitiative);
   }, [foes, schedulePersistInitiative, setInitiativeLocal]);
 
-  function parseDiceRoll(expr?: string): { dice: number; sides: number; mod: number } | null {
-    if (!expr) return null;
-    const m = expr.match(/^(\d+)\s*[dD]\s*(\d+)(\s*[+-]\s*\d+)?\s*$/);
-    if (!m) return null;
-    const dice = Number(m[1]);
-    const sides = Number(m[2]);
-    const mod = m[3] ? Number(m[3].replace(/\s+/g, '')) : 0;
-    if (!Number.isFinite(dice) || !Number.isFinite(sides) || dice <= 0 || sides <= 0) return null;
-    return { dice, sides, mod };
-  }
+  
 
   const rollAllEnemiesHp = useCallback(async (mode: 'avg' | 'dice') => {
-    const tasks = foes.map(async (p) => {
-      let hpAvg: number | undefined;
-      let hpRollExpr: string | undefined;
-      let manualId = p.monsterManualId;
-      let slug = p.monsterSlug;
-      if (!manualId || !slug) {
-        const byName = (monsters || []).find((m) => m.name.trim().toLowerCase() === (p.name || '').trim().toLowerCase());
-        if (byName) { manualId = byName.manualId; slug = byName.slug; }
-      }
-      if (manualId && slug) {
-        try {
-          const detail = await fetchMonster(manualId, slug, 'es').catch(() => fetchMonster(manualId!, slug!, 'en'));
-          hpAvg = detail?.hitPoints?.average;
-          hpRollExpr = detail?.hitPoints?.roll;
-        } catch {}
-      }
-      let value: number | undefined;
-      if (mode === 'avg') {
-        value = typeof hpAvg === 'number' ? hpAvg : undefined;
-      } else {
-        const parsed = parseDiceRoll(hpRollExpr);
-        if (parsed) {
-          const rolls = Array.from({ length: parsed.dice }, () => 1 + Math.floor(Math.random() * parsed.sides));
-          value = rolls.reduce((a, b) => a + b, 0) + parsed.mod;
-        } else if (typeof hpAvg === 'number') {
-          value = hpAvg;
-        }
-      }
-      if (typeof value === 'number' && value > 0) {
-        setHpLocal(p.id, 'maxHp', value);
-        setHpLocal(p.id, 'currentHp', value);
-      }
-    });
-    await Promise.all(tasks);
-    foes.forEach((p) => schedulePersistInitiative(p.id));
+    await rollAllEnemiesHpUtil(mode, foes, monsters, fetchMonster, setHpLocal, schedulePersistInitiative);
   }, [foes, schedulePersistInitiative, setHpLocal, monsters]);
 
   const handleStartBattle = useCallback(async () => {
     // Initialize turn and round counters when starting battle
-    setRound(1);
-    setTurnIndex(0);
+    resetToStart();
+    setBattleStarted(true);
+    // Snapshot current track to restore later when battle ends
+    if (current) {
+      setPrevTrack({ id: current.id, name: current.name, size: current.size, mimeType: current.mimeType });
+    } else {
+      setPrevTrack(null);
+    }
     if (!selectedEncounter || !prioritizeEncounterMusic) return;
     const songId = selectedEncounter.musicSongId;
     const meta = songId ? findSong(songId) : undefined;
@@ -585,34 +520,38 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
     );
   }, [selectedEncounter, prioritizeEncounterMusic, findSong, play, buildSongStreamEndpoint]);
 
-  const nextTurn = useCallback(() => {
-    const len = orderedParticipants.length;
-    if (len === 0) return;
-    if (turnIndex + 1 >= len) {
-      setTurnIndex(0);
-      setRound((r) => r + 1);
+  const endBattle = useCallback(async () => {
+    // Reset battle state and restore previous music if available
+    setBattleStarted(false);
+    resetToStart();
+    if (prevTrack) {
+      try {
+        await play(
+          { id: prevTrack.id, name: prevTrack.name, mimeType: prevTrack.mimeType, size: prevTrack.size },
+          async () => {
+            const res = await api.get(buildSongStreamEndpoint(prevTrack.id), { headers: getAuthHeaders(), responseType: 'blob' });
+            return URL.createObjectURL(res.data as Blob);
+          },
+        );
+      } catch {
+        // Fallback: stop playback if restoration fails
+        stop();
+      }
     } else {
-      setTurnIndex((i) => i + 1);
+      // No previous track captured; stop playback to reflect neutral state
+      stop();
     }
-  }, [turnIndex, orderedParticipants.length]);
+  }, [prevTrack, play, stop, buildSongStreamEndpoint]);
+
+  const nextTurn = useCallback(() => {
+    nextTurnHook();
+  }, [nextTurnHook]);
 
   const previousTurn = useCallback(() => {
-    const len = orderedParticipants.length;
-    if (len === 0) return;
-    if (turnIndex - 1 < 0) {
-      setTurnIndex(len - 1);
-      setRound((r) => Math.max(1, r - 1));
-    } else {
-      setTurnIndex((i) => i - 1);
-    }
-  }, [turnIndex, orderedParticipants.length]);
+    previousTurnHook();
+  }, [previousTurnHook]);
 
-  const resetRound = useCallback(() => {
-    // Resets to first turn and increments round
-    if (orderedParticipants.length === 0) return;
-    setTurnIndex(0);
-    setRound((r) => r + 1);
-  }, [orderedParticipants.length]);
+  // resetRound removed; managed via turn manager if needed
 
   return (
     <Stack spacing={2}>
@@ -913,6 +852,20 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
             <Chip size="small" label={`Turno ${turnIndex + 1}/${orderedParticipants.length}`} />
           )}
         </Stack>
+        {/* Controles de batalla integrados en la sección de iniciativa */}
+        <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1 }}>
+          {!battleStarted && (
+            <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleStartBattle}>Empezar batalla</Button>
+          )}
+          {battleStarted && (
+            <>
+              <Button variant="outlined" startIcon={<OutboundIcon />} onClick={endBattle}>Escapar batalla</Button>
+              <Button variant="contained" color="success" startIcon={<EmojiEventsIcon />} onClick={endBattle}>Batalla ganada</Button>
+            </>
+          )}
+          <Button variant="outlined" onClick={previousTurn}>Turno anterior</Button>
+          <Button variant="outlined" onClick={nextTurn}>Turno siguiente</Button>
+        </Stack>
         <Stack direction="row" spacing={1} flexWrap="wrap">
           {orderedParticipants.map((p, idx) => {
             const isEnemy = p.role === 'foe';
@@ -1014,27 +967,7 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
         </Stack>
       </Paper>
 
-      {/* Controles de batalla */}
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-          <Typography variant="subtitle1">Controles de batalla</Typography>
-          <Chip size="small" label={`Ronda ${round}`} />
-          {orderedParticipants.length > 0 && (
-            <Chip size="small" label={`Turno ${turnIndex + 1}/${orderedParticipants.length}`} />
-          )}
-        </Stack>
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleStartBattle}>Empezar batalla</Button>
-          <Button variant="outlined" startIcon={<OutboundIcon />}>Escapar batalla</Button>
-          <Button variant="outlined" startIcon={<RestartAltIcon />} onClick={resetRound}>Resetear ronda</Button>
-          <Button variant="contained" color="success" startIcon={<EmojiEventsIcon />}>Batalla ganada</Button>
-          <Button variant="outlined" onClick={previousTurn}>Turno anterior</Button>
-          <Button variant="outlined" onClick={nextTurn}>Turno siguiente</Button>
-        </Stack>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Estos botones controlarán música, experiencia y estados cuando se conecten los endpoints de combate.
-        </Typography>
-      </Paper>
+      {/* Nota: Controles de batalla integrados arriba; sección separada eliminada */}
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Typography variant="subtitle1" sx={{ mb: 1 }}>Fichas y estados</Typography>
