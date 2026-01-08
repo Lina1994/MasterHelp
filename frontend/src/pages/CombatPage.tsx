@@ -36,6 +36,7 @@ import {
   CardContent,
   LinearProgress,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import EditIcon from '@mui/icons-material/Edit';
@@ -49,6 +50,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import MapIcon from '@mui/icons-material/Map';
 import ShieldIcon from '@mui/icons-material/Shield';
 import GroupsIcon from '@mui/icons-material/Groups';
+import CasinoIcon from '@mui/icons-material/Casino';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import ProjectedMapMirror from '../components/Map/ProjectedMapMirror';
 import { useActiveMap } from '../components/Map/ActiveMapContext';
@@ -86,6 +89,7 @@ interface CombatViewProps {
   onUpdateEncounter: (enc: EncounterSummary) => void;
   characters: CharacterPayload[];
   onPatchCharacterLocal: (id: string, patch: Partial<CharacterPayload>) => void;
+  monsters: Array<MonsterIndexItem & { manualId: string; compositeId: string }>;
 }
 
 const placeholderEncounters: EncounterSummary[] = [
@@ -297,7 +301,7 @@ function EncounterList({ encounters, isMaster, onCreate, onEdit, onDelete }: Enc
   );
 }
 
-function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, characters, onPatchCharacterLocal }: CombatViewProps) {
+function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, characters, onPatchCharacterLocal, monsters }: CombatViewProps) {
   const { play } = useGlobalPlayer();
   const { activeEncounterId, setActiveEncounterId } = useActiveEncounter();
   const [selectedMapName, setSelectedMapName] = useState<string>('Mapa activo');
@@ -308,6 +312,8 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
   const [savingHp, setSavingHp] = useState<Record<string, boolean>>({});
   const { activeMapId, setActiveMapId } = useActiveMap();
   const [maps, setMaps] = useState<MapItemDto[]>([]);
+  const [turnIndex, setTurnIndex] = useState<number>(0);
+  const [round, setRound] = useState<number>(1);
   const participantsRef = React.useRef<EncounterSummary['participants']>([]);
   const charMap = useMemo(() => {
     const map = new Map<string, CharacterPayload>();
@@ -321,13 +327,58 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
   }, [setActiveEncounterId]);
   const orderedParticipants = useMemo(() => {
     const base = participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || []);
-    const list = [...base];
-    return list.sort((a, b) => (b.initiative ?? -999) - (a.initiative ?? -999));
+    const list = base.filter((p) => typeof p.initiative === 'number' && !Number.isNaN(p.initiative as any));
+    return list.sort((a, b) => (b.initiative! - a.initiative!));
   }, [selectedEncounter, participantsDraft]);
+
+  useEffect(() => {
+    // Ensure turnIndex remains valid when the ordered list changes
+    if (turnIndex >= orderedParticipants.length) {
+      setTurnIndex(orderedParticipants.length > 0 ? 0 : 0);
+    }
+    if (orderedParticipants.length === 0) {
+      setRound(1);
+      setTurnIndex(0);
+    }
+  }, [orderedParticipants.length]);
+
+  const currentTurnId = orderedParticipants[turnIndex]?.id;
 
   const baseParticipants = useMemo(() => (participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || [])), [participantsDraft, selectedEncounter]);
   const allies = useMemo(() => baseParticipants.filter((p) => p.role !== 'foe'), [baseParticipants]);
   const foes = useMemo(() => baseParticipants.filter((p) => p.role === 'foe'), [baseParticipants]);
+
+  function indexToLetters(idx: number): string {
+    // 0 -> A, 1 -> B, ... 25 -> Z, 26 -> AA, etc.
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let n = idx;
+    let out = '';
+    do {
+      out = letters[n % 26] + out;
+      n = Math.floor(n / 26) - 1;
+    } while (n >= 0);
+    return out;
+  }
+
+  const enemyDisplayNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    const groups = new Map<string, EncounterSummary['participants'][number][]>();
+    foes.forEach((p) => {
+      const key = (p.name || '').trim().toLowerCase();
+      const arr = groups.get(key) || [];
+      arr.push(p);
+      groups.set(key, arr);
+    });
+    groups.forEach((arr) => {
+      if (arr.length <= 1) {
+        const only = arr[0];
+        if (only) map[only.id] = only.name;
+      } else {
+        arr.forEach((p, idx) => { map[p.id] = `${p.name} ${indexToLetters(idx)}`; });
+      }
+    });
+    return map;
+  }, [foes]);
 
   useEffect(() => {
     setParticipantsDraft(selectedEncounter?.participants || []);
@@ -445,7 +496,82 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
     schedulePersistInitiative(pid);
   }, [participantsDraft, schedulePersistInitiative]);
 
+  /**
+   * Calcula la iniciativa de todos los enemigos a la vez.
+   * Respeta el modificador de Destreza individual de cada enemigo
+   * (consultando su ficha en el bestiario cuando esté disponible).
+   */
+  const rollAllEnemiesInitiative = useCallback(async () => {
+    const tasks = foes.map(async (p) => {
+      let mod = 0;
+      if (p.monsterManualId && p.monsterSlug) {
+        try {
+          const detail = await fetchMonster(p.monsterManualId, p.monsterSlug, 'es').catch(() => fetchMonster(p.monsterManualId!, p.monsterSlug!, 'en'));
+          mod = dexMod(detail?.abilities?.dex);
+        } catch {}
+      }
+      const d20 = 1 + Math.floor(Math.random() * 20);
+      const total = d20 + mod;
+      setInitiativeLocal(p.id, total);
+    });
+    await Promise.all(tasks);
+    // Persistir todas las iniciativas calculadas (se usarán los guardados con debounce)
+    foes.forEach((p) => schedulePersistInitiative(p.id));
+  }, [foes, schedulePersistInitiative, setInitiativeLocal]);
+
+  function parseDiceRoll(expr?: string): { dice: number; sides: number; mod: number } | null {
+    if (!expr) return null;
+    const m = expr.match(/^(\d+)\s*[dD]\s*(\d+)(\s*[+-]\s*\d+)?\s*$/);
+    if (!m) return null;
+    const dice = Number(m[1]);
+    const sides = Number(m[2]);
+    const mod = m[3] ? Number(m[3].replace(/\s+/g, '')) : 0;
+    if (!Number.isFinite(dice) || !Number.isFinite(sides) || dice <= 0 || sides <= 0) return null;
+    return { dice, sides, mod };
+  }
+
+  const rollAllEnemiesHp = useCallback(async (mode: 'avg' | 'dice') => {
+    const tasks = foes.map(async (p) => {
+      let hpAvg: number | undefined;
+      let hpRollExpr: string | undefined;
+      let manualId = p.monsterManualId;
+      let slug = p.monsterSlug;
+      if (!manualId || !slug) {
+        const byName = (monsters || []).find((m) => m.name.trim().toLowerCase() === (p.name || '').trim().toLowerCase());
+        if (byName) { manualId = byName.manualId; slug = byName.slug; }
+      }
+      if (manualId && slug) {
+        try {
+          const detail = await fetchMonster(manualId, slug, 'es').catch(() => fetchMonster(manualId!, slug!, 'en'));
+          hpAvg = detail?.hitPoints?.average;
+          hpRollExpr = detail?.hitPoints?.roll;
+        } catch {}
+      }
+      let value: number | undefined;
+      if (mode === 'avg') {
+        value = typeof hpAvg === 'number' ? hpAvg : undefined;
+      } else {
+        const parsed = parseDiceRoll(hpRollExpr);
+        if (parsed) {
+          const rolls = Array.from({ length: parsed.dice }, () => 1 + Math.floor(Math.random() * parsed.sides));
+          value = rolls.reduce((a, b) => a + b, 0) + parsed.mod;
+        } else if (typeof hpAvg === 'number') {
+          value = hpAvg;
+        }
+      }
+      if (typeof value === 'number' && value > 0) {
+        setHpLocal(p.id, 'maxHp', value);
+        setHpLocal(p.id, 'currentHp', value);
+      }
+    });
+    await Promise.all(tasks);
+    foes.forEach((p) => schedulePersistInitiative(p.id));
+  }, [foes, schedulePersistInitiative, setHpLocal, monsters]);
+
   const handleStartBattle = useCallback(async () => {
+    // Initialize turn and round counters when starting battle
+    setRound(1);
+    setTurnIndex(0);
     if (!selectedEncounter || !prioritizeEncounterMusic) return;
     const songId = selectedEncounter.musicSongId;
     const meta = songId ? findSong(songId) : undefined;
@@ -458,6 +584,35 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
       },
     );
   }, [selectedEncounter, prioritizeEncounterMusic, findSong, play, buildSongStreamEndpoint]);
+
+  const nextTurn = useCallback(() => {
+    const len = orderedParticipants.length;
+    if (len === 0) return;
+    if (turnIndex + 1 >= len) {
+      setTurnIndex(0);
+      setRound((r) => r + 1);
+    } else {
+      setTurnIndex((i) => i + 1);
+    }
+  }, [turnIndex, orderedParticipants.length]);
+
+  const previousTurn = useCallback(() => {
+    const len = orderedParticipants.length;
+    if (len === 0) return;
+    if (turnIndex - 1 < 0) {
+      setTurnIndex(len - 1);
+      setRound((r) => Math.max(1, r - 1));
+    } else {
+      setTurnIndex((i) => i - 1);
+    }
+  }, [turnIndex, orderedParticipants.length]);
+
+  const resetRound = useCallback(() => {
+    // Resets to first turn and increments round
+    if (orderedParticipants.length === 0) return;
+    setTurnIndex(0);
+    setRound((r) => r + 1);
+  }, [orderedParticipants.length]);
 
   return (
     <Stack spacing={2}>
@@ -571,14 +726,14 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
 
       {/* Participantes por bando con barra de vida e iniciativa editable */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+            <Stack direction="row" spacing={1} alignItems={"center"} sx={{ mb: 1 }}>
           <Typography variant="subtitle1">Participantes</Typography>
           {!isMaster && <Chip size="small" label="Solo lectura" />}
         </Stack>
         <Stack spacing={2}>
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>Aliados</Typography>
-            <List dense>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
               {allies.map((p) => {
                 const char = p.kind === 'character' ? charMap.get(p.id) : undefined;
                 const ch = (char?.currentHp ?? p.currentHp);
@@ -588,170 +743,293 @@ function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, 
                 const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
                 const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
                 return (
-                  <ListItem key={p.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 1 }}>
-                    <ListItemText
-                      primary={<Typography variant="body1">{p.name}</Typography>}
-                      secondary={
-                        <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                          {percent !== undefined ? (
-                            <Stack spacing={0.5}>
-                              <LinearProgress variant="determinate" value={percent} />
-                              <Typography variant="caption" color="text.secondary">HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{typeof temp === 'number' ? ` · Temp ${temp}` : ''}</Typography>
-                            </Stack>
-                          ) : (
-                            <Typography variant="caption" color="text.secondary">HP —</Typography>
-                          )}
-                        </Stack>
-                      }
-                    />
-                    {isMaster ? (
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="HP"
-                          inputProps={{ min: 0, style: { width: 64 } }}
-                          value={hasCh ? Number(ch) : ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? undefined : Number(e.target.value);
-                            setHp(p, 'currentHp', val);
-                          }}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); /* immediate handled by setHp */ } }}
-                        />
-                        {p.kind === 'character' && (
-                          <TextField
-                            size="small"
-                            type="number"
-                            label="Temp"
-                            inputProps={{ min: 0, style: { width: 64 } }}
-                            value={typeof temp === 'number' ? temp : ''}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? undefined : Number(e.target.value);
-                              setHp(p, 'tempHp', val);
-                            }}
-                          />
+                  <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
+                    <Paper variant="outlined" sx={{ p: 1, borderRadius: 1 }}>
+                      <Stack spacing={0.75}>
+                        <Typography variant="body1">{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
+                        {percent !== undefined ? (
+                          <Stack spacing={0.5}>
+                            <LinearProgress variant="determinate" value={percent} />
+                            <Typography variant="caption" color="text.secondary">HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{typeof temp === 'number' ? ` · Temp ${temp}` : ''}</Typography>
+                          </Stack>
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">HP —</Typography>
                         )}
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="Ini"
-                          inputProps={{ min: -10, max: 50, style: { width: 64 } }}
-                          value={p.initiative ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? undefined : Number(e.target.value);
-                            setInitiativeLocal(p.id, val);
-                            schedulePersistInitiative(p.id);
-                          }}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
-                        />
-                        {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
+                        {isMaster ? (
+                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP"
+                              inputProps={{ min: 0, style: { width: 64 } }}
+                              value={hasCh ? Number(ch) : ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHp(p, 'currentHp', val);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); /* immediate handled by setHp */ } }}
+                            />
+                            {p.kind === 'character' && (
+                              <TextField
+                                size="small"
+                                type="number"
+                                label="Temp"
+                                inputProps={{ min: 0, style: { width: 64 } }}
+                                value={typeof temp === 'number' ? temp : ''}
+                                onChange={(e) => {
+                                  const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                  setHp(p, 'tempHp', val);
+                                }}
+                              />
+                            )}
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="Ini"
+                              inputProps={{ min: -10, max: 50, style: { width: 64 } }}
+                              value={p.initiative ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setInitiativeLocal(p.id, val);
+                                schedulePersistInitiative(p.id);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                            />
+                            {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
+                          </Stack>
+                        ) : (
+                          <Stack direction="row" spacing={1}>
+                            <Chip size="small" label={`Ini ${p.initiative ?? '—'}`} variant="outlined" />
+                          </Stack>
+                        )}
                       </Stack>
-                    ) : (
-                      <Stack direction="row" spacing={1}>
-                        <Chip size="small" label={`Ini ${p.initiative ?? '—'}`} variant="outlined" />
-                      </Stack>
-                    )}
-                  </ListItem>
+                    </Paper>
+                  </Box>
                 );
               })}
-            </List>
+            </Stack>
           </Box>
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>Enemigos</Typography>
-            <List dense>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+              <Typography variant="subtitle2">Enemigos</Typography>
+              {isMaster && (
+                <Button size="small" variant="outlined" startIcon={<CasinoIcon />} onClick={rollAllEnemiesInitiative}>
+                  Calcular iniciativa (todos)
+                </Button>
+              )}
+              {isMaster && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Button size="small" variant="outlined" startIcon={<FavoriteIcon />} onClick={() => rollAllEnemiesHp('avg')}>
+                    Calcular HP (media)
+                  </Button>
+                  <Button size="small" variant="outlined" startIcon={<FavoriteIcon />} onClick={() => rollAllEnemiesHp('dice')}>
+                    Calcular HP (dados)
+                  </Button>
+                </Stack>
+              )}
+            </Stack>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
               {foes.map((p) => {
                 const ch = typeof p.currentHp === 'number' ? p.currentHp : undefined;
                 const mx = typeof p.maxHp === 'number' ? p.maxHp : undefined;
                 const percent = ch !== undefined && mx && mx > 0 ? Math.max(0, Math.min(100, (ch / mx) * 100)) : undefined;
                 return (
-                  <ListItem key={p.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 1 }}>
-                    <ListItemText
-                      primary={<Typography variant="body1">{p.name}</Typography>}
-                      secondary={
-                        <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                          {percent !== undefined ? (
-                            <Stack spacing={0.5}>
-                              <LinearProgress variant="determinate" value={percent} />
-                              <Typography variant="caption" color="text.secondary">HP {ch}/{mx}</Typography>
-                            </Stack>
-                          ) : (
-                            <Typography variant="caption" color="text.secondary">HP —</Typography>
-                          )}
-                        </Stack>
-                      }
-                    />
-                    {isMaster ? (
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="HP"
-                          inputProps={{ min: 0, style: { width: 64 } }}
-                          value={p.currentHp ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? undefined : Number(e.target.value);
-                            setHpLocal(p.id, 'currentHp', val);
-                            schedulePersistInitiative(p.id);
-                          }}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
-                        />
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="Ini"
-                          inputProps={{ min: -10, max: 50, style: { width: 64 } }}
-                          value={p.initiative ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? undefined : Number(e.target.value);
-                            setInitiativeLocal(p.id, val);
-                            schedulePersistInitiative(p.id);
-                          }}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
-                        />
-                        <Button size="small" variant="outlined" onClick={() => rollEnemyInitiative(p.id)}>Auto</Button>
-                        {savingInitiative[p.id] && <Chip size="small" label="Guardando..." />}
+                  <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
+                    <Paper variant="outlined" sx={{ p: 1, borderRadius: 1 }}>
+                      <Stack spacing={0.75}>
+                        <Typography variant="body1">{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
+                        {percent !== undefined ? (
+                          <Stack spacing={0.5}>
+                            <LinearProgress variant="determinate" value={percent} />
+                            <Typography variant="caption" color="text.secondary">HP {ch}/{mx}</Typography>
+                          </Stack>
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">HP —</Typography>
+                        )}
+                        {isMaster ? (
+                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP"
+                              inputProps={{ min: 0, style: { width: 64 } }}
+                              value={p.currentHp ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHpLocal(p.id, 'currentHp', val);
+                                schedulePersistInitiative(p.id);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                            />
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP Max"
+                              inputProps={{ min: 1, style: { width: 64 } }}
+                              value={p.maxHp ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHpLocal(p.id, 'maxHp', val);
+                                schedulePersistInitiative(p.id);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                            />
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="Ini"
+                              inputProps={{ min: -10, max: 50, style: { width: 64 } }}
+                              value={p.initiative ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setInitiativeLocal(p.id, val);
+                                schedulePersistInitiative(p.id);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                            />
+                            {savingInitiative[p.id] && <Chip size="small" label="Guardando..." />}
+                          </Stack>
+                        ) : (
+                          <Stack direction="row" spacing={1}>
+                            <Chip size="small" label={`Ini ${p.initiative ?? '—'}`} variant="outlined" />
+                          </Stack>
+                        )}
                       </Stack>
-                    ) : (
-                      <Stack direction="row" spacing={1}>
-                        <Chip size="small" label={`Ini ${p.initiative ?? '—'}`} variant="outlined" />
-                      </Stack>
-                    )}
-                  </ListItem>
+                    </Paper>
+                  </Box>
                 );
               })}
-            </List>
+            </Stack>
           </Box>
         </Stack>
       </Paper>
 
       {/* Lista unificada, ordenada por iniciativa */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Orden por iniciativa</Typography>
-        <List dense>
-          {orderedParticipants.map((p, idx) => (
-            <ListItem key={p.id} sx={{ border: '1px solid', borderColor: idx === 0 ? 'primary.main' : 'divider', borderRadius: 1, mb: 1 }}>
-              <ListItemText
-                primary={
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body1">{p.name}</Typography>
-                    {idx === 0 && <Chip size="small" label="Turno actual" color="primary" />}
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+          <Typography variant="subtitle1">Orden por iniciativa</Typography>
+          <Chip size="small" label={`Ronda ${round}`} />
+          {orderedParticipants.length > 0 && (
+            <Chip size="small" label={`Turno ${turnIndex + 1}/${orderedParticipants.length}`} />
+          )}
+        </Stack>
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          {orderedParticipants.map((p, idx) => {
+            const isEnemy = p.role === 'foe';
+            const isAlly = !isEnemy;
+            const char = isAlly && p.kind === 'character' ? charMap.get(p.id) : undefined;
+            const ch = isAlly ? (char?.currentHp ?? p.currentHp) : (typeof p.currentHp === 'number' ? p.currentHp : undefined);
+            const mx = isAlly ? (char?.maxHp ?? p.maxHp) : (typeof p.maxHp === 'number' ? p.maxHp : undefined);
+            const temp = isAlly ? (char?.tempHp) : undefined;
+            const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
+            const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
+            const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
+            return (
+              <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
+                <Paper variant="outlined" sx={{ p: 1, borderRadius: 1, borderColor: idx === 0 ? 'primary.main' : 'divider', borderWidth: 1, borderStyle: 'solid' }}>
+                  <Stack spacing={0.75}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="body1">{isEnemy ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
+                      {p.id === currentTurnId && <Chip size="small" label="Turno actual" color="primary" />}
+                    </Stack>
+                    <Typography variant="caption" color="text.secondary">{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {p.initiative ?? '—'}</Typography>
+                    {percent !== undefined ? (
+                      <Stack spacing={0.5}>
+                        <LinearProgress variant="determinate" value={percent} />
+                        <Typography variant="caption" color="text.secondary">
+                          HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{isAlly && typeof temp === 'number' ? ` · Temp ${temp}` : ''}
+                        </Typography>
+                      </Stack>
+                    ) : (
+                      <Typography variant="caption" color="text.secondary">HP —</Typography>
+                    )}
+                    {isMaster ? (
+                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                        {isAlly ? (
+                          <>
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP"
+                              inputProps={{ min: 0, style: { width: 64 } }}
+                              value={hasCh ? Number(ch) : ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHp(p, 'currentHp', val);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); } }}
+                            />
+                            {p.kind === 'character' && (
+                              <TextField
+                                size="small"
+                                type="number"
+                                label="Temp"
+                                inputProps={{ min: 0, style: { width: 64 } }}
+                                value={typeof temp === 'number' ? temp : ''}
+                                onChange={(e) => {
+                                  const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                  setHp(p, 'tempHp', val);
+                                }}
+                              />
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP"
+                              inputProps={{ min: 0, style: { width: 64 } }}
+                              value={p.currentHp ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHpLocal(p.id, 'currentHp', val);
+                                schedulePersistInitiative(p.id);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                            />
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP Max"
+                              inputProps={{ min: 1, style: { width: 64 } }}
+                              value={p.maxHp ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHpLocal(p.id, 'maxHp', val);
+                                schedulePersistInitiative(p.id);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
+                            />
+                          </>
+                        )}
+                        {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
+                      </Stack>
+                    ) : null}
                   </Stack>
-                }
-                secondary={(p.role === 'foe' ? 'Enemigo' : 'Aliado') + ` · Ini ${p.initiative ?? '—'}`}
-              />
-            </ListItem>
-          ))}
-        </List>
+                </Paper>
+              </Box>
+            );
+          })}
+        </Stack>
       </Paper>
 
       {/* Controles de batalla */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Controles de batalla</Typography>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+          <Typography variant="subtitle1">Controles de batalla</Typography>
+          <Chip size="small" label={`Ronda ${round}`} />
+          {orderedParticipants.length > 0 && (
+            <Chip size="small" label={`Turno ${turnIndex + 1}/${orderedParticipants.length}`} />
+          )}
+        </Stack>
         <Stack direction="row" spacing={1} flexWrap="wrap">
           <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleStartBattle}>Empezar batalla</Button>
           <Button variant="outlined" startIcon={<OutboundIcon />}>Escapar batalla</Button>
-          <Button variant="outlined" startIcon={<RestartAltIcon />}>Resetear ronda</Button>
+          <Button variant="outlined" startIcon={<RestartAltIcon />} onClick={resetRound}>Resetear ronda</Button>
           <Button variant="contained" color="success" startIcon={<EmojiEventsIcon />}>Batalla ganada</Button>
+          <Button variant="outlined" onClick={previousTurn}>Turno anterior</Button>
+          <Button variant="outlined" onClick={nextTurn}>Turno siguiente</Button>
         </Stack>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Estos botones controlarán música, experiencia y estados cuando se conecten los endpoints de combate.
@@ -925,6 +1203,7 @@ const CombatPage: React.FC = () => {
           onUpdateEncounter={(enc) => setEncounters((prev) => prev.map((e) => e.id === enc.id ? enc : e))}
           characters={characters}
           onPatchCharacterLocal={(id, patch) => setCharacters((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)))}
+          monsters={monsters}
         />
       )}
 
