@@ -18,6 +18,7 @@ import { RespondInvitationDto } from './dto/respond-invitation.dto';
 import { CampaignOwnerGuard } from './guards/campaign-owner.guard';
 import { MapEntity } from '../maps/entities/map.entity';
 import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
+import { SkylineOverlaySettingsDto } from './dto/skyline-overlay-settings.dto';
 import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
 
 @Controller('campaigns')
@@ -127,6 +128,25 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   async setGridOverlay(@Param('id') id: string, @Body() body: GridOverlaySettingsDto) {
     return this.campaignsService.setGridOverlaySettings(id, body);
+  }
+
+  // --- SKYLINE OVERLAY SETTINGS ---
+  /**
+   * Read skyline overlay settings for a campaign. Owner or players can read.
+   */
+  @Get(':id/skyline-overlay')
+  @UseGuards(JwtAuthGuard)
+  async getSkylineOverlay(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getSkylineOverlaySettings(req.user.userId, id);
+  }
+
+  /**
+   * Update skyline overlay settings for a campaign. Only owner can update.
+   */
+  @Patch(':id/skyline-overlay')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setSkylineOverlay(@Param('id') id: string, @Body() body: SkylineOverlaySettingsDto) {
+    return this.campaignsService.setSkylineOverlaySettings(id, body);
   }
 
   // --- SELECTED MANUALS ---

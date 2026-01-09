@@ -82,6 +82,17 @@ export class Campaign {
   } | null;
 
   /**
+   * Skyline overlay settings for the projection window.
+   * Currently supports toggling whether the current song title should be shown.
+   * Stored as simple JSON in SQLite. Nullable implies default values.
+   */
+  @Column({ type: 'simple-json', nullable: true })
+  skylineOverlaySettings?: {
+    /** When true, show the currently playing song title at the top-left corner. */
+    showSongTitle: boolean;
+  } | null;
+
+  /**
    * Selected manuals to apply/scope content for this campaign.
    * Stored as simple JSON array of manual IDs from manuals registry.
    */

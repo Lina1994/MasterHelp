@@ -7,6 +7,8 @@ import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext'
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
 import { getCharacter, CharacterPayload } from '../api/characters';
 import { getActiveSkylineCharacterId } from '../api/campaigns/activeSkylineCharacter';
+import { getSkylineOverlaySettings } from '../api/campaigns/skylineOverlay';
+import { getCampaignNowPlayingTitle } from '../api/soundtrack/nowPlaying';
 
 const ProjectionSkylinePage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
@@ -15,6 +17,8 @@ const ProjectionSkylinePage: React.FC = () => {
   const [hasSkyline, setHasSkyline] = useState<boolean>(true);
   const [campaignIdFromQuery, setCampaignIdFromQuery] = useState<string | null>(null);
   const [skylineCharacter, setSkylineCharacter] = useState<CharacterPayload | null>(null);
+  const [showSongTitle, setShowSongTitle] = useState<boolean>(false);
+  const [nowPlayingTitle, setNowPlayingTitle] = useState<string | null>(null);
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
@@ -46,6 +50,15 @@ const ProjectionSkylinePage: React.FC = () => {
     }
   }, [activeCampaign?.activeSkylineCharacter?.id, activeCampaign?.id, campaignIdFromQuery]);
 
+  const loadSkylineSettings = useCallback(async () => {
+    const cid = campaignIdFromQuery || activeCampaign?.id;
+    if (!cid) return;
+    try {
+      const settings = await getSkylineOverlaySettings(cid);
+      setShowSongTitle(!!settings.showSongTitle);
+    } catch {}
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
   // Load active skyline character when campaign context or query changes
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +66,14 @@ const ProjectionSkylinePage: React.FC = () => {
     run();
     return () => { cancelled = true; };
   }, [loadSkylineCharacter]);
+
+  // Load skyline overlay settings when campaign context or query changes
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => { if (!cancelled) await loadSkylineSettings(); };
+    run();
+    return () => { cancelled = true; };
+  }, [loadSkylineSettings]);
 
   // Listen to storage events (other window toggled skyline) and reload
   useEffect(() => {
@@ -88,6 +109,14 @@ const ProjectionSkylinePage: React.FC = () => {
           if (data?.type === 'activeSkylineChanged' && data?.campaignId === cid) {
             loadSkylineCharacter();
           }
+          if (data?.type === 'nowPlayingChanged' && data?.campaignId === cid) {
+            // Cross-context robust update: re-fetch from server rather than trusting payload
+            getCampaignNowPlayingTitle(cid).then(r => setNowPlayingTitle(r.title || null)).catch(() => {});
+          }
+          if (data?.type === 'skylineSettingsChanged' && data?.campaignId === cid) {
+            const st = data?.settings;
+            if (typeof st?.showSongTitle === 'boolean') setShowSongTitle(!!st.showSongTitle);
+          }
         };
       }
     } catch {}
@@ -100,10 +129,22 @@ const ProjectionSkylinePage: React.FC = () => {
     if (!cid) return;
     let disposed = false;
     const intervalMs = 2000;
-    const interval = setInterval(async () => {
+    const doPoll = async () => {
       if (disposed) return;
       await loadSkylineCharacter();
-    }, intervalMs);
+      try {
+        // Refresh skyline settings to ensure show/hide state updates across app/web contexts
+        const settings = await getSkylineOverlaySettings(cid);
+        setShowSongTitle(!!settings.showSongTitle);
+      } catch {}
+      try {
+        const r = await getCampaignNowPlayingTitle(cid);
+        setNowPlayingTitle(r.title || null);
+      } catch {}
+    };
+    // Immediate poll once
+    doPoll();
+    const interval = setInterval(doPoll, intervalMs);
     return () => { disposed = true; clearInterval(interval); };
   }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter]);
 
@@ -137,6 +178,42 @@ const ProjectionSkylinePage: React.FC = () => {
     return () => window.removeEventListener('resize', report);
   }, []);
 
+  // Listen to storage events for now-playing changes cross-window
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key !== 'app.skyline.nowPlaying') return;
+      try {
+        const payload = e.newValue ? JSON.parse(e.newValue) : null;
+        if (!payload) return;
+        const cid = payload.campaignId as string | undefined;
+        if (!cid) return;
+        if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
+          setNowPlayingTitle(payload.title || null);
+        }
+      } catch {}
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
+  // Listen to storage events for skyline settings changes cross-window
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key !== 'app.skyline.settingsUpdated') return;
+      try {
+        const payload = e.newValue ? JSON.parse(e.newValue) : null;
+        if (!payload) return;
+        const cid = payload.campaignId as string | undefined;
+        if (!cid) return;
+        if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
+          if (typeof payload.showSongTitle === 'boolean') setShowSongTitle(!!payload.showSongTitle);
+        }
+      } catch {}
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
   const skylineAvatar = useMemo(() => {
     if (!skylineCharacter) return null;
     const initials = (skylineCharacter.name || '?').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
@@ -164,6 +241,11 @@ const ProjectionSkylinePage: React.FC = () => {
       )}
 
       {skylineAvatar}
+      {showSongTitle && nowPlayingTitle ? (
+        <Box sx={{ position: 'absolute', top: 16, left: 16, px: 1.5, py: 0.75, bgcolor: 'rgba(0,0,0,0.6)', borderRadius: 1 }}>
+          <Typography variant="subtitle1" color="white" noWrap title={nowPlayingTitle}>{nowPlayingTitle}</Typography>
+        </Box>
+      ) : null}
     </Box>
   );
 };

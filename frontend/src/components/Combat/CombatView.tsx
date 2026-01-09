@@ -14,6 +14,9 @@ import {
   TextField,
   FormControlLabel,
   Switch,
+  Tabs,
+  Tab,
+  Divider,
 } from '@mui/material';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import ImageIcon from '@mui/icons-material/Image';
@@ -40,7 +43,7 @@ import { updateCharacter } from '../../api/characters';
 import { EncounterSummary, EncounterDifficulty, updateEncounter as apiUpdateEncounter } from '../../api/encounters';
 import { SongLite } from '../../api/soundtrack';
 import { CharacterPayload } from '../../api/characters';
-import { MonsterIndexItem } from '../../types/monsters';
+import { MonsterDetail, MonsterIndexItem } from '../../types/monsters';
 import { Campaign } from '../../components/Campaign/types';
 import GotoMapsButton from './GotoMapsButton';
 
@@ -80,6 +83,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const [maps, setMaps] = useState<MapItemDto[]>([]);
   const { battleStarted, setBattleStarted, hydrated } = useBattleState(campaign?.id, activeEncounterId);
   const [prevTrack, setPrevTrack] = useState<{ id: string; name: string; size?: number; mimeType?: string } | null>(null);
+  const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
+  const [monsterDetailByPid, setMonsterDetailByPid] = useState<Record<string, MonsterDetail | null>>({});
+  const [viewMode, setViewMode] = useState<'participants' | 'initiative'>('participants');
   const participantsRef = React.useRef<EncounterSummary['participants']>([]);
   const turnAlignedRef = React.useRef<boolean>(false);
   const charMap = useMemo(() => {
@@ -107,6 +113,92 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const baseParticipants = useMemo(() => (participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || [])), [participantsDraft, selectedEncounter]);
   const allies = useMemo(() => baseParticipants.filter((p) => p.role !== 'foe'), [baseParticipants]);
   const foes = useMemo(() => baseParticipants.filter((p) => p.role === 'foe'), [baseParticipants]);
+
+  // Índice por nombre base (sin sufijo de letras) para resolver bestiario en enemigos repetidos
+  const monsterIndexByName = useMemo(() => {
+    const map = new Map<string, { manualId: string; slug: string }>();
+    (monsters || []).forEach((m) => {
+      const key = (m.name || '').trim().toLowerCase();
+      if (m.manualId && m.slug && key) {
+        if (!map.has(key)) map.set(key, { manualId: m.manualId, slug: m.slug });
+      }
+    });
+    return map;
+  }, [monsters]);
+
+  // Debug helper (enable with localStorage.setItem('debugBestiary','1'))
+  const dbg = (...args: any[]) => { try { if (localStorage.getItem('debugBestiary') === '1') console.debug('[CombatView][Bestiary]', ...args); } catch {} };
+
+  function stripGroupSuffix(name: string): string {
+    // El algoritmo de nombres repetidos añade " A", "B", "AA", etc. al final.
+    // Eliminamos un bloque final de letras mayúsculas precedido por espacio.
+    const base = (name || '').trim();
+    return base.replace(/\s+[A-Z]+$/, '');
+  }
+
+  function needsEnglishFallback(md?: MonsterDetail | null): boolean {
+    if (!md) return true;
+    // Si faltan bloques clave o están vacíos, intentamos EN: acciones, rasgos, lenguajes, sentidos, habilidades
+    const arraysHaveContent = (arr?: Array<{ name?: string; desc?: string }>) => !!(arr && arr.some(x => (x?.name && x?.name.trim()) || (x?.desc && x?.desc.trim())));
+    const lacksArrays = !(arraysHaveContent(md.traits) || arraysHaveContent(md.actions) || arraysHaveContent(md.legendaryActions) || arraysHaveContent(md.lairActions) || arraysHaveContent(md.regionalEffects));
+    const lacksLangSense = !(md.languages || (md.senses && Object.keys(md.senses).length));
+    const lacksSkills = !(md.skills && Object.keys(md.skills).length);
+    const lacksAbilities = !(md.abilities && Object.keys(md.abilities).length);
+    return lacksArrays || lacksLangSense || lacksSkills || lacksAbilities;
+  }
+
+  function mergeMonsterDetails(primary?: MonsterDetail | null, fallback?: MonsterDetail | null): MonsterDetail | null {
+    if (!primary && !fallback) return null;
+    const a = primary || ({} as MonsterDetail);
+    const b = fallback || ({} as MonsterDetail);
+    const pick = <T,>(pa: T | undefined, fb: T | undefined): T | undefined => (pa !== undefined && pa !== null ? pa : fb);
+    const pickArr = <T,>(pa?: T[] | null, fb?: T[] | null): T[] | undefined => (pa && pa.length ? pa : (fb && fb.length ? fb : undefined));
+    const combineArr = (pa?: Array<{ name?: string; desc?: string }>, fb?: Array<{ name?: string; desc?: string }>) => {
+      const out: Array<{ name?: string; desc?: string }> = [];
+      const len = Math.max(pa?.length || 0, fb?.length || 0);
+      for (let i = 0; i < len; i++) {
+        const ai = pa?.[i];
+        const bi = fb?.[i];
+        const aText = (ai as any)?.text;
+        const bText = (bi as any)?.text;
+        const name = (ai?.name && ai.name.trim()) ? ai.name : (bi?.name || ai?.name);
+        const desc = (ai?.desc && ai.desc.trim()) ? ai.desc : ((aText && String(aText).trim()) ? String(aText) : (bi?.desc || (bText ? String(bText) : ai?.desc)));
+        if ((name && name.trim()) || (desc && desc.trim())) {
+          out.push({ name, desc });
+        }
+      }
+      // Si aún está vacío, usa el que tenga contenido
+      if (!out.length) return pa?.length ? pa : (fb || []);
+      return out;
+    };
+    const abilities: any = { str: pick(a.abilities?.str, b.abilities?.str), dex: pick(a.abilities?.dex, b.abilities?.dex), con: pick(a.abilities?.con, b.abilities?.con), int: pick(a.abilities?.int, b.abilities?.int), wis: pick(a.abilities?.wis, b.abilities?.wis), cha: pick(a.abilities?.cha, b.abilities?.cha) };
+    const savingThrows: any = {};
+    const allSaves = { ...(b.savingThrows || {}), ...(a.savingThrows || {}) } as any;
+    Object.keys(allSaves).forEach((k) => { (savingThrows as any)[k] = allSaves[k]; });
+    const skills = { ...(b.skills || {}), ...(a.skills || {}) };
+    const senses = { ...(b.senses || {}), ...(a.senses || {}) };
+    const speed = { ...(b.speed || {}), ...(a.speed || {}) } as any;
+    return {
+      ...(b as any),
+      ...(a as any),
+      abilities,
+      savingThrows,
+      skills,
+      senses,
+      speed,
+      armorClass: pick(a.armorClass, b.armorClass),
+      hitPoints: pick(a.hitPoints, b.hitPoints),
+      languages: pick(a.languages, b.languages),
+      environment: pickArr(a.environment, b.environment),
+      notes: pickArr(a.notes, b.notes),
+      traits: combineArr(a.traits, b.traits),
+      actions: combineArr(a.actions, b.actions),
+      reactions: combineArr(a.reactions, b.reactions),
+      legendaryActions: combineArr(a.legendaryActions, b.legendaryActions),
+      lairActions: combineArr(a.lairActions, b.lairActions),
+      regionalEffects: combineArr(a.regionalEffects, b.regionalEffects),
+    } as MonsterDetail;
+  }
 
   function indexToLetters(idx: number): string {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -142,6 +234,52 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   useEffect(() => {
     setParticipantsDraft(selectedEncounter?.participants || []);
   }, [selectedEncounter?.id]);
+
+  // Cargar detalles del bestiario para enemigos con fallback a EN si ES está incompleto
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const base = participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || []);
+      for (const p of base) {
+        if (p.role !== 'foe') continue;
+        if (p.kind === 'character') continue; // si es personaje, no hace falta bestiario
+        if (monsterDetailByPid[p.id] !== undefined) continue;
+        try {
+          dbg('Participant', { id: p.id, name: p.name, manualId: p.monsterManualId, slug: p.monsterSlug });
+          let manualId = p.monsterManualId;
+          let slug = p.monsterSlug;
+          if (!manualId || !slug) {
+            const baseName = stripGroupSuffix(p.name || '');
+            const key = baseName.trim().toLowerCase();
+            const ref = monsterIndexByName.get(key);
+            if (ref) { manualId = ref.manualId; slug = ref.slug; }
+            dbg('Resolved by base name', { baseName, ref });
+          }
+          if (!manualId || !slug) {
+            // No se pudo resolver; marcamos como null para evitar bucles
+            dbg('Resolution failed, marking null');
+            if (!cancelled) setMonsterDetailByPid((prev) => ({ ...prev, [p.id]: null }));
+            continue;
+          }
+          const esMd = await fetchMonster(manualId, slug, 'es').catch(() => null);
+          dbg('ES fetch result', esMd ? { traits: esMd.traits?.length, actions: esMd.actions?.length, senses: esMd.senses ? Object.keys(esMd.senses).length : 0, skills: esMd.skills ? Object.keys(esMd.skills).length : 0 } : 'null');
+          let finalMd: MonsterDetail | null = esMd as any;
+          if (needsEnglishFallback(finalMd)) {
+            dbg('ES incomplete, fetching EN fallback');
+            const enMd = await fetchMonster(manualId, slug, 'en').catch(() => null);
+            dbg('EN fetch result', enMd ? { traits: enMd.traits?.length, actions: enMd.actions?.length, senses: enMd.senses ? Object.keys(enMd.senses).length : 0, skills: enMd.skills ? Object.keys(enMd.skills).length : 0 } : 'null');
+            finalMd = mergeMonsterDetails(esMd as any, enMd as any);
+            dbg('Merged result', finalMd ? { traits: finalMd.traits?.length, actions: finalMd.actions?.length, sampleTrait: finalMd.traits?.[0], sampleAction: finalMd.actions?.[0] } : 'null');
+          }
+          if (!cancelled) setMonsterDetailByPid((prev) => ({ ...prev, [p.id]: finalMd }));
+        } catch (err: any) {
+          dbg('Error fetching/merging', err?.message || err);
+          if (!cancelled) setMonsterDetailByPid((prev) => ({ ...prev, [p.id]: null }));
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [participantsDraft, selectedEncounter?.id, monsterDetailByPid, monsterIndexByName]);
 
   useEffect(() => {
     const cid = campaign?.id;
@@ -284,6 +422,284 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     previousTurnHook();
   }, [previousTurnHook]);
 
+  /**
+   * Renderiza una ficha de detalle compacta para un participante de combate.
+   * Muestra nombre, rol, iniciativa y barra de HP (incluye Temp HP para aliados).
+   * colorKey controla el color de acento de la ficha.
+   */
+  const DetailCard: React.FC<{ participant?: EncounterSummary['participants'][number] | null; colorKey?: 'primary' | 'secondary' }> = ({ participant, colorKey = 'primary' }) => {
+    if (!participant) {
+      return (
+        <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 1, flex: '1 1 320px', minWidth: 280 }}>
+          <Typography variant="body2" color="text.secondary">Sin selección</Typography>
+        </Paper>
+      );
+    }
+    const isEnemy = participant.role === 'foe';
+    const isAlly = !isEnemy;
+    const char = isAlly && participant.kind === 'character' ? charMap.get(participant.id) : undefined;
+    const ch = isAlly ? (char?.currentHp ?? participant.currentHp) : (typeof participant.currentHp === 'number' ? participant.currentHp : undefined);
+    const mx = isAlly ? (char?.maxHp ?? participant.maxHp) : (typeof participant.maxHp === 'number' ? participant.maxHp : undefined);
+    const temp = isAlly ? (char?.tempHp) : undefined;
+    const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
+    const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
+    const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
+
+    const md = isEnemy && participant.kind !== 'character' ? monsterDetailByPid[participant.id] : undefined;
+    const armorClass = isAlly ? char?.armorClass : md?.armorClass?.value;
+    const speedStrAlly = char?.speed;
+    const speedStrEnemy = md?.speed ? Object.entries(md.speed).filter(([_, v]) => typeof v === 'number').map(([k, v]) => `${k} ${v} ft`).join(', ') : undefined;
+
+    const skillNameEs: Record<string, string> = {
+      athletics: 'Atletismo', acrobatics: 'Acrobacias', sleightOfHand: 'Juego de manos', stealth: 'Sigilo',
+      arcana: 'Arcanos', history: 'Historia', investigation: 'Investigación', nature: 'Naturaleza', religion: 'Religión',
+      animalHandling: 'Manejo de animales', insight: 'Perspicacia', medicine: 'Medicina', perception: 'Percepción', survival: 'Supervivencia',
+      deception: 'Engaño', intimidation: 'Intimidación', performance: 'Interpretación', persuasion: 'Persuasión'
+    };
+    const prettySkill = (k: string) => {
+      const key = k.trim().replace(/\s+/g, '').toLowerCase();
+      // Intentar normalizar claves comunes
+      const mapAlt: Record<string, string> = { 'sleightofhand': 'sleightOfHand', 'animalhandling': 'animalHandling', 'passiveperception': 'perception' };
+      const norm = mapAlt[key] || key;
+      return skillNameEs[norm] || k;
+    };
+    const senseNameEs: Record<string, string> = {
+      darkvision: 'Visión en la oscuridad', blindsight: 'Vista ciega', tremorsense: 'Sentido de vibración', truesight: 'Vista verdadera', passivePerception: 'Percepción pasiva'
+    } as any;
+    const prettySense = (k: string) => senseNameEs[k as any] || k;
+
+    return (
+      <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 1, borderColor: `${colorKey}.main`, borderWidth: 1, borderStyle: 'solid', flex: '1 1 320px', minWidth: 280 }}>
+        <Stack spacing={0.75}>
+          <Typography variant="body1">{isEnemy ? (enemyDisplayNameById[participant.id] || participant.name) : participant.name}</Typography>
+          <Typography variant="caption" color="text.secondary">{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {participant.initiative ?? '—'}</Typography>
+          {/* Sección: Datos de combate clave */}
+          <Typography variant="caption" color="text.secondary">
+            {typeof armorClass === 'number' ? `CA ${armorClass}` : ''}{participant.initiative !== undefined ? ` · Ini ${participant.initiative}` : ''}{(isAlly && speedStrAlly) ? ` · Vel ${speedStrAlly}` : ''}{(isEnemy && speedStrEnemy) ? ` · Vel ${speedStrEnemy}` : ''}
+          </Typography>
+          {percent !== undefined ? (
+            <Stack spacing={0.5}>
+              <LinearProgress variant="determinate" value={percent} />
+              <Typography variant="caption" color="text.secondary">
+                HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{isAlly && typeof temp === 'number' ? ` · Temp ${temp}` : ''}
+              </Typography>
+            </Stack>
+          ) : (
+            <Typography variant="caption" color="text.secondary">HP —</Typography>
+          )}
+          {/* Sección: Meta */}
+          {isAlly && (
+            <>
+              <Divider />
+              <Typography variant="subtitle2">Ficha del aliado</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {(char?.className ? `Clase ${char.className}` : '')}{typeof char?.level === 'number' ? ` · Nivel ${char.level}` : ''}{char?.race ? ` · Raza ${char.race}` : ''}{char?.background ? ` · Trasfondo ${char.background}` : ''}{char?.alignment ? ` · Alineamiento ${char.alignment}` : ''}{char?.playerName ? ` · Jugador ${char.playerName}` : ''}
+              </Typography>
+              {/* Atributos */}
+              {char && (
+                <Typography variant="caption" color="text.secondary">
+                  {typeof char.str === 'number' ? `STR ${char.str}` : ''}{typeof char.dex === 'number' ? ` · DEX ${char.dex}` : ''}{typeof char.con === 'number' ? ` · CON ${char.con}` : ''}{typeof char.int === 'number' ? ` · INT ${char.int}` : ''}{typeof char.wis === 'number' ? ` · WIS ${char.wis}` : ''}{typeof char.cha === 'number' ? ` · CHA ${char.cha}` : ''}
+                </Typography>
+              )}
+              {/* Competencia y hechicería */}
+              {char && (
+                <Typography variant="caption" color="text.secondary">
+                  {typeof char.proficiencyBonus === 'number' ? `PB +${char.proficiencyBonus}` : ''}{char.spellcastingAbility ? ` · Lanzamiento ${char.spellcastingAbility.toUpperCase()}` : ''}{typeof char.spellSaveDC === 'number' ? ` · CD Hechizo ${char.spellSaveDC}` : ''}{typeof char.spellAttackBonus === 'number' ? ` · Ataque Hechizo +${char.spellAttackBonus}` : ''}{char.hitDice ? ` · Dados de golpe ${char.hitDice}` : ''}
+                </Typography>
+              )}
+              {/* Apariencia */}
+              {char && (
+                <Typography variant="caption" color="text.secondary">
+                  {char.age ? `Edad ${char.age}` : ''}{char.height ? ` · Altura ${char.height}` : ''}{char.weight ? ` · Peso ${char.weight}` : ''}{char.eyes ? ` · Ojos ${char.eyes}` : ''}{char.skin ? ` · Piel ${char.skin}` : ''}{char.hair ? ` · Pelo ${char.hair}` : ''}
+                </Typography>
+              )}
+              {/* Listas largas */}
+              {char?.otherProficienciesAndLanguages && (
+                <Typography variant="caption" color="text.secondary">Proficiencias e idiomas: {char.otherProficienciesAndLanguages}</Typography>
+              )}
+              {char?.equipment && (
+                <Typography variant="caption" color="text.secondary">Equipo: {char.equipment}</Typography>
+              )}
+              {char?.traitsAndFeatures && (
+                <Typography variant="caption" color="text.secondary">Rasgos y características: {char.traitsAndFeatures}</Typography>
+              )}
+              {char?.alliesAndOrganizations && (
+                <Typography variant="caption" color="text.secondary">Aliados y organizaciones: {char.alliesAndOrganizations}</Typography>
+              )}
+              {char?.backstory && (
+                <Typography variant="caption" color="text.secondary">Historia: {char.backstory}</Typography>
+              )}
+              {char?.treasure && (
+                <Typography variant="caption" color="text.secondary">Tesoro: {char.treasure}</Typography>
+              )}
+              {/* Hechizos */}
+              {(char?.cantrips?.length || (char?.spellsByLevel && Object.keys(char.spellsByLevel).length)) ? (
+                <Stack spacing={0.5}>
+                  {char?.cantrips?.length ? (
+                    <Typography variant="caption" color="text.secondary">Trucos: {char.cantrips.join(', ')}</Typography>
+                  ) : null}
+                  {char?.spellsByLevel ? (
+                    Object.entries(char.spellsByLevel).map(([lvl, names]) => (
+                      <Typography key={lvl} variant="caption" color="text.secondary">Nivel {lvl}: {names.join(', ')}</Typography>
+                    ))
+                  ) : null}
+                </Stack>
+              ) : null}
+            </>
+          )}
+
+          {isEnemy && (
+            <>
+              <Divider />
+              <Typography variant="subtitle2">Ficha del enemigo</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {md?.size ? `${md.size} ` : ''}{md?.type || ''}{md?.alignment ? `, ${md.alignment}` : ''}{md?.challengeRating ? ` • CR ${md.challengeRating}` : ''}{typeof md?.proficiencyBonus === 'number' ? ` • PB +${md.proficiencyBonus}` : ''}
+              </Typography>
+              {/* AC, HP, velocidad */}
+              <Typography variant="caption" color="text.secondary">
+                {typeof md?.armorClass?.value === 'number' ? `CA ${md.armorClass.value}${md.armorClass.type ? ` (${md.armorClass.type})` : ''}` : ''}{md?.hitPoints?.average ? ` · HP medio ${md.hitPoints.average}` : ''}{md?.hitPoints?.roll ? ` · HP dados ${md.hitPoints.roll}` : ''}{speedStrEnemy ? ` · Vel ${speedStrEnemy}` : ''}
+              </Typography>
+              {/* Habilidades y salvaciones */}
+              {md?.abilities && (
+                <Typography variant="caption" color="text.secondary">
+                  {typeof md.abilities.str === 'number' ? `STR ${md.abilities.str}` : ''}{typeof md.abilities.dex === 'number' ? ` · DEX ${md.abilities.dex}` : ''}{typeof md.abilities.con === 'number' ? ` · CON ${md.abilities.con}` : ''}{typeof md.abilities.int === 'number' ? ` · INT ${md.abilities.int}` : ''}{typeof md.abilities.wis === 'number' ? ` · WIS ${md.abilities.wis}` : ''}{typeof md.abilities.cha === 'number' ? ` · CHA ${md.abilities.cha}` : ''}
+                </Typography>
+              )}
+              {md?.savingThrows && (
+                <Typography variant="caption" color="text.secondary">
+                  Salvaciones: {Object.entries(md.savingThrows).map(([k, v]) => `${k.toUpperCase()} +${v}`).join(', ')}
+                </Typography>
+              )}
+              {md?.skills && Object.keys(md.skills).length > 0 && (
+                <Typography variant="caption" color="text.secondary">
+                  Habilidades: {Object.entries(md.skills).map(([k, v]) => `${prettySkill(k)} +${v}`).join(', ')}
+                </Typography>
+              )}
+              {/* Resistencias e inmunidades */}
+              {md?.damageVulnerabilities?.length ? (
+                <Typography variant="caption" color="text.secondary">Vulnerabilidades: {md.damageVulnerabilities.join(', ')}</Typography>
+              ) : null}
+              {md?.damageResistances?.length ? (
+                <Typography variant="caption" color="text.secondary">Resistencias: {md.damageResistances.join(', ')}</Typography>
+              ) : null}
+              {md?.damageImmunities?.length ? (
+                <Typography variant="caption" color="text.secondary">Inmunidades: {md.damageImmunities.join(', ')}</Typography>
+              ) : null}
+              {md?.conditionImmunities?.length ? (
+                <Typography variant="caption" color="text.secondary">Inmunidades de estado: {md.conditionImmunities.join(', ')}</Typography>
+              ) : null}
+              {/* Sentidos e idiomas */}
+              {md?.senses && (
+                <Typography variant="caption" color="text.secondary">
+                  Sentidos: {Object.entries(md.senses).map(([k, v]) => `${prettySense(k)}: ${v}`).join(', ')}
+                </Typography>
+              )}
+              {md?.languages && (
+                <Typography variant="caption" color="text.secondary">Idiomas: {md.languages}</Typography>
+              )}
+              {/* Entorno y notas */}
+              {md?.environment?.length ? (
+                <Typography variant="caption" color="text.secondary">Entorno: {md.environment.join(', ')}</Typography>
+              ) : null}
+              {md?.notes?.length ? (
+                <Stack spacing={0.25}>
+                  {md.notes.map((n, i) => (
+                    <Typography key={i} variant="caption" color="text.secondary">Nota: {n}</Typography>
+                  ))}
+                </Stack>
+              ) : null}
+              {/* Rasgos y acciones completas */}
+              {md?.traits?.length ? (
+                <Stack spacing={0.25}>
+                  <Typography variant="caption" color="text.secondary">Rasgos:</Typography>
+                  {md.traits.map((t, i) => {
+                    const text = (t as any)?.text || t.desc;
+                    const name = t.name;
+                    return (
+                      <Typography key={i} variant="caption" color="text.secondary">
+                        • {name ? `${name}: ` : ''}{text}
+                      </Typography>
+                    );
+                  })}
+                </Stack>
+              ) : null}
+              {md?.actions?.length ? (
+                <Stack spacing={0.25}>
+                  <Typography variant="caption" color="text.secondary">Acciones:</Typography>
+                  {md.actions.map((t, i) => {
+                    const text = (t as any)?.text || t.desc;
+                    const name = t.name;
+                    return (
+                      <Typography key={i} variant="caption" color="text.secondary">
+                        • {name ? `${name}: ` : ''}{text}
+                      </Typography>
+                    );
+                  })}
+                </Stack>
+              ) : null}
+              {md?.reactions?.length ? (
+                <Stack spacing={0.25}>
+                  <Typography variant="caption" color="text.secondary">Reacciones:</Typography>
+                  {md.reactions.map((t, i) => {
+                    const text = (t as any)?.text || t.desc;
+                    const name = t.name;
+                    return (
+                      <Typography key={i} variant="caption" color="text.secondary">
+                        • {name ? `${name}: ` : ''}{text}
+                      </Typography>
+                    );
+                  })}
+                </Stack>
+              ) : null}
+              {md?.legendaryActions?.length ? (
+                <Stack spacing={0.25}>
+                  <Typography variant="caption" color="text.secondary">Acciones legendarias:</Typography>
+                  {md.legendaryActions.map((t, i) => {
+                    const text = (t as any)?.text || t.desc;
+                    const name = t.name;
+                    return (
+                      <Typography key={i} variant="caption" color="text.secondary">
+                        • {name ? `${name}: ` : ''}{text}
+                      </Typography>
+                    );
+                  })}
+                </Stack>
+              ) : null}
+              {md?.lairActions?.length ? (
+                <Stack spacing={0.25}>
+                  <Typography variant="caption" color="text.secondary">Acciones de guarida:</Typography>
+                  {md.lairActions.map((t, i) => {
+                    const text = (t as any)?.text || t.desc;
+                    const name = t.name;
+                    return (
+                      <Typography key={i} variant="caption" color="text.secondary">
+                        • {name ? `${name}: ` : ''}{text}
+                      </Typography>
+                    );
+                  })}
+                </Stack>
+              ) : null}
+              {md?.regionalEffects?.length ? (
+                <Stack spacing={0.25}>
+                  <Typography variant="caption" color="text.secondary">Efectos regionales:</Typography>
+                  {md.regionalEffects.map((t, i) => {
+                    const text = (t as any)?.text || t.desc;
+                    const name = t.name;
+                    return (
+                      <Typography key={i} variant="caption" color="text.secondary">
+                        • {name ? `${name}: ` : ''}{text}
+                      </Typography>
+                    );
+                  })}
+                </Stack>
+              ) : null}
+            </>
+          )}
+        </Stack>
+      </Paper>
+    );
+  };
+
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 2 }}>
@@ -294,7 +710,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             <Select
               labelId="select-map-inline-label"
               label="Mapa"
-              value={activeMapId || ''}
+              value={(activeMapId && maps.some(m => m.id === activeMapId)) ? activeMapId : ''}
               onChange={(e) => setActiveMapId(e.target.value as string)}
               displayEmpty
               renderValue={(val) => {
@@ -342,7 +758,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             <Select
               labelId="select-encounter-inline-label"
               label="Encuentro"
-              value={activeEncounterId || ''}
+              value={(activeEncounterId && encounters.some(e => e.id === activeEncounterId)) ? activeEncounterId : ''}
               onChange={(e) => handleSelectEncounter(e.target.value as string)}
               displayEmpty
               renderValue={(val) => {
@@ -390,17 +806,24 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
         </Box>
       </Paper>
 
-      {/* Lista unificada, ordenada por iniciativa y controles de batalla */}
+      {/* Sección unificada con pestañas para alternar Participantes y Orden por iniciativa */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1} alignItems={'center'} sx={{ mb: 1 }}>
-          <Typography variant="subtitle1">Participantes</Typography>
-          {!isMaster && <Chip size="small" label="Solo lectura" />}
-        </Stack>
-        <Stack spacing={2}>
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>Aliados</Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {allies.map((p) => {
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+          <Tabs value={viewMode} onChange={(_, val) => setViewMode(val)}>
+            <Tab value="participants" label="Participantes" />
+            <Tab value="initiative" label="Orden por iniciativa" />
+          </Tabs>
+        </Box>
+        {viewMode === 'participants' && (
+          <Stack spacing={2}>
+            <Stack direction="row" spacing={1} alignItems={'center'}>
+              <Typography variant="subtitle1">Participantes</Typography>
+              {!isMaster && <Chip size="small" label="Solo lectura" />}
+            </Stack>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Aliados</Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                {allies.map((p) => {
                 const char = p.kind === 'character' ? charMap.get(p.id) : undefined;
                 const ch = (char?.currentHp ?? p.currentHp);
                 const mx = (char?.maxHp ?? p.maxHp);
@@ -472,30 +895,30 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
                     </Paper>
                   </Box>
                 );
-              })}
-            </Stack>
-          </Box>
-          <Box>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-              <Typography variant="subtitle2">Enemigos</Typography>
-              {isMaster && (
-                <Button size="small" variant="outlined" startIcon={<CasinoIcon />} onClick={rollAllEnemiesInitiative}>
-                  Calcular iniciativa (todos)
-                </Button>
-              )}
-              {isMaster && (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Button size="small" variant="outlined" startIcon={<FavoriteIcon />} onClick={() => rollAllEnemiesHp('avg')}>
-                    Calcular HP (media)
+                })}
+              </Stack>
+            </Box>
+            <Box>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="subtitle2">Enemigos</Typography>
+                {isMaster && (
+                  <Button size="small" variant="outlined" startIcon={<CasinoIcon />} onClick={rollAllEnemiesInitiative}>
+                    Calcular iniciativa (todos)
                   </Button>
-                  <Button size="small" variant="outlined" startIcon={<FavoriteIcon />} onClick={() => rollAllEnemiesHp('dice')}>
-                    Calcular HP (dados)
-                  </Button>
-                </Stack>
-              )}
-            </Stack>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {foes.map((p) => {
+                )}
+                {isMaster && (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Button size="small" variant="outlined" startIcon={<FavoriteIcon />} onClick={() => rollAllEnemiesHp('avg')}>
+                      Calcular HP (media)
+                    </Button>
+                    <Button size="small" variant="outlined" startIcon={<FavoriteIcon />} onClick={() => rollAllEnemiesHp('dice')}>
+                      Calcular HP (dados)
+                    </Button>
+                  </Stack>
+                )}
+              </Stack>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                {foes.map((p) => {
                 const ch = typeof p.currentHp === 'number' ? p.currentHp : undefined;
                 const mx = typeof p.maxHp === 'number' ? p.maxHp : undefined;
                 const percent = ch !== undefined && mx && mx > 0 ? Math.max(0, Math.min(100, (ch / mx) * 100)) : undefined;
@@ -549,35 +972,35 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
                     </Paper>
                   </Box>
                 );
-              })}
+                })}
+              </Stack>
+            </Box>
+          </Stack>
+        )}
+        {viewMode === 'initiative' && (
+          <>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+              <Typography variant="subtitle1">Orden por iniciativa</Typography>
+              <Chip size="small" label={`Ronda ${round}`} />
+              {orderedParticipants.length > 0 && (
+                <Chip size="small" label={`Turno ${turnIndex + 1}/${orderedParticipants.length}`} />
+              )}
             </Stack>
-          </Box>
-        </Stack>
-      </Paper>
-
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-          <Typography variant="subtitle1">Orden por iniciativa</Typography>
-          <Chip size="small" label={`Ronda ${round}`} />
-          {orderedParticipants.length > 0 && (
-            <Chip size="small" label={`Turno ${turnIndex + 1}/${orderedParticipants.length}`} />
-          )}
-        </Stack>
-        <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1 }}>
-          {!battleStarted && (
-            <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleStartBattle}>Empezar batalla</Button>
-          )}
-          {battleStarted && (
-            <>
-              <Button variant="outlined" startIcon={<OutboundIcon />} onClick={endBattle}>Escapar batalla</Button>
-              <Button variant="contained" color="success" startIcon={<EmojiEventsIcon />} onClick={endBattle}>Batalla ganada</Button>
-            </>
-          )}
-          <Button variant="outlined" onClick={previousTurn}>Turno anterior</Button>
-          <Button variant="outlined" onClick={nextTurn}>Turno siguiente</Button>
-        </Stack>
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          {orderedParticipants.map((p, idx) => {
+            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1 }}>
+              {!battleStarted && (
+                <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleStartBattle}>Empezar batalla</Button>
+              )}
+              {battleStarted && (
+                <>
+                  <Button variant="outlined" startIcon={<OutboundIcon />} onClick={endBattle}>Escapar batalla</Button>
+                  <Button variant="contained" color="success" startIcon={<EmojiEventsIcon />} onClick={endBattle}>Batalla ganada</Button>
+                </>
+              )}
+              <Button variant="outlined" onClick={previousTurn}>Turno anterior</Button>
+              <Button variant="outlined" onClick={nextTurn}>Turno siguiente</Button>
+            </Stack>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {orderedParticipants.map((p, idx) => {
             const isEnemy = p.role === 'foe';
             const isAlly = !isEnemy;
             const char = isAlly && p.kind === 'character' ? charMap.get(p.id) : undefined;
@@ -587,13 +1010,112 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
             const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
             const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
+            const isCurrentTurn = p.id === currentTurnId;
+            const isSelected = p.id === selectedParticipantId;
+            const borderColor = isCurrentTurn ? 'primary.main' : (isSelected ? 'secondary.main' : 'divider');
             return (
               <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
-                <Paper variant="outlined" sx={{ p: 1, borderRadius: 1, borderColor: idx === 0 ? 'primary.main' : 'divider', borderWidth: 1, borderStyle: 'solid' }}>
+                <Paper
+                  variant="outlined"
+                  sx={{ p: 1, borderRadius: 1, borderColor, borderWidth: 1, borderStyle: 'solid', cursor: 'pointer' }}
+                  onClick={() => {
+                    setSelectedParticipantId(p.id);
+                    try {
+                      const baseName = stripGroupSuffix(p.name || '');
+                      const md = isEnemy && p.kind !== 'character' ? (monsterDetailByPid[p.id] || null) : null;
+                      const mdSummary = md ? {
+                        traits: md.traits?.length || 0,
+                        actions: md.actions?.length || 0,
+                        reactions: md.reactions?.length || 0,
+                        legendaryActions: md.legendaryActions?.length || 0,
+                        lairActions: md.lairActions?.length || 0,
+                        regionalEffects: md.regionalEffects?.length || 0,
+                        senses: md.senses ? Object.keys(md.senses).length : 0,
+                        skills: md.skills ? Object.keys(md.skills).length : 0,
+                        languages: md.languages ? 1 : 0,
+                        sampleTrait: md.traits?.[0],
+                        sampleAction: md.actions?.[0],
+                      } : null;
+                      const char = isAlly && p.kind === 'character' ? charMap.get(p.id) : undefined;
+                      const ch = isAlly ? (char?.currentHp ?? p.currentHp) : (typeof p.currentHp === 'number' ? p.currentHp : undefined);
+                      const mx = isAlly ? (char?.maxHp ?? p.maxHp) : (typeof p.maxHp === 'number' ? p.maxHp : undefined);
+                      const temp = isAlly ? (char?.tempHp) : undefined;
+                      console.log('[CombatView][Select]', {
+                        participant: {
+                          id: p.id,
+                          name: p.name,
+                          displayName: isEnemy ? (enemyDisplayNameById[p.id] || p.name) : p.name,
+                          role: p.role,
+                          kind: p.kind,
+                          initiative: p.initiative,
+                          currentHp: ch,
+                          maxHp: mx,
+                          tempHp: temp,
+                        },
+                        enemyResolution: isEnemy ? {
+                          manualId: (p as any).monsterManualId,
+                          slug: (p as any).monsterSlug,
+                          baseName,
+                          detailLoaded: !!md,
+                          detailSummary: mdSummary,
+                        } : undefined,
+                      });
+                    } catch {}
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setSelectedParticipantId(p.id);
+                      try {
+                        const baseName = stripGroupSuffix(p.name || '');
+                        const md = isEnemy && p.kind !== 'character' ? (monsterDetailByPid[p.id] || null) : null;
+                        const mdSummary = md ? {
+                          traits: md.traits?.length || 0,
+                          actions: md.actions?.length || 0,
+                          reactions: md.reactions?.length || 0,
+                          legendaryActions: md.legendaryActions?.length || 0,
+                          lairActions: md.lairActions?.length || 0,
+                          regionalEffects: md.regionalEffects?.length || 0,
+                          senses: md.senses ? Object.keys(md.senses).length : 0,
+                          skills: md.skills ? Object.keys(md.skills).length : 0,
+                          languages: md.languages ? 1 : 0,
+                          sampleTrait: md.traits?.[0],
+                          sampleAction: md.actions?.[0],
+                        } : null;
+                        const char = isAlly && p.kind === 'character' ? charMap.get(p.id) : undefined;
+                        const ch = isAlly ? (char?.currentHp ?? p.currentHp) : (typeof p.currentHp === 'number' ? p.currentHp : undefined);
+                        const mx = isAlly ? (char?.maxHp ?? p.maxHp) : (typeof p.maxHp === 'number' ? p.maxHp : undefined);
+                        const temp = isAlly ? (char?.tempHp) : undefined;
+                        console.log('[CombatView][Select]', {
+                          participant: {
+                            id: p.id,
+                            name: p.name,
+                            displayName: isEnemy ? (enemyDisplayNameById[p.id] || p.name) : p.name,
+                            role: p.role,
+                            kind: p.kind,
+                            initiative: p.initiative,
+                            currentHp: ch,
+                            maxHp: mx,
+                            tempHp: temp,
+                          },
+                          enemyResolution: isEnemy ? {
+                            manualId: (p as any).monsterManualId,
+                            slug: (p as any).monsterSlug,
+                            baseName,
+                            detailLoaded: !!md,
+                            detailSummary: mdSummary,
+                          } : undefined,
+                        });
+                      } catch {}
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
                   <Stack spacing={0.75}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Typography variant="body1">{isEnemy ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
-                      {p.id === currentTurnId && <Chip size="small" label="Turno actual" color="primary" />}
+                      {isCurrentTurn && <Chip size="small" label="Turno actual" color="primary" />}
+                      {isSelected && !isCurrentTurn && <Chip size="small" label="Seleccionado" color="secondary" />}
                     </Stack>
                     <Typography variant="caption" color="text.secondary">{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {p.initiative ?? '—'}</Typography>
                     {percent !== undefined ? (
@@ -675,6 +1197,13 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             );
           })}
         </Stack>
+          {/* Fichas de detalle: mostrar abajo de la lista de iniciativa */}
+          <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+            <DetailCard participant={orderedParticipants.find(p => p.id === currentTurnId) || null} colorKey="primary" />
+            <DetailCard participant={orderedParticipants.find(p => p.id === selectedParticipantId) || null} colorKey="secondary" />
+          </Stack>
+          </>
+        )}
       </Paper>
     </Stack>
   );

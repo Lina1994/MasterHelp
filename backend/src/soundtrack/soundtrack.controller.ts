@@ -178,4 +178,13 @@ export class SoundtrackController {
     const normalizedCampaignId = campaignId && campaignId.trim().length > 0 ? campaignId : undefined;
     return this.service.markPlayed(req.user, songId, normalizedCampaignId);
   }
+
+  /**
+   * Returns the most recently marked played song for a given campaign.
+   * Used by Skyline projection windows to show current song title.
+   */
+  @Get('campaigns/:campaignId/now-playing')
+  async getNowPlaying(@Req() req, @Param('campaignId') campaignId: string) {
+    return this.service.getNowPlayingTitle(req.user.userId, campaignId);
+  }
 }

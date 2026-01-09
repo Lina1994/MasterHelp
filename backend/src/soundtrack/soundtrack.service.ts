@@ -490,4 +490,26 @@ export class SoundtrackService {
     await this.songsRepo.save(song);
     return { message: 'Marked played', lastPlayedAt: song.lastPlayedAt };
   }
+
+  /**
+   * Returns the most recently played song title for the given campaign.
+   * Validates membership (owner or player) before revealing.
+   */
+  async getNowPlayingTitle(requestingUserId: number, campaignId: string): Promise<{ title: string | null; lastPlayedAt: Date | null }> {
+    // Validate membership via Campaign entity
+    const campaign = await this.songsRepo.manager.findOne<any>('Campaign', { where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] } as any);
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = (campaign.players || []).some((p: any) => p.user?.id === requestingUserId);
+    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    // Query associated songs for this campaign ordered by lastPlayedAt desc
+    const qb = this.songsRepo.createQueryBuilder('song')
+      .leftJoin('song.campaigns', 'camp')
+      .where('camp.id = :campaignId', { campaignId })
+      .andWhere('song.lastPlayedAt IS NOT NULL')
+      .orderBy('song.lastPlayedAt', 'DESC')
+      .limit(1);
+    const latest = await qb.getOne();
+    return { title: latest?.name ?? null, lastPlayedAt: latest?.lastPlayedAt ?? null };
+  }
 }

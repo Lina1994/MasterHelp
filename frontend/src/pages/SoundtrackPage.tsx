@@ -27,6 +27,8 @@ import {
   DialogActions,
   Autocomplete,
   Checkbox,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import type { AxiosProgressEvent } from 'axios';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -41,6 +43,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { getSkylineOverlaySettings, setSkylineOverlaySettings } from '../api/campaigns/skylineOverlay';
 
 interface SongMeta {
   id: string;
@@ -80,6 +83,7 @@ export const SoundtrackPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [snack, setSnack] = useState<{ msg: string; type: 'success' | 'error'} | null>(null);
   const [usage, setUsage] = useState<{ totalSize: number; count: number } | null>(null);
+  const [showSongTitle, setShowSongTitle] = useState<boolean>(false);
 
   // Filtros
   const [q, setQ] = useState('');
@@ -166,6 +170,19 @@ export const SoundtrackPage = () => {
   };
 
   useEffect(() => { fetchSongs(); }, [campaignId]);
+
+  // Load skyline overlay setting when campaign is active
+  useEffect(() => {
+    let disposed = false;
+    (async () => {
+      if (!campaignId) { setShowSongTitle(false); return; }
+      try {
+        const settings = await getSkylineOverlaySettings(campaignId);
+        if (!disposed) setShowSongTitle(!!settings.showSongTitle);
+      } catch {}
+    })();
+    return () => { disposed = true; };
+  }, [campaignId]);
 
   // Cargar uso total del usuario (independiente de campaña)
   useEffect(() => {
@@ -391,6 +408,24 @@ export const SoundtrackPage = () => {
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Soundtrack</Typography>
         <Box display="flex" alignItems="center" gap={2}>
+          {campaignId && (
+            <FormControlLabel
+              control={<Switch checked={showSongTitle} onChange={async (_, v) => {
+                setShowSongTitle(v);
+                try { await setSkylineOverlaySettings(campaignId!, { showSongTitle: v }); } catch {}
+                // Broadcast to skyline windows (Electron/web) so they update without reload
+                try { localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ campaignId, showSongTitle: v, at: Date.now() })); } catch {}
+                try {
+                  if ('BroadcastChannel' in window) {
+                    const bc = new BroadcastChannel('campaign-sync');
+                    bc.postMessage({ type: 'skylineSettingsChanged', campaignId, settings: { showSongTitle: v } });
+                    bc.close();
+                  }
+                } catch {}
+              }} />}
+              label="Mostrar título en Skyline"
+            />
+          )}
           <Typography variant="body2" color="text.secondary">
             {usage ? `${(usage.totalSize/1024/1024).toFixed(2)} MB / ${usage.count} pistas` : 'Calculando uso...'}
           </Typography>

@@ -166,6 +166,27 @@ export const GlobalPlayerProvider: React.FC<{ children: ReactNode }> = ({ childr
     try { localStorage.setItem('globalPlayer.nextMode', nextMode); } catch {}
   }, [nextMode]);
 
+  // Broadcast current now-playing to skyline projection windows (per active campaign)
+  useEffect(() => {
+    const campaignId = (() => {
+      try { return localStorage.getItem('activeCampaignId') || null; } catch { return null; }
+    })();
+    if (!campaignId) return;
+    // Storage event for cross-tab
+    try {
+      const payload = current ? { campaignId, title: current.name, at: Date.now() } : { campaignId, title: null, at: Date.now() };
+      localStorage.setItem('app.skyline.nowPlaying', JSON.stringify(payload));
+    } catch {}
+    // BroadcastChannel fast-sync
+    try {
+      if ('BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('campaign-sync');
+        bc.postMessage({ type: 'nowPlayingChanged', campaignId, title: current?.name || null });
+        bc.close();
+      }
+    } catch {}
+  }, [current]);
+
   return (
     <GlobalPlayerContext.Provider value={{ current, loop, loading, play, playQueue, stop, toggleLoop, next, nextMode, toggleNextMode, isQueue: queueActive }}>
       {children}

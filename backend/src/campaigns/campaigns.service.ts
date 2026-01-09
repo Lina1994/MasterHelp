@@ -300,6 +300,25 @@ export class CampaignsService {
     return { ok: true };
   }
 
+  // --- SKYLINE OVERLAY SETTINGS ---
+  async getSkylineOverlaySettings(requestingUserId: number, campaignId: string) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
+    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const fallback = { showSongTitle: false } as const;
+    return { settings: campaign.skylineOverlaySettings ?? fallback };
+  }
+
+  async setSkylineOverlaySettings(campaignId: string, dto: { showSongTitle: boolean }) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    campaign.skylineOverlaySettings = { showSongTitle: !!dto.showSongTitle } as any;
+    await this.campaignsRepository.save(campaign);
+    return { ok: true };
+  }
+
   // --- SELECTED MANUALS ---
   async getSelectedManuals(requestingUserId: number, campaignId: string) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
