@@ -238,6 +238,14 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     setParticipantsDraft(selectedEncounter?.participants || []);
   }, [selectedEncounter?.id]);
 
+  // If battle is started when entering Combat, default to initiative view once hydrated
+  useEffect(() => {
+    if (!hydrated) return;
+    if (battleStarted) {
+      setViewMode((prev) => (prev === 'participants' ? 'initiative' : prev));
+    }
+  }, [hydrated, battleStarted]);
+
   // Load skyline overlay settings (initiative strip) when campaign changes
   useEffect(() => {
     let cancelled = false;

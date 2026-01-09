@@ -349,12 +349,12 @@ const ProjectionSkylinePage: React.FC = () => {
       ) : null}
 
       {showInitiativeStrip && (initiativeStrip?.battleStarted || battleStateStarted) && initiativeStrip?.enabled && (initiativeStrip.items?.length > 0) ? (
-        <Box sx={{ position: 'absolute', bottom: 16, left: 16, px: 1, py: 0.75, bgcolor: 'rgba(0,0,0,0.5)', borderRadius: 1, display: 'flex', alignItems: 'end', gap: 1 }}>
+        <Box sx={{ position: 'absolute', bottom: 16, left: 16, px: 1, py: 0.75, bgcolor: 'rgba(0, 0, 0, 0)', borderRadius: 1, display: 'flex', alignItems: 'end', gap: 1 }}>
           {initiativeStrip.items.slice(0, 10).map((it) => {
             const isCurrent = initiativeStrip.currentTurnId === it.id;
-            const sz = isCurrent ? 50 : 24;
+            const sz = isCurrent ? 100 : 24;
             return (
-              <Box key={it.id} sx={{ display: 'flex', alignItems: 'end', gap: 0.5 }}>
+              <Box key={it.id} sx={{ display: 'flex', alignItems: 'end', bgcolor: 'rgba(0, 0, 0, 0.56)', borderRadius: 4, gap: 0.5 }}>
                 {it.imageUrl ? (
                   <img src={it.imageUrl} alt={it.name} style={{ width: sz, height: sz, objectFit: 'cover', borderRadius: 4 }} />
                 ) : (
