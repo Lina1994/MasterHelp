@@ -7,8 +7,10 @@ import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext'
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
 import { getCharacter, CharacterPayload } from '../api/characters';
 import { getActiveSkylineCharacterId } from '../api/campaigns/activeSkylineCharacter';
-import { getSkylineOverlaySettings } from '../api/campaigns/skylineOverlay';
-import { getCampaignNowPlayingTitle } from '../api/soundtrack/nowPlaying';
+import { getActiveEncounterId } from '../api/campaigns/activeEncounter';
+import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
+import { getSkylineOverlaySettingsPublic } from '../api/campaigns/skylineOverlay';
+import { getCampaignNowPlayingTitlePublic } from '../api/soundtrack/nowPlaying';
 
 const ProjectionSkylinePage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
@@ -18,6 +20,9 @@ const ProjectionSkylinePage: React.FC = () => {
   const [campaignIdFromQuery, setCampaignIdFromQuery] = useState<string | null>(null);
   const [skylineCharacter, setSkylineCharacter] = useState<CharacterPayload | null>(null);
   const [showSongTitle, setShowSongTitle] = useState<boolean>(false);
+  const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(false);
+  const [initiativeStrip, setInitiativeStrip] = useState<{ battleStarted: boolean; enabled: boolean; currentTurnId: string | null; items: Array<{ id: string; name: string; imageUrl: string | null }> } | null>(null);
+  const [battleStateStarted, setBattleStateStarted] = useState<boolean>(false);
   const [nowPlayingTitle, setNowPlayingTitle] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,8 +59,9 @@ const ProjectionSkylinePage: React.FC = () => {
     const cid = campaignIdFromQuery || activeCampaign?.id;
     if (!cid) return;
     try {
-      const settings = await getSkylineOverlaySettings(cid);
+      const settings = await getSkylineOverlaySettingsPublic(cid);
       setShowSongTitle(!!settings.showSongTitle);
+      setShowInitiativeStrip(!!settings.showInitiativeStrip);
     } catch {}
   }, [activeCampaign?.id, campaignIdFromQuery]);
 
@@ -110,12 +116,17 @@ const ProjectionSkylinePage: React.FC = () => {
             loadSkylineCharacter();
           }
           if (data?.type === 'nowPlayingChanged' && data?.campaignId === cid) {
-            // Cross-context robust update: re-fetch from server rather than trusting payload
-            getCampaignNowPlayingTitle(cid).then(r => setNowPlayingTitle(r.title || null)).catch(() => {});
+            // Cross-context robust update: re-fetch via public endpoint
+            getCampaignNowPlayingTitlePublic(cid).then(r => setNowPlayingTitle(r.title || null)).catch(() => {});
           }
           if (data?.type === 'skylineSettingsChanged' && data?.campaignId === cid) {
             const st = data?.settings;
             if (typeof st?.showSongTitle === 'boolean') setShowSongTitle(!!st.showSongTitle);
+            if (typeof st?.showInitiativeStrip === 'boolean') setShowInitiativeStrip(!!st.showInitiativeStrip);
+          }
+          if (data?.type === 'initiativeStripUpdated' && data?.campaignId === cid) {
+            const payload = data as any;
+            setInitiativeStrip({ battleStarted: !!payload.battleStarted, enabled: !!payload.enabled, currentTurnId: payload.currentTurnId || null, items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null })) });
           }
         };
       }
@@ -134,12 +145,20 @@ const ProjectionSkylinePage: React.FC = () => {
       await loadSkylineCharacter();
       try {
         // Refresh skyline settings to ensure show/hide state updates across app/web contexts
-        const settings = await getSkylineOverlaySettings(cid);
+        const settings = await getSkylineOverlaySettingsPublic(cid);
         setShowSongTitle(!!settings.showSongTitle);
+        setShowInitiativeStrip(!!settings.showInitiativeStrip);
       } catch {}
       try {
-        const r = await getCampaignNowPlayingTitle(cid);
+        const r = await getCampaignNowPlayingTitlePublic(cid);
         setNowPlayingTitle(r.title || null);
+      } catch {}
+      try {
+        const bs = await getCampaignBattleStatePublic(cid);
+        setBattleStateStarted(!!bs.started);
+        if (Array.isArray(bs.items)) {
+          setInitiativeStrip({ battleStarted: !!bs.started, enabled: showInitiativeStrip, currentTurnId: bs.currentTurnId || null, items: bs.items.map((x) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null })) });
+        }
       } catch {}
     };
     // Immediate poll once
@@ -147,6 +166,69 @@ const ProjectionSkylinePage: React.FC = () => {
     const interval = setInterval(doPoll, intervalMs);
     return () => { disposed = true; clearInterval(interval); };
   }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter]);
+
+  // On mount or campaign change, read last-known initiative strip from localStorage
+  useEffect(() => {
+    const cid = activeCampaign?.id || campaignIdFromQuery;
+    if (!cid) return;
+    try {
+      const raw = localStorage.getItem('app.skyline.initiativeStrip');
+      if (raw) {
+        const payload = JSON.parse(raw);
+        if (payload?.campaignId === cid) {
+          setInitiativeStrip({ battleStarted: !!payload.battleStarted, enabled: !!payload.enabled, currentTurnId: payload.currentTurnId || null, items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null })) });
+        }
+      }
+    } catch {}
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
+  // On mount or campaign change, read last-known skyline settings from localStorage
+  useEffect(() => {
+    const cid = activeCampaign?.id || campaignIdFromQuery;
+    if (!cid) return;
+    try {
+      const raw = localStorage.getItem('app.skyline.settingsUpdated');
+      if (raw) {
+        const payload = JSON.parse(raw);
+        if (payload?.campaignId === cid) {
+          if (typeof payload.showSongTitle === 'boolean') setShowSongTitle(!!payload.showSongTitle);
+          if (typeof payload.showInitiativeStrip === 'boolean') setShowInitiativeStrip(!!payload.showInitiativeStrip);
+        }
+      }
+    } catch {}
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
+  // Rehydrate battle state from localStorage based on active encounter
+  useEffect(() => {
+    const cid = activeCampaign?.id || campaignIdFromQuery;
+    if (!cid) return;
+    let disposed = false;
+    (async () => {
+      try {
+        const encId = await getActiveEncounterId(cid);
+        if (!encId) { if (!disposed) setBattleStateStarted(false); return; }
+        const key = `battle.state:${cid}:${encId}`;
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const obj = JSON.parse(raw);
+            if (!disposed) setBattleStateStarted(!!obj?.started);
+          }
+        } catch { if (!disposed) setBattleStateStarted(false); }
+        const handler = (e: StorageEvent) => {
+          if (e.key !== key) return;
+          try {
+            const obj = e.newValue ? JSON.parse(e.newValue) : null;
+            if (!obj) return;
+            setBattleStateStarted(!!obj.started);
+          } catch {}
+        };
+        window.addEventListener('storage', handler);
+        return () => { window.removeEventListener('storage', handler); };
+      } catch { if (!disposed) setBattleStateStarted(false); }
+    })();
+    return () => { disposed = true; };
+  }, [activeCampaign?.id, campaignIdFromQuery]);
 
   // Probe if active map has skyline available to avoid loading spinner forever
   useEffect(() => {
@@ -207,6 +289,25 @@ const ProjectionSkylinePage: React.FC = () => {
         if (!cid) return;
         if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
           if (typeof payload.showSongTitle === 'boolean') setShowSongTitle(!!payload.showSongTitle);
+          if (typeof payload.showInitiativeStrip === 'boolean') setShowInitiativeStrip(!!payload.showInitiativeStrip);
+        }
+      } catch {}
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
+  // Listen to storage events for initiative strip updates cross-window
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key !== 'app.skyline.initiativeStrip') return;
+      try {
+        const payload = e.newValue ? JSON.parse(e.newValue) : null;
+        if (!payload) return;
+        const cid = payload.campaignId as string | undefined;
+        if (!cid) return;
+        if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
+          setInitiativeStrip({ battleStarted: !!payload.battleStarted, enabled: !!payload.enabled, currentTurnId: payload.currentTurnId || null, items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null })) });
         }
       } catch {}
     };
@@ -244,6 +345,25 @@ const ProjectionSkylinePage: React.FC = () => {
       {showSongTitle && nowPlayingTitle ? (
         <Box sx={{ position: 'absolute', top: 16, left: 16, px: 1.5, py: 0.75, bgcolor: 'rgba(0,0,0,0.6)', borderRadius: 1 }}>
           <Typography variant="subtitle1" color="white" noWrap title={nowPlayingTitle}>{nowPlayingTitle}</Typography>
+        </Box>
+      ) : null}
+
+      {showInitiativeStrip && (initiativeStrip?.battleStarted || battleStateStarted) && initiativeStrip?.enabled && (initiativeStrip.items?.length > 0) ? (
+        <Box sx={{ position: 'absolute', bottom: 16, left: 16, px: 1, py: 0.75, bgcolor: 'rgba(0,0,0,0.5)', borderRadius: 1, display: 'flex', alignItems: 'end', gap: 1 }}>
+          {initiativeStrip.items.slice(0, 10).map((it) => {
+            const isCurrent = initiativeStrip.currentTurnId === it.id;
+            const sz = isCurrent ? 50 : 24;
+            return (
+              <Box key={it.id} sx={{ display: 'flex', alignItems: 'end', gap: 0.5 }}>
+                {it.imageUrl ? (
+                  <img src={it.imageUrl} alt={it.name} style={{ width: sz, height: sz, objectFit: 'cover', borderRadius: 4 }} />
+                ) : (
+                  <Box sx={{ width: sz, height: sz, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.15)' }} />
+                )}
+                <Typography variant="caption" color="white" noWrap sx={{ maxWidth: 120 }}>{it.name}</Typography>
+              </Box>
+            );
+          })}
         </Box>
       ) : null}
     </Box>

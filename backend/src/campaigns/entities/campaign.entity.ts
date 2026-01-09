@@ -90,6 +90,22 @@ export class Campaign {
   skylineOverlaySettings?: {
     /** When true, show the currently playing song title at the top-left corner. */
     showSongTitle: boolean;
+    /** When true, show the initiative strip (up to 10 participants) at bottom-left. */
+    showInitiativeStrip: boolean;
+  } | null;
+
+  /**
+   * Persisted battle state for current campaign to sync Skyline.
+   * Stored as simple JSON in SQLite. Nullable implies no active battle.
+   */
+  @Column({ type: 'simple-json', nullable: true })
+  battleState?: {
+    started: boolean;
+    encounterId?: string | null;
+    round?: number;
+    turnIndex?: number;
+    currentTurnId?: string | null;
+    items?: Array<{ id: string; name: string; imageUrl?: string | null }>;
   } | null;
 
   /**

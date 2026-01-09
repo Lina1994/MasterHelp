@@ -187,4 +187,12 @@ export class SoundtrackController {
   async getNowPlaying(@Req() req, @Param('campaignId') campaignId: string) {
     return this.service.getNowPlayingTitle(req.user.userId, campaignId);
   }
+
+  /**
+   * Public read-only endpoint for projection clients to read now-playing.
+   */
+  @Get('projection/campaigns/:campaignId/now-playing')
+  async getNowPlayingPublic(@Param('campaignId') campaignId: string) {
+    return this.service.getNowPlayingTitlePublic(campaignId);
+  }
 }

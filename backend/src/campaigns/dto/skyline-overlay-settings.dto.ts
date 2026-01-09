@@ -1,4 +1,4 @@
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 /**
  * Skyline overlay settings DTO.
@@ -9,5 +9,13 @@ export class SkylineOverlaySettingsDto {
    * When true, show the currently playing song title at the top-left corner.
    */
   @IsBoolean()
-  showSongTitle!: boolean;
+  @IsOptional()
+  showSongTitle?: boolean;
+
+  /**
+   * When true, show the initiative strip (up to 10 participants) at bottom-left.
+   */
+  @IsBoolean()
+  @IsOptional()
+  showInitiativeStrip?: boolean;
 }

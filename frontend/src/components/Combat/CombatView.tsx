@@ -46,6 +46,8 @@ import { CharacterPayload } from '../../api/characters';
 import { MonsterDetail, MonsterIndexItem } from '../../types/monsters';
 import { Campaign } from '../../components/Campaign/types';
 import GotoMapsButton from './GotoMapsButton';
+import { getSkylineOverlaySettings, setSkylineOverlaySettings } from '../../api/campaigns/skylineOverlay';
+import { setCampaignBattleState } from '../../api/campaigns/battleState';
 
 /**
  * CombatView: vista de combate con selección de mapa/encuentro,
@@ -86,6 +88,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [monsterDetailByPid, setMonsterDetailByPid] = useState<Record<string, MonsterDetail | null>>({});
   const [viewMode, setViewMode] = useState<'participants' | 'initiative'>('participants');
+  const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(false);
   const participantsRef = React.useRef<EncounterSummary['participants']>([]);
   const turnAlignedRef = React.useRef<boolean>(false);
   const charMap = useMemo(() => {
@@ -234,6 +237,19 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   useEffect(() => {
     setParticipantsDraft(selectedEncounter?.participants || []);
   }, [selectedEncounter?.id]);
+
+  // Load skyline overlay settings (initiative strip) when campaign changes
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!campaign?.id) { setShowInitiativeStrip(false); return; }
+        const s = await getSkylineOverlaySettings(campaign.id);
+        if (!cancelled) setShowInitiativeStrip(!!s.showInitiativeStrip);
+      } catch { if (!cancelled) setShowInitiativeStrip(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [campaign?.id]);
 
   // Cargar detalles del bestiario para enemigos con fallback a EN si ES está incompleto
   useEffect(() => {
@@ -388,6 +404,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     await play(
       { id: songId, name: meta.name, mimeType: meta.mimeType, size: meta.size },
       async () => {
+        try {
+          await api.post(`/soundtrack/songs/${songId}/played`, null, { headers: getAuthHeaders(), params: campaign?.id ? { campaignId: campaign.id } : undefined });
+        } catch {}
         const res = await api.get(buildSongStreamEndpoint(songId), { headers: getAuthHeaders(), responseType: 'blob' });
         return URL.createObjectURL(res.data as Blob);
       },
@@ -421,6 +440,65 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const previousTurn = useCallback(() => {
     previousTurnHook();
   }, [previousTurnHook]);
+
+  // Persist battle state to server for Skyline web
+  useEffect(() => {
+    const cid = campaign?.id;
+    if (!cid) return;
+    // Debounce updates slightly
+    const t = setTimeout(() => {
+      // Build initiative strip items in the same order used for broadcast
+      const maxItems = 10;
+      const turnIdx = Math.max(0, Math.min(orderedParticipants.length - 1, turnIndex));
+      const orderedByTurn = [...orderedParticipants.slice(turnIdx), ...orderedParticipants.slice(0, turnIdx)];
+      const items = orderedByTurn.slice(0, maxItems).map((p) => ({
+        id: p.id,
+        name: p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name,
+        imageUrl: (p.role !== 'foe' && p.kind === 'character') ? (charMap.get(p.id)?.tokenImageUrl || charMap.get(p.id)?.characterImageUrl || null) : null,
+      }));
+      const payload: any = {
+        started: !!battleStarted,
+        encounterId: activeEncounterId || null,
+        round,
+        turnIndex: turnIndex,
+        currentTurnId: currentTurnId || null,
+        items,
+      };
+      setCampaignBattleState(cid, payload).catch(() => {});
+    }, 250);
+    return () => clearTimeout(t);
+  }, [campaign?.id, battleStarted, activeEncounterId, round, turnIndex, currentTurnId, orderedParticipants, enemyDisplayNameById, charMap]);
+
+  // Broadcast initiative strip updates to Skyline
+  useEffect(() => {
+    const cid = campaign?.id;
+    if (!cid) return;
+    const enabled = showInitiativeStrip && battleStarted;
+    const maxItems = 10;
+    const turnIdx = Math.max(0, Math.min(orderedParticipants.length - 1, turnIndex));
+    const orderedByTurn = enabled ? [...orderedParticipants.slice(turnIdx), ...orderedParticipants.slice(0, turnIdx)] : [];
+    const payload = {
+      type: 'initiativeStripUpdated',
+      campaignId: cid,
+      battleStarted,
+      enabled: showInitiativeStrip,
+      currentTurnId: currentTurnId || null,
+      items: orderedByTurn.slice(0, maxItems).map((p) => ({
+        id: p.id,
+        name: p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name,
+        imageUrl: (p.role !== 'foe' && p.kind === 'character') ? (charMap.get(p.id)?.tokenImageUrl || charMap.get(p.id)?.characterImageUrl || null) : null,
+      })),
+      at: Date.now(),
+    } as const;
+    try { localStorage.setItem('app.skyline.initiativeStrip', JSON.stringify(payload)); } catch {}
+    try {
+      if ('BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('campaign-sync');
+        bc.postMessage(payload);
+        bc.close();
+      }
+    } catch {}
+  }, [campaign?.id, showInitiativeStrip, battleStarted, orderedParticipants, turnIndex, currentTurnId, enemyDisplayNameById, charMap]);
 
   /**
    * Renderiza una ficha de detalle compacta para un participante de combate.
@@ -795,6 +873,26 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           <FormControlLabel
             control={<Switch checked={fogEnabled} onChange={(_, v) => setFogEnabled(v)} />}
             label="Niebla de guerra"
+          />
+          <FormControlLabel
+            control={<Switch checked={showInitiativeStrip} onChange={async (_, v) => {
+              setShowInitiativeStrip(v);
+              try {
+                if (campaign?.id) {
+                  await setSkylineOverlaySettings(campaign.id, { showInitiativeStrip: v });
+                  // Notify other windows
+                  try { localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ campaignId: campaign.id, showInitiativeStrip: v, at: Date.now() })); } catch {}
+                  try {
+                    if ('BroadcastChannel' in window) {
+                      const bc = new BroadcastChannel('campaign-sync');
+                      bc.postMessage({ type: 'skylineSettingsChanged', campaignId: campaign.id, settings: { showInitiativeStrip: v } });
+                      bc.close();
+                    }
+                  } catch {}
+                }
+              } catch {}
+            }} />}
+            label="Tira de iniciativa en Skyline"
           />
           <GotoMapsButton />
         </Stack>

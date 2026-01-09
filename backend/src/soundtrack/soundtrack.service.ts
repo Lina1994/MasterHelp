@@ -512,4 +512,19 @@ export class SoundtrackService {
     const latest = await qb.getOne();
     return { title: latest?.name ?? null, lastPlayedAt: latest?.lastPlayedAt ?? null };
   }
+
+  /**
+   * Public read-only: returns most recently played song title for campaign.
+   * No membership check; reveals minimal info for projection.
+   */
+  async getNowPlayingTitlePublic(campaignId: string): Promise<{ title: string | null; lastPlayedAt: Date | null }> {
+    const qb = this.songsRepo.createQueryBuilder('song')
+      .leftJoin('song.campaigns', 'camp')
+      .where('camp.id = :campaignId', { campaignId })
+      .andWhere('song.lastPlayedAt IS NOT NULL')
+      .orderBy('song.lastPlayedAt', 'DESC')
+      .limit(1);
+    const latest = await qb.getOne();
+    return { title: latest?.name ?? null, lastPlayedAt: latest?.lastPlayedAt ?? null };
+  }
 }

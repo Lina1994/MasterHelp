@@ -16,6 +16,7 @@ import { Character } from '../characters/entities/character.entity';
 import { Encounter } from '../encounters/entities/encounter.entity';
 import * as fs from 'fs';
 import * as path from 'path';
+import { BattleStateDto } from './dto/battle-state.dto';
 
 @Injectable()
 export class CampaignsService {
@@ -307,14 +308,81 @@ export class CampaignsService {
     const isOwner = campaign.owner?.id === requestingUserId;
     const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
     if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
-    const fallback = { showSongTitle: false } as const;
-    return { settings: campaign.skylineOverlaySettings ?? fallback };
+    const fallback = { showSongTitle: false, showInitiativeStrip: false } as const;
+    const s = campaign.skylineOverlaySettings ?? (fallback as any);
+    // Ensure both keys exist
+    const settings = { showSongTitle: !!s.showSongTitle, showInitiativeStrip: !!s.showInitiativeStrip };
+    return { settings };
   }
 
-  async setSkylineOverlaySettings(campaignId: string, dto: { showSongTitle: boolean }) {
+  /**
+   * Public read-only skyline overlay settings for projection clients.
+   * Does not enforce membership; returns safe defaults.
+   */
+  async getSkylineOverlaySettingsPublic(campaignId: string) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
+    const fallback = { showSongTitle: false, showInitiativeStrip: false } as const;
+    const s: any = (campaign && campaign.skylineOverlaySettings) ?? fallback;
+    return {
+      showSongTitle: !!s.showSongTitle,
+      showInitiativeStrip: !!s.showInitiativeStrip,
+    };
+  }
+
+  async setSkylineOverlaySettings(campaignId: string, dto: { showSongTitle?: boolean; showInitiativeStrip?: boolean }) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
-    campaign.skylineOverlaySettings = { showSongTitle: !!dto.showSongTitle } as any;
+    const prev = (campaign.skylineOverlaySettings || { showSongTitle: false, showInitiativeStrip: false }) as any;
+    campaign.skylineOverlaySettings = { ...prev, ...dto } as any;
+    await this.campaignsRepository.save(campaign);
+    return { ok: true };
+  }
+
+  // --- BATTLE STATE ---
+  async getBattleState(requestingUserId: number, campaignId: string) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user', 'activeEncounter'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
+    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const fallback = { started: false, encounterId: campaign.activeEncounter?.id || null, round: 1, turnIndex: 0, currentTurnId: null, items: [] } as const;
+    const s = campaign.battleState ?? (fallback as any);
+    const state = { started: !!s.started, encounterId: s.encounterId ?? (campaign.activeEncounter?.id || null), round: typeof s.round === 'number' ? s.round : 1, turnIndex: typeof s.turnIndex === 'number' ? s.turnIndex : 0, currentTurnId: typeof s.currentTurnId === 'string' || s.currentTurnId === null ? (s.currentTurnId ?? null) : null, items: Array.isArray(s.items) ? s.items : [] };
+    return { state };
+  }
+
+  /**
+   * Public read-only battle state for projection clients.
+   * No membership check; exposes minimal non-sensitive data.
+   */
+  async getBattleStatePublic(campaignId: string) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
+    const fallback = { started: false, encounterId: campaign?.activeEncounter?.id || null, round: 1, turnIndex: 0, currentTurnId: null, items: [] } as const;
+    const s: any = (campaign && campaign.battleState) ?? fallback;
+    return {
+      started: !!s.started,
+      encounterId: s.encounterId ?? (campaign?.activeEncounter?.id || null),
+      round: typeof s.round === 'number' ? s.round : 1,
+      turnIndex: typeof s.turnIndex === 'number' ? s.turnIndex : 0,
+      currentTurnId: typeof s.currentTurnId === 'string' || s.currentTurnId === null ? (s.currentTurnId ?? null) : null,
+      items: Array.isArray(s.items) ? s.items : [],
+    };
+  }
+
+  async setBattleState(campaignId: string, dto: BattleStateDto) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['activeEncounter'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const prev = (campaign.battleState || { started: false, encounterId: campaign.activeEncounter?.id || null, round: 1, turnIndex: 0, currentTurnId: null, items: [] }) as any;
+    // Shallow merge with validation defaults
+    const next = {
+      started: typeof dto.started === 'boolean' ? dto.started : prev.started,
+      encounterId: dto.encounterId !== undefined ? dto.encounterId : (prev.encounterId ?? (campaign.activeEncounter?.id || null)),
+      round: typeof dto.round === 'number' && dto.round > 0 ? dto.round : prev.round,
+      turnIndex: typeof dto.turnIndex === 'number' && dto.turnIndex >= 0 ? dto.turnIndex : prev.turnIndex,
+      currentTurnId: dto.currentTurnId !== undefined ? dto.currentTurnId : (prev.currentTurnId ?? null),
+      items: Array.isArray((dto as any).items) ? (dto as any).items : (Array.isArray(prev.items) ? prev.items : []),
+    } as any;
+    campaign.battleState = next;
     await this.campaignsRepository.save(campaign);
     return { ok: true };
   }

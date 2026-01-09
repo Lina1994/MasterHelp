@@ -20,6 +20,7 @@ import { MapEntity } from '../maps/entities/map.entity';
 import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
 import { SkylineOverlaySettingsDto } from './dto/skyline-overlay-settings.dto';
 import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
+import { BattleStateDto } from './dto/battle-state.dto';
 
 @Controller('campaigns')
 export class CampaignsController {
@@ -147,6 +148,35 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   async setSkylineOverlay(@Param('id') id: string, @Body() body: SkylineOverlaySettingsDto) {
     return this.campaignsService.setSkylineOverlaySettings(id, body);
+  }
+
+  // --- BATTLE STATE ---
+  /**
+   * Read persisted battle state for a campaign. Owner or players can read.
+   */
+  @Get(':id/battle-state')
+  @UseGuards(JwtAuthGuard)
+  async getBattleState(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getBattleState(req.user.userId, id);
+  }
+  // --- PUBLIC PROJECTION READS (no auth, read-only) ---
+  @Get('projection/:id/skyline-overlay')
+  async getSkylineOverlayPublic(@Param('id') id: string) {
+    return this.campaignsService.getSkylineOverlaySettingsPublic(id);
+  }
+
+  @Get('projection/:id/battle-state')
+  async getBattleStatePublic(@Param('id') id: string) {
+    return this.campaignsService.getBattleStatePublic(id);
+  }
+
+  /**
+   * Update battle state for a campaign. Only owner can update.
+   */
+  @Patch(':id/battle-state')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setBattleState(@Param('id') id: string, @Body() body: BattleStateDto) {
+    return this.campaignsService.setBattleState(id, body);
   }
 
   // --- SELECTED MANUALS ---
