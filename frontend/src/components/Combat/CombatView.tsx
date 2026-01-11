@@ -30,10 +30,7 @@ import ProjectedMapMirror from '../../components/Map/ProjectedMapMirror';
 import { useActiveEncounter } from '../../components/Encounter/ActiveEncounterContext';
 import { useActiveMap } from '../../components/Map/ActiveMapContext';
 import { listMaps, MapItemDto, getMapImageUrlSized } from '../../api/maps';
-import { useGlobalPlayer } from '../../components/player/GlobalPlayerContext';
-import { api } from '../../apiBase';
-import { getAuthHeaders } from '../../utils/auth';
-import { useEncounterAudio } from '../../hooks/useEncounterAudio';
+import { useEncounterMusic } from '../../hooks/useEncounterMusic';
 import { useBattleState } from '../../hooks/useBattleState';
 import { useTurnOrder } from '../../hooks/useTurnOrder';
 import { rollEnemyInitiative as rollEnemyInitiativeUtil, rollAllEnemiesInitiative as rollAllEnemiesInitiativeUtil } from '../../utils/initiative';
@@ -47,9 +44,14 @@ import { MonsterDetail, MonsterIndexItem } from '../../types/monsters';
 import { Campaign } from '../../components/Campaign/types';
 import GotoMapsButton from './GotoMapsButton';
 import { getSkylineOverlaySettings, setSkylineOverlaySettings } from '../../api/campaigns/skylineOverlay';
-import { setCampaignBattleState } from '../../api/campaigns/battleState';
+import { useSkylineInitiativeSync } from '../../hooks/useSkylineInitiativeSync';
 import CombatNotesBox from './CombatNotesBox';
+import CombatHeader from './CombatHeader';
+import InitiativePanel from './InitiativePanel';
+import ParticipantsPanel from './ParticipantsPanel';
+import DetailCard from './DetailCard';
 import { useCombatNotes } from '../../hooks/useCombatNotes';
+import { computeEnemyDisplayNameById, prettySkill, prettySense, stripGroupSuffix } from './utils';
 
 /**
  * CombatView: vista de combate con selección de mapa/encuentro,
@@ -75,7 +77,6 @@ const difficultyColor: Record<EncounterDifficulty, 'default' | 'success' | 'warn
 };
 
 export default function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, characters, onPatchCharacterLocal, monsters }: CombatViewProps) {
-  const { play, current, stop } = useGlobalPlayer();
   const { activeEncounterId, setActiveEncounterId } = useActiveEncounter();
   const [selectedMapName, setSelectedMapName] = useState<string>('Mapa activo');
   const [prioritizeEncounterMusic, setPrioritizeEncounterMusic] = useState(true);
@@ -86,7 +87,6 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const { activeMapId, setActiveMapId } = useActiveMap();
   const [maps, setMaps] = useState<MapItemDto[]>([]);
   const { battleStarted, setBattleStarted, hydrated } = useBattleState(campaign?.id, activeEncounterId);
-  const [prevTrack, setPrevTrack] = useState<{ id: string; name: string; size?: number; mimeType?: string } | null>(null);
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [monsterDetailByPid, setMonsterDetailByPid] = useState<Record<string, MonsterDetail | null>>({});
   const [viewMode, setViewMode] = useState<'participants' | 'initiative'>('participants');
@@ -137,12 +137,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   // Debug helper (enable with localStorage.setItem('debugBestiary','1'))
   const dbg = (...args: any[]) => { try { if (localStorage.getItem('debugBestiary') === '1') console.debug('[CombatView][Bestiary]', ...args); } catch {} };
 
-  function stripGroupSuffix(name: string): string {
-    // El algoritmo de nombres repetidos añade " A", "B", "AA", etc. al final.
-    // Eliminamos un bloque final de letras mayúsculas precedido por espacio.
-    const base = (name || '').trim();
-    return base.replace(/\s+[A-Z]+$/, '');
-  }
+  // stripGroupSuffix moved to utils.ts
 
   function needsEnglishFallback(md?: MonsterDetail | null): boolean {
     if (!md) return true;
@@ -208,36 +203,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     } as MonsterDetail;
   }
 
-  function indexToLetters(idx: number): string {
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let n = idx;
-    let out = '';
-    do {
-      out = letters[n % 26] + out;
-      n = Math.floor(n / 26) - 1;
-    } while (n >= 0);
-    return out;
-  }
+  // indexToLetters moved to utils.ts
 
-  const enemyDisplayNameById = useMemo(() => {
-    const map: Record<string, string> = {};
-    const groups = new Map<string, EncounterSummary['participants'][number][]>();
-    foes.forEach((p) => {
-      const key = (p.name || '').trim().toLowerCase();
-      const arr = groups.get(key) || [];
-      arr.push(p);
-      groups.set(key, arr);
-    });
-    groups.forEach((arr) => {
-      if (arr.length <= 1) {
-        const only = arr[0];
-        if (only) map[only.id] = only.name;
-      } else {
-        arr.forEach((p, idx) => { map[p.id] = `${p.name} ${indexToLetters(idx)}`; });
-      }
-    });
-    return map;
-  }, [foes]);
+  const enemyDisplayNameById = useMemo(() => computeEnemyDisplayNameById(foes), [foes]);
 
   useEffect(() => {
     setParticipantsDraft(selectedEncounter?.participants || []);
@@ -387,8 +355,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     }
   }, [setHpLocal, schedulePersistInitiative, updateCharacterHp]);
 
-  const findSong = useCallback((songId?: string) => songs.find((s) => s.id === songId), [songs]);
-  const { buildSongStreamEndpoint } = useEncounterAudio(campaign?.id);
+  const { startEncounterMusic, restorePreviousMusic } = useEncounterMusic({ campaignId: campaign?.id, selectedEncounter, songs, prioritizeEncounterMusic });
 
   const rollEnemyInitiative = useCallback(async (pid: string) => {
     await rollEnemyInitiativeUtil(pid, participantsDraft, fetchMonster, setInitiativeLocal, schedulePersistInitiative);
@@ -405,48 +372,16 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const handleStartBattle = useCallback(async () => {
     resetToStart();
     setBattleStarted(true);
-    if (current) {
-      setPrevTrack({ id: current.id, name: current.name, size: current.size, mimeType: current.mimeType });
-    } else {
-      setPrevTrack(null);
-    }
-    if (!selectedEncounter || !prioritizeEncounterMusic) return;
-    const songId = selectedEncounter.musicSongId;
-    const meta = songId ? findSong(songId) : undefined;
-    if (!songId || !meta) return;
-    await play(
-      { id: songId, name: meta.name, mimeType: meta.mimeType, size: meta.size },
-      async () => {
-        try {
-          await api.post(`/soundtrack/songs/${songId}/played`, null, { headers: getAuthHeaders(), params: campaign?.id ? { campaignId: campaign.id } : undefined });
-        } catch {}
-        const res = await api.get(buildSongStreamEndpoint(songId), { headers: getAuthHeaders(), responseType: 'blob' });
-        return URL.createObjectURL(res.data as Blob);
-      },
-    );
-  }, [selectedEncounter, prioritizeEncounterMusic, findSong, play, buildSongStreamEndpoint]);
+    await startEncounterMusic();
+  }, [resetToStart, setBattleStarted, startEncounterMusic]);
 
   const endBattle = useCallback(async () => {
     setBattleStarted(false);
     resetToStart();
     // Al finalizar (escapar o ganar), limpiar notas del combate
     try { clearAllNotes(); } catch {}
-    if (prevTrack) {
-      try {
-        await play(
-          { id: prevTrack.id, name: prevTrack.name, mimeType: prevTrack.mimeType, size: prevTrack.size },
-          async () => {
-            const res = await api.get(buildSongStreamEndpoint(prevTrack.id), { headers: getAuthHeaders(), responseType: 'blob' });
-            return URL.createObjectURL(res.data as Blob);
-          },
-        );
-      } catch {
-        stop();
-      }
-    } else {
-      stop();
-    }
-  }, [prevTrack, play, stop, buildSongStreamEndpoint, clearAllNotes]);
+    await restorePreviousMusic();
+  }, [resetToStart, setBattleStarted, clearAllNotes, restorePreviousMusic]);
 
   const nextTurn = useCallback(() => {
     nextTurnHook();
@@ -468,461 +403,60 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     }
   }, [battleStarted, currentTurnId, advanceTurnForParticipant]);
 
-  // Persist battle state to server for Skyline web
-  useEffect(() => {
-    const cid = campaign?.id;
-    if (!cid) return;
-    // Debounce updates slightly
-    const t = setTimeout(() => {
-      // Build initiative strip items in the same order used for broadcast
-      const maxItems = 10;
-      const turnIdx = Math.max(0, Math.min(orderedParticipants.length - 1, turnIndex));
-      const orderedByTurn = [...orderedParticipants.slice(turnIdx), ...orderedParticipants.slice(0, turnIdx)];
-      const items = orderedByTurn.slice(0, maxItems).map((p) => ({
-        id: p.id,
-        name: p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name,
-        imageUrl: (p.role !== 'foe' && p.kind === 'character') ? (charMap.get(p.id)?.tokenImageUrl || charMap.get(p.id)?.characterImageUrl || null) : null,
-      }));
-      const payload: any = {
-        started: !!battleStarted,
-        encounterId: activeEncounterId || null,
-        round,
-        turnIndex: turnIndex,
-        currentTurnId: currentTurnId || null,
-        items,
-      };
-      setCampaignBattleState(cid, payload).catch(() => {});
-    }, 250);
-    return () => clearTimeout(t);
-  }, [campaign?.id, battleStarted, activeEncounterId, round, turnIndex, currentTurnId, orderedParticipants, enemyDisplayNameById, charMap]);
+  
 
-  // Broadcast initiative strip updates to Skyline
-  useEffect(() => {
-    const cid = campaign?.id;
-    if (!cid) return;
-    const enabled = showInitiativeStrip && battleStarted;
-    const maxItems = 10;
-    const turnIdx = Math.max(0, Math.min(orderedParticipants.length - 1, turnIndex));
-    const orderedByTurn = enabled ? [...orderedParticipants.slice(turnIdx), ...orderedParticipants.slice(0, turnIdx)] : [];
-    const payload = {
-      type: 'initiativeStripUpdated',
-      campaignId: cid,
-      battleStarted,
-      enabled: showInitiativeStrip,
-      currentTurnId: currentTurnId || null,
-      items: orderedByTurn.slice(0, maxItems).map((p) => ({
-        id: p.id,
-        name: p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name,
-        imageUrl: (p.role !== 'foe' && p.kind === 'character') ? (charMap.get(p.id)?.tokenImageUrl || charMap.get(p.id)?.characterImageUrl || null) : null,
-      })),
-      at: Date.now(),
-    } as const;
-    try { localStorage.setItem('app.skyline.initiativeStrip', JSON.stringify(payload)); } catch {}
-    try {
-      if ('BroadcastChannel' in window) {
-        const bc = new BroadcastChannel('campaign-sync');
-        bc.postMessage(payload);
-        bc.close();
-      }
-    } catch {}
-  }, [campaign?.id, showInitiativeStrip, battleStarted, orderedParticipants, turnIndex, currentTurnId, enemyDisplayNameById, charMap]);
-
+  // Skyline sync (server persist + initiative strip broadcast)
+  useSkylineInitiativeSync({
+    campaignId: campaign?.id,
+    battleStarted,
+    encounterId: activeEncounterId || null,
+    round,
+    turnIndex,
+    currentTurnId: currentTurnId || null,
+    orderedParticipants,
+    enemyDisplayNameById,
+    charMap,
+    showInitiativeStrip,
+  });
   /**
    * Renderiza una ficha de detalle compacta para un participante de combate.
    * Muestra nombre, rol, iniciativa y barra de HP (incluye Temp HP para aliados).
    * colorKey controla el color de acento de la ficha.
    */
-  const DetailCard: React.FC<{ participant?: EncounterSummary['participants'][number] | null; colorKey?: 'primary' | 'secondary' }> = ({ participant, colorKey = 'primary' }) => {
-    if (!participant) {
-      return (
-        <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 1, flex: '1 1 320px', minWidth: 280 }}>
-          <Typography variant="body2" color="text.secondary">Sin selección</Typography>
-        </Paper>
-      );
-    }
-    const isEnemy = participant.role === 'foe';
-    const isAlly = !isEnemy;
-    const char = isAlly && participant.kind === 'character' ? charMap.get(participant.id) : undefined;
-    const ch = isAlly ? (char?.currentHp ?? participant.currentHp) : (typeof participant.currentHp === 'number' ? participant.currentHp : undefined);
-    const mx = isAlly ? (char?.maxHp ?? participant.maxHp) : (typeof participant.maxHp === 'number' ? participant.maxHp : undefined);
-    const temp = isAlly ? (char?.tempHp) : undefined;
-    const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
-    const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
-    const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
-
-    const md = isEnemy && participant.kind !== 'character' ? monsterDetailByPid[participant.id] : undefined;
-    const armorClass = isAlly ? char?.armorClass : md?.armorClass?.value;
-    const speedStrAlly = char?.speed;
-    const speedStrEnemy = md?.speed ? Object.entries(md.speed).filter(([_, v]) => typeof v === 'number').map(([k, v]) => `${k} ${v} ft`).join(', ') : undefined;
-
-    const skillNameEs: Record<string, string> = {
-      athletics: 'Atletismo', acrobatics: 'Acrobacias', sleightOfHand: 'Juego de manos', stealth: 'Sigilo',
-      arcana: 'Arcanos', history: 'Historia', investigation: 'Investigación', nature: 'Naturaleza', religion: 'Religión',
-      animalHandling: 'Manejo de animales', insight: 'Perspicacia', medicine: 'Medicina', perception: 'Percepción', survival: 'Supervivencia',
-      deception: 'Engaño', intimidation: 'Intimidación', performance: 'Interpretación', persuasion: 'Persuasión'
-    };
-    const prettySkill = (k: string) => {
-      const key = k.trim().replace(/\s+/g, '').toLowerCase();
-      // Intentar normalizar claves comunes
-      const mapAlt: Record<string, string> = { 'sleightofhand': 'sleightOfHand', 'animalhandling': 'animalHandling', 'passiveperception': 'perception' };
-      const norm = mapAlt[key] || key;
-      return skillNameEs[norm] || k;
-    };
-    const senseNameEs: Record<string, string> = {
-      darkvision: 'Visión en la oscuridad', blindsight: 'Vista ciega', tremorsense: 'Sentido de vibración', truesight: 'Vista verdadera', passivePerception: 'Percepción pasiva'
-    } as any;
-    const prettySense = (k: string) => senseNameEs[k as any] || k;
-
-    return (
-      <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 1, borderColor: `${colorKey}.main`, borderWidth: 1, borderStyle: 'solid', flex: '1 1 320px', minWidth: 280 }}>
-        <Stack spacing={0.75}>
-          <Typography variant="body1">{isEnemy ? (enemyDisplayNameById[participant.id] || participant.name) : participant.name}</Typography>
-          <Typography variant="caption" color="text.secondary">{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {participant.initiative ?? '—'}</Typography>
-          {/* Sección: Datos de combate clave */}
-          <Typography variant="caption" color="text.secondary">
-            {typeof armorClass === 'number' ? `CA ${armorClass}` : ''}{participant.initiative !== undefined ? ` · Ini ${participant.initiative}` : ''}{(isAlly && speedStrAlly) ? ` · Vel ${speedStrAlly}` : ''}{(isEnemy && speedStrEnemy) ? ` · Vel ${speedStrEnemy}` : ''}
-          </Typography>
-          {percent !== undefined ? (
-            <Stack spacing={0.5}>
-              <LinearProgress variant="determinate" value={percent} />
-              <Typography variant="caption" color="text.secondary">
-                HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{isAlly && typeof temp === 'number' ? ` · Temp ${temp}` : ''}
-              </Typography>
-            </Stack>
-          ) : (
-            <Typography variant="caption" color="text.secondary">HP —</Typography>
-          )}
-          {/* Sección: Meta */}
-          {isAlly && (
-            <>
-              <Divider />
-              <Typography variant="subtitle2">Ficha del aliado</Typography>
-              <Typography variant="caption" color="text.secondary">
-                {(char?.className ? `Clase ${char.className}` : '')}{typeof char?.level === 'number' ? ` · Nivel ${char.level}` : ''}{char?.race ? ` · Raza ${char.race}` : ''}{char?.background ? ` · Trasfondo ${char.background}` : ''}{char?.alignment ? ` · Alineamiento ${char.alignment}` : ''}{char?.playerName ? ` · Jugador ${char.playerName}` : ''}
-              </Typography>
-              {/* Atributos */}
-              {char && (
-                <Typography variant="caption" color="text.secondary">
-                  {typeof char.str === 'number' ? `STR ${char.str}` : ''}{typeof char.dex === 'number' ? ` · DEX ${char.dex}` : ''}{typeof char.con === 'number' ? ` · CON ${char.con}` : ''}{typeof char.int === 'number' ? ` · INT ${char.int}` : ''}{typeof char.wis === 'number' ? ` · WIS ${char.wis}` : ''}{typeof char.cha === 'number' ? ` · CHA ${char.cha}` : ''}
-                </Typography>
-              )}
-              {/* Competencia y hechicería */}
-              {char && (
-                <Typography variant="caption" color="text.secondary">
-                  {typeof char.proficiencyBonus === 'number' ? `PB +${char.proficiencyBonus}` : ''}{char.spellcastingAbility ? ` · Lanzamiento ${char.spellcastingAbility.toUpperCase()}` : ''}{typeof char.spellSaveDC === 'number' ? ` · CD Hechizo ${char.spellSaveDC}` : ''}{typeof char.spellAttackBonus === 'number' ? ` · Ataque Hechizo +${char.spellAttackBonus}` : ''}{char.hitDice ? ` · Dados de golpe ${char.hitDice}` : ''}
-                </Typography>
-              )}
-              {/* Apariencia */}
-              {char && (
-                <Typography variant="caption" color="text.secondary">
-                  {char.age ? `Edad ${char.age}` : ''}{char.height ? ` · Altura ${char.height}` : ''}{char.weight ? ` · Peso ${char.weight}` : ''}{char.eyes ? ` · Ojos ${char.eyes}` : ''}{char.skin ? ` · Piel ${char.skin}` : ''}{char.hair ? ` · Pelo ${char.hair}` : ''}
-                </Typography>
-              )}
-              {/* Listas largas */}
-              {char?.otherProficienciesAndLanguages && (
-                <Typography variant="caption" color="text.secondary">Proficiencias e idiomas: {char.otherProficienciesAndLanguages}</Typography>
-              )}
-              {char?.equipment && (
-                <Typography variant="caption" color="text.secondary">Equipo: {char.equipment}</Typography>
-              )}
-              {char?.traitsAndFeatures && (
-                <Typography variant="caption" color="text.secondary">Rasgos y características: {char.traitsAndFeatures}</Typography>
-              )}
-              {char?.alliesAndOrganizations && (
-                <Typography variant="caption" color="text.secondary">Aliados y organizaciones: {char.alliesAndOrganizations}</Typography>
-              )}
-              {char?.backstory && (
-                <Typography variant="caption" color="text.secondary">Historia: {char.backstory}</Typography>
-              )}
-              {char?.treasure && (
-                <Typography variant="caption" color="text.secondary">Tesoro: {char.treasure}</Typography>
-              )}
-              {/* Hechizos */}
-              {(char?.cantrips?.length || (char?.spellsByLevel && Object.keys(char.spellsByLevel).length)) ? (
-                <Stack spacing={0.5}>
-                  {char?.cantrips?.length ? (
-                    <Typography variant="caption" color="text.secondary">Trucos: {char.cantrips.join(', ')}</Typography>
-                  ) : null}
-                  {char?.spellsByLevel ? (
-                    Object.entries(char.spellsByLevel).map(([lvl, names]) => (
-                      <Typography key={lvl} variant="caption" color="text.secondary">Nivel {lvl}: {names.join(', ')}</Typography>
-                    ))
-                  ) : null}
-                </Stack>
-              ) : null}
-            </>
-          )}
-
-          {isEnemy && (
-            <>
-              <Divider />
-              <Typography variant="subtitle2">Ficha del enemigo</Typography>
-              <Typography variant="caption" color="text.secondary">
-                {md?.size ? `${md.size} ` : ''}{md?.type || ''}{md?.alignment ? `, ${md.alignment}` : ''}{md?.challengeRating ? ` • CR ${md.challengeRating}` : ''}{typeof md?.proficiencyBonus === 'number' ? ` • PB +${md.proficiencyBonus}` : ''}
-              </Typography>
-              {/* AC, HP, velocidad */}
-              <Typography variant="caption" color="text.secondary">
-                {typeof md?.armorClass?.value === 'number' ? `CA ${md.armorClass.value}${md.armorClass.type ? ` (${md.armorClass.type})` : ''}` : ''}{md?.hitPoints?.average ? ` · HP medio ${md.hitPoints.average}` : ''}{md?.hitPoints?.roll ? ` · HP dados ${md.hitPoints.roll}` : ''}{speedStrEnemy ? ` · Vel ${speedStrEnemy}` : ''}
-              </Typography>
-              {/* Habilidades y salvaciones */}
-              {md?.abilities && (
-                <Typography variant="caption" color="text.secondary">
-                  {typeof md.abilities.str === 'number' ? `STR ${md.abilities.str}` : ''}{typeof md.abilities.dex === 'number' ? ` · DEX ${md.abilities.dex}` : ''}{typeof md.abilities.con === 'number' ? ` · CON ${md.abilities.con}` : ''}{typeof md.abilities.int === 'number' ? ` · INT ${md.abilities.int}` : ''}{typeof md.abilities.wis === 'number' ? ` · WIS ${md.abilities.wis}` : ''}{typeof md.abilities.cha === 'number' ? ` · CHA ${md.abilities.cha}` : ''}
-                </Typography>
-              )}
-              {md?.savingThrows && (
-                <Typography variant="caption" color="text.secondary">
-                  Salvaciones: {Object.entries(md.savingThrows).map(([k, v]) => `${k.toUpperCase()} +${v}`).join(', ')}
-                </Typography>
-              )}
-              {md?.skills && Object.keys(md.skills).length > 0 && (
-                <Typography variant="caption" color="text.secondary">
-                  Habilidades: {Object.entries(md.skills).map(([k, v]) => `${prettySkill(k)} +${v}`).join(', ')}
-                </Typography>
-              )}
-              {/* Resistencias e inmunidades */}
-              {md?.damageVulnerabilities?.length ? (
-                <Typography variant="caption" color="text.secondary">Vulnerabilidades: {md.damageVulnerabilities.join(', ')}</Typography>
-              ) : null}
-              {md?.damageResistances?.length ? (
-                <Typography variant="caption" color="text.secondary">Resistencias: {md.damageResistances.join(', ')}</Typography>
-              ) : null}
-              {md?.damageImmunities?.length ? (
-                <Typography variant="caption" color="text.secondary">Inmunidades: {md.damageImmunities.join(', ')}</Typography>
-              ) : null}
-              {md?.conditionImmunities?.length ? (
-                <Typography variant="caption" color="text.secondary">Inmunidades de estado: {md.conditionImmunities.join(', ')}</Typography>
-              ) : null}
-              {/* Sentidos e idiomas */}
-              {md?.senses && (
-                <Typography variant="caption" color="text.secondary">
-                  Sentidos: {Object.entries(md.senses).map(([k, v]) => `${prettySense(k)}: ${v}`).join(', ')}
-                </Typography>
-              )}
-              {md?.languages && (
-                <Typography variant="caption" color="text.secondary">Idiomas: {md.languages}</Typography>
-              )}
-              {/* Entorno y notas */}
-              {md?.environment?.length ? (
-                <Typography variant="caption" color="text.secondary">Entorno: {md.environment.join(', ')}</Typography>
-              ) : null}
-              {md?.notes?.length ? (
-                <Stack spacing={0.25}>
-                  {md.notes.map((n, i) => (
-                    <Typography key={i} variant="caption" color="text.secondary">Nota: {n}</Typography>
-                  ))}
-                </Stack>
-              ) : null}
-              {/* Rasgos y acciones completas */}
-              {md?.traits?.length ? (
-                <Stack spacing={0.25}>
-                  <Typography variant="caption" color="text.secondary">Rasgos:</Typography>
-                  {md.traits.map((t, i) => {
-                    const text = (t as any)?.text || t.desc;
-                    const name = t.name;
-                    return (
-                      <Typography key={i} variant="caption" color="text.secondary">
-                        • {name ? `${name}: ` : ''}{text}
-                      </Typography>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-              {md?.actions?.length ? (
-                <Stack spacing={0.25}>
-                  <Typography variant="caption" color="text.secondary">Acciones:</Typography>
-                  {md.actions.map((t, i) => {
-                    const text = (t as any)?.text || t.desc;
-                    const name = t.name;
-                    return (
-                      <Typography key={i} variant="caption" color="text.secondary">
-                        • {name ? `${name}: ` : ''}{text}
-                      </Typography>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-              {md?.reactions?.length ? (
-                <Stack spacing={0.25}>
-                  <Typography variant="caption" color="text.secondary">Reacciones:</Typography>
-                  {md.reactions.map((t, i) => {
-                    const text = (t as any)?.text || t.desc;
-                    const name = t.name;
-                    return (
-                      <Typography key={i} variant="caption" color="text.secondary">
-                        • {name ? `${name}: ` : ''}{text}
-                      </Typography>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-              {md?.legendaryActions?.length ? (
-                <Stack spacing={0.25}>
-                  <Typography variant="caption" color="text.secondary">Acciones legendarias:</Typography>
-                  {md.legendaryActions.map((t, i) => {
-                    const text = (t as any)?.text || t.desc;
-                    const name = t.name;
-                    return (
-                      <Typography key={i} variant="caption" color="text.secondary">
-                        • {name ? `${name}: ` : ''}{text}
-                      </Typography>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-              {md?.lairActions?.length ? (
-                <Stack spacing={0.25}>
-                  <Typography variant="caption" color="text.secondary">Acciones de guarida:</Typography>
-                  {md.lairActions.map((t, i) => {
-                    const text = (t as any)?.text || t.desc;
-                    const name = t.name;
-                    return (
-                      <Typography key={i} variant="caption" color="text.secondary">
-                        • {name ? `${name}: ` : ''}{text}
-                      </Typography>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-              {md?.regionalEffects?.length ? (
-                <Stack spacing={0.25}>
-                  <Typography variant="caption" color="text.secondary">Efectos regionales:</Typography>
-                  {md.regionalEffects.map((t, i) => {
-                    const text = (t as any)?.text || t.desc;
-                    const name = t.name;
-                    return (
-                      <Typography key={i} variant="caption" color="text.secondary">
-                        • {name ? `${name}: ` : ''}{text}
-                      </Typography>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-            </>
-          )}
-        </Stack>
-      </Paper>
-    );
-  };
+  
 
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-          <Typography variant="h6">Combate</Typography>
-          <FormControl size="small" sx={{ minWidth: 240 }}>
-            <InputLabel id="select-map-inline-label">Mapa</InputLabel>
-            <Select
-              labelId="select-map-inline-label"
-              label="Mapa"
-              value={(activeMapId && maps.some(m => m.id === activeMapId)) ? activeMapId : ''}
-              onChange={(e) => setActiveMapId(e.target.value as string)}
-              displayEmpty
-              renderValue={(val) => {
-                const m = maps.find((x) => x.id === val);
-                if (!m) return <em>Mapa activo</em> as any;
-                return (
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Box sx={{ width: 24, height: 24, borderRadius: 0.5, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {m.imageAvailable ? (
-                        <AuthImage src={getMapImageUrlSized(m.id, 'thumb')} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onErrorIcon={<ImageIcon fontSize="small" />} />
-                      ) : (
-                        <ImageIcon fontSize="small" />
-                      )}
-                    </Box>
-                    <Typography variant="body2" noWrap>{m.name}</Typography>
-                    {m.musicConfig && <LibraryMusicIcon fontSize="small" color="primary" />}
-                  </Stack>
-                );
-              }}
-            >
-              {maps.length === 0 && (
-                <MenuItem value="" disabled>
-                  <em>Sin mapas</em>
-                </MenuItem>
-              )}
-              {maps.map((m) => (
-                <MenuItem key={m.id} value={m.id}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Box sx={{ width: 24, height: 24, borderRadius: 0.5, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {m.imageAvailable ? (
-                        <AuthImage src={getMapImageUrlSized(m.id, 'thumb')} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onErrorIcon={<ImageIcon fontSize="small" />} />
-                      ) : (
-                        <ImageIcon fontSize="small" />
-                      )}
-                    </Box>
-                    <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>{m.name}</Typography>
-                    {m.musicConfig && <LibraryMusicIcon fontSize="small" color="primary" />}
-                  </Stack>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 260 }}>
-            <InputLabel id="select-encounter-inline-label">Encuentro</InputLabel>
-            <Select
-              labelId="select-encounter-inline-label"
-              label="Encuentro"
-              value={(activeEncounterId && encounters.some(e => e.id === activeEncounterId)) ? activeEncounterId : ''}
-              onChange={(e) => handleSelectEncounter(e.target.value as string)}
-              displayEmpty
-              renderValue={(val) => {
-                const chosen = encounters.find((e) => e.id === val);
-                if (!chosen) return <em>Sin encuentro</em> as any;
-                return (
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2" noWrap>{chosen.name}</Typography>
-                    <Chip size="small" label={chosen.difficulty} color={difficultyColor[chosen.difficulty]} />
-                  </Stack>
-                );
-              }}
-            >
-              {encounters.length === 0 && (
-                <MenuItem value="" disabled>
-                  <em>Sin encuentros</em>
-                </MenuItem>
-              )}
-              {encounters.map((enc) => (
-                <MenuItem key={enc.id} value={enc.id}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>{enc.name}</Typography>
-                    <Chip size="small" label={enc.difficulty} color={difficultyColor[enc.difficulty]} />
-                    <Typography variant="caption" color="text.secondary">{enc.participants.length} integrantes</Typography>
-                  </Stack>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControlLabel
-            control={<Switch checked={prioritizeEncounterMusic} onChange={(_, v) => setPrioritizeEncounterMusic(v)} />}
-            label="Priorizar música de encuentro"
-          />
-          <FormControlLabel
-            control={<Switch checked={fogEnabled} onChange={(_, v) => setFogEnabled(v)} />}
-            label="Niebla de guerra"
-          />
-          <FormControlLabel
-            control={<Switch checked={showInitiativeStrip} onChange={async (_, v) => {
-              setShowInitiativeStrip(v);
-              try {
-                if (campaign?.id) {
-                  await setSkylineOverlaySettings(campaign.id, { showInitiativeStrip: v });
-                  // Notify other windows
-                  try { localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ campaignId: campaign.id, showInitiativeStrip: v, at: Date.now() })); } catch {}
-                  try {
-                    if ('BroadcastChannel' in window) {
-                      const bc = new BroadcastChannel('campaign-sync');
-                      bc.postMessage({ type: 'skylineSettingsChanged', campaignId: campaign.id, settings: { showInitiativeStrip: v } });
-                      bc.close();
-                    }
-                  } catch {}
-                }
-              } catch {}
-            }} />}
-            label="Tira de iniciativa en Skyline"
-          />
-          <GotoMapsButton />
-        </Stack>
+        <CombatHeader
+          maps={maps}
+          activeMapId={activeMapId}
+          setActiveMapId={setActiveMapId}
+          encounters={encounters}
+          activeEncounterId={activeEncounterId}
+          onSelectEncounter={handleSelectEncounter}
+          prioritizeEncounterMusic={prioritizeEncounterMusic}
+          setPrioritizeEncounterMusic={setPrioritizeEncounterMusic}
+          fogEnabled={fogEnabled}
+          setFogEnabled={setFogEnabled}
+          showInitiativeStrip={showInitiativeStrip}
+          onToggleInitiativeStrip={async (v) => {
+            setShowInitiativeStrip(v);
+            try {
+              if (campaign?.id) {
+                await setSkylineOverlaySettings(campaign.id, { showInitiativeStrip: v });
+                try { localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ campaignId: campaign.id, showInitiativeStrip: v, at: Date.now() })); } catch {}
+                try {
+                  if ('BroadcastChannel' in window) {
+                    const bc = new BroadcastChannel('campaign-sync');
+                    bc.postMessage({ type: 'skylineSettingsChanged', campaignId: campaign.id, settings: { showInitiativeStrip: v } });
+                    bc.close();
+                  }
+                } catch {}
+              }
+            } catch {}
+          }}
+        />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Vista previa vinculada a la ventana de jugadores. Permite seleccionar otro mapa y encuentro sin salir de esta pantalla.
         </Typography>
@@ -940,392 +474,63 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           </Tabs>
         </Box>
         {viewMode === 'participants' && (
-          <Stack spacing={2}>
-            <Stack direction="row" spacing={1} alignItems={'center'}>
-              <Typography variant="subtitle1">Participantes</Typography>
-              {!isMaster && <Chip size="small" label="Solo lectura" />}
-            </Stack>
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>Aliados</Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                {allies.map((p) => {
-                const char = p.kind === 'character' ? charMap.get(p.id) : undefined;
-                const ch = (char?.currentHp ?? p.currentHp);
-                const mx = (char?.maxHp ?? p.maxHp);
-                const temp = (char?.tempHp);
-                const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
-                const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
-                const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
-                return (
-                  <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
-                    <Paper variant="outlined" sx={{ p: 1, borderRadius: 1 }}>
-                      <Stack spacing={0.75}>
-                        <Typography variant="body1">{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
-                        {percent !== undefined ? (
-                          <Stack spacing={0.5}>
-                            <LinearProgress variant="determinate" value={percent} />
-                            <Typography variant="caption" color="text.secondary">HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{typeof temp === 'number' ? ` · Temp ${temp}` : ''}</Typography>
-                          </Stack>
-                        ) : (
-                          <Typography variant="caption" color="text.secondary">HP —</Typography>
-                        )}
-                        {isMaster ? (
-                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                            <TextField
-                              size="small"
-                              type="number"
-                              label="HP"
-                              inputProps={{ min: 0, style: { width: 64 } }}
-                              value={hasCh ? Number(ch) : ''}
-                              onChange={(e) => {
-                                const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                setHp(p, 'currentHp', val);
-                              }}
-                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); } }}
-                            />
-                            {p.kind === 'character' && (
-                              <TextField
-                                size="small"
-                                type="number"
-                                label="Temp"
-                                inputProps={{ min: 0, style: { width: 64 } }}
-                                value={typeof temp === 'number' ? temp : ''}
-                                onChange={(e) => {
-                                  const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                  setHp(p, 'tempHp', val);
-                                }}
-                              />
-                            )}
-                            <TextField
-                              size="small"
-                              type="number"
-                              label="Ini"
-                              inputProps={{ min: -10, max: 50, style: { width: 64 } }}
-                              value={p.initiative ?? ''}
-                              onChange={(e) => {
-                                const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                setInitiativeLocal(p.id, val);
-                                schedulePersistInitiative(p.id);
-                              }}
-                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
-                            />
-                            {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
-                          </Stack>
-                        ) : (
-                          <Stack direction="row" spacing={1}>
-                            <Chip size="small" label={`Ini ${p.initiative ?? '—'}`} variant="outlined" />
-                          </Stack>
-                        )}
-                      </Stack>
-                    </Paper>
-                  </Box>
-                );
-                })}
-              </Stack>
-            </Box>
-            <Box>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="subtitle2">Enemigos</Typography>
-                {isMaster && (
-                  <Button size="small" variant="outlined" startIcon={<CasinoIcon />} onClick={rollAllEnemiesInitiative}>
-                    Calcular iniciativa (todos)
-                  </Button>
-                )}
-                {isMaster && (
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Button size="small" variant="outlined" startIcon={<FavoriteIcon />} onClick={() => rollAllEnemiesHp('avg')}>
-                      Calcular HP (media)
-                    </Button>
-                    <Button size="small" variant="outlined" startIcon={<FavoriteIcon />} onClick={() => rollAllEnemiesHp('dice')}>
-                      Calcular HP (dados)
-                    </Button>
-                  </Stack>
-                )}
-              </Stack>
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                {foes.map((p) => {
-                const ch = typeof p.currentHp === 'number' ? p.currentHp : undefined;
-                const mx = typeof p.maxHp === 'number' ? p.maxHp : undefined;
-                const percent = ch !== undefined && mx && mx > 0 ? Math.max(0, Math.min(100, (ch / mx) * 100)) : undefined;
-                return (
-                  <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
-                    <Paper variant="outlined" sx={{ p: 1, borderRadius: 1 }}>
-                      <Stack spacing={0.75}>
-                        <Typography variant="body1">{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
-                        {percent !== undefined ? (
-                          <Stack spacing={0.5}>
-                            <LinearProgress variant="determinate" value={percent} />
-                            <Typography variant="caption" color="text.secondary">HP {ch}/{mx}</Typography>
-                          </Stack>
-                        ) : (
-                          <Typography variant="caption" color="text.secondary">HP —</Typography>
-                        )}
-                        {isMaster ? (
-                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                            <TextField
-                              size="small"
-                              type="number"
-                              label="HP"
-                              inputProps={{ min: 0, style: { width: 64 } }}
-                              value={p.currentHp ?? ''}
-                              onChange={(e) => {
-                                const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                setHpLocal(p.id, 'currentHp', val);
-                                schedulePersistInitiative(p.id);
-                              }}
-                            />
-                            <TextField
-                              size="small"
-                              type="number"
-                              label="Ini"
-                              inputProps={{ min: -10, max: 50, style: { width: 64 } }}
-                              value={p.initiative ?? ''}
-                              onChange={(e) => {
-                                const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                setInitiativeLocal(p.id, val);
-                                schedulePersistInitiative(p.id);
-                              }}
-                            />
-                            {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
-                          </Stack>
-                        ) : (
-                          <Stack direction="row" spacing={1}>
-                            <Chip size="small" label={`Ini ${p.initiative ?? '—'}`} variant="outlined" />
-                          </Stack>
-                        )}
-                      </Stack>
-                    </Paper>
-                  </Box>
-                );
-                })}
-              </Stack>
-            </Box>
-          </Stack>
+          <ParticipantsPanel
+            isMaster={isMaster}
+            allies={allies}
+            foes={foes}
+            charMap={charMap}
+            enemyDisplayNameById={enemyDisplayNameById}
+            savingInitiative={savingInitiative}
+            savingHp={savingHp}
+            setHp={setHp}
+            setHpLocal={setHpLocal}
+            setInitiativeLocal={setInitiativeLocal}
+            schedulePersistInitiative={schedulePersistInitiative}
+            rollAllEnemiesInitiative={rollAllEnemiesInitiative}
+            rollAllEnemiesHp={rollAllEnemiesHp}
+          />
         )}
         {viewMode === 'initiative' && (
           <>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-              <Typography variant="subtitle1">Orden por iniciativa</Typography>
-              <Chip size="small" label={`Ronda ${round}`} />
-              {orderedParticipants.length > 0 && (
-                <Chip size="small" label={`Turno ${turnIndex + 1}/${orderedParticipants.length}`} />
-              )}
-            </Stack>
-            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1 }}>
-              {!battleStarted && (
-                <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleStartBattle}>Empezar batalla</Button>
-              )}
-              {battleStarted && (
-                <>
-                  <Button variant="outlined" startIcon={<OutboundIcon />} onClick={endBattle}>Escapar batalla</Button>
-                  <Button variant="contained" color="success" startIcon={<EmojiEventsIcon />} onClick={endBattle}>Batalla ganada</Button>
-                </>
-              )}
-              <Button variant="outlined" onClick={previousTurn}>Turno anterior</Button>
-              <Button variant="outlined" onClick={nextTurn}>Turno siguiente</Button>
-            </Stack>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {orderedParticipants.map((p, idx) => {
-            const isEnemy = p.role === 'foe';
-            const isAlly = !isEnemy;
-            const char = isAlly && p.kind === 'character' ? charMap.get(p.id) : undefined;
-            const ch = isAlly ? (char?.currentHp ?? p.currentHp) : (typeof p.currentHp === 'number' ? p.currentHp : undefined);
-            const mx = isAlly ? (char?.maxHp ?? p.maxHp) : (typeof p.maxHp === 'number' ? p.maxHp : undefined);
-            const temp = isAlly ? (char?.tempHp) : undefined;
-            const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
-            const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
-            const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
-            const isCurrentTurn = p.id === currentTurnId;
-            const isSelected = p.id === selectedParticipantId;
-            const borderColor = isCurrentTurn ? 'primary.main' : (isSelected ? 'secondary.main' : 'divider');
-            return (
-              <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
-                <Paper
-                  variant="outlined"
-                  sx={{ p: 1, borderRadius: 1, borderColor, borderWidth: 1, borderStyle: 'solid', cursor: 'pointer' }}
-                  onClick={() => {
-                    setSelectedParticipantId(p.id);
-                    try {
-                      const baseName = stripGroupSuffix(p.name || '');
-                      const md = isEnemy && p.kind !== 'character' ? (monsterDetailByPid[p.id] || null) : null;
-                      const mdSummary = md ? {
-                        traits: md.traits?.length || 0,
-                        actions: md.actions?.length || 0,
-                        reactions: md.reactions?.length || 0,
-                        legendaryActions: md.legendaryActions?.length || 0,
-                        lairActions: md.lairActions?.length || 0,
-                        regionalEffects: md.regionalEffects?.length || 0,
-                        senses: md.senses ? Object.keys(md.senses).length : 0,
-                        skills: md.skills ? Object.keys(md.skills).length : 0,
-                        languages: md.languages ? 1 : 0,
-                        sampleTrait: md.traits?.[0],
-                        sampleAction: md.actions?.[0],
-                      } : null;
-                      const char = isAlly && p.kind === 'character' ? charMap.get(p.id) : undefined;
-                      const ch = isAlly ? (char?.currentHp ?? p.currentHp) : (typeof p.currentHp === 'number' ? p.currentHp : undefined);
-                      const mx = isAlly ? (char?.maxHp ?? p.maxHp) : (typeof p.maxHp === 'number' ? p.maxHp : undefined);
-                      const temp = isAlly ? (char?.tempHp) : undefined;
-                      console.log('[CombatView][Select]', {
-                        participant: {
-                          id: p.id,
-                          name: p.name,
-                          displayName: isEnemy ? (enemyDisplayNameById[p.id] || p.name) : p.name,
-                          role: p.role,
-                          kind: p.kind,
-                          initiative: p.initiative,
-                          currentHp: ch,
-                          maxHp: mx,
-                          tempHp: temp,
-                        },
-                        enemyResolution: isEnemy ? {
-                          manualId: (p as any).monsterManualId,
-                          slug: (p as any).monsterSlug,
-                          baseName,
-                          detailLoaded: !!md,
-                          detailSummary: mdSummary,
-                        } : undefined,
-                      });
-                    } catch {}
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setSelectedParticipantId(p.id);
-                      try {
-                        const baseName = stripGroupSuffix(p.name || '');
-                        const md = isEnemy && p.kind !== 'character' ? (monsterDetailByPid[p.id] || null) : null;
-                        const mdSummary = md ? {
-                          traits: md.traits?.length || 0,
-                          actions: md.actions?.length || 0,
-                          reactions: md.reactions?.length || 0,
-                          legendaryActions: md.legendaryActions?.length || 0,
-                          lairActions: md.lairActions?.length || 0,
-                          regionalEffects: md.regionalEffects?.length || 0,
-                          senses: md.senses ? Object.keys(md.senses).length : 0,
-                          skills: md.skills ? Object.keys(md.skills).length : 0,
-                          languages: md.languages ? 1 : 0,
-                          sampleTrait: md.traits?.[0],
-                          sampleAction: md.actions?.[0],
-                        } : null;
-                        const char = isAlly && p.kind === 'character' ? charMap.get(p.id) : undefined;
-                        const ch = isAlly ? (char?.currentHp ?? p.currentHp) : (typeof p.currentHp === 'number' ? p.currentHp : undefined);
-                        const mx = isAlly ? (char?.maxHp ?? p.maxHp) : (typeof p.maxHp === 'number' ? p.maxHp : undefined);
-                        const temp = isAlly ? (char?.tempHp) : undefined;
-                        console.log('[CombatView][Select]', {
-                          participant: {
-                            id: p.id,
-                            name: p.name,
-                            displayName: isEnemy ? (enemyDisplayNameById[p.id] || p.name) : p.name,
-                            role: p.role,
-                            kind: p.kind,
-                            initiative: p.initiative,
-                            currentHp: ch,
-                            maxHp: mx,
-                            tempHp: temp,
-                          },
-                          enemyResolution: isEnemy ? {
-                            manualId: (p as any).monsterManualId,
-                            slug: (p as any).monsterSlug,
-                            baseName,
-                            detailLoaded: !!md,
-                            detailSummary: mdSummary,
-                          } : undefined,
-                        });
-                      } catch {}
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <Stack spacing={0.75}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography variant="body1">{isEnemy ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
-                      {isCurrentTurn && <Chip size="small" label="Turno actual" color="primary" />}
-                      {isSelected && !isCurrentTurn && <Chip size="small" label="Seleccionado" color="secondary" />}
-                    </Stack>
-                    <Typography variant="caption" color="text.secondary">{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {p.initiative ?? '—'}</Typography>
-                    {percent !== undefined ? (
-                      <Stack spacing={0.5}>
-                        <LinearProgress variant="determinate" value={percent} />
-                        <Typography variant="caption" color="text.secondary">
-                          HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{isAlly && typeof temp === 'number' ? ` · Temp ${temp}` : ''}
-                        </Typography>
-                      </Stack>
-                    ) : (
-                      <Typography variant="caption" color="text.secondary">HP —</Typography>
-                    )}
-                    {isMaster ? (
-                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                        {isAlly ? (
-                          <>
-                            <TextField
-                              size="small"
-                              type="number"
-                              label="HP"
-                              inputProps={{ min: 0, style: { width: 64 } }}
-                              value={hasCh ? Number(ch) : ''}
-                              onChange={(e) => {
-                                const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                setHp(p, 'currentHp', val);
-                              }}
-                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); } }}
-                            />
-                            {p.kind === 'character' && (
-                              <TextField
-                                size="small"
-                                type="number"
-                                label="Temp"
-                                inputProps={{ min: 0, style: { width: 64 } }}
-                                value={typeof temp === 'number' ? temp : ''}
-                                onChange={(e) => {
-                                  const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                  setHp(p, 'tempHp', val);
-                                }}
-                              />
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <TextField
-                              size="small"
-                              type="number"
-                              label="HP"
-                              inputProps={{ min: 0, style: { width: 64 } }}
-                              value={p.currentHp ?? ''}
-                              onChange={(e) => {
-                                const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                setHpLocal(p.id, 'currentHp', val);
-                                schedulePersistInitiative(p.id);
-                              }}
-                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
-                            />
-                            <TextField
-                              size="small"
-                              type="number"
-                              label="HP Max"
-                              inputProps={{ min: 1, style: { width: 64 } }}
-                              value={p.maxHp ?? ''}
-                              onChange={(e) => {
-                                const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                setHpLocal(p.id, 'maxHp', val);
-                                schedulePersistInitiative(p.id);
-                              }}
-                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
-                            />
-                          </>
-                        )}
-                        {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
-                      </Stack>
-                    ) : null}
-                  </Stack>
-                </Paper>
-              </Box>
-            );
-          })}
-        </Stack>
+            <InitiativePanel
+              round={round}
+              turnIndex={turnIndex}
+              orderedParticipants={orderedParticipants}
+              currentTurnId={currentTurnId || null}
+              selectedParticipantId={selectedParticipantId}
+              setSelectedParticipantId={(id) => setSelectedParticipantId(id)}
+              battleStarted={!!battleStarted}
+              onStartBattle={handleStartBattle}
+              onEndBattle={endBattle}
+              onPreviousTurn={previousTurn}
+              onNextTurn={nextTurn}
+              isMaster={isMaster}
+              charMap={charMap}
+              enemyDisplayNameById={enemyDisplayNameById}
+              monsterDetailByPid={monsterDetailByPid}
+              savingInitiative={savingInitiative}
+              savingHp={savingHp}
+              setHp={setHp}
+              setHpLocal={setHpLocal}
+              setInitiativeLocal={setInitiativeLocal}
+              schedulePersistInitiative={schedulePersistInitiative}
+            />
           {/* Fichas de detalle: mostrar abajo de la lista de iniciativa */}
           <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-            <DetailCard participant={orderedParticipants.find(p => p.id === currentTurnId) || null} colorKey="primary" />
-            <DetailCard participant={orderedParticipants.find(p => p.id === selectedParticipantId) || null} colorKey="secondary" />
+            <DetailCard
+              participant={orderedParticipants.find(p => p.id === currentTurnId) || null}
+              colorKey="primary"
+              charMap={charMap}
+              monsterDetailByPid={monsterDetailByPid}
+              enemyDisplayNameById={enemyDisplayNameById}
+            />
+            <DetailCard
+              participant={orderedParticipants.find(p => p.id === selectedParticipantId) || null}
+              colorKey="secondary"
+              charMap={charMap}
+              monsterDetailByPid={monsterDetailByPid}
+              enemyDisplayNameById={enemyDisplayNameById}
+            />
           </Stack>
           {/* Notas por participante: izquierda turno actual, derecha seleccionado */}
           <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
