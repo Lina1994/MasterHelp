@@ -5,6 +5,7 @@ import { CreateMapDto } from './dto/create-map.dto';
 import { UpdateMapDto } from './dto/update-map.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { UpdateFogDto } from './dto/update-fog.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('maps')
@@ -185,5 +186,29 @@ export class MapsController {
     }
     await this.service.uploadImageForTod(req.user, id, file, timeOfDay as any);
     return { ok: true };
+  }
+
+  /**
+   * Returns Fog of War cells for the given campaign+map, scoped to the authenticated owner.
+   */
+  @Get(':id/fog')
+  async getFog(
+    @Req() req,
+    @Param('id') id: string,
+    @Query('campaignId') campaignId: string,
+  ) {
+    return { cells: await this.service.getFog(req.user, id, campaignId) };
+  }
+
+  /**
+   * Sets Fog of War cells for the given campaign+map. Upserts the state.
+   */
+  @Patch(':id/fog')
+  async setFog(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateFogDto,
+  ) {
+    return this.service.setFog(req.user, id, dto.campaignId, dto.cells);
   }
 }

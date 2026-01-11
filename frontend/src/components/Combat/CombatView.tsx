@@ -461,7 +461,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           Vista previa vinculada a la ventana de jugadores. Permite seleccionar otro mapa y encuentro sin salir de esta pantalla.
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <ProjectedMapMirror />
+          <ProjectedMapMirror fogEnabled={fogEnabled} />
         </Box>
       </Paper>
 

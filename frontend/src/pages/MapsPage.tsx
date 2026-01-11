@@ -24,6 +24,7 @@ type FormState = {
   musicConfig?: MusicCfg;
   sfxConfig?: SfxCfg;
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
+  file?: File | null;
 };
 
 export default function MapsPage() {
@@ -86,7 +87,7 @@ export default function MapsPage() {
 
   const onOpenCreate = () => {
     if (localPreview) { URL.revokeObjectURL(localPreview); setLocalPreview(null); }
-    setForm({ name: '', isWorldMap: false, group: undefined, musicConfig: undefined, sfxConfig: undefined });
+    setForm({ name: '', isWorldMap: false, group: undefined, musicConfig: undefined, sfxConfig: undefined, file: null });
     setOpen(true);
   };
   const onOpenEdit = (it: MapItemDto) => {
@@ -100,6 +101,7 @@ export default function MapsPage() {
       musicConfig: (it as any).musicConfig as any,
       sfxConfig: (it as any).sfxConfig as any,
       transform: (it as any).transform as any,
+      file: null,
     });
     setOpen(true);
   };
@@ -118,6 +120,7 @@ export default function MapsPage() {
       musicConfig: form.musicConfig,
       sfxConfig: form.sfxConfig,
       transform: form.transform,
+      file: form.file,
     } as const;
     try {
       if (form.id) {
@@ -168,6 +171,18 @@ export default function MapsPage() {
       </Box>
     );
   }
+
+  // Preseleccionar un momento del día con configuración existente al abrir el editor
+  const defaultEditorTod = useMemo(() => {
+    const mc = form.musicConfig || {};
+    const sc = form.sfxConfig || {};
+    const TODS = ['dawn', 'morning', 'afternoon', 'night'] as const;
+    for (const t of TODS) {
+      if ((mc as any)[t] && Object.keys((mc as any)[t]).length) return t as any;
+      if ((sc as any)[t] && Object.keys((sc as any)[t]).length) return t as any;
+    }
+    return undefined;
+  }, [form.musicConfig, form.sfxConfig]);
 
   return (
     <Box>
@@ -275,6 +290,33 @@ export default function MapsPage() {
                 <Typography variant="body2" color="text.secondary">Sin imagen</Typography>
               )}
             </Box>
+            {/* Base image updater (affects thumbnail and fallback TOD) */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'stretch', sm: 'center' }}>
+              <Button component="label" variant="outlined" size="small">
+                {form.id ? 'Cambiar imagen base' : 'Seleccionar imagen base'}
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = (e.target.files && e.target.files[0]) || null;
+                    if (!file) return;
+                    if (localPreview) URL.revokeObjectURL(localPreview);
+                    setLocalPreview(URL.createObjectURL(file));
+                    setForm((s) => ({ ...s, file }));
+                  }}
+                />
+              </Button>
+              {form.file && (
+                <Button size="small" onClick={() => {
+                  if (localPreview) { URL.revokeObjectURL(localPreview); setLocalPreview(null); }
+                  setForm((s) => ({ ...s, file: null }));
+                }}>Quitar selección</Button>
+              )}
+              <Typography variant="body2" color="text.secondary" sx={{ ml: { sm: 1 } }}>
+                Esta imagen se usa para la miniatura y como base cuando no hay imagen específica por momento del día.
+              </Typography>
+            </Stack>
             <TextField label="Nombre" value={form.name} onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))} />
             <TextField label="Descripción" value={form.description || ''} onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))} multiline rows={3} />
 
@@ -293,6 +335,7 @@ export default function MapsPage() {
             <AudioConfigEditor
               value={{ musicConfig: form.musicConfig, sfxConfig: form.sfxConfig }}
               onChange={(v) => setForm((s) => ({ ...s, musicConfig: v.musicConfig as any, sfxConfig: v.sfxConfig as any }))}
+              defaultTimeOfDay={defaultEditorTod as any}
             />
 
             {/* Transform controls */}

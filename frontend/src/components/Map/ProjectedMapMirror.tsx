@@ -4,12 +4,15 @@ import { useActiveMap } from './ActiveMapContext';
 import AuthImage from '../common/AuthImage';
 import { getMapImageUrlSized, getMapSkylineUrlSized, listMaps } from '../../api/maps';
 import MapGridOverlay, { GridSettings } from './MapGridOverlay';
+import FogOfWarOverlay from './FogOfWarOverlay';
+import FogEditorLayer from './FogEditorLayer';
+import { useFogOfWar } from '../../hooks/useFogOfWar';
 import { getGridOverlaySettings, setGridOverlaySettings } from '../../api/campaigns/gridOverlay';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../player/TimeOfDayContext';
 // removed duplicate import
 
-const ProjectedMapMirror: React.FC = () => {
+const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = false }) => {
   const { activeMapId } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
   const [overrideMapId, setOverrideMapId] = useState<string | null>(null);
@@ -21,6 +24,9 @@ const ProjectedMapMirror: React.FC = () => {
   const [previewMode, setPreviewMode] = useState<'players' | 'skyline'>('players');
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
   const { activeCampaign } = useActiveCampaign();
+  const mapId = overrideMapId || activeMapId;
+  const { cells, addCell, removeCell, clearAll } = useFogOfWar(activeCampaign?.id, mapId || undefined, gridSettings);
+  const [fogTool, setFogTool] = useState<'paint' | 'erase'>('paint');
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
 
   // Load grid settings (server-preferred, fallback to localStorage)
@@ -136,8 +142,6 @@ const ProjectedMapMirror: React.FC = () => {
     return isFinite(s) && s > 0 ? s : 1;
   }, [baseSize, previewZoom]);
 
-
-  const mapId = overrideMapId || activeMapId;
   const contentW = naturalSize?.w || baseSize?.width || 0;
   const contentH = naturalSize?.h || baseSize?.height || 0;
 
@@ -193,6 +197,17 @@ const ProjectedMapMirror: React.FC = () => {
           <TextField size="small" type="color" label="Color" value={gridSettings.color} onChange={(e) => saveGrid({ color: e.target.value })} sx={{ width: 120 }} />
           <TextField size="small" type="number" label="Opacidad" value={gridSettings.opacity} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => saveGrid({ opacity: Math.max(0, Math.min(1, Number(e.target.value||0))) })} sx={{ width: 140 }} />
           <TextField size="small" type="number" label="Grosor" value={gridSettings.lineWidth} inputProps={{ min: 0.25, max: 4, step: 0.25 }} onChange={(e) => saveGrid({ lineWidth: Math.max(0.25, Math.min(4, Number(e.target.value||0))) })} sx={{ width: 120 }} />
+          {/* Fog of War controls */}
+          <FormControlLabel control={<Switch checked={fogEnabled} onChange={() => { /* controlled upstream in Combat; local maps preview can be edited via tool toggle below */ }} />} label="Niebla (vista previa)" />
+          {fogEnabled && (
+            <>
+              <TextField select size="small" label="Herramienta" value={fogTool} onChange={(e) => setFogTool((e.target.value as any) || 'paint')} sx={{ width: 160 }}>
+                <MenuItem value="paint">Pintar</MenuItem>
+                <MenuItem value="erase">Borrar</MenuItem>
+              </TextField>
+              <Button size="small" onClick={() => clearAll()}>Borrar todo</Button>
+            </>
+          )}
         </Stack>
       )}
       <Box ref={containerRef} sx={{ width: '100%', overflow: 'auto' }}>
@@ -245,6 +260,10 @@ const ProjectedMapMirror: React.FC = () => {
                               if (w && h) setNaturalSize({ w, h });
                             }}
                           />
+                          {/* Fog overlay (master shading) */}
+                          {fogEnabled && (
+                            <FogOfWarOverlay mode="master" grid={gridSettings} widthPx={contentW} heightPx={contentH} cells={cells} />
+                          )}
                           {/* Overlay grid follows the same transform */}
                           {gridSettings.enabled && (
                             <MapGridOverlay
@@ -252,6 +271,18 @@ const ProjectedMapMirror: React.FC = () => {
                               redrawKey={scale}
                               widthPx={contentW}
                               heightPx={contentH}
+                            />
+                          )}
+                          {/* Editor layer captures pointer events to modify fog when enabled */}
+                          {fogEnabled && (
+                            <FogEditorLayer
+                              grid={gridSettings}
+                              widthPx={contentW}
+                              heightPx={contentH}
+                              tool={fogTool}
+                              transform={{ zoom: activeTransform?.zoom ?? 1, rotationDeg: activeTransform?.rotationDeg ?? 0 }}
+                              previewScale={scale}
+                              onToggleCell={(key, add) => (add ? addCell(key) : removeCell(key))}
                             />
                           )}
                         </Box>

@@ -8,6 +8,7 @@ import { User } from '../users/entities/user.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { MapImage } from './entities/map-image.entity';
 import { MapSkylineImage } from './entities/map-skyline-image.entity';
+import { MapFogState } from './entities/map-fog-state.entity';
 import sharp from 'sharp';
 
 @Injectable()
@@ -16,8 +17,54 @@ export class MapsService {
     @InjectRepository(MapEntity) private readonly repo: Repository<MapEntity>,
     @InjectRepository(MapImage) private readonly imagesRepo: Repository<MapImage>,
     @InjectRepository(MapSkylineImage) private readonly skylinesRepo: Repository<MapSkylineImage>,
+    @InjectRepository(MapFogState) private readonly fogRepo: Repository<MapFogState>,
     @InjectRepository(Campaign) private readonly campaignsRepo: Repository<Campaign>,
   ) {}
+
+  /**
+   * Returns Fog of War cells for the given map+campaign scoped to owner.
+   * Validates ownership and existence of referenced entities.
+   */
+  async getFog(user: User | any, mapId: string, campaignId: string): Promise<string[]> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const existing = await this.fogRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
+    return existing?.cells || [];
+  }
+
+  /**
+   * Upserts Fog of War cells for the given map+campaign scoped to owner.
+   * Validates ownership and prevents unauthorized writes.
+   */
+  async setFog(user: User | any, mapId: string, campaignId: string, cells: string[]): Promise<{ ok: boolean }>{
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    let existing = await this.fogRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
+    if (!existing) {
+      existing = new MapFogState();
+      existing.owner = map.owner;
+      existing.campaign = campaign;
+      existing.map = map;
+      existing.cells = Array.isArray(cells) ? Array.from(new Set(cells)) : [];
+      await this.fogRepo.save(existing);
+    } else {
+      existing.cells = Array.isArray(cells) ? Array.from(new Set(cells)) : [];
+      await this.fogRepo.save(existing);
+    }
+    return { ok: true };
+  }
 
   /** Generate sharp-based variants. Falls back to only 'full' if processing fails. */
   private async buildVariants(file: { buffer: Buffer; mimetype: string; size: number }, timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null): Promise<MapImage[]> {

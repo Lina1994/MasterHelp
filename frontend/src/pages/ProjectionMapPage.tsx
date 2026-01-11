@@ -7,6 +7,8 @@ import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext'
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
 import { listMaps } from '../api/maps';
 import MapGridOverlay, { GridSettings } from '../components/Map/MapGridOverlay';
+import FogOfWarOverlay from '../components/Map/FogOfWarOverlay';
+import { useFogOfWar } from '../hooks/useFogOfWar';
 import { getGridOverlaySettings } from '../api/campaigns/gridOverlay';
 
 const ProjectionMapPage: React.FC = () => {
@@ -17,6 +19,7 @@ const ProjectionMapPage: React.FC = () => {
   const [activeTransform, setActiveTransform] = useState<{ zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number } | null>(null);
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
 
   // Si viene campaignId en la URL (?campaignId=...), fijarlo en el contexto para que esta ventana use la misma campaña.
   useEffect(() => {
@@ -131,6 +134,52 @@ const ProjectionMapPage: React.FC = () => {
     return () => { disposed = true; window.clearInterval(id); };
   }, [activeCampaign?.id]);
 
+  // Periodically refresh fog from server (pure web) to avoid manual reloads
+  useEffect(() => {
+    let disposed = false;
+    const STORAGE_KEY = 'app.map.fog.cells';
+    const tick = async () => {
+      if (disposed) return;
+      try {
+        if (!activeCampaign?.id || !activeMapId) return;
+        const startedAt = Date.now();
+        // If a local push is pending (from another tab), skip applying server to avoid flicker
+        const pendingPush = localStorage.getItem('app.fog.pendingPush') === '1';
+        if (pendingPush) return;
+        const res = await fetch(`${window.location.protocol}//${window.location.hostname}:3000/maps/${activeMapId}/fog?campaignId=${activeCampaign.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token') || ''}` },
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const serverCells: string[] = Array.isArray(data?.cells) ? data.cells : [];
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const obj = raw ? (JSON.parse(raw) as Record<string, string[]>) : {};
+        const keyId = `${activeCampaign.id}:${activeMapId}`;
+        const localArr = obj[keyId] || [];
+        const lastLocalUpdate = Number(localStorage.getItem('app.lastFogUpdate') || '0');
+        if (lastLocalUpdate > startedAt) {
+          // A newer local change occurred while polling; skip applying server state
+          return;
+        }
+        const serverJson = JSON.stringify(serverCells);
+        const localJson = JSON.stringify(localArr);
+        if (serverJson !== localJson) {
+          obj[keyId] = serverCells;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch {}
+          try { localStorage.setItem('app.lastFogUpdate', String(Date.now())); } catch {}
+          try {
+            const bc = new BroadcastChannel('campaign-sync');
+            bc.postMessage({ type: 'map-fog-updated', campaignId: activeCampaign.id, mapId: activeMapId, cells: serverCells, at: Date.now() });
+            bc.close();
+          } catch {}
+        }
+      } catch {}
+    };
+    const id = window.setInterval(tick, 2000);
+    return () => { disposed = true; window.clearInterval(id); };
+  }, [activeCampaign?.id, activeMapId]);
+
   // React to external transform updates via BroadcastChannel and electron poke
   useEffect(() => {
     let disposed = false;
@@ -231,6 +280,8 @@ const ProjectionMapPage: React.FC = () => {
                   if (w && h) setNaturalSize({ w, h });
                 }}
               />
+              {/* Fog overlay (players: black) above grid to fully mask */}
+              <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={cells} />
               {gridSettings.enabled && (
                 <MapGridOverlay settings={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} />
               )}
