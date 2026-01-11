@@ -48,6 +48,8 @@ import { Campaign } from '../../components/Campaign/types';
 import GotoMapsButton from './GotoMapsButton';
 import { getSkylineOverlaySettings, setSkylineOverlaySettings } from '../../api/campaigns/skylineOverlay';
 import { setCampaignBattleState } from '../../api/campaigns/battleState';
+import CombatNotesBox from './CombatNotesBox';
+import { useCombatNotes } from '../../hooks/useCombatNotes';
 
 /**
  * CombatView: vista de combate con selección de mapa/encuentro,
@@ -112,6 +114,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     return cid && activeEncounterId ? `${cid}:${activeEncounterId}` : null;
   }, [campaign?.id, activeEncounterId]);
   const { round, index: turnIndex, currentId: currentTurnId, hydrated: turnHydrated, nextTurn: nextTurnHook, previousTurn: previousTurnHook, resetToStart } = useTurnOrder(sessionKey, orderedParticipants);
+
+  // Notas de combate por participante
+  const { getNote, upsertNoteForParticipant, updateNoteForParticipant, removeNoteForParticipant, clearAllNotes, incrementForParticipant, advanceTurnForParticipant } = useCombatNotes(campaign?.id, activeEncounterId);
 
   const baseParticipants = useMemo(() => (participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || [])), [participantsDraft, selectedEncounter]);
   const allies = useMemo(() => baseParticipants.filter((p) => p.role !== 'foe'), [baseParticipants]);
@@ -424,6 +429,8 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const endBattle = useCallback(async () => {
     setBattleStarted(false);
     resetToStart();
+    // Al finalizar (escapar o ganar), limpiar notas del combate
+    try { clearAllNotes(); } catch {}
     if (prevTrack) {
       try {
         await play(
@@ -439,7 +446,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     } else {
       stop();
     }
-  }, [prevTrack, play, stop, buildSongStreamEndpoint]);
+  }, [prevTrack, play, stop, buildSongStreamEndpoint, clearAllNotes]);
 
   const nextTurn = useCallback(() => {
     nextTurnHook();
@@ -448,6 +455,18 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const previousTurn = useCallback(() => {
     previousTurnHook();
   }, [previousTurnHook]);
+
+  // Contador por participante: incrementar cuando ese participante recibe turno
+  const prevTurnIdRef = React.useRef<string | null>(null);
+  useEffect(() => {
+    if (!battleStarted) return;
+    const curr = currentTurnId || null;
+    const prev = prevTurnIdRef.current;
+    if (curr && curr !== prev) {
+      try { advanceTurnForParticipant(curr); } catch {}
+      prevTurnIdRef.current = curr;
+    }
+  }, [battleStarted, currentTurnId, advanceTurnForParticipant]);
 
   // Persist battle state to server for Skyline web
   useEffect(() => {
@@ -1307,6 +1326,29 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
             <DetailCard participant={orderedParticipants.find(p => p.id === currentTurnId) || null} colorKey="primary" />
             <DetailCard participant={orderedParticipants.find(p => p.id === selectedParticipantId) || null} colorKey="secondary" />
+          </Stack>
+          {/* Notas por participante: izquierda turno actual, derecha seleccionado */}
+          <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+            <CombatNotesBox
+              participantId={currentTurnId || null}
+              note={getNote(currentTurnId)}
+              battleStarted={!!battleStarted}
+              currentRound={round}
+              currentTurnIndex={turnIndex}
+              onUpsert={upsertNoteForParticipant}
+              onUpdate={updateNoteForParticipant}
+              onRemove={removeNoteForParticipant}
+            />
+            <CombatNotesBox
+              participantId={selectedParticipantId}
+              note={getNote(selectedParticipantId)}
+              battleStarted={!!battleStarted}
+              currentRound={round}
+              currentTurnIndex={turnIndex}
+              onUpsert={upsertNoteForParticipant}
+              onUpdate={updateNoteForParticipant}
+              onRemove={removeNoteForParticipant}
+            />
           </Stack>
           </>
         )}
