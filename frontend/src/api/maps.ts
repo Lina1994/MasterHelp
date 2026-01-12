@@ -212,3 +212,22 @@ export async function hasMapImageForTod(
     throw e;
   }
 }
+
+// TOKENS API
+export type MapTokenPayload = {
+  id: string;
+  cellKey: string;
+  type: 'ally' | 'enemy';
+  label?: string;
+  color?: string;
+};
+
+export async function getMapTokens(mapId: string, campaignId: string) {
+  const res = await api.get<{ tokens: MapTokenPayload[] }>(`/maps/${mapId}/tokens`, { params: { campaignId } });
+  return (res.data?.tokens ?? []) as MapTokenPayload[];
+}
+
+export async function setMapTokens(mapId: string, campaignId: string, tokens: MapTokenPayload[]) {
+  const res = await api.patch<{ ok: true }>(`/maps/${mapId}/tokens`, { campaignId, tokens });
+  return res.data;
+}

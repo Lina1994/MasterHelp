@@ -6,6 +6,7 @@ import { UpdateMapDto } from './dto/update-map.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { UpdateFogDto } from './dto/update-fog.dto';
+import { UpdateTokensDto } from './dto/update-tokens.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('maps')
@@ -210,5 +211,29 @@ export class MapsController {
     @Body() dto: UpdateFogDto,
   ) {
     return this.service.setFog(req.user, id, dto.campaignId, dto.cells);
+  }
+
+  /**
+   * Returns tokens for the given campaign+map, scoped to the authenticated owner.
+   */
+  @Get(':id/tokens')
+  async getTokens(
+    @Req() req,
+    @Param('id') id: string,
+    @Query('campaignId') campaignId: string,
+  ) {
+    return { tokens: await this.service.getTokens(req.user, id, campaignId) };
+  }
+
+  /**
+   * Sets tokens for the given campaign+map. Upserts the state.
+   */
+  @Patch(':id/tokens')
+  async setTokens(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateTokensDto,
+  ) {
+    return this.service.setTokens(req.user, id, dto.campaignId, dto.tokens as any);
   }
 }

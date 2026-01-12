@@ -9,6 +9,7 @@ import { Campaign } from '../campaigns/entities/campaign.entity';
 import { MapImage } from './entities/map-image.entity';
 import { MapSkylineImage } from './entities/map-skyline-image.entity';
 import { MapFogState } from './entities/map-fog-state.entity';
+import { MapTokensState, MapTokenItem } from './entities/map-tokens-state.entity';
 import sharp from 'sharp';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class MapsService {
     @InjectRepository(MapImage) private readonly imagesRepo: Repository<MapImage>,
     @InjectRepository(MapSkylineImage) private readonly skylinesRepo: Repository<MapSkylineImage>,
     @InjectRepository(MapFogState) private readonly fogRepo: Repository<MapFogState>,
+    @InjectRepository(MapTokensState) private readonly tokensRepo: Repository<MapTokensState>,
     @InjectRepository(Campaign) private readonly campaignsRepo: Repository<Campaign>,
   ) {}
 
@@ -62,6 +64,50 @@ export class MapsService {
     } else {
       existing.cells = Array.isArray(cells) ? Array.from(new Set(cells)) : [];
       await this.fogRepo.save(existing);
+    }
+    return { ok: true };
+  }
+
+  /**
+   * Returns token items for the given map+campaign scoped to owner.
+   */
+  async getTokens(user: User | any, mapId: string, campaignId: string): Promise<MapTokenItem[]> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const existing = await this.tokensRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
+    return existing?.tokens || [];
+  }
+
+  /**
+   * Upserts token items for the given map+campaign scoped to owner.
+   */
+  async setTokens(user: User | any, mapId: string, campaignId: string, tokens: MapTokenItem[]): Promise<{ ok: boolean }>{
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    let existing = await this.tokensRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
+    const deduped = Array.isArray(tokens) ? Array.from(new Map(tokens.map(t => [t.id, t])).values()) : [];
+    if (!existing) {
+      existing = new MapTokensState();
+      existing.owner = map.owner;
+      existing.campaign = campaign;
+      existing.map = map;
+      existing.tokens = deduped;
+      await this.tokensRepo.save(existing);
+    } else {
+      existing.tokens = deduped;
+      await this.tokensRepo.save(existing);
     }
     return { ok: true };
   }

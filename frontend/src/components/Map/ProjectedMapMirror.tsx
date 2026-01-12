@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Box, Paper, Typography, TextField, MenuItem, Stack, Button, ToggleButton, ToggleButtonGroup, Switch, FormControlLabel, Select } from '@mui/material';
 import { useActiveMap } from './ActiveMapContext';
 import AuthImage from '../common/AuthImage';
@@ -10,6 +10,9 @@ import { useFogOfWar } from '../../hooks/useFogOfWar';
 import { getGridOverlaySettings, setGridOverlaySettings } from '../../api/campaigns/gridOverlay';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../player/TimeOfDayContext';
+import { useMapTokens } from '../../hooks/useMapTokens';
+import MapTokensOverlay, { TokenEditMode } from './MapTokensOverlay';
+import { computeClearedFogByAllies, subtractClearedFog } from '../../utils/fogHelpers';
 // removed duplicate import
 
 const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = false }) => {
@@ -27,7 +30,20 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
   const mapId = overrideMapId || activeMapId;
   const { cells, addCell, removeCell, clearAll } = useFogOfWar(activeCampaign?.id, mapId || undefined, gridSettings);
   const [fogTool, setFogTool] = useState<'paint' | 'erase'>('paint');
+  const [fogEditEnabled, setFogEditEnabled] = useState<boolean>(false);
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  const [tokenMode, setTokenMode] = useState<TokenEditMode>('none');
+  const { tokens, addToken, updateToken, removeToken } = useMapTokens(activeCampaign?.id, mapId || undefined);
+
+  // Compute fog after clearing around allied tokens (own cell + adjacent)
+  const effectiveFogCells = React.useMemo(() => {
+    try {
+      const cleared = computeClearedFogByAllies(gridSettings, tokens || []);
+      return subtractClearedFog(cells, cleared);
+    } catch {
+      return cells;
+    }
+  }, [cells, tokens, gridSettings]);
 
   // Load grid settings (server-preferred, fallback to localStorage)
   useEffect(() => {
@@ -201,6 +217,7 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
           <FormControlLabel control={<Switch checked={fogEnabled} onChange={() => { /* controlled upstream in Combat; local maps preview can be edited via tool toggle below */ }} />} label="Niebla (vista previa)" />
           {fogEnabled && (
             <>
+              <FormControlLabel control={<Switch checked={fogEditEnabled} onChange={(e) => setFogEditEnabled(e.target.checked)} />} label="Editar niebla" />
               <TextField select size="small" label="Herramienta" value={fogTool} onChange={(e) => setFogTool((e.target.value as any) || 'paint')} sx={{ width: 160 }}>
                 <MenuItem value="paint">Pintar</MenuItem>
                 <MenuItem value="erase">Borrar</MenuItem>
@@ -208,6 +225,13 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
               <Button size="small" onClick={() => clearAll()}>Borrar todo</Button>
             </>
           )}
+          {/* Tokens edit controls */}
+          <TextField select size="small" label="Tokens" value={tokenMode} onChange={(e) => setTokenMode((e.target.value as TokenEditMode) || 'none')} sx={{ width: 170 }}>
+            <MenuItem value="none">Ver/arrastrar</MenuItem>
+            <MenuItem value="ally">Añadir aliado</MenuItem>
+            <MenuItem value="enemy">Añadir enemigo</MenuItem>
+            <MenuItem value="erase">Borrar token</MenuItem>
+          </TextField>
         </Stack>
       )}
       <Box ref={containerRef} sx={{ width: '100%', overflow: 'auto' }}>
@@ -262,7 +286,7 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
                           />
                           {/* Fog overlay (master shading) */}
                           {fogEnabled && (
-                            <FogOfWarOverlay mode="master" grid={gridSettings} widthPx={contentW} heightPx={contentH} cells={cells} />
+                            <FogOfWarOverlay mode="master" grid={gridSettings} widthPx={contentW} heightPx={contentH} cells={effectiveFogCells} />
                           )}
                           {/* Overlay grid follows the same transform */}
                           {gridSettings.enabled && (
@@ -273,8 +297,22 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
                               heightPx={contentH}
                             />
                           )}
-                          {/* Editor layer captures pointer events to modify fog when enabled */}
-                          {fogEnabled && (
+                          {/* Tokens overlay (editable in preview) */}
+                          <TokensBridge
+                            gridSettings={gridSettings}
+                            widthPx={contentW}
+                            heightPx={contentH}
+                            mapId={mapId}
+                            tokenMode={tokenMode}
+                            previewScale={scale}
+                            transform={activeTransform}
+                            tokens={tokens}
+                            onAddToken={addToken}
+                            onMoveToken={(id, patch) => updateToken(id, patch)}
+                            onRemoveToken={removeToken}
+                          />
+                          {/* Editor layer captures pointer events only when explicit fog edit is enabled */}
+                          {fogEnabled && fogEditEnabled && (
                             <FogEditorLayer
                               grid={gridSettings}
                               widthPx={contentW}
@@ -312,3 +350,40 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
 };
 
 export default ProjectedMapMirror;
+
+// Local bridge to hook into tokens state with active campaign
+const TokensBridge: React.FC<{
+  gridSettings: GridSettings;
+  widthPx: number;
+  heightPx: number;
+  mapId: string;
+  tokenMode: TokenEditMode;
+  previewScale: number;
+  transform: { zoom?: number; rotationDeg?: number } | null;
+  tokens: import('../../api/maps').MapTokenPayload[];
+  onAddToken: (t: { id: string; cellKey: string; type: 'ally'|'enemy'; label?: string; color?: string }) => void;
+  onMoveToken: (id: string, patch: Partial<{ cellKey: string; label: string; color: string }>) => void;
+  onRemoveToken: (id: string) => void;
+}> = ({ gridSettings, widthPx, heightPx, tokenMode, previewScale, transform, tokens, onAddToken, onMoveToken, onRemoveToken }) => {
+  const onAdd = React.useCallback((cellKey: string, type: 'ally'|'enemy') => {
+    const id = crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    onAddToken({ id, cellKey, type });
+  }, [onAddToken]);
+  const onMove = React.useCallback((id: string, cellKey: string) => { onMoveToken(id, { cellKey }); }, [onMoveToken]);
+  const onRemove = React.useCallback((id: string) => { onRemoveToken(id); }, [onRemoveToken]);
+  return (
+    <MapTokensOverlay
+      settings={gridSettings}
+      widthPx={widthPx}
+      heightPx={heightPx}
+      tokens={tokens}
+      editable={true}
+      editMode={tokenMode}
+      onAddToken={onAdd}
+      onMoveToken={onMove}
+      onRemoveToken={onRemove}
+      previewScale={previewScale}
+      transform={{ zoom: transform?.zoom ?? 1, rotationDeg: transform?.rotationDeg ?? 0 }}
+    />
+  );
+};

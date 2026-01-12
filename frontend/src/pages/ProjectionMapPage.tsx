@@ -10,6 +10,9 @@ import MapGridOverlay, { GridSettings } from '../components/Map/MapGridOverlay';
 import FogOfWarOverlay from '../components/Map/FogOfWarOverlay';
 import { useFogOfWar } from '../hooks/useFogOfWar';
 import { getGridOverlaySettings } from '../api/campaigns/gridOverlay';
+import { useMapTokens } from '../hooks/useMapTokens';
+import MapTokensOverlay from '../components/Map/MapTokensOverlay';
+import { computeClearedFogByAllies, subtractClearedFog } from '../utils/fogHelpers';
 
 const ProjectionMapPage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
@@ -20,6 +23,17 @@ const ProjectionMapPage: React.FC = () => {
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
+  const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
+
+  // Compute fog after clearing around allied tokens
+  const effectiveFogCells = React.useMemo(() => {
+    try {
+      const cleared = computeClearedFogByAllies(gridSettings, tokens || []);
+      return subtractClearedFog(cells, cleared);
+    } catch {
+      return cells;
+    }
+  }, [cells, tokens, gridSettings]);
 
   // Si viene campaignId en la URL (?campaignId=...), fijarlo en el contexto para que esta ventana use la misma campaña.
   useEffect(() => {
@@ -281,9 +295,13 @@ const ProjectionMapPage: React.FC = () => {
                 }}
               />
               {/* Fog overlay (players: black) above grid to fully mask */}
-              <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={cells} />
+              <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={effectiveFogCells} />
               {gridSettings.enabled && (
                 <MapGridOverlay settings={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} />
+              )}
+              {/* Tokens overlay (read-only in projection) */}
+              {naturalSize?.w && naturalSize?.h && (
+                <MapTokensOverlay settings={gridSettings} widthPx={naturalSize.w} heightPx={naturalSize.h} tokens={tokens} editable={false} />
               )}
             </Box>
           </Box>

@@ -27,6 +27,7 @@ import OutboundIcon from '@mui/icons-material/Outbound';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AuthImage from '../../components/common/AuthImage';
 import ProjectedMapMirror from '../../components/Map/ProjectedMapMirror';
+import { useMapTokens } from '../../hooks/useMapTokens';
 import { useActiveEncounter } from '../../components/Encounter/ActiveEncounterContext';
 import { useActiveMap } from '../../components/Map/ActiveMapContext';
 import { listMaps, MapItemDto, getMapImageUrlSized } from '../../api/maps';
@@ -206,6 +207,18 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   // indexToLetters moved to utils.ts
 
   const enemyDisplayNameById = useMemo(() => computeEnemyDisplayNameById(foes), [foes]);
+  // Tokens: allow preparing tokens for current encounter participants
+  const { addToken } = useMapTokens(campaign?.id, activeMapId || undefined);
+  const prepareTokens = useCallback((which: 'all' | 'allies' | 'foes') => {
+    const list = which === 'all' ? baseParticipants : which === 'allies' ? allies : foes;
+    // Place initially at 0:0 to be dragged later
+    list.forEach((p) => {
+      const type = p.role === 'foe' ? 'enemy' as const : 'ally' as const;
+      const label = (p.name || '') as string;
+      const idStr = (p && (p as any).id) ? `${(p as any).id}` : (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+      addToken({ id: idStr, type, label, cellKey: '0:0' });
+    });
+  }, [baseParticipants, allies, foes, addToken]);
 
   useEffect(() => {
     setParticipantsDraft(selectedEncounter?.participants || []);
@@ -461,6 +474,11 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           Vista previa vinculada a la ventana de jugadores. Permite seleccionar otro mapa y encuentro sin salir de esta pantalla.
         </Typography>
         <Box sx={{ mt: 2 }}>
+          <Stack spacing={1} sx={{ mb: 1 }} direction="row">
+            <Button size="small" variant="outlined" onClick={() => prepareTokens('allies')}>Preparar aliados</Button>
+            <Button size="small" variant="outlined" onClick={() => prepareTokens('foes')}>Preparar enemigos</Button>
+            <Button size="small" variant="outlined" onClick={() => prepareTokens('all')}>Preparar todos</Button>
+          </Stack>
           <ProjectedMapMirror fogEnabled={fogEnabled} />
         </Box>
       </Paper>
