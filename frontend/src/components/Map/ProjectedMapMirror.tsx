@@ -15,7 +15,7 @@ import MapTokensOverlay, { TokenEditMode } from './MapTokensOverlay';
 import { computeClearedFogByAllies, subtractClearedFog } from '../../utils/fogHelpers';
 // removed duplicate import
 
-const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = false }) => {
+const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean; highlightTokenId?: string | null; tokenImageResolver?: (id: string) => string | undefined }> = ({ fogEnabled = false, highlightTokenId = null, tokenImageResolver }) => {
   const { activeMapId } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
   const [overrideMapId, setOverrideMapId] = useState<string | null>(null);
@@ -34,16 +34,25 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [tokenMode, setTokenMode] = useState<TokenEditMode>('none');
   const { tokens, addToken, updateToken, removeToken } = useMapTokens(activeCampaign?.id, mapId || undefined);
+  const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
+    try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
+  });
+
+  // Persist radius and notify listeners (projection or other tabs)
+  useEffect(() => {
+    try { localStorage.setItem('app.map.allyClearRadius', String(allyClearRadius)); } catch {}
+    try { const bc = new BroadcastChannel('campaign-sync'); bc.postMessage({ type: 'ally-clear-radius-updated', value: allyClearRadius, at: Date.now() }); bc.close(); } catch {}
+  }, [allyClearRadius]);
 
   // Compute fog after clearing around allied tokens (own cell + adjacent)
   const effectiveFogCells = React.useMemo(() => {
     try {
-      const cleared = computeClearedFogByAllies(gridSettings, tokens || []);
+      const cleared = computeClearedFogByAllies(gridSettings, tokens || [], allyClearRadius);
       return subtractClearedFog(cells, cleared);
     } catch {
       return cells;
     }
-  }, [cells, tokens, gridSettings]);
+  }, [cells, tokens, gridSettings, allyClearRadius]);
 
   // Load grid settings (server-preferred, fallback to localStorage)
   useEffect(() => {
@@ -222,6 +231,7 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
                 <MenuItem value="paint">Pintar</MenuItem>
                 <MenuItem value="erase">Borrar</MenuItem>
               </TextField>
+              <TextField size="small" type="number" label="Radio aliados" value={allyClearRadius} inputProps={{ min: 0, max: 10, step: 1 }} onChange={(e) => setAllyClearRadius(Math.max(0, Math.min(10, Number(e.target.value||0))))} sx={{ width: 160 }} />
               <Button size="small" onClick={() => clearAll()}>Borrar todo</Button>
             </>
           )}
@@ -310,6 +320,8 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean }> = ({ fogEnabled = f
                             onAddToken={addToken}
                             onMoveToken={(id, patch) => updateToken(id, patch)}
                             onRemoveToken={removeToken}
+                            highlightIds={(highlightTokenId ? new Set([highlightTokenId]) : null)}
+                            tokenImageResolver={tokenImageResolver}
                           />
                           {/* Editor layer captures pointer events only when explicit fog edit is enabled */}
                           {fogEnabled && fogEditEnabled && (
@@ -364,13 +376,19 @@ const TokensBridge: React.FC<{
   onAddToken: (t: { id: string; cellKey: string; type: 'ally'|'enemy'; label?: string; color?: string }) => void;
   onMoveToken: (id: string, patch: Partial<{ cellKey: string; label: string; color: string }>) => void;
   onRemoveToken: (id: string) => void;
-}> = ({ gridSettings, widthPx, heightPx, tokenMode, previewScale, transform, tokens, onAddToken, onMoveToken, onRemoveToken }) => {
+  highlightIds: Set<string> | null;
+  tokenImageResolver?: (id: string) => string | undefined;
+}> = ({ gridSettings, widthPx, heightPx, tokenMode, previewScale, transform, tokens, onAddToken, onMoveToken, onRemoveToken, highlightIds, tokenImageResolver }) => {
   const onAdd = React.useCallback((cellKey: string, type: 'ally'|'enemy') => {
     const id = crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     onAddToken({ id, cellKey, type });
   }, [onAddToken]);
   const onMove = React.useCallback((id: string, cellKey: string) => { onMoveToken(id, { cellKey }); }, [onMoveToken]);
   const onRemove = React.useCallback((id: string) => { onRemoveToken(id); }, [onRemoveToken]);
+  const getTokenImage = React.useCallback((t: import('../../api/maps').MapTokenPayload) => {
+    if (!tokenImageResolver) return undefined;
+    return tokenImageResolver(t.id);
+  }, [tokenImageResolver]);
   return (
     <MapTokensOverlay
       settings={gridSettings}
@@ -384,6 +402,8 @@ const TokensBridge: React.FC<{
       onRemoveToken={onRemove}
       previewScale={previewScale}
       transform={{ zoom: transform?.zoom ?? 1, rotationDeg: transform?.rotationDeg ?? 0 }}
+      highlightIds={highlightIds}
+      getTokenImage={getTokenImage}
     />
   );
 };

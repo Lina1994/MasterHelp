@@ -20,6 +20,7 @@ export interface ParticipantsPanelProps {
   schedulePersistInitiative: (pid: string) => void;
   rollAllEnemiesInitiative: () => void | Promise<void>;
   rollAllEnemiesHp: (mode: 'avg' | 'dice') => void | Promise<void>;
+  onCreateTokenForParticipant?: (p: EncounterSummary['participants'][number]) => void;
 }
 
 const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
@@ -36,6 +37,7 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
   schedulePersistInitiative,
   rollAllEnemiesInitiative,
   rollAllEnemiesHp,
+  onCreateTokenForParticipant,
 }) => {
   return (
     <Stack spacing={2}>
@@ -110,6 +112,9 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
                           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); schedulePersistInitiative(p.id); } }}
                         />
                         {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
+                        {onCreateTokenForParticipant && (
+                          <Button size="small" variant="outlined" onClick={() => onCreateTokenForParticipant(p)}>Añadir token</Button>
+                        )}
                       </Stack>
                     ) : (
                       <Stack direction="row" spacing={1}>
@@ -189,6 +194,9 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
                           }}
                         />
                         {(savingInitiative[p.id] || savingHp[p.id]) && <Chip size="small" label="Guardando..." />}
+                        {onCreateTokenForParticipant && (
+                          <Button size="small" variant="outlined" onClick={() => onCreateTokenForParticipant(p)}>Añadir token</Button>
+                        )}
                       </Stack>
                     ) : (
                       <Stack direction="row" spacing={1}>

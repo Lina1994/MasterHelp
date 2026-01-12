@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { GridSettings } from './MapGridOverlay';
 import type { MapTokenPayload } from '../../api/maps';
+import AuthImage from '../common/AuthImage';
 
 export type TokenEditMode = 'none' | 'ally' | 'enemy' | 'erase';
 
@@ -20,7 +21,9 @@ const MapTokensOverlay: React.FC<{
   onRemoveToken?: (id: string) => void;
   previewScale?: number; // for preview context where a CSS scale is applied
   transform?: { zoom?: number; rotationDeg?: number } | null; // active map transform
-}> = ({ settings, widthPx, heightPx, tokens, editable = false, editMode = 'none', onAddToken, onMoveToken, onRemoveToken, previewScale = 1, transform }) => {
+  getTokenImage?: (token: MapTokenPayload) => string | undefined;
+  highlightIds?: Set<string> | null;
+}> = ({ settings, widthPx, heightPx, tokens, editable = false, editMode = 'none', onAddToken, onMoveToken, onRemoveToken, previewScale = 1, transform, getTokenImage, highlightIds }) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [drag, setDrag] = useState<{ id: string; dx: number; dy: number } | null>(null);
 
@@ -158,20 +161,60 @@ const MapTokensOverlay: React.FC<{
         const offs = offsetsForCount(arr.length);
         return arr.map((t, idx) => {
           const off = offs[idx] || { dx: 0, dy: 0 };
-          const size = Math.max(14, Math.round(r * 0.7));
+          const size = Math.max(14, Math.round(r * 1.1));
           const color = t.type === 'ally' ? '#2e7d32' : '#c62828';
           const bg = t.color || color;
           const x = center.x + off.dx - size / 2;
           const y = center.y + off.dy - size / 2;
+          const isHighlighted = !!(highlightIds && highlightIds.has(t.id));
+          const imgUrl = getTokenImage ? getTokenImage(t) : undefined;
           return (
             <div
               key={t.id}
               onPointerDown={onTokenPointerDown(t.id)}
               onContextMenu={(ev) => { if (editable) { ev.preventDefault(); onRemoveToken && onRemoveToken(t.id); } }}
-              style={{ position: 'absolute', left: x, top: y, width: size, height: size, borderRadius: '50%', background: bg, border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 1px 3px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: Math.max(10, Math.round(size * 0.35)), userSelect: 'none', cursor: editable ? 'grab' : 'default' }}
+              style={{ position: 'absolute', left: x, top: y, width: size, height: size, borderRadius: '50%', background: bg, border: '2px solid rgba(255,255,255,0.9)', boxShadow: (isHighlighted ? '0 0 0 3px #ffd54f, 0 0 12px #ffd54f' : '0 1px 3px rgba(0,0,0,0.5)'), display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: Math.max(10, Math.round(size * 0.35)), userSelect: 'none', cursor: editable ? 'grab' : 'default', overflow: 'hidden' }}
               title={t.label || (t.type === 'ally' ? 'Aliado' : 'Enemigo')}
             >
-              {t.label ? t.label.slice(0, 2) : (t.type === 'ally' ? 'A' : 'E')}
+              {imgUrl ? (
+                <AuthImage src={imgUrl} alt={t.label || 'token'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                (t.label ? t.label.slice(0, 2) : (t.type === 'ally' ? 'A' : 'E'))
+              )}
+
+              {/* Curved name around the token (outside top arc) */}
+              {t.label && t.label.trim() && (() => {
+                const pad = Math.round(size * 0.25);
+                const W = size + 2 * pad;
+                const H = size + 2 * pad;
+                const pid = `tkArc-${String(t.id).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const cx = W / 2;
+                const cy = H / 2; // center aligned to token center
+                const rText = Math.max(6, Math.round((size / 2) + pad - 4)); // outside edge
+                const d = `M ${cx - rText}, ${cy} A ${rText} ${rText} 0 0 0 ${cx + rText}, ${cy}`; // top semicircle above token
+                const fontSize = Math.max(9, Math.round(size * 0.16));
+                return (
+                  <svg
+                    width={W}
+                    height={H}
+                    viewBox={`0 0 ${W} ${H}`}
+                    style={{ position: 'absolute', left: -pad, top: -pad, pointerEvents: 'none' }}
+                  >
+                    <defs>
+                      <path id={pid} d={d} fill="none" />
+                    </defs>
+                    <text
+                      style={{ fill: '#fff', paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.7)', strokeWidth: 1 }}
+                      fontSize={fontSize}
+                      fontWeight={500}
+                    >
+                      <textPath xlinkHref={`#${pid}`} startOffset="50%" textAnchor="middle">
+                        {t.label}
+                      </textPath>
+                    </text>
+                  </svg>
+                );
+              })()}
             </div>
           );
         });

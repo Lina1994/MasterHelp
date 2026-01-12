@@ -24,16 +24,49 @@ const ProjectionMapPage: React.FC = () => {
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
+  const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
+    try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
+  });
+
+  // React to radius updates from preview or other tabs
+  useEffect(() => {
+    const KEY = 'app.map.allyClearRadius';
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const n = parseInt(raw, 10);
+        if (Number.isFinite(n)) setAllyClearRadius(Math.max(0, Math.min(10, n)));
+      }
+    } catch {}
+    const onStorage = (ev: StorageEvent) => {
+      if (ev.key === KEY && ev.newValue) {
+        const n = parseInt(ev.newValue, 10);
+        if (Number.isFinite(n)) setAllyClearRadius(Math.max(0, Math.min(10, n)));
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel('campaign-sync');
+      bc.addEventListener('message', (e: MessageEvent) => {
+        if (e.data?.type === 'ally-clear-radius-updated') {
+          const v = e.data?.value;
+          if (Number.isFinite(v)) setAllyClearRadius(Math.max(0, Math.min(10, Number(v))));
+        }
+      });
+    } catch {}
+    return () => { window.removeEventListener('storage', onStorage); try { bc?.close(); } catch {} };
+  }, []);
 
   // Compute fog after clearing around allied tokens
   const effectiveFogCells = React.useMemo(() => {
     try {
-      const cleared = computeClearedFogByAllies(gridSettings, tokens || []);
+      const cleared = computeClearedFogByAllies(gridSettings, tokens || [], allyClearRadius);
       return subtractClearedFog(cells, cleared);
     } catch {
       return cells;
     }
-  }, [cells, tokens, gridSettings]);
+  }, [cells, tokens, gridSettings, allyClearRadius]);
 
   // Si viene campaignId en la URL (?campaignId=...), fijarlo en el contexto para que esta ventana use la misma campaña.
   useEffect(() => {

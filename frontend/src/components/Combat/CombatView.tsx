@@ -220,6 +220,14 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     });
   }, [baseParticipants, allies, foes, addToken]);
 
+  const createTokenForParticipant = useCallback((p: EncounterSummary['participants'][number]) => {
+    if (!p) return;
+    const type = p.role === 'foe' ? 'enemy' as const : 'ally' as const;
+    const label = (p.name || '') as string;
+    const idStr = p.id ? `${p.id}` : (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+    addToken({ id: idStr, type, label, cellKey: '0:0' });
+  }, [addToken]);
+
   useEffect(() => {
     setParticipantsDraft(selectedEncounter?.participants || []);
   }, [selectedEncounter?.id]);
@@ -479,7 +487,16 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             <Button size="small" variant="outlined" onClick={() => prepareTokens('foes')}>Preparar enemigos</Button>
             <Button size="small" variant="outlined" onClick={() => prepareTokens('all')}>Preparar todos</Button>
           </Stack>
-          <ProjectedMapMirror fogEnabled={fogEnabled} />
+          <ProjectedMapMirror
+            fogEnabled={fogEnabled}
+            highlightTokenId={currentTurnId || null}
+            tokenImageResolver={(id: string) => {
+              const c = charMap.get(id);
+              if (!c) return undefined;
+              // Prefer explicit token image, fallback to character image
+              return c.tokenImageUrl || c.characterImageUrl || undefined;
+            }}
+          />
         </Box>
       </Paper>
 
@@ -506,6 +523,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             schedulePersistInitiative={schedulePersistInitiative}
             rollAllEnemiesInitiative={rollAllEnemiesInitiative}
             rollAllEnemiesHp={rollAllEnemiesHp}
+            onCreateTokenForParticipant={createTokenForParticipant}
           />
         )}
         {viewMode === 'initiative' && (
