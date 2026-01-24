@@ -19,6 +19,7 @@ import { CampaignOwnerGuard } from './guards/campaign-owner.guard';
 import { MapEntity } from '../maps/entities/map.entity';
 import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
 import { SkylineOverlaySettingsDto } from './dto/skyline-overlay-settings.dto';
+import { FogOfWarSettingsDto } from './dto/fog-of-war-settings.dto';
 import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
 import { BattleStateDto } from './dto/battle-state.dto';
 
@@ -129,6 +130,25 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   async setGridOverlay(@Param('id') id: string, @Body() body: GridOverlaySettingsDto) {
     return this.campaignsService.setGridOverlaySettings(id, body);
+  }
+
+  // --- FOG OF WAR SETTINGS ---
+  /**
+   * Read Fog of War settings for a campaign. Owner or players can read.
+   */
+  @Get(':id/fog-of-war')
+  @UseGuards(JwtAuthGuard)
+  async getFogOfWar(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getFogOfWarSettings(req.user.userId, id);
+  }
+
+  /**
+   * Update Fog of War settings for a campaign. Only owner can update.
+   */
+  @Patch(':id/fog-of-war')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setFogOfWar(@Param('id') id: string, @Body() body: FogOfWarSettingsDto) {
+    return this.campaignsService.setFogOfWarSettings(id, body);
   }
 
   // --- SKYLINE OVERLAY SETTINGS ---

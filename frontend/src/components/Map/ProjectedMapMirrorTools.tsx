@@ -1,0 +1,269 @@
+import React, { useMemo, useState } from 'react';
+import {
+  Box,
+  Button,
+  Divider,
+  FormControlLabel,
+  MenuItem,
+  Popover,
+  Stack,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material';
+import type { GridSettings } from './MapGridOverlay';
+import type { TokenEditMode } from './MapTokensOverlay';
+
+type ToolGroup = 'move' | 'grid' | 'fog' | 'tokens';
+
+export type ProjectedMapMirrorToolsProps = {
+  // --- Move/transform ---
+  canMoveScenario: boolean;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onMoveLeft: () => void;
+  onMoveRight: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onRotatePlus90: () => void;
+  onRotateMinus90: () => void;
+  onResetTransform: () => void;
+
+  // --- Grid ---
+  gridSettings: GridSettings;
+  onSaveGrid: (next: Partial<GridSettings>) => void;
+
+  // --- Fog ---
+  fogEnabled: boolean;
+  fogEditEnabled: boolean;
+  onSetFogEditEnabled: (v: boolean) => void;
+  fogTool: 'paint' | 'erase';
+  onSetFogTool: (v: 'paint' | 'erase') => void;
+  allyClearRadius: number;
+  onSetAllyClearRadius: (v: number) => void;
+  canFogFillAll: boolean;
+  onFogFillAll: () => void;
+  onFogClearAll: () => void;
+
+  // --- Tokens ---
+  tokenMode: TokenEditMode;
+  onSetTokenMode: (v: TokenEditMode) => void;
+
+  /** Optional helpers to auto-create tokens for encounter participants (Combat preview only). */
+  onPrepareTokens?: (which: 'allies' | 'foes' | 'all') => void;
+};
+
+/**
+ * ProjectedMapMirrorTools
+ *
+ * Compact toolbar for the "Vista previa (Ventana de jugadores)" panel.
+ * Renders 4 grouped actions and shows their controls in a floating Popover
+ * so the layout is not displaced.
+ */
+const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) => {
+  const [openGroup, setOpenGroup] = useState<ToolGroup | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  const title = useMemo((): string => {
+    switch (openGroup) {
+      case 'move': return 'Mover escenario';
+      case 'grid': return 'Cuadrícula';
+      case 'fog': return 'Niebla';
+      case 'tokens': return 'Tokens';
+      default: return '';
+    }
+  }, [openGroup]);
+
+  const open = Boolean(openGroup && anchorEl);
+
+  const onOpen = (group: ToolGroup) => (e: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
+    setOpenGroup(group);
+  };
+
+  const onClose = () => {
+    setOpenGroup(null);
+    setAnchorEl(null);
+  };
+
+  const panelSx = { p: 1.5, minWidth: 280, maxWidth: 420 } as const;
+
+  return (
+    <>
+      <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 1 }}>
+        <Button size="small" variant="outlined" onClick={onOpen('move')} disabled={!props.canMoveScenario}>
+          Mover escenario
+        </Button>
+        <Button size="small" variant="outlined" onClick={onOpen('grid')}>
+          Cuadrícula
+        </Button>
+        <Button size="small" variant="outlined" onClick={onOpen('fog')}>
+          Niebla
+        </Button>
+        <Button size="small" variant="outlined" onClick={onOpen('tokens')}>
+          Tokens
+        </Button>
+      </Stack>
+
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={onClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        disableRestoreFocus
+      >
+        <Box sx={panelSx}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>{title}</Typography>
+          <Divider sx={{ mb: 1 }} />
+
+          {openGroup === 'move' && (
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Button size="small" onClick={props.onZoomIn}>Zoom +</Button>
+                <Button size="small" onClick={props.onZoomOut}>Zoom -</Button>
+                <Button size="small" onClick={props.onMoveLeft}>←</Button>
+                <Button size="small" onClick={props.onMoveRight}>→</Button>
+                <Button size="small" onClick={props.onMoveUp}>↑</Button>
+                <Button size="small" onClick={props.onMoveDown}>↓</Button>
+              </Stack>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Button size="small" onClick={props.onRotatePlus90}>Rotar +90°</Button>
+                <Button size="small" onClick={props.onRotateMinus90}>Rotar -90°</Button>
+                <Button size="small" onClick={props.onResetTransform}>Reset</Button>
+              </Stack>
+            </Stack>
+          )}
+
+          {openGroup === 'grid' && (
+            <Stack spacing={1}>
+              <FormControlLabel
+                control={<Switch checked={props.gridSettings.enabled} onChange={(e) => props.onSaveGrid({ enabled: e.target.checked })} />}
+                label="Cuadrícula"
+              />
+              <TextField
+                select
+                size="small"
+                label="Tipo"
+                value={props.gridSettings.type}
+                onChange={(e) => props.onSaveGrid({ type: e.target.value as any })}
+              >
+                <MenuItem value="square">Cuadrados</MenuItem>
+                <MenuItem value="hex">Hexágonos</MenuItem>
+              </TextField>
+              <TextField
+                size="small"
+                type="number"
+                label="Tamaño"
+                value={props.gridSettings.cellSize}
+                inputProps={{ min: 6, step: 2 }}
+                onChange={(e) => props.onSaveGrid({ cellSize: Math.max(6, Number(e.target.value || 0)) })}
+              />
+              <TextField
+                size="small"
+                type="color"
+                label="Color"
+                value={props.gridSettings.color}
+                onChange={(e) => props.onSaveGrid({ color: e.target.value })}
+              />
+              <TextField
+                size="small"
+                type="number"
+                label="Opacidad"
+                value={props.gridSettings.opacity}
+                inputProps={{ min: 0, max: 1, step: 0.05 }}
+                onChange={(e) => props.onSaveGrid({ opacity: Math.max(0, Math.min(1, Number(e.target.value || 0))) })}
+              />
+              <TextField
+                size="small"
+                type="number"
+                label="Grosor"
+                value={props.gridSettings.lineWidth}
+                inputProps={{ min: 0.25, max: 4, step: 0.25 }}
+                onChange={(e) => props.onSaveGrid({ lineWidth: Math.max(0.25, Math.min(4, Number(e.target.value || 0))) })}
+              />
+            </Stack>
+          )}
+
+          {openGroup === 'fog' && (
+            <Stack spacing={1}>
+              <FormControlLabel
+                control={<Switch checked={props.fogEnabled} disabled />}
+                label="Niebla (controlada en Combate)"
+              />
+
+              {props.fogEnabled ? (
+                <>
+                  <FormControlLabel
+                    control={<Switch checked={props.fogEditEnabled} onChange={(e) => props.onSetFogEditEnabled(e.target.checked)} />}
+                    label="Editar niebla"
+                  />
+                  <TextField
+                    select
+                    size="small"
+                    label="Herramienta"
+                    value={props.fogTool}
+                    onChange={(e) => props.onSetFogTool((e.target.value as any) || 'paint')}
+                  >
+                    <MenuItem value="paint">Pintar</MenuItem>
+                    <MenuItem value="erase">Borrar</MenuItem>
+                  </TextField>
+                  <TextField
+                    size="small"
+                    type="number"
+                    label="Radio aliados"
+                    value={props.allyClearRadius}
+                    inputProps={{ min: 0, max: 10, step: 1 }}
+                    onChange={(e) => props.onSetAllyClearRadius(Math.max(0, Math.min(10, Number(e.target.value || 0))))}
+                  />
+                  <Stack direction="row" spacing={1}>
+                    <Button size="small" onClick={props.onFogFillAll} disabled={!props.canFogFillAll}>
+                      Poner todo
+                    </Button>
+                    <Button size="small" onClick={props.onFogClearAll}>
+                      Borrar todo
+                    </Button>
+                  </Stack>
+                </>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Activa la niebla desde la cabecera de Combate para editarla aquí.
+                </Typography>
+              )}
+            </Stack>
+          )}
+
+          {openGroup === 'tokens' && (
+            <Stack spacing={1}>
+              {props.onPrepareTokens && (
+                <>
+                  <Typography variant="body2" color="text.secondary">Preparar tokens</Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    <Button size="small" variant="outlined" onClick={() => props.onPrepareTokens?.('allies')}>Aliados</Button>
+                    <Button size="small" variant="outlined" onClick={() => props.onPrepareTokens?.('foes')}>Enemigos</Button>
+                    <Button size="small" variant="outlined" onClick={() => props.onPrepareTokens?.('all')}>Todos</Button>
+                  </Stack>
+                  <Divider sx={{ my: 1 }} />
+                </>
+              )}
+              <TextField
+                select
+                size="small"
+                label="Modo"
+                value={props.tokenMode}
+                onChange={(e) => props.onSetTokenMode((e.target.value as TokenEditMode) || 'none')}
+              >
+                <MenuItem value="none">Ver/arrastrar</MenuItem>
+                <MenuItem value="ally">Añadir aliado</MenuItem>
+                <MenuItem value="enemy">Añadir enemigo</MenuItem>
+                <MenuItem value="erase">Borrar token</MenuItem>
+              </TextField>
+            </Stack>
+          )}
+        </Box>
+      </Popover>
+    </>
+  );
+};
+
+export default ProjectedMapMirrorTools;

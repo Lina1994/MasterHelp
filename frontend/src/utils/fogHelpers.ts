@@ -103,3 +103,52 @@ export function subtractClearedFog(allFog: Set<string>, cleared: Set<string>): S
   allFog.forEach(k => { if (!cleared.has(k)) out.add(k); });
   return out;
 }
+
+/**
+ * Compute a full fog set that covers the entire map area for the given grid.
+ *
+ * This is used for actions like "Poner niebla en todo el mapa".
+ * @param grid Current grid settings.
+ * @param widthPx Map width in pixels (intrinsic image size).
+ * @param heightPx Map height in pixels (intrinsic image size).
+ */
+export function computeAllFogCells(grid: GridSettings, widthPx: number, heightPx: number): Set<string> {
+  const out = new Set<string>();
+  const W = Math.max(0, Math.floor(widthPx || 0));
+  const H = Math.max(0, Math.floor(heightPx || 0));
+  if (!W || !H) return out;
+
+  if (grid.type === 'square') {
+    const step = Math.max(4, Math.floor(grid.cellSize || 40));
+    const cols = Math.max(1, Math.ceil(W / step));
+    const rows = Math.max(1, Math.ceil(H / step));
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        out.add(`${c}:${r}`);
+      }
+    }
+    return out;
+  }
+
+  // Flat-top hex grid (odd-q offset), consistent with FogOfWarOverlay/MapGridOverlay math.
+  // Important: include negative cols/rows so edge-clipped hexes are still fogged.
+  const r = Math.max(6, Math.floor(grid.cellSize || 30));
+  const w = 2 * r;
+  const h = Math.sqrt(3) * r;
+  const horizStep = 1.5 * r;
+  const vertStep = h;
+
+  const cols = Math.ceil(W / horizStep) + 3;
+  const rows = Math.ceil(H / vertStep) + 3;
+  for (let col = -1; col < cols; col++) {
+    const cx = col * horizStep + r;
+    const yOffset = (col % 2 === 0) ? 0 : h / 2;
+    for (let row = -1; row < rows; row++) {
+      const cy = row * vertStep + h / 2 + yOffset;
+      // Keep only hexes that intersect the canvas bounds (quick cull).
+      if (cx + w < 0 || cx - w > W || cy + h < 0 || cy - h > H) continue;
+      out.add(`${col}:${row}`);
+    }
+  }
+  return out;
+}

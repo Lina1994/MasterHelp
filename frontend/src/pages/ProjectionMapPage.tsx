@@ -10,6 +10,8 @@ import MapGridOverlay, { GridSettings } from '../components/Map/MapGridOverlay';
 import FogOfWarOverlay from '../components/Map/FogOfWarOverlay';
 import { useFogOfWar } from '../hooks/useFogOfWar';
 import { getGridOverlaySettings } from '../api/campaigns/gridOverlay';
+import { getFogOfWarSettings } from '../api/campaigns/fogOfWar';
+import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { useMapTokens } from '../hooks/useMapTokens';
 import MapTokensOverlay from '../components/Map/MapTokensOverlay';
 import { computeClearedFogByAllies, subtractClearedFog } from '../utils/fogHelpers';
@@ -24,9 +26,30 @@ const ProjectionMapPage: React.FC = () => {
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
+  const [currentTurnId, setCurrentTurnId] = useState<string | null>(null);
   const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
+
+  // Load FoW settings from server so this web window matches Electron even across origins.
+  useEffect(() => {
+    let cancelled = false;
+    const apply = async () => {
+      try {
+        if (!activeCampaign?.id) return;
+        const s = await getFogOfWarSettings(activeCampaign.id);
+        if (cancelled) return;
+        const v = Number.isFinite(s?.allyClearRadius as any) ? Math.max(0, Math.min(10, Math.floor(Number((s as any).allyClearRadius)))) : 1;
+        setAllyClearRadius(v);
+        try { localStorage.setItem('app.map.allyClearRadius', String(v)); } catch {}
+      } catch {
+        // ignore
+      }
+    };
+    apply();
+    const id = window.setInterval(apply, 2000);
+    return () => { cancelled = true; window.clearInterval(id); };
+  }, [activeCampaign?.id]);
 
   // React to radius updates from preview or other tabs
   useEffect(() => {
@@ -67,6 +90,35 @@ const ProjectionMapPage: React.FC = () => {
       return cells;
     }
   }, [cells, tokens, gridSettings, allyClearRadius]);
+
+  // Current turn highlight (poll campaign battle state; projection-safe public endpoint)
+  useEffect(() => {
+    let disposed = false;
+    const tick = async () => {
+      if (disposed) return;
+      try {
+        if (!activeCampaign?.id) { setCurrentTurnId(null); return; }
+        const s = await getCampaignBattleStatePublic(activeCampaign.id);
+        if (disposed) return;
+        setCurrentTurnId(typeof s?.currentTurnId === 'string' ? s.currentTurnId : null);
+      } catch {
+        // ignore
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 800);
+    return () => { disposed = true; window.clearInterval(id); };
+  }, [activeCampaign?.id]);
+
+  const highlightIds = React.useMemo(() => {
+    if (!currentTurnId) return null;
+    const token = (tokens || []).find(t => t.id === currentTurnId);
+    if (!token) return null;
+    // Do not highlight enemies that are currently covered by fog.
+    const coveredByFog = effectiveFogCells.has(token.cellKey);
+    if (token.type === 'enemy' && coveredByFog) return null;
+    return new Set([currentTurnId]);
+  }, [currentTurnId, tokens, effectiveFogCells]);
 
   // Si viene campaignId en la URL (?campaignId=...), fijarlo en el contexto para que esta ventana use la misma campaña.
   useEffect(() => {
@@ -327,15 +379,15 @@ const ProjectionMapPage: React.FC = () => {
                   if (w && h) setNaturalSize({ w, h });
                 }}
               />
-              {/* Fog overlay (players: black) above grid to fully mask */}
-              <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={effectiveFogCells} />
               {gridSettings.enabled && (
                 <MapGridOverlay settings={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} />
               )}
               {/* Tokens overlay (read-only in projection) */}
               {naturalSize?.w && naturalSize?.h && (
-                <MapTokensOverlay settings={gridSettings} widthPx={naturalSize.w} heightPx={naturalSize.h} tokens={tokens} editable={false} />
+                <MapTokensOverlay settings={gridSettings} widthPx={naturalSize.w} heightPx={naturalSize.h} tokens={tokens} editable={false} highlightIds={highlightIds} />
               )}
+              {/* Fog overlay (players: black) above everything to truly mask hidden areas */}
+              <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={effectiveFogCells} />
             </Box>
           </Box>
         </Box>

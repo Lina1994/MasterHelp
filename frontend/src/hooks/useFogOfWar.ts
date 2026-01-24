@@ -232,5 +232,13 @@ export function useFogOfWar(campaignId?: string, mapId?: string, grid?: GridSett
     persist(new Set());
   }, [persist]);
 
-  return { cells, addCell, removeCell, clearAll };
+  /**
+   * Replace the current fog set with a new one (bulk operation).
+   * Useful for actions like "poner niebla en todo el mapa".
+   */
+  const setAll = useCallback((next: Set<string>) => {
+    persist(new Set(next));
+  }, [persist]);
+
+  return { cells, addCell, removeCell, clearAll, setAll };
 }

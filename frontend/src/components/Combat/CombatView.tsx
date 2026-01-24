@@ -482,14 +482,10 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           Vista previa vinculada a la ventana de jugadores. Permite seleccionar otro mapa y encuentro sin salir de esta pantalla.
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <Stack spacing={1} sx={{ mb: 1 }} direction="row">
-            <Button size="small" variant="outlined" onClick={() => prepareTokens('allies')}>Preparar aliados</Button>
-            <Button size="small" variant="outlined" onClick={() => prepareTokens('foes')}>Preparar enemigos</Button>
-            <Button size="small" variant="outlined" onClick={() => prepareTokens('all')}>Preparar todos</Button>
-          </Stack>
           <ProjectedMapMirror
             fogEnabled={fogEnabled}
             highlightTokenId={currentTurnId || null}
+            onPrepareTokens={prepareTokens}
             tokenImageResolver={(id: string) => {
               const c = charMap.get(id);
               if (!c) return undefined;

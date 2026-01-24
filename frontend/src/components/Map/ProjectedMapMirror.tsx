@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Box, Paper, Typography, TextField, MenuItem, Stack, Button, ToggleButton, ToggleButtonGroup, Switch, FormControlLabel, Select } from '@mui/material';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Box, Paper, Typography, TextField, MenuItem, Stack, Button, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useActiveMap } from './ActiveMapContext';
 import AuthImage from '../common/AuthImage';
 import { getMapImageUrlSized, getMapSkylineUrlSized, listMaps } from '../../api/maps';
@@ -8,14 +8,22 @@ import FogOfWarOverlay from './FogOfWarOverlay';
 import FogEditorLayer from './FogEditorLayer';
 import { useFogOfWar } from '../../hooks/useFogOfWar';
 import { getGridOverlaySettings, setGridOverlaySettings } from '../../api/campaigns/gridOverlay';
+import { getFogOfWarSettings, setFogOfWarSettings } from '../../api/campaigns/fogOfWar';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../player/TimeOfDayContext';
 import { useMapTokens } from '../../hooks/useMapTokens';
 import MapTokensOverlay, { TokenEditMode } from './MapTokensOverlay';
-import { computeClearedFogByAllies, subtractClearedFog } from '../../utils/fogHelpers';
+import { computeAllFogCells, computeClearedFogByAllies, subtractClearedFog } from '../../utils/fogHelpers';
+import ProjectedMapMirrorTools from './ProjectedMapMirrorTools';
 // removed duplicate import
 
-const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean; highlightTokenId?: string | null; tokenImageResolver?: (id: string) => string | undefined }> = ({ fogEnabled = false, highlightTokenId = null, tokenImageResolver }) => {
+const ProjectedMapMirror: React.FC<{
+  fogEnabled?: boolean;
+  highlightTokenId?: string | null;
+  tokenImageResolver?: (id: string) => string | undefined;
+  /** Optional: expose token preparation actions (Combat preview only). */
+  onPrepareTokens?: (which: 'allies' | 'foes' | 'all') => void;
+}> = ({ fogEnabled = false, highlightTokenId = null, tokenImageResolver, onPrepareTokens }) => {
   const { activeMapId } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
   const [overrideMapId, setOverrideMapId] = useState<string | null>(null);
@@ -28,7 +36,7 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean; highlightTokenId?: st
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
   const { activeCampaign } = useActiveCampaign();
   const mapId = overrideMapId || activeMapId;
-  const { cells, addCell, removeCell, clearAll } = useFogOfWar(activeCampaign?.id, mapId || undefined, gridSettings);
+  const { cells, addCell, removeCell, clearAll, setAll } = useFogOfWar(activeCampaign?.id, mapId || undefined, gridSettings);
   const [fogTool, setFogTool] = useState<'paint' | 'erase'>('paint');
   const [fogEditEnabled, setFogEditEnabled] = useState<boolean>(false);
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
@@ -38,11 +46,37 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean; highlightTokenId?: st
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
 
+  // Load FoW settings from server (campaign-scoped) so Electron and Web match even across origins.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!activeCampaign?.id) return;
+        const s = await getFogOfWarSettings(activeCampaign.id);
+        if (cancelled) return;
+        const v = Number.isFinite(s?.allyClearRadius as any) ? Math.max(0, Math.min(10, Math.floor(Number((s as any).allyClearRadius)))) : 1;
+        setAllyClearRadius(v);
+        try { localStorage.setItem('app.map.allyClearRadius', String(v)); } catch {}
+      } catch {
+        // Keep local fallback
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeCampaign?.id]);
+
   // Persist radius and notify listeners (projection or other tabs)
   useEffect(() => {
     try { localStorage.setItem('app.map.allyClearRadius', String(allyClearRadius)); } catch {}
     try { const bc = new BroadcastChannel('campaign-sync'); bc.postMessage({ type: 'ally-clear-radius-updated', value: allyClearRadius, at: Date.now() }); bc.close(); } catch {}
-  }, [allyClearRadius]);
+    // Persist to server so browser clients (different origin) receive the same value.
+    (async () => {
+      try {
+        if (activeCampaign?.id) await setFogOfWarSettings(activeCampaign.id, { allyClearRadius });
+      } catch {
+        // ignore
+      }
+    })();
+  }, [allyClearRadius, activeCampaign?.id]);
 
   // Compute fog after clearing around allied tokens (own cell + adjacent)
   const effectiveFogCells = React.useMemo(() => {
@@ -198,51 +232,40 @@ const ProjectedMapMirror: React.FC<{ fogEnabled?: boolean; highlightTokenId?: st
           <MenuItem value={"1"}>100%</MenuItem>
         </TextField>
       </Stack>
-      {activeMapId && previewMode === 'players' && (
-        <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-          <Button size="small" onClick={() => persistTransform({ ...(activeTransform||{}), zoom: Math.min(8, (activeTransform?.zoom ?? 1) * 1.1) })}>Zoom +</Button>
-          <Button size="small" onClick={() => persistTransform({ ...(activeTransform||{}), zoom: Math.max(0.05, (activeTransform?.zoom ?? 1) / 1.1) })}>Zoom -</Button>
-          <Button size="small" onClick={() => persistTransform({ ...(activeTransform||{}), translateXPct: (activeTransform?.translateXPct ?? 0) - 5 })}>←</Button>
-          <Button size="small" onClick={() => persistTransform({ ...(activeTransform||{}), translateXPct: (activeTransform?.translateXPct ?? 0) + 5 })}>→</Button>
-          <Button size="small" onClick={() => persistTransform({ ...(activeTransform||{}), translateYPct: (activeTransform?.translateYPct ?? 0) - 5 })}>↑</Button>
-          <Button size="small" onClick={() => persistTransform({ ...(activeTransform||{}), translateYPct: (activeTransform?.translateYPct ?? 0) + 5 })}>↓</Button>
-          <Button size="small" onClick={() => persistTransform({ ...(activeTransform||{}), rotationDeg: (activeTransform?.rotationDeg ?? 0) + 90 })}>Rotar +90°</Button>
-          <Button size="small" onClick={() => persistTransform({ ...(activeTransform||{}), rotationDeg: (activeTransform?.rotationDeg ?? 0) - 90 })}>Rotar -90°</Button>
-          <Button size="small" onClick={() => persistTransform({ zoom: 1, rotationDeg: 0, translateXPct: 0, translateYPct: 0 })}>Reset</Button>
-        </Stack>
-      )}
       {previewMode === 'players' && (
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems="center" sx={{ mb: 1 }}>
-          <FormControlLabel control={<Switch checked={gridSettings.enabled} onChange={(e) => saveGrid({ enabled: e.target.checked })} />} label="Cuadrícula" />
-          <TextField select size="small" label="Tipo" value={gridSettings.type} onChange={(e) => saveGrid({ type: e.target.value as any })} sx={{ width: 140 }}>
-            <MenuItem value="square">Cuadrados</MenuItem>
-            <MenuItem value="hex">Hexágonos</MenuItem>
-          </TextField>
-          <TextField size="small" type="number" label="Tamaño" value={gridSettings.cellSize} inputProps={{ min: 6, step: 2 }} onChange={(e) => saveGrid({ cellSize: Math.max(6, Number(e.target.value||0)) })} sx={{ width: 120 }} />
-          <TextField size="small" type="color" label="Color" value={gridSettings.color} onChange={(e) => saveGrid({ color: e.target.value })} sx={{ width: 120 }} />
-          <TextField size="small" type="number" label="Opacidad" value={gridSettings.opacity} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => saveGrid({ opacity: Math.max(0, Math.min(1, Number(e.target.value||0))) })} sx={{ width: 140 }} />
-          <TextField size="small" type="number" label="Grosor" value={gridSettings.lineWidth} inputProps={{ min: 0.25, max: 4, step: 0.25 }} onChange={(e) => saveGrid({ lineWidth: Math.max(0.25, Math.min(4, Number(e.target.value||0))) })} sx={{ width: 120 }} />
-          {/* Fog of War controls */}
-          <FormControlLabel control={<Switch checked={fogEnabled} onChange={() => { /* controlled upstream in Combat; local maps preview can be edited via tool toggle below */ }} />} label="Niebla (vista previa)" />
-          {fogEnabled && (
-            <>
-              <FormControlLabel control={<Switch checked={fogEditEnabled} onChange={(e) => setFogEditEnabled(e.target.checked)} />} label="Editar niebla" />
-              <TextField select size="small" label="Herramienta" value={fogTool} onChange={(e) => setFogTool((e.target.value as any) || 'paint')} sx={{ width: 160 }}>
-                <MenuItem value="paint">Pintar</MenuItem>
-                <MenuItem value="erase">Borrar</MenuItem>
-              </TextField>
-              <TextField size="small" type="number" label="Radio aliados" value={allyClearRadius} inputProps={{ min: 0, max: 10, step: 1 }} onChange={(e) => setAllyClearRadius(Math.max(0, Math.min(10, Number(e.target.value||0))))} sx={{ width: 160 }} />
-              <Button size="small" onClick={() => clearAll()}>Borrar todo</Button>
-            </>
-          )}
-          {/* Tokens edit controls */}
-          <TextField select size="small" label="Tokens" value={tokenMode} onChange={(e) => setTokenMode((e.target.value as TokenEditMode) || 'none')} sx={{ width: 170 }}>
-            <MenuItem value="none">Ver/arrastrar</MenuItem>
-            <MenuItem value="ally">Añadir aliado</MenuItem>
-            <MenuItem value="enemy">Añadir enemigo</MenuItem>
-            <MenuItem value="erase">Borrar token</MenuItem>
-          </TextField>
-        </Stack>
+        <ProjectedMapMirrorTools
+          canMoveScenario={!!activeMapId}
+          onZoomIn={() => persistTransform({ ...(activeTransform || {}), zoom: Math.min(8, (activeTransform?.zoom ?? 1) * 1.1) })}
+          onZoomOut={() => persistTransform({ ...(activeTransform || {}), zoom: Math.max(0.05, (activeTransform?.zoom ?? 1) / 1.1) })}
+          onMoveLeft={() => persistTransform({ ...(activeTransform || {}), translateXPct: (activeTransform?.translateXPct ?? 0) - 5 })}
+          onMoveRight={() => persistTransform({ ...(activeTransform || {}), translateXPct: (activeTransform?.translateXPct ?? 0) + 5 })}
+          onMoveUp={() => persistTransform({ ...(activeTransform || {}), translateYPct: (activeTransform?.translateYPct ?? 0) - 5 })}
+          onMoveDown={() => persistTransform({ ...(activeTransform || {}), translateYPct: (activeTransform?.translateYPct ?? 0) + 5 })}
+          onRotatePlus90={() => persistTransform({ ...(activeTransform || {}), rotationDeg: (activeTransform?.rotationDeg ?? 0) + 90 })}
+          onRotateMinus90={() => persistTransform({ ...(activeTransform || {}), rotationDeg: (activeTransform?.rotationDeg ?? 0) - 90 })}
+          onResetTransform={() => persistTransform({ zoom: 1, rotationDeg: 0, translateXPct: 0, translateYPct: 0 })}
+
+          gridSettings={gridSettings}
+          onSaveGrid={saveGrid}
+
+          fogEnabled={fogEnabled}
+          fogEditEnabled={fogEditEnabled}
+          onSetFogEditEnabled={setFogEditEnabled}
+          fogTool={fogTool}
+          onSetFogTool={setFogTool}
+          allyClearRadius={allyClearRadius}
+          onSetAllyClearRadius={setAllyClearRadius}
+          canFogFillAll={!!contentW && !!contentH}
+          onFogFillAll={() => {
+            if (!contentW || !contentH) return;
+            setAll(computeAllFogCells(gridSettings, contentW, contentH));
+          }}
+          onFogClearAll={() => clearAll()}
+
+          tokenMode={tokenMode}
+          onSetTokenMode={setTokenMode}
+          onPrepareTokens={onPrepareTokens}
+        />
       )}
       <Box ref={containerRef} sx={{ width: '100%', overflow: 'auto' }}>
         {baseSize ? (

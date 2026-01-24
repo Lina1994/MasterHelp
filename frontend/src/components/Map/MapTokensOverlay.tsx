@@ -181,40 +181,6 @@ const MapTokensOverlay: React.FC<{
               ) : (
                 (t.label ? t.label.slice(0, 2) : (t.type === 'ally' ? 'A' : 'E'))
               )}
-
-              {/* Curved name around the token (outside top arc) */}
-              {t.label && t.label.trim() && (() => {
-                const pad = Math.round(size * 0.25);
-                const W = size + 2 * pad;
-                const H = size + 2 * pad;
-                const pid = `tkArc-${String(t.id).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
-                const cx = W / 2;
-                const cy = H / 2; // center aligned to token center
-                const rText = Math.max(6, Math.round((size / 2) + pad - 4)); // outside edge
-                const d = `M ${cx - rText}, ${cy} A ${rText} ${rText} 0 0 0 ${cx + rText}, ${cy}`; // top semicircle above token
-                const fontSize = Math.max(9, Math.round(size * 0.16));
-                return (
-                  <svg
-                    width={W}
-                    height={H}
-                    viewBox={`0 0 ${W} ${H}`}
-                    style={{ position: 'absolute', left: -pad, top: -pad, pointerEvents: 'none' }}
-                  >
-                    <defs>
-                      <path id={pid} d={d} fill="none" />
-                    </defs>
-                    <text
-                      style={{ fill: '#fff', paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.7)', strokeWidth: 1 }}
-                      fontSize={fontSize}
-                      fontWeight={500}
-                    >
-                      <textPath xlinkHref={`#${pid}`} startOffset="50%" textAnchor="middle">
-                        {t.label}
-                      </textPath>
-                    </text>
-                  </svg>
-                );
-              })()}
             </div>
           );
         });

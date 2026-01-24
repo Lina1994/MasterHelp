@@ -109,6 +109,18 @@ export class Campaign {
   } | null;
 
   /**
+   * Persisted Fog of War settings for cross-client consistency.
+   *
+   * NOTE: This is intentionally kept small (only what affects rendering logic)
+   * so app (Electron) and web clients behave the same.
+   */
+  @Column({ type: 'simple-json', nullable: true })
+  fogOfWarSettings?: {
+    /** Ally clear radius (in grid cells) used to auto-clear fog around allied tokens. */
+    allyClearRadius: number;
+  } | null;
+
+  /**
    * Selected manuals to apply/scope content for this campaign.
    * Stored as simple JSON array of manual IDs from manuals registry.
    */
