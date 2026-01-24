@@ -53,6 +53,8 @@ import ParticipantsPanel from './ParticipantsPanel';
 import DetailCard from './DetailCard';
 import { useCombatNotes } from '../../hooks/useCombatNotes';
 import { computeEnemyDisplayNameById, prettySkill, prettySense, stripGroupSuffix } from './utils';
+import type { GridSettings } from '../../components/Map/MapGridOverlay';
+import { allocateTokenCells } from '../../utils/tokenPlacement';
 
 /**
  * CombatView: vista de combate con selección de mapa/encuentro,
@@ -208,25 +210,154 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
 
   const enemyDisplayNameById = useMemo(() => computeEnemyDisplayNameById(foes), [foes]);
   // Tokens: allow preparing tokens for current encounter participants
-  const { addToken } = useMapTokens(campaign?.id, activeMapId || undefined);
+  const { tokens, addToken } = useMapTokens(campaign?.id, activeMapId || undefined);
+  const [activeMapNaturalSize, setActiveMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
+
+  const gridSettingsForPlacement = useMemo<GridSettings>(() => {
+    try {
+      const raw = localStorage.getItem('app.map.grid.settings');
+      const parsed = raw ? (JSON.parse(raw) as Partial<GridSettings>) : {};
+      return {
+        enabled: !!parsed.enabled,
+        type: (parsed.type === 'hex' ? 'hex' : 'square'),
+        cellSize: typeof parsed.cellSize === 'number' && parsed.cellSize > 0 ? parsed.cellSize : 40,
+        color: typeof parsed.color === 'string' ? parsed.color : '#FFFFFF',
+        opacity: typeof parsed.opacity === 'number' ? parsed.opacity : 0.4,
+        lineWidth: typeof parsed.lineWidth === 'number' ? parsed.lineWidth : 1,
+      };
+    } catch {
+      return { enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 };
+    }
+  }, [campaign?.id]);
+
   const prepareTokens = useCallback((which: 'all' | 'allies' | 'foes') => {
     const list = which === 'all' ? baseParticipants : which === 'allies' ? allies : foes;
-    // Place initially at 0:0 to be dragged later
-    list.forEach((p) => {
+    const occupied = new Set<string>((tokens || []).map(t => t.cellKey));
+
+    const projectionSize = (() => {
+      try {
+        const raw = localStorage.getItem('app.projection.size');
+        const v = raw ? JSON.parse(raw) : null;
+        const w = Number(v?.width);
+        const h = Number(v?.height);
+        return (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) ? { width: w, height: h } : null;
+      } catch {
+        return null;
+      }
+    })();
+
+    const activeTransform = (() => {
+      const m = maps.find(mm => mm.id === activeMapId);
+      const t = (m as any)?.transform || null;
+      return {
+        zoom: Number.isFinite(Number(t?.zoom)) ? Number(t.zoom) : 1,
+        rotationDeg: Number.isFinite(Number(t?.rotationDeg)) ? Number(t.rotationDeg) : 0,
+        translateXPct: Number.isFinite(Number(t?.translateXPct)) ? Number(t.translateXPct) : 0,
+        translateYPct: Number.isFinite(Number(t?.translateYPct)) ? Number(t.translateYPct) : 0,
+      };
+    })();
+
+    const visibleRectPx = (() => {
+      const W = activeMapNaturalSize?.w;
+      const H = activeMapNaturalSize?.h;
+      if (!W || !H) return null;
+      if (!projectionSize) return null;
+
+      const zoom = Math.max(0.05, activeTransform.zoom || 1);
+      let vw = projectionSize.width / zoom;
+      let vh = projectionSize.height / zoom;
+
+      const rot = ((((activeTransform.rotationDeg || 0) % 360) + 360) % 360);
+      if (rot === 90 || rot === 270) {
+        const tmp = vw; vw = vh; vh = tmp;
+      }
+
+      // Translation is stored as percent of the map element size.
+      // Positive translate moves the map right/down on screen, so the visible center in map coords shifts left/up.
+      const centerX = (W / 2) - (activeTransform.translateXPct / 100) * W;
+      const centerY = (H / 2) - (activeTransform.translateYPct / 100) * H;
+
+      return {
+        minX: centerX - vw / 2,
+        maxX: centerX + vw / 2,
+        minY: centerY - vh / 2,
+        maxY: centerY + vh / 2,
+      };
+    })();
+
+    const placements = allocateTokenCells({
+      gridSettings: gridSettingsForPlacement,
+      count: list.length,
+      occupiedCellKeys: occupied,
+      widthPx: activeMapNaturalSize?.w,
+      heightPx: activeMapNaturalSize?.h,
+      anchorCellKey: '0:0',
+      visibleRectPx,
+    });
+
+    list.forEach((p, idx) => {
       const type = p.role === 'foe' ? 'enemy' as const : 'ally' as const;
       const label = (p.name || '') as string;
       const idStr = (p && (p as any).id) ? `${(p as any).id}` : (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
-      addToken({ id: idStr, type, label, cellKey: '0:0' });
+      const cellKey = placements[idx] || '0:0';
+      addToken({ id: idStr, type, label, cellKey });
     });
-  }, [baseParticipants, allies, foes, addToken]);
+  }, [baseParticipants, allies, foes, addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId]);
 
   const createTokenForParticipant = useCallback((p: EncounterSummary['participants'][number]) => {
     if (!p) return;
     const type = p.role === 'foe' ? 'enemy' as const : 'ally' as const;
     const label = (p.name || '') as string;
     const idStr = p.id ? `${p.id}` : (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
-    addToken({ id: idStr, type, label, cellKey: '0:0' });
-  }, [addToken]);
+    const occupied = new Set<string>((tokens || []).map(t => t.cellKey));
+    const projectionSize = (() => {
+      try {
+        const raw = localStorage.getItem('app.projection.size');
+        const v = raw ? JSON.parse(raw) : null;
+        const w = Number(v?.width);
+        const h = Number(v?.height);
+        return (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) ? { width: w, height: h } : null;
+      } catch {
+        return null;
+      }
+    })();
+    const activeTransform = (() => {
+      const m = maps.find(mm => mm.id === activeMapId);
+      const t = (m as any)?.transform || null;
+      return {
+        zoom: Number.isFinite(Number(t?.zoom)) ? Number(t.zoom) : 1,
+        rotationDeg: Number.isFinite(Number(t?.rotationDeg)) ? Number(t.rotationDeg) : 0,
+        translateXPct: Number.isFinite(Number(t?.translateXPct)) ? Number(t.translateXPct) : 0,
+        translateYPct: Number.isFinite(Number(t?.translateYPct)) ? Number(t.translateYPct) : 0,
+      };
+    })();
+    const visibleRectPx = (() => {
+      const W = activeMapNaturalSize?.w;
+      const H = activeMapNaturalSize?.h;
+      if (!W || !H) return null;
+      if (!projectionSize) return null;
+      const zoom = Math.max(0.05, activeTransform.zoom || 1);
+      let vw = projectionSize.width / zoom;
+      let vh = projectionSize.height / zoom;
+      const rot = ((((activeTransform.rotationDeg || 0) % 360) + 360) % 360);
+      if (rot === 90 || rot === 270) {
+        const tmp = vw; vw = vh; vh = tmp;
+      }
+      const centerX = (W / 2) - (activeTransform.translateXPct / 100) * W;
+      const centerY = (H / 2) - (activeTransform.translateYPct / 100) * H;
+      return { minX: centerX - vw / 2, maxX: centerX + vw / 2, minY: centerY - vh / 2, maxY: centerY + vh / 2 };
+    })();
+    const cellKey = allocateTokenCells({
+      gridSettings: gridSettingsForPlacement,
+      count: 1,
+      occupiedCellKeys: occupied,
+      widthPx: activeMapNaturalSize?.w,
+      heightPx: activeMapNaturalSize?.h,
+      anchorCellKey: '0:0',
+      visibleRectPx,
+    })[0] || '0:0';
+    addToken({ id: idStr, type, label, cellKey });
+  }, [addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId]);
 
   useEffect(() => {
     setParticipantsDraft(selectedEncounter?.participants || []);
@@ -482,6 +613,20 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           Vista previa vinculada a la ventana de jugadores. Permite seleccionar otro mapa y encuentro sin salir de esta pantalla.
         </Typography>
         <Box sx={{ mt: 2 }}>
+          {/* Hidden image loader to get natural map size for token autoplacement */}
+          {activeMapId && (
+            <AuthImage
+              src={getMapImageUrlSized(activeMapId, 'full')}
+              alt=""
+              style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+              onLoad={(e) => {
+                const img = e.currentTarget as HTMLImageElement;
+                const w = img.naturalWidth || img.width;
+                const h = img.naturalHeight || img.height;
+                if (w && h) setActiveMapNaturalSize({ w, h });
+              }}
+            />
+          )}
           <ProjectedMapMirror
             fogEnabled={fogEnabled}
             highlightTokenId={currentTurnId || null}
