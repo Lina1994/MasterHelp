@@ -27,6 +27,15 @@ const Row: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, valu
   </Stack>
 );
 
+const getInitials = (name: string | undefined | null): string => {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return '?';
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  const a = parts[0]?.[0] || '';
+  const b = parts.length > 1 ? (parts[parts.length - 1]?.[0] || '') : '';
+  return (a + b).toUpperCase();
+};
+
 const CharacterDetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -228,6 +237,20 @@ const CharacterDetailPage: React.FC = () => {
                 )}
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ py: 0.5 }}>
+                  <Typography sx={{ minWidth: 180 }} color="text.secondary">{t('token','Token')}</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    {data.tokenKind === 'image' && data.tokenImageUrl ? (
+                      <Avatar src={data.tokenImageUrl} alt={data.name} sx={{ width: 40, height: 40 }} />
+                    ) : (
+                      <Avatar sx={{ bgcolor: avatarBg, width: 40, height: 40 }}>{getInitials(data.name)}</Avatar>
+                    )}
+                    <Typography variant="body2" color="text.secondary">
+                      {data.tokenKind === 'image' ? t('image','Imagen') : data.tokenKind === 'color' ? t('color','Color') : t('none','Ninguno')}
+                      {data.tokenKind === 'color' && data.tokenColor ? ` (${data.tokenColor})` : ''}
+                    </Typography>
+                  </Stack>
+                </Stack>
                 <Row label={t('age','Edad')} value={data.age} />
                 <Row label={t('height','Altura')} value={data.height} />
                 <Row label={t('weight','Peso')} value={data.weight} />

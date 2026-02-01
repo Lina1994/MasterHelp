@@ -3,7 +3,7 @@
  * Usa el contexto de campaña activa para decidir el contenido y el nivel de permisos
  * (máster con control total; jugador en modo lectura/seguimiento).
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Box, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { getCurrentUser } from '../utils/getCurrentUser';
@@ -38,6 +38,53 @@ const CombatPage: React.FC = () => {
   const [monsters, setMonsters] = useState<Array<MonsterIndexItem & { manualId: string; compositeId: string }>>([]);
   const [dialogState, setDialogState] = useState<{ mode: 'create' | 'edit'; open: boolean; encounter: EncounterSummary | null }>({ mode: 'create', open: false, encounter: null });
   const [deleteTarget, setDeleteTarget] = useState<EncounterSummary | null>(null);
+
+  const reloadTimersRef = useRef<{ encounters?: any; characters?: any }>({});
+
+  // Sync: allow other parts of the app (e.g. map token popover) to signal
+  // that encounters/characters changed so this page refreshes its local lists.
+  useEffect(() => {
+    const cid = activeCampaign?.id;
+    if (!cid) return;
+    let bc: BroadcastChannel | null = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel('campaign-sync');
+        bc.onmessage = (e: MessageEvent) => {
+          const data = e?.data;
+          if (!data || data.campaignId !== cid) return;
+          const type = data.type as string;
+
+          const schedule = (key: 'encounters' | 'characters', fn: () => void) => {
+            const prev = (reloadTimersRef.current as any)[key];
+            if (prev) clearTimeout(prev);
+            (reloadTimersRef.current as any)[key] = setTimeout(fn, 200);
+          };
+
+          if (type === 'encounterUpdated') {
+            schedule('encounters', () => {
+              listEncounters(cid).then(setEncounters).catch(() => {});
+            });
+          }
+
+          if (type === 'characterUpdated') {
+            schedule('characters', () => {
+              listCharacters(cid).then(setCharacters).catch(() => {});
+            });
+          }
+        };
+      }
+    } catch {}
+
+    return () => {
+      try { bc?.close(); } catch {}
+      try {
+        if (reloadTimersRef.current.encounters) clearTimeout(reloadTimersRef.current.encounters);
+        if (reloadTimersRef.current.characters) clearTimeout(reloadTimersRef.current.characters);
+      } catch {}
+      reloadTimersRef.current = {};
+    };
+  }, [activeCampaign?.id]);
 
   useEffect(() => {
     const cid = activeCampaign?.id;

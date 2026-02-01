@@ -35,6 +35,7 @@ export function useCombatNotes(
   encounterId?: string | null,
 ): UseCombatNotesResult {
   const [notesByPid, setNotesByPid] = useState<Record<string, CombatNote>>({});
+  const instanceIdRef = useMemo(() => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`, []);
 
   const storageKey = useMemo(() => {
     return campaignId && encounterId ? `battle.notes:${campaignId}:${encounterId}` : null;
@@ -71,6 +72,46 @@ export function useCombatNotes(
     if (!storageKey) return;
     try { localStorage.setItem(storageKey, JSON.stringify(notesByPid)); } catch {}
   }, [storageKey, notesByPid]);
+
+  // Same-tab + cross-tab sync via BroadcastChannel (storage events don't fire within same tab)
+  useEffect(() => {
+    if (!storageKey) return;
+    let bc: BroadcastChannel | null = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel('campaign-sync');
+        bc.onmessage = (e: MessageEvent) => {
+          const data = e?.data;
+          if (data?.type !== 'combatNotesUpdated') return;
+          if (data?.storageKey !== storageKey) return;
+          if (data?.senderId && data.senderId === instanceIdRef) return;
+          const next = data?.notesByPid;
+          if (next && typeof next === 'object') {
+            setNotesByPid(next as Record<string, CombatNote>);
+          }
+        };
+      }
+    } catch {}
+    return () => {
+      try { bc?.close(); } catch {}
+    };
+  }, [storageKey, instanceIdRef]);
+
+  const broadcastNotes = useCallback((next: Record<string, CombatNote>, removeStorage?: boolean) => {
+    if (!storageKey) return;
+    try {
+      const bc = 'BroadcastChannel' in window ? new BroadcastChannel('campaign-sync') : null;
+      bc?.postMessage({
+        type: 'combatNotesUpdated',
+        storageKey,
+        notesByPid: next,
+        removeStorage: !!removeStorage,
+        senderId: instanceIdRef,
+        at: Date.now(),
+      });
+      bc?.close();
+    } catch {}
+  }, [storageKey, instanceIdRef]);
 
   // Cross-tab/window sync
   useEffect(() => {
@@ -109,30 +150,36 @@ export function useCombatNotes(
         addedTurnIndex,
         durationTurns,
       };
-      return { ...prev, [participantId]: next };
+      const out = { ...prev, [participantId]: next };
+      queueMicrotask(() => broadcastNotes(out));
+      return out;
     });
-  }, []);
+  }, [broadcastNotes]);
 
   const updateNoteForParticipant = useCallback((participantId: string, patch: Partial<Pick<CombatNote, 'text' | 'trackByTurns' | 'count' | 'durationTurns'>>) => {
     setNotesByPid((prev) => {
       const existing = prev[participantId];
       if (!existing) return prev;
-      return { ...prev, [participantId]: { ...existing, ...patch } };
+      const out = { ...prev, [participantId]: { ...existing, ...patch } };
+      queueMicrotask(() => broadcastNotes(out));
+      return out;
     });
-  }, []);
+  }, [broadcastNotes]);
 
   const removeNoteForParticipant = useCallback((participantId: string) => {
     setNotesByPid((prev) => {
       const next = { ...prev };
       delete next[participantId];
+      queueMicrotask(() => broadcastNotes(next));
       return next;
     });
-  }, []);
+  }, [broadcastNotes]);
 
   const clearAllNotes = useCallback(() => {
     setNotesByPid({});
     try { if (storageKey) localStorage.removeItem(storageKey); } catch {}
-  }, [storageKey]);
+    broadcastNotes({}, true);
+  }, [storageKey, broadcastNotes]);
 
   const incrementForParticipant = useCallback((participantId: string, by: number = 1) => {
     setNotesByPid((prev) => {

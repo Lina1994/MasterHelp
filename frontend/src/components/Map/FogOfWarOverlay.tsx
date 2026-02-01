@@ -4,12 +4,28 @@ import type { GridSettings } from './MapGridOverlay';
 export type FogMode = 'master' | 'players';
 
 /** Draw fog cells over the map using Canvas. */
-const FogOfWarOverlay: React.FC<{ mode: FogMode; grid: GridSettings; widthPx?: number; heightPx?: number; cells: Set<string> }>
-= ({ mode, grid, widthPx, heightPx, cells }) => {
+const FogOfWarOverlay: React.FC<{
+  mode: FogMode;
+  grid: GridSettings;
+  widthPx?: number;
+  heightPx?: number;
+  cells: Set<string>;
+  /** Optional: customize the master-preview shading (ignored in players mode). */
+  masterColor?: string;
+  /** Optional: customize the master-preview shading opacity (0..1, ignored in players mode). */
+  masterOpacity?: number;
+}>
+= ({ mode, grid, widthPx, heightPx, cells, masterColor = '#000000', masterOpacity = 0.35 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
 
   const size = useMemo(() => ({ w: Math.max(1, Math.floor(widthPx || 0)), h: Math.max(1, Math.floor(heightPx || 0)) }), [widthPx, heightPx]);
+
+  const effectiveMasterOpacity = useMemo(() => {
+    const v = Number(masterOpacity);
+    if (!Number.isFinite(v)) return 0.35;
+    return Math.max(0, Math.min(1, v));
+  }, [masterOpacity]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -27,8 +43,14 @@ const FogOfWarOverlay: React.FC<{ mode: FogMode; grid: GridSettings; widthPx?: n
 
     ctx.clearRect(0, 0, W, H);
 
-    const shade = mode === 'players' ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0.35)';
-    ctx.fillStyle = shade;
+    ctx.save();
+    if (mode === 'players') {
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = 'rgb(0,0,0)';
+    } else {
+      ctx.globalAlpha = effectiveMasterOpacity;
+      ctx.fillStyle = masterColor;
+    }
 
     if (grid.type === 'square') {
       const step = Math.max(4, Math.floor(grid.cellSize || 40));
@@ -60,7 +82,9 @@ const FogOfWarOverlay: React.FC<{ mode: FogMode; grid: GridSettings; widthPx?: n
         ctx.fill();
       }
     }
-  }, [size.w, size.h, grid.enabled, grid.type, grid.cellSize, mode, cells, dpr]);
+
+    ctx.restore();
+  }, [size.w, size.h, grid.enabled, grid.type, grid.cellSize, mode, cells, dpr, masterColor, effectiveMasterOpacity]);
 
   const style: React.CSSProperties = widthPx && heightPx
     ? { position: 'absolute', width: widthPx, height: heightPx, inset: 'auto', left: 0, top: 0, pointerEvents: 'none' }

@@ -220,6 +220,8 @@ export type MapTokenPayload = {
   type: 'ally' | 'enemy';
   label?: string;
   color?: string;
+  /** Visual facing direction in degrees (0..360). */
+  rotationDeg?: number;
 };
 
 export async function getMapTokens(mapId: string, campaignId: string) {

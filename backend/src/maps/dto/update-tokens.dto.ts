@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayUnique, IsArray, IsIn, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, ArrayUnique, IsArray, IsIn, IsNumber, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class MapTokenDto {
@@ -19,6 +19,10 @@ export class MapTokenDto {
   @IsOptional()
   @IsString()
   color?: string;
+
+  @IsOptional()
+  @IsNumber()
+  rotationDeg?: number;
 }
 
 /**

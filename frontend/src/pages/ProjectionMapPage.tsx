@@ -15,6 +15,7 @@ import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { useMapTokens } from '../hooks/useMapTokens';
 import MapTokensOverlay from '../components/Map/MapTokensOverlay';
 import { computeClearedFogByAllies, subtractClearedFog } from '../utils/fogHelpers';
+import { useCharacterTokenImageResolver } from '../hooks/useCharacterTokenImageResolver';
 
 const ProjectionMapPage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
@@ -26,6 +27,7 @@ const ProjectionMapPage: React.FC = () => {
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
+  const { resolver: tokenImageResolver } = useCharacterTokenImageResolver(activeCampaign?.id, { pollMs: 5000 });
   const [currentTurnId, setCurrentTurnId] = useState<string | null>(null);
   const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
@@ -90,6 +92,10 @@ const ProjectionMapPage: React.FC = () => {
       return cells;
     }
   }, [cells, tokens, gridSettings, allyClearRadius]);
+
+  const visibleTokensForLabels = React.useMemo(() => {
+    return (tokens || []).filter((t) => !effectiveFogCells.has(t.cellKey));
+  }, [tokens, effectiveFogCells]);
 
   // Current turn highlight (poll campaign battle state; projection-safe public endpoint)
   useEffect(() => {
@@ -384,10 +390,35 @@ const ProjectionMapPage: React.FC = () => {
               )}
               {/* Tokens overlay (read-only in projection) */}
               {naturalSize?.w && naturalSize?.h && (
-                <MapTokensOverlay settings={gridSettings} widthPx={naturalSize.w} heightPx={naturalSize.h} tokens={tokens} editable={false} highlightIds={highlightIds} />
+                <MapTokensOverlay
+                  settings={gridSettings}
+                  widthPx={naturalSize.w}
+                  heightPx={naturalSize.h}
+                  tokens={tokens}
+                  editable={false}
+                  renderLabel={false}
+                  renderFacing={false}
+                  highlightIds={highlightIds}
+                  getTokenImage={(t) => tokenImageResolver(t.id)}
+                />
               )}
               {/* Fog overlay (players: black) above everything to truly mask hidden areas */}
               <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={effectiveFogCells} />
+
+              {/* Labels + facing above fog, but only for visible tokens */}
+              {naturalSize?.w && naturalSize?.h && visibleTokensForLabels.length > 0 && (
+                <MapTokensOverlay
+                  settings={gridSettings}
+                  widthPx={naturalSize.w}
+                  heightPx={naturalSize.h}
+                  tokens={visibleTokensForLabels}
+                  editable={false}
+                  renderTokenBody={false}
+                  renderLabel={true}
+                  renderFacing={true}
+                  zIndex={50}
+                />
+              )}
             </Box>
           </Box>
         </Box>

@@ -16,6 +16,12 @@ import type { TokenEditMode } from './MapTokensOverlay';
 
 type ToolGroup = 'move' | 'grid' | 'fog' | 'tokens';
 
+export type TokenCandidate = {
+  id: string;
+  label: string;
+  type: 'ally' | 'enemy';
+};
+
 export type ProjectedMapMirrorToolsProps = {
   // --- Move/transform ---
   canMoveScenario: boolean;
@@ -39,6 +45,12 @@ export type ProjectedMapMirrorToolsProps = {
   onSetFogEditEnabled: (v: boolean) => void;
   fogTool: 'paint' | 'erase';
   onSetFogTool: (v: 'paint' | 'erase') => void;
+  /** Visual-only fog shading in the master preview (does not affect players). */
+  fogPreviewColor: string;
+  onSetFogPreviewColor: (v: string) => void;
+  /** 0..1 */
+  fogPreviewOpacity: number;
+  onSetFogPreviewOpacity: (v: number) => void;
   allyClearRadius: number;
   onSetAllyClearRadius: (v: number) => void;
   canFogFillAll: boolean;
@@ -51,6 +63,16 @@ export type ProjectedMapMirrorToolsProps = {
 
   /** Optional helpers to auto-create tokens for encounter participants (Combat preview only). */
   onPrepareTokens?: (which: 'allies' | 'foes' | 'all') => void;
+
+  /** Optional lists to create tokens individually (Combat preview only). */
+  tokenCandidates?: {
+    allies: TokenCandidate[];
+    foes: TokenCandidate[];
+  };
+  /** Token ids already present on the map (to disable duplicate creation). */
+  existingTokenIds?: Set<string>;
+  /** Create a token for a given candidate. */
+  onCreateTokenForCandidate?: (candidate: TokenCandidate) => void;
 };
 
 /**
@@ -192,6 +214,26 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                 label="Niebla (controlada en Combate)"
               />
 
+              <Divider />
+              <Typography variant="body2" color="text.secondary">
+                Apariencia (solo vista previa del master)
+              </Typography>
+              <TextField
+                size="small"
+                type="color"
+                label="Color"
+                value={props.fogPreviewColor}
+                onChange={(e) => props.onSetFogPreviewColor(e.target.value)}
+              />
+              <TextField
+                size="small"
+                type="number"
+                label="Opacidad"
+                value={props.fogPreviewOpacity}
+                inputProps={{ min: 0, max: 1, step: 0.05 }}
+                onChange={(e) => props.onSetFogPreviewOpacity(Math.max(0, Math.min(1, Number(e.target.value || 0))))}
+              />
+
               {props.fogEnabled ? (
                 <>
                   <FormControlLabel
@@ -246,6 +288,57 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                   <Divider sx={{ my: 1 }} />
                 </>
               )}
+
+              {props.tokenCandidates && props.onCreateTokenForCandidate && (
+                <>
+                  <Typography variant="body2" color="text.secondary">Añadir individual</Typography>
+                  <Stack spacing={1}>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Aliados</Typography>
+                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
+                        {props.tokenCandidates.allies.map((c) => (
+                          <Button
+                            key={c.id}
+                            size="small"
+                            variant="outlined"
+                            disabled={props.existingTokenIds?.has(c.id)}
+                            onClick={() => props.onCreateTokenForCandidate?.(c)}
+                            title={c.label}
+                          >
+                            {c.label}
+                          </Button>
+                        ))}
+                        {props.tokenCandidates.allies.length === 0 && (
+                          <Typography variant="body2" color="text.secondary">(sin aliados)</Typography>
+                        )}
+                      </Stack>
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Enemigos</Typography>
+                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
+                        {props.tokenCandidates.foes.map((c) => (
+                          <Button
+                            key={c.id}
+                            size="small"
+                            variant="outlined"
+                            disabled={props.existingTokenIds?.has(c.id)}
+                            onClick={() => props.onCreateTokenForCandidate?.(c)}
+                            title={c.label}
+                          >
+                            {c.label}
+                          </Button>
+                        ))}
+                        {props.tokenCandidates.foes.length === 0 && (
+                          <Typography variant="body2" color="text.secondary">(sin enemigos)</Typography>
+                        )}
+                      </Stack>
+                    </Box>
+                  </Stack>
+                  <Divider sx={{ my: 1 }} />
+                </>
+              )}
+
               <TextField
                 select
                 size="small"
@@ -253,9 +346,10 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                 value={props.tokenMode}
                 onChange={(e) => props.onSetTokenMode((e.target.value as TokenEditMode) || 'none')}
               >
-                <MenuItem value="none">Ver/arrastrar</MenuItem>
+                <MenuItem value="none">Ver/arrastrar/rotar</MenuItem>
                 <MenuItem value="ally">Añadir aliado</MenuItem>
                 <MenuItem value="enemy">Añadir enemigo</MenuItem>
+                <MenuItem value="rotate">Rotar token</MenuItem>
                 <MenuItem value="erase">Borrar token</MenuItem>
               </TextField>
             </Stack>

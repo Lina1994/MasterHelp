@@ -9,6 +9,8 @@ export type MapTokenItem = {
   type: 'ally' | 'enemy';
   label?: string | null;
   color?: string | null;
+  /** Visual facing direction in degrees (0..360). */
+  rotationDeg?: number | null;
 };
 
 /**

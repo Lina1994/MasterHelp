@@ -27,7 +27,10 @@ export async function rollAllEnemiesHp(
     let manualId = p.monsterManualId;
     let slug = p.monsterSlug;
     if (!manualId || !slug) {
-      const byName = (monstersIndex || []).find((m) => m.name.trim().toLowerCase() === (p.name || '').trim().toLowerCase());
+      const rawName = (p.name || '').trim();
+      const strippedName = rawName.replace(/\s+[A-Z]+$/, '').trim();
+      const key = strippedName.toLowerCase();
+      const byName = (monstersIndex || []).find((m) => m.name.trim().toLowerCase() === key);
       if (byName) { manualId = byName.manualId; slug = byName.slug; }
     }
     if (manualId && slug) {

@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Typography, Button, TextField, Paper } from '@mui/material';
 
@@ -12,6 +11,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ initialValue, onCh
   const { t } = useTranslation();
   const [imageSrc, setImageSrc] = useState(initialValue || '');
   const [isDragging, setIsDragging] = useState(false);
+  const inputId = useId();
+  const fileInputId = `file-upload-input-${inputId}`;
 
   useEffect(() => {
     setImageSrc(initialValue || '');
@@ -87,9 +88,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ initialValue, onCh
           accept="image/*"
           onChange={onFileSelect}
           style={{ display: 'none' }}
-          id="file-upload-input"
+          id={fileInputId}
         />
-        <label htmlFor="file-upload-input" style={{ cursor: 'pointer', width: '100%', height: '100%' }}>
+        <label htmlFor={fileInputId} style={{ cursor: 'pointer', width: '100%', height: '100%' }}>
           <Typography>
             {t('drag_and_drop_image', 'Arrastra una imagen aquí o haz clic para seleccionarla')}
           </Typography>

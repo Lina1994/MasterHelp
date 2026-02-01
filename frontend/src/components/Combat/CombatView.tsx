@@ -27,6 +27,7 @@ import OutboundIcon from '@mui/icons-material/Outbound';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AuthImage from '../../components/common/AuthImage';
 import ProjectedMapMirror from '../../components/Map/ProjectedMapMirror';
+import type { TokenCandidate } from '../../components/Map/ProjectedMapMirrorTools';
 import { useMapTokens } from '../../hooks/useMapTokens';
 import { useActiveEncounter } from '../../components/Encounter/ActiveEncounterContext';
 import { useActiveMap } from '../../components/Map/ActiveMapContext';
@@ -297,17 +298,17 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
 
     list.forEach((p, idx) => {
       const type = p.role === 'foe' ? 'enemy' as const : 'ally' as const;
-      const label = (p.name || '') as string;
+      const label = (p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name) as string;
       const idStr = (p && (p as any).id) ? `${(p as any).id}` : (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
       const cellKey = placements[idx] || '0:0';
       addToken({ id: idStr, type, label, cellKey });
     });
-  }, [baseParticipants, allies, foes, addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId]);
+  }, [baseParticipants, allies, foes, addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById]);
 
   const createTokenForParticipant = useCallback((p: EncounterSummary['participants'][number]) => {
     if (!p) return;
     const type = p.role === 'foe' ? 'enemy' as const : 'ally' as const;
-    const label = (p.name || '') as string;
+    const label = (p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name) as string;
     const idStr = p.id ? `${p.id}` : (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
     const occupied = new Set<string>((tokens || []).map(t => t.cellKey));
     const projectionSize = (() => {
@@ -357,11 +358,27 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       visibleRectPx,
     })[0] || '0:0';
     addToken({ id: idStr, type, label, cellKey });
-  }, [addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId]);
+  }, [addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById]);
+
+  const tokenCandidates = useMemo(() => {
+    return {
+      allies: allies.map((p) => ({ id: p.id, label: p.name, type: 'ally' as const })),
+      foes: foes.map((p) => ({ id: p.id, label: enemyDisplayNameById[p.id] || p.name, type: 'enemy' as const })),
+    };
+  }, [allies, foes, enemyDisplayNameById]);
+
+  const existingTokenIds = useMemo(() => {
+    return new Set<string>((tokens || []).map((t) => t.id));
+  }, [tokens]);
+
+  const onCreateTokenForCandidate = useCallback((candidate: TokenCandidate) => {
+    const p = baseParticipants.find((pp) => pp.id === candidate.id);
+    if (p) createTokenForParticipant(p);
+  }, [baseParticipants, createTokenForParticipant]);
 
   useEffect(() => {
     setParticipantsDraft(selectedEncounter?.participants || []);
-  }, [selectedEncounter?.id]);
+  }, [selectedEncounter?.id, selectedEncounter?.participants]);
 
   // If battle is started when entering Combat, default to initiative view once hydrated
   useEffect(() => {
@@ -392,34 +409,73 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       for (const p of base) {
         if (p.role !== 'foe') continue;
         if (p.kind === 'character') continue; // si es personaje, no hace falta bestiario
-        if (monsterDetailByPid[p.id] !== undefined) continue;
+        const existing = monsterDetailByPid[p.id];
+        // If we already have a non-null detail, don't refetch.
+        if (existing) continue;
+        // If it is explicitly null, we generally don't retry to avoid loops.
+        // We only retry when we now have enough data to resolve (e.g. index finished loading).
+        if (existing === null) {
+          const canRetryNow = !!(p.monsterManualId && p.monsterSlug) || (monsterIndexByName.size > 0);
+          if (!canRetryNow) continue;
+        }
         try {
           dbg('Participant', { id: p.id, name: p.name, manualId: p.monsterManualId, slug: p.monsterSlug });
-          let manualId = p.monsterManualId;
-          let slug = p.monsterSlug;
-          if (!manualId || !slug) {
-            const baseName = stripGroupSuffix(p.name || '');
-            const key = baseName.trim().toLowerCase();
-            const ref = monsterIndexByName.get(key);
-            if (ref) { manualId = ref.manualId; slug = ref.slug; }
-            dbg('Resolved by base name', { baseName, ref });
+
+          const candidates: Array<{ manualId: string; slug: string; reason: string }> = [];
+          const seen = new Set<string>();
+          const pushCandidate = (manualId?: string, slug?: string, reason?: string) => {
+            if (!manualId || !slug) return;
+            const key = `${manualId}:${slug}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+            candidates.push({ manualId, slug, reason: reason || 'unknown' });
+          };
+
+          // 1) Prefer stored reference.
+          pushCandidate(p.monsterManualId, p.monsterSlug, 'stored');
+
+          // 2) Try exact name lookup (helps legacy encounters without monsterManualId/slug).
+          const rawName = (p.name || '').trim();
+          const exactKey = rawName.toLowerCase();
+          const exactRef = monsterIndexByName.get(exactKey);
+          pushCandidate(exactRef?.manualId, exactRef?.slug, 'name:exact');
+
+          // 3) Try stripping a trailing group suffix ("Zombie A", "Zombie AA", etc.).
+          const strippedName = stripGroupSuffix(rawName).trim();
+          if (strippedName && strippedName.toLowerCase() !== exactKey) {
+            const strippedRef = monsterIndexByName.get(strippedName.toLowerCase());
+            pushCandidate(strippedRef?.manualId, strippedRef?.slug, 'name:stripped');
           }
-          if (!manualId || !slug) {
-            // No se pudo resolver; marcamos como null para evitar bucles
-            dbg('Resolution failed, marking null');
+
+          if (!candidates.length) {
+            // If the monsters index hasn't loaded yet, don't cache null; we'll try again once it's ready.
+            if (monsterIndexByName.size === 0 && !(p.monsterManualId && p.monsterSlug)) {
+              dbg('Resolution deferred (index not ready)', { rawName, strippedName });
+              continue;
+            }
+            dbg('Resolution failed, marking null', { rawName, strippedName });
             if (!cancelled) setMonsterDetailByPid((prev) => ({ ...prev, [p.id]: null }));
             continue;
           }
-          const esMd = await fetchMonster(manualId, slug, 'es').catch(() => null);
-          dbg('ES fetch result', esMd ? { traits: esMd.traits?.length, actions: esMd.actions?.length, senses: esMd.senses ? Object.keys(esMd.senses).length : 0, skills: esMd.skills ? Object.keys(esMd.skills).length : 0 } : 'null');
-          let finalMd: MonsterDetail | null = esMd as any;
-          if (needsEnglishFallback(finalMd)) {
-            dbg('ES incomplete, fetching EN fallback');
-            const enMd = await fetchMonster(manualId, slug, 'en').catch(() => null);
-            dbg('EN fetch result', enMd ? { traits: enMd.traits?.length, actions: enMd.actions?.length, senses: enMd.senses ? Object.keys(enMd.senses).length : 0, skills: enMd.skills ? Object.keys(enMd.skills).length : 0 } : 'null');
-            finalMd = mergeMonsterDetails(esMd as any, enMd as any);
-            dbg('Merged result', finalMd ? { traits: finalMd.traits?.length, actions: finalMd.actions?.length, sampleTrait: finalMd.traits?.[0], sampleAction: finalMd.actions?.[0] } : 'null');
+
+          let finalMd: MonsterDetail | null = null;
+          for (const c of candidates) {
+            dbg('Trying candidate', c);
+            const esMd = await fetchMonster(c.manualId, c.slug, 'es').catch(() => null);
+            dbg('ES fetch result', esMd ? { traits: esMd.traits?.length, actions: esMd.actions?.length, senses: esMd.senses ? Object.keys(esMd.senses).length : 0, skills: esMd.skills ? Object.keys(esMd.skills).length : 0 } : 'null');
+            if (esMd) {
+              finalMd = esMd as any;
+              if (needsEnglishFallback(finalMd)) {
+                dbg('ES incomplete, fetching EN fallback');
+                const enMd = await fetchMonster(c.manualId, c.slug, 'en').catch(() => null);
+                dbg('EN fetch result', enMd ? { traits: enMd.traits?.length, actions: enMd.actions?.length, senses: enMd.senses ? Object.keys(enMd.senses).length : 0, skills: enMd.skills ? Object.keys(enMd.skills).length : 0 } : 'null');
+                finalMd = mergeMonsterDetails(esMd as any, enMd as any);
+                dbg('Merged result', finalMd ? { traits: finalMd.traits?.length, actions: finalMd.actions?.length, sampleTrait: finalMd.traits?.[0], sampleAction: finalMd.actions?.[0] } : 'null');
+              }
+              break;
+            }
           }
+
           if (!cancelled) setMonsterDetailByPid((prev) => ({ ...prev, [p.id]: finalMd }));
         } catch (err: any) {
           dbg('Error fetching/merging', err?.message || err);
@@ -631,6 +687,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             fogEnabled={fogEnabled}
             highlightTokenId={currentTurnId || null}
             onPrepareTokens={prepareTokens}
+            tokenCandidates={tokenCandidates}
+            existingTokenIds={existingTokenIds}
+            onCreateTokenForCandidate={onCreateTokenForCandidate}
             tokenImageResolver={(id: string) => {
               const c = charMap.get(id);
               if (!c) return undefined;

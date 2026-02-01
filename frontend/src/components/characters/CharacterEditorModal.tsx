@@ -1,12 +1,43 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { CharacterPayload, updateCharacter, createCharacter, deleteCharacter } from '../../api/characters';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { getCurrentUser } from '../../utils/getCurrentUser';
 import { useTranslation } from 'react-i18next';
 import {
-  Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormHelperText, IconButton, InputLabel, MenuItem, Select, Stack, Tab, Tabs, TextField, ToggleButton, ToggleButtonGroup, Typography
+  Avatar,
+  Box,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  Tab,
+  Tabs,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography
 } from '@mui/material';
 import { ImageUploader } from '../Campaign/ImageUploader';
+import { TokenImageCropDialog } from './TokenImageCropDialog';
+
+const getInitials = (name: string | undefined | null): string => {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return '?';
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  const a = parts[0]?.[0] || '';
+  const b = parts.length > 1 ? (parts[parts.length - 1]?.[0] || '') : '';
+  return (a + b).toUpperCase();
+};
 
 export interface CharacterEditorModalProps {
   open: boolean;
@@ -29,6 +60,7 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   const [draft, setDraft] = useState<CharacterPayload | null>(initialDraft);
   const [tab, setTab] = useState(0);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   React.useEffect(() => {
     setDraft(initialDraft);
@@ -77,6 +109,10 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   };
 
   if (!draft) return null;
+
+  const canCropToken = useMemo(() => {
+    return draft.tokenKind === 'image' && typeof draft.tokenImageUrl === 'string' && draft.tokenImageUrl.trim().length > 0;
+  }, [draft.tokenKind, draft.tokenImageUrl]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -152,6 +188,21 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                 <ToggleButton value="color">{t('color','Color')}</ToggleButton>
                 <ToggleButton value="image">{t('image','Imagen')}</ToggleButton>
               </ToggleButtonGroup>
+
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography variant="body2" color="text.secondary">{t('token_current','Token actual')}</Typography>
+                {draft.tokenKind === 'image' && draft.tokenImageUrl ? (
+                  <Avatar src={draft.tokenImageUrl} alt={draft.name} sx={{ width: 48, height: 48 }} />
+                ) : (
+                  <Avatar sx={{ width: 48, height: 48, bgcolor: draft.tokenColor || '#607d8b' }}>
+                    {getInitials(draft.name)}
+                  </Avatar>
+                )}
+                <Typography variant="body2" color="text.secondary">
+                  {draft.tokenKind === 'image' ? t('image','Imagen') : draft.tokenKind === 'color' ? t('color','Color') : t('none','Ninguno')}
+                  {draft.tokenKind === 'color' && draft.tokenColor ? ` (${draft.tokenColor})` : ''}
+                </Typography>
+              </Stack>
               {draft.tokenKind === 'color' && (
                 <Stack direction="row" spacing={2} alignItems="center">
                   <TextField label={t('token_color','Color del token')} value={draft.tokenColor || '#ff0000'} onChange={(e) => setDraft({ ...draft, tokenColor: e.target.value })} />
@@ -162,7 +213,31 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                 <>
                   <Typography variant="subtitle2">{t('token_image','Imagen del token')}</Typography>
                   <ImageUploader initialValue={draft.tokenImageUrl || ''} onChange={(v) => setDraft({ ...draft, tokenImageUrl: v })} />
+
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setCropOpen(true)}
+                      disabled={!canCropToken}
+                      title={canCropToken ? '' : 'Primero selecciona/sube una imagen de token'}
+                    >
+                      Recortar token…
+                    </Button>
+                  </Stack>
                 </>
+              )}
+
+              {draft.tokenKind === 'image' && draft.tokenImageUrl && (
+                <TokenImageCropDialog
+                  open={cropOpen}
+                  imageSrc={draft.tokenImageUrl}
+                  title="Recortar token (centrar cara)"
+                  onClose={() => setCropOpen(false)}
+                  onApply={(cropped) => {
+                    setDraft({ ...draft, tokenKind: 'image', tokenImageUrl: cropped });
+                    setCropOpen(false);
+                  }}
+                />
               )}
               <TextField label={t('allies_orgs','Aliados y organizaciones')} value={draft.alliesAndOrganizations || ''} onChange={(e) => setDraft({ ...draft, alliesAndOrganizations: e.target.value })} fullWidth multiline minRows={2} />
               <TextField label={t('backstory','Historia del personaje')} value={draft.backstory || ''} onChange={(e) => setDraft({ ...draft, backstory: e.target.value })} fullWidth multiline minRows={3} />
