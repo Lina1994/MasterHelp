@@ -121,6 +121,15 @@ export class Campaign {
   } | null;
 
   /**
+   * Soundtrack settings that control whether audio is applied automatically
+   * (maps/encounters/combat) or only manually.
+   */
+  @Column({ type: 'simple-json', nullable: true })
+  soundtrackSettings?: {
+    mode: 'automatic' | 'manual';
+  } | null;
+
+  /**
    * Selected manuals to apply/scope content for this campaign.
    * Stored as simple JSON array of manual IDs from manuals registry.
    */

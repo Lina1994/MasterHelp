@@ -18,6 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { BattleStateDto } from './dto/battle-state.dto';
 import { FogOfWarSettingsDto } from './dto/fog-of-war-settings.dto';
+import { SoundtrackSettingsDto } from './dto/soundtrack-settings.dto';
 
 @Injectable()
 export class CampaignsService {
@@ -321,6 +322,32 @@ export class CampaignsService {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
     campaign.fogOfWarSettings = { allyClearRadius: Math.max(0, Math.min(10, Math.floor(dto.allyClearRadius))) } as any;
+    await this.campaignsRepository.save(campaign);
+    return { ok: true };
+  }
+
+  // --- SOUNDTRACK SETTINGS ---
+  async getSoundtrackSettings(requestingUserId: number, campaignId: string) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner', 'players', 'players.user'],
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
+    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+
+    const fallback = { mode: 'automatic' as const };
+    const s: any = campaign.soundtrackSettings ?? fallback;
+    const mode = s.mode === 'manual' ? 'manual' : 'automatic';
+    return { settings: { mode } };
+  }
+
+  async setSoundtrackSettings(campaignId: string, dto: SoundtrackSettingsDto) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const mode = dto?.mode === 'manual' ? 'manual' : 'automatic';
+    campaign.soundtrackSettings = { mode } as any;
     await this.campaignsRepository.save(campaign);
     return { ok: true };
   }

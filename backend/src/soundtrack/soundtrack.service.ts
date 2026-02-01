@@ -9,6 +9,7 @@ import { UpdateSongDto } from './dto/update-song.dto';
 import { Playlist } from './entities/playlist.entity';
 import { CreatePlaylistDto } from './dto/create-playlist.dto';
 import { UpdatePlaylistDto } from './dto/update-playlist.dto';
+import { SongPlayLog } from './entities/song-play-log.entity';
 
 @Injectable()
 export class SoundtrackService {
@@ -16,7 +17,11 @@ export class SoundtrackService {
     @InjectRepository(Song) private songsRepo: Repository<Song>,
     @InjectRepository(Campaign) private campaignsRepo: Repository<Campaign>,
     @InjectRepository(Playlist) private playlistsRepo: Repository<Playlist>,
+    @InjectRepository(SongPlayLog) private songPlayLogsRepo: Repository<SongPlayLog>,
   ) {}
+
+  private static readonly PLAY_HISTORY_MAX_ITEMS = 5000;
+  private static readonly PLAY_HISTORY_PRUNE_BATCH = 250;
 
   /**
    * Extrae un identificador de usuario consistente desde el objeto de autenticación.
@@ -24,6 +29,51 @@ export class SoundtrackService {
    */
   private extractAuthUserId(user: any): string | number | undefined {
     return user?.id ?? user?.userId;
+  }
+
+  private async appendToPlayHistory(params: {
+    campaignId: string | null;
+    playedByUserId: string | number | undefined;
+    songId: string;
+    songName: string;
+  }): Promise<void> {
+    const playedByUserId = params.playedByUserId !== undefined ? String(params.playedByUserId) : null;
+
+    // De-dup consecutive duplicates within the same scope (campaignId, or user without campaign).
+    const last = await this.songPlayLogsRepo.createQueryBuilder('l')
+      .where(params.campaignId ? 'l.campaignId = :campaignId' : 'l.campaignId IS NULL')
+      .andWhere(params.campaignId ? '1=1' : 'l.playedByUserId = :playedByUserId')
+      .setParameters(params.campaignId ? { campaignId: params.campaignId } : { playedByUserId })
+      .orderBy('l.playedAt', 'DESC')
+      .addOrderBy('l.id', 'DESC')
+      .limit(1)
+      .getOne();
+
+    if (last && last.songId === params.songId) return;
+
+    const row = this.songPlayLogsRepo.create({
+      campaignId: params.campaignId,
+      playedByUserId,
+      songId: params.songId,
+      songName: params.songName,
+    });
+    await this.songPlayLogsRepo.save(row);
+
+    // Best-effort pruning to avoid unbounded growth.
+    // We prune only campaign-scoped logs (the common case).
+    if (!params.campaignId) return;
+    const oldIds = await this.songPlayLogsRepo.createQueryBuilder('l')
+      .select('l.id', 'id')
+      .where('l.campaignId = :campaignId', { campaignId: params.campaignId })
+      .orderBy('l.playedAt', 'DESC')
+      .addOrderBy('l.id', 'DESC')
+      .skip(SoundtrackService.PLAY_HISTORY_MAX_ITEMS)
+      .take(SoundtrackService.PLAY_HISTORY_PRUNE_BATCH)
+      .getRawMany<{ id: string }>();
+    const ids = (oldIds || []).map(r => r.id).filter(Boolean);
+    if (ids.length) {
+      await this.songPlayLogsRepo.delete(ids);
+    }
   }
 
   async create(owner: User | any, dto: CreateSongDto, file?: { buffer: Buffer; mimetype: string; size: number }, fetched?: { data: Buffer; mimeType: string }): Promise<Song> {
@@ -488,7 +538,65 @@ export class SoundtrackService {
     const song = await this.getStreamable(user, songId, campaignId);
     song.lastPlayedAt = new Date();
     await this.songsRepo.save(song);
+
+    // Record play history (dedupe consecutive duplicates).
+    try {
+      const authUserId = this.extractAuthUserId(user);
+      await this.appendToPlayHistory({
+        campaignId: campaignId ?? null,
+        playedByUserId: authUserId,
+        songId: song.id,
+        songName: song.name,
+      });
+    } catch {
+      // Never break playback if history logging fails.
+    }
+
     return { message: 'Marked played', lastPlayedAt: song.lastPlayedAt };
+  }
+
+  /**
+   * Returns recent play history for a campaign (most recent first).
+   * Validates membership (owner or player) before revealing.
+   */
+  async getCampaignPlayHistory(requestingUserId: number, campaignId: string, limit = 50, offset = 0) {
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = (campaign.players || []).some((p: any) => p.user?.id === requestingUserId);
+    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+
+    const safeLimit = Math.max(1, Math.min(200, Math.floor(limit)));
+    const safeOffset = Math.max(0, Math.floor(offset));
+
+    const rows = await this.songPlayLogsRepo.createQueryBuilder('l')
+      .where('l.campaignId = :campaignId', { campaignId })
+      .orderBy('l.playedAt', 'DESC')
+      .addOrderBy('l.id', 'DESC')
+      .skip(safeOffset)
+      .take(safeLimit)
+      .getMany();
+
+    return rows.map((r) => ({
+      id: r.id,
+      songId: r.songId,
+      songName: r.songName,
+      playedAt: r.playedAt,
+    }));
+  }
+
+  /**
+   * Clears the play history for a campaign.
+   * Only the campaign owner (master) can clear.
+   */
+  async clearCampaignPlayHistory(requestingUserId: number, campaignId: string) {
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId }, relations: ['owner'] });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    if (!isOwner) throw new ForbiddenException('Only campaign owner can clear history');
+
+    await this.songPlayLogsRepo.delete({ campaignId } as any);
+    return { ok: true };
   }
 
   /**

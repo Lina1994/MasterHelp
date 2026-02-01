@@ -1,9 +1,11 @@
 import { useEffect, useState, Fragment } from 'react';
 import { SoundtrackTabs } from '../components/soundtrack/SoundtrackTabs';
+import { SoundtrackSettingsPanel } from '../components/soundtrack/SoundtrackSettingsPanel';
 import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { api } from '../apiBase';
 import { getAuthHeaders } from '../utils/auth';
+import { getCurrentUser } from '../utils/getCurrentUser';
 import {
   Box,
   Typography,
@@ -27,8 +29,6 @@ import {
   DialogActions,
   Autocomplete,
   Checkbox,
-  Switch,
-  FormControlLabel,
 } from '@mui/material';
 import type { AxiosProgressEvent } from 'axios';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -43,7 +43,6 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { getSkylineOverlaySettings, setSkylineOverlaySettings } from '../api/campaigns/skylineOverlay';
 
 interface SongMeta {
   id: string;
@@ -77,13 +76,14 @@ interface PlaylistMeta {
 export const SoundtrackPage = () => {
   const { activeCampaign } = useActiveCampaign();
   const campaignId = activeCampaign?.id || null;
+  const currentUserId = getCurrentUser()?.id;
+  const canClearHistory = !!(campaignId && currentUserId && activeCampaign?.owner?.id && currentUserId === activeCampaign.owner.id);
   // Estado de datos y UI
   const [data, setData] = useState<SectionedSongsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [snack, setSnack] = useState<{ msg: string; type: 'success' | 'error'} | null>(null);
   const [usage, setUsage] = useState<{ totalSize: number; count: number } | null>(null);
-  const [showSongTitle, setShowSongTitle] = useState<boolean>(false);
 
   // Filtros
   const [q, setQ] = useState('');
@@ -116,7 +116,6 @@ export const SoundtrackPage = () => {
 
   // Reproducción global
   const { play, playQueue, current, stop } = useGlobalPlayer();
-  const [objectUrls, setObjectUrls] = useState<Record<string, string>>({});
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
 
   // Edición
@@ -170,19 +169,6 @@ export const SoundtrackPage = () => {
   };
 
   useEffect(() => { fetchSongs(); }, [campaignId]);
-
-  // Load skyline overlay setting when campaign is active
-  useEffect(() => {
-    let disposed = false;
-    (async () => {
-      if (!campaignId) { setShowSongTitle(false); return; }
-      try {
-        const settings = await getSkylineOverlaySettings(campaignId);
-        if (!disposed) setShowSongTitle(!!settings.showSongTitle);
-      } catch {}
-    })();
-    return () => { disposed = true; };
-  }, [campaignId]);
 
   // Cargar uso total del usuario (independiente de campaña)
   useEffect(() => {
@@ -327,13 +313,11 @@ export const SoundtrackPage = () => {
   };
 
   const ensureObjectUrl = async (songId: string) => {
-    if (objectUrls[songId]) return objectUrls[songId];
     setLoadingAudio(songId);
     try {
       const res = await api.get(buildStreamEndpoint(songId), { headers: getAuthHeaders(), responseType: 'blob' });
       const blob = res.data as Blob;
       const url = URL.createObjectURL(blob);
-      setObjectUrls(prev => ({ ...prev, [songId]: url }));
       return url;
     } finally { setLoadingAudio(prev => (prev === songId ? null : prev)); }
   };
@@ -347,7 +331,7 @@ export const SoundtrackPage = () => {
         await api.post(`/soundtrack/songs/${songId}/played`, null, { headers: getAuthHeaders(), params: campaignId ? { campaignId } : undefined });
       } catch {}
       const url = await ensureObjectUrl(songId);
-      return url!;
+      return url;
     });
   };
 
@@ -408,30 +392,15 @@ export const SoundtrackPage = () => {
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Soundtrack</Typography>
         <Box display="flex" alignItems="center" gap={2}>
-          {campaignId && (
-            <FormControlLabel
-              control={<Switch checked={showSongTitle} onChange={async (_, v) => {
-                setShowSongTitle(v);
-                try { await setSkylineOverlaySettings(campaignId!, { showSongTitle: v }); } catch {}
-                // Broadcast to skyline windows (Electron/web) so they update without reload
-                try { localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ campaignId, showSongTitle: v, at: Date.now() })); } catch {}
-                try {
-                  if ('BroadcastChannel' in window) {
-                    const bc = new BroadcastChannel('campaign-sync');
-                    bc.postMessage({ type: 'skylineSettingsChanged', campaignId, settings: { showSongTitle: v } });
-                    bc.close();
-                  }
-                } catch {}
-              }} />}
-              label="Mostrar título en Skyline"
-            />
-          )}
           <Typography variant="body2" color="text.secondary">
             {usage ? `${(usage.totalSize/1024/1024).toFixed(2)} MB / ${usage.count} pistas` : 'Calculando uso...'}
           </Typography>
           <Button startIcon={<AddIcon />} variant="contained" onClick={() => setOpenCreate(true)}>Nueva Canción</Button>
         </Box>
       </Box>
+
+      {campaignId ? <SoundtrackSettingsPanel campaignId={campaignId} canClearHistory={canClearHistory} /> : null}
+
       <Card variant="outlined" sx={{ mb:2 }}>
         <CardContent>
           <Grid container spacing={2} columns={12}>

@@ -4,6 +4,7 @@ import { useActiveMap } from './ActiveMapContext';
 import { useTimeOfDay } from '../player/TimeOfDayContext';
 import { useGlobalPlayer } from '../player/GlobalPlayerContext';
 import { useSfxPlayer } from '../player/SfxPlayerContext';
+import { useSoundtrackMode } from '../../hooks/useSoundtrackMode';
 import { listMaps, MapItemDto } from '../../api/maps';
 import { listPlaylists, listSongsForCampaign, PlaylistLite, SongLite } from '../../api/soundtrack';
 import { api } from '../../apiBase';
@@ -27,6 +28,7 @@ const MapAudioOrchestrator: React.FC = () => {
   const { timeOfDay } = useTimeOfDay();
   const { play, playQueue, current, isQueue } = useGlobalPlayer();
   const { stopAllSfx, playSfx } = useSfxPlayer() as any;
+  const { mode: soundtrackMode } = useSoundtrackMode(campaignId);
 
   const [maps, setMaps] = useState<MapItemDto[] | null>(null);
   const [playlists, setPlaylists] = useState<PlaylistLite[] | null>(null);
@@ -123,7 +125,8 @@ const MapAudioOrchestrator: React.FC = () => {
   useEffect(() => {
     // Orchestrate whenever inputs change
     const run = async () => {
-  if (!activeMap || !timeOfDay) return;
+      if (!activeMap || !timeOfDay) return;
+      if (soundtrackMode === 'manual') return;
       const tod: Tod = timeOfDay as Tod;
       const musicConfig: any = activeMap.musicConfig || {};
       const sfxConfig: any = activeMap.sfxConfig || {};
@@ -212,7 +215,7 @@ const MapAudioOrchestrator: React.FC = () => {
     };
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId, activeMap, timeOfDay, playlists, presets, play, playQueue, stopAllSfx, playSfx]);
+  }, [campaignId, activeMap, timeOfDay, playlists, presets, play, playQueue, stopAllSfx, playSfx, soundtrackMode]);
 
   return null;
 };

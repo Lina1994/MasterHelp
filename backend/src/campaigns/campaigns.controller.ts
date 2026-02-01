@@ -20,6 +20,7 @@ import { MapEntity } from '../maps/entities/map.entity';
 import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
 import { SkylineOverlaySettingsDto } from './dto/skyline-overlay-settings.dto';
 import { FogOfWarSettingsDto } from './dto/fog-of-war-settings.dto';
+import { SoundtrackSettingsDto } from './dto/soundtrack-settings.dto';
 import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
 import { BattleStateDto } from './dto/battle-state.dto';
 
@@ -149,6 +150,25 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   async setFogOfWar(@Param('id') id: string, @Body() body: FogOfWarSettingsDto) {
     return this.campaignsService.setFogOfWarSettings(id, body);
+  }
+
+  // --- SOUNDTRACK SETTINGS ---
+  /**
+   * Read soundtrack settings for a campaign. Owner or players can read.
+   */
+  @Get(':id/soundtrack-settings')
+  @UseGuards(JwtAuthGuard)
+  async getSoundtrackSettings(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getSoundtrackSettings(req.user.userId, id);
+  }
+
+  /**
+   * Update soundtrack settings for a campaign. Only owner can update.
+   */
+  @Patch(':id/soundtrack-settings')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setSoundtrackSettings(@Param('id') id: string, @Body() body: SoundtrackSettingsDto) {
+    return this.campaignsService.setSoundtrackSettings(id, body);
   }
 
   // --- SKYLINE OVERLAY SETTINGS ---

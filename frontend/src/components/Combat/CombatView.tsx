@@ -33,6 +33,7 @@ import { useActiveEncounter } from '../../components/Encounter/ActiveEncounterCo
 import { useActiveMap } from '../../components/Map/ActiveMapContext';
 import { listMaps, MapItemDto, getMapImageUrlSized } from '../../api/maps';
 import { useEncounterMusic } from '../../hooks/useEncounterMusic';
+import { useSoundtrackMode } from '../../hooks/useSoundtrackMode';
 import { useBattleState } from '../../hooks/useBattleState';
 import { useTurnOrder } from '../../hooks/useTurnOrder';
 import { rollEnemyInitiative as rollEnemyInitiativeUtil, rollAllEnemiesInitiative as rollAllEnemiesInitiativeUtil } from '../../utils/initiative';
@@ -564,6 +565,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   }, [setHpLocal, schedulePersistInitiative, updateCharacterHp]);
 
   const { startEncounterMusic, restorePreviousMusic } = useEncounterMusic({ campaignId: campaign?.id, selectedEncounter, songs, prioritizeEncounterMusic });
+  const { mode: soundtrackMode } = useSoundtrackMode(campaign?.id || null);
 
   const rollEnemyInitiative = useCallback(async (pid: string) => {
     await rollEnemyInitiativeUtil(pid, participantsDraft, fetchMonster, setInitiativeLocal, schedulePersistInitiative);
@@ -580,16 +582,20 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const handleStartBattle = useCallback(async () => {
     resetToStart();
     setBattleStarted(true);
-    await startEncounterMusic();
-  }, [resetToStart, setBattleStarted, startEncounterMusic]);
+    if (soundtrackMode === 'automatic') {
+      await startEncounterMusic();
+    }
+  }, [resetToStart, setBattleStarted, startEncounterMusic, soundtrackMode]);
 
   const endBattle = useCallback(async () => {
     setBattleStarted(false);
     resetToStart();
     // Al finalizar (escapar o ganar), limpiar notas del combate
     try { clearAllNotes(); } catch {}
-    await restorePreviousMusic();
-  }, [resetToStart, setBattleStarted, clearAllNotes, restorePreviousMusic]);
+    if (soundtrackMode === 'automatic') {
+      await restorePreviousMusic();
+    }
+  }, [resetToStart, setBattleStarted, clearAllNotes, restorePreviousMusic, soundtrackMode]);
 
   const nextTurn = useCallback(() => {
     nextTurnHook();

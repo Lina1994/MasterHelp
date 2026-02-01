@@ -180,6 +180,36 @@ export class SoundtrackController {
   }
 
   /**
+   * Returns recent song play history for a campaign.
+   * Consecutive duplicates are already de-duplicated server-side.
+   */
+  @Get('campaigns/:campaignId/history')
+  async getHistory(
+    @Req() req,
+    @Param('campaignId') campaignId: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    const l = limit !== undefined ? parseInt(limit, 10) : 50;
+    const o = offset !== undefined ? parseInt(offset, 10) : 0;
+    return this.service.getCampaignPlayHistory(
+      req.user.userId,
+      campaignId,
+      Number.isFinite(l) ? l : 50,
+      Number.isFinite(o) ? o : 0,
+    );
+  }
+
+  /**
+   * Clears song play history for a campaign.
+   * Only campaign owner can clear.
+   */
+  @Delete('campaigns/:campaignId/history')
+  async clearHistory(@Req() req, @Param('campaignId') campaignId: string) {
+    return this.service.clearCampaignPlayHistory(req.user.userId, campaignId);
+  }
+
+  /**
    * Returns the most recently marked played song for a given campaign.
    * Used by Skyline projection windows to show current song title.
    */
