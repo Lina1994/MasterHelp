@@ -5,13 +5,18 @@ import {
   AccordionSummary,
   Alert,
   Box,
+  Card,
+  CardContent,
+  Divider,
   FormControl,
   FormControlLabel,
+  IconButton,
   Radio,
   RadioGroup,
   Stack,
   Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSoundtrackMode } from '../../hooks/useSoundtrackMode';
 import { SongHistoryCard } from './SongHistoryCard';
@@ -20,6 +25,8 @@ import { SkylineSongTitleSetting } from './SkylineSongTitleSetting';
 export interface SoundtrackSettingsPanelProps {
   campaignId: string;
   canClearHistory?: boolean;
+  usage?: { totalSize: number; count: number } | null;
+  onClose?: () => void;
 }
 
 /**
@@ -28,16 +35,34 @@ export interface SoundtrackSettingsPanelProps {
  * - Collapsible container for soundtrack-related settings.
  * - Includes a nested, collapsible playback history.
  */
-export const SoundtrackSettingsPanel: React.FC<SoundtrackSettingsPanelProps> = ({ campaignId, canClearHistory = false }) => {
+export const SoundtrackSettingsPanel: React.FC<SoundtrackSettingsPanelProps> = ({
+  campaignId,
+  canClearHistory = false,
+  usage,
+  onClose,
+}) => {
   const { mode, isLoading, error, setMode } = useSoundtrackMode(campaignId);
 
   return (
-    <Accordion defaultExpanded disableGutters elevation={0} sx={{ mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography variant="h6">Ajustes</Typography>
-      </AccordionSummary>
-      <AccordionDetails>
+    <Card variant="outlined" sx={{ mb: 2 }}>
+      <CardContent>
         <Stack spacing={2}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="h6">Ajustes</Typography>
+            {onClose ? (
+              <IconButton size="small" onClick={onClose} aria-label="Cerrar ajustes">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            ) : null}
+          </Stack>
+
+          <Typography variant="body2" color="text.secondary">
+            {usage
+              ? `${(usage.totalSize / 1024 / 1024).toFixed(2)} MB • ${usage.count} pistas`
+              : 'Calculando uso...'}
+          </Typography>
+          <Divider />
+
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               En modo manual, no se aplicarán canciones ni efectos automáticamente por mapas, encuentros o combates.
@@ -72,7 +97,7 @@ export const SoundtrackSettingsPanel: React.FC<SoundtrackSettingsPanelProps> = (
             </AccordionDetails>
           </Accordion>
         </Stack>
-      </AccordionDetails>
-    </Accordion>
+      </CardContent>
+    </Card>
   );
 };

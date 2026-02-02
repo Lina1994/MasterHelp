@@ -12,6 +12,38 @@ import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { getSkylineOverlaySettingsPublic } from '../api/campaigns/skylineOverlay';
 import { getCampaignNowPlayingTitlePublic } from '../api/soundtrack/nowPlaying';
 
+const SHOW_DAY_IN_SKYLINE_KEY = 'diary_showSelectedDayInSkyline';
+const SELECTED_DAY_KEY = 'app.diary.selectedDay';
+
+type DiarySelectedDayPayload = {
+  label: string;
+  campaignId: string;
+} | null;
+
+function loadShowSelectedDayInSkyline(): boolean {
+  try {
+    const raw = localStorage.getItem(SHOW_DAY_IN_SKYLINE_KEY);
+    if (raw === null) return true; // default
+    return raw === 'true';
+  } catch {
+    return true;
+  }
+}
+
+function loadSelectedDayPayload(): DiarySelectedDayPayload {
+  try {
+    const raw = localStorage.getItem(SELECTED_DAY_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    if (typeof parsed.label !== 'string') return null;
+    if (typeof parsed.campaignId !== 'string') return null;
+    return { label: parsed.label, campaignId: parsed.campaignId };
+  } catch {
+    return null;
+  }
+}
+
 const ProjectionSkylinePage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
@@ -24,6 +56,8 @@ const ProjectionSkylinePage: React.FC = () => {
   const [initiativeStrip, setInitiativeStrip] = useState<{ battleStarted: boolean; enabled: boolean; currentTurnId: string | null; items: Array<{ id: string; name: string; imageUrl: string | null }> } | null>(null);
   const [battleStateStarted, setBattleStateStarted] = useState<boolean>(false);
   const [nowPlayingTitle, setNowPlayingTitle] = useState<string | null>(null);
+  const [showSelectedDayInSkyline, setShowSelectedDayInSkyline] = useState<boolean>(loadShowSelectedDayInSkyline);
+  const [selectedDayLabel, setSelectedDayLabel] = useState<string | null>(null);
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
@@ -33,6 +67,18 @@ const ProjectionSkylinePage: React.FC = () => {
       setActiveCampaignId(cid);
     }
   }, [setActiveCampaignId]);
+
+  // Load selected day label (if any) for this campaign.
+  useEffect(() => {
+    const cid = activeCampaign?.id || campaignIdFromQuery;
+    if (!cid) {
+      setSelectedDayLabel(null);
+      return;
+    }
+    const payload = loadSelectedDayPayload();
+    if (payload?.campaignId === cid) setSelectedDayLabel(payload.label);
+    else setSelectedDayLabel(null);
+  }, [activeCampaign?.id, campaignIdFromQuery]);
 
   useEffect(() => { try { const d = (window as any).electronAPI?.onProjectionPoke?.(async () => { await refreshFromServer(); }); return () => { if (typeof d === 'function') d(); }; } catch {} }, [refreshFromServer]);
 
@@ -315,6 +361,37 @@ const ProjectionSkylinePage: React.FC = () => {
     return () => window.removeEventListener('storage', handler);
   }, [activeCampaign?.id, campaignIdFromQuery]);
 
+  // Listen to diary storage events cross-window (selected day + preference)
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      const cid = activeCampaign?.id || campaignIdFromQuery;
+      if (!cid) return;
+
+      if (e.key === SHOW_DAY_IN_SKYLINE_KEY) {
+        if (e.newValue === null) setShowSelectedDayInSkyline(true);
+        else setShowSelectedDayInSkyline(e.newValue === 'true');
+        return;
+      }
+
+      if (e.key !== SELECTED_DAY_KEY) return;
+
+      try {
+        const payload = e.newValue ? JSON.parse(e.newValue) : null;
+        if (!payload) {
+          setSelectedDayLabel(null);
+          return;
+        }
+        if (payload.campaignId === cid && typeof payload.label === 'string') {
+          setSelectedDayLabel(payload.label);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
   const skylineAvatar = useMemo(() => {
     if (!skylineCharacter) return null;
     const initials = (skylineCharacter.name || '?').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
@@ -345,6 +422,12 @@ const ProjectionSkylinePage: React.FC = () => {
       {showSongTitle && nowPlayingTitle ? (
         <Box sx={{ position: 'absolute', top: 16, left: 16, px: 1.5, py: 0.75, bgcolor: 'rgba(0,0,0,0.6)', borderRadius: 1 }}>
           <Typography variant="subtitle1" color="white" noWrap title={nowPlayingTitle}>{nowPlayingTitle}</Typography>
+        </Box>
+      ) : null}
+
+      {showSelectedDayInSkyline && selectedDayLabel ? (
+        <Box sx={{ position: 'absolute', top: 16, right: 16, px: 1.5, py: 0.75, bgcolor: 'rgba(0,0,0,0.6)', borderRadius: 1, maxWidth: '45vw' }}>
+          <Typography variant="subtitle1" color="white" noWrap title={selectedDayLabel}>{selectedDayLabel}</Typography>
         </Box>
       ) : null}
 

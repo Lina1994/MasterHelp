@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton
+  Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton, Typography
 } from '@mui/material';
 import logo from '../assets/logo.png';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { GlobalPlayerProvider } from '../components/player/GlobalPlayerContext';
 import { SfxPlayerProvider } from '../components/player/SfxPlayerContext';
 import { PlayerDrawerUiProvider } from '../components/player/PlayerDrawerUiContext';
+import { DiarySidebarProvider, useDiarySidebar } from '../components/diary/DiarySidebarContext';
 import TimeOfDaySidebarControls from '../components/player/TimeOfDaySidebarControls';
 import GlobalPlayerDrawerControls from '../components/player/GlobalPlayerDrawerControls';
 import SfxPlayerDrawerControls from '../components/player/SfxPlayerDrawerControls';
@@ -19,12 +20,14 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MapIcon from '@mui/icons-material/Map';
 import PeopleIcon from '@mui/icons-material/People';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 
-const MainLayout = () => {
+const MainLayoutInner = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { activeCampaign } = useActiveCampaign(); // Usar el hook personalizado
+  const { selectedDay, showSelectedDayInSidebar } = useDiarySidebar();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -88,71 +91,90 @@ const MainLayout = () => {
             <ListItemText primary={t('characters', 'Personajes')} />
           </ListItemButton>
         </ListItem>
+        <ListItem key="diary" disablePadding>
+          <ListItemButton onClick={() => navigate('/diary')} disabled={!activeCampaign?.id}>
+            <ListItemIcon><EventNoteIcon /></ListItemIcon>
+            <ListItemText primary={t('diary', 'Diario')} />
+          </ListItemButton>
+        </ListItem>
         {/* Bestiary: accesible dentro de cada manual, no en el sidebar global */}
         {/* Más items aquí */}
       </List>
+
+      {showSelectedDayInSidebar && activeCampaign?.id && selectedDay?.campaignId === activeCampaign.id ? (
+        <Box sx={{ px: 2, pb: 1 }}>
+          <Divider sx={{ mb: 1 }} />
+          <Typography variant="body2">{selectedDay.label}</Typography>
+        </Box>
+      ) : null}
     </>
   );
 
   return (
     <GlobalPlayerProvider>
       <SfxPlayerProvider>
-      <PlayerDrawerUiProvider>
-      <Box sx={{ display: 'flex', height: '100vh' }}>
-        {/* Headless orchestrator to auto-play map audio based on active map and time-of-day */}
-        <MapAudioOrchestrator />
-        <Box
-          component="nav"
-          sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}
-          aria-label="sidebar navigation"
-        >
-          {/* Drawer temporal (mobile): NO incluye reproductor para evitar doble <audio> oculto. */}
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            ModalProps={{ keepMounted: true }}
-            sx={{
-              display: { xs: 'block', sm: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
-            }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              {drawerContent}
-              {/* Opcional: si se quiere el reproductor también en mobile, moverlo aquí y asegurarse de desmontar el permanente. */}
+        <PlayerDrawerUiProvider>
+          <Box sx={{ display: 'flex', height: '100vh' }}>
+            {/* Headless orchestrator to auto-play map audio based on active map and time-of-day */}
+            <MapAudioOrchestrator />
+            <Box
+              component="nav"
+              sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}
+              aria-label="sidebar navigation"
+            >
+              {/* Drawer temporal (mobile): NO incluye reproductor para evitar doble <audio> oculto. */}
+              <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{ keepMounted: true }}
+                sx={{
+                  display: { xs: 'block', sm: 'none' },
+                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+                }}
+              >
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  {drawerContent}
+                  {/* Opcional: si se quiere el reproductor también en mobile, moverlo aquí y asegurarse de desmontar el permanente. */}
+                </Box>
+              </Drawer>
+              {/* Drawer permanente (desktop): ÚNICO lugar donde se monta el reproductor */}
+              <Drawer
+                variant="permanent"
+                sx={{
+                  display: { xs: 'none', sm: 'block' },
+                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+                }}
+                open
+              >
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  {drawerContent}
+                  <TimeOfDaySidebarControls />
+                  <GlobalPlayerDrawerControls />
+                  <SfxPlayerDrawerControls />
+                </Box>
+              </Drawer>
             </Box>
-          </Drawer>
-          {/* Drawer permanente (desktop): ÚNICO lugar donde se monta el reproductor */}
-          <Drawer
-            variant="permanent"
-            sx={{
-              display: { xs: 'none', sm: 'block' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
-            }}
-            open
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              {drawerContent}
-              <TimeOfDaySidebarControls />
-              <GlobalPlayerDrawerControls />
-              <SfxPlayerDrawerControls />
+            <Box
+              component="main"
+              sx={{ flexGrow: 1, width: { sm: `calc(100% - 240px)` }, height: '100vh', overflow: 'auto', p: 3 }}
+            >
+              <div style={{ marginBottom: 24 }}>
+                <InvitationsList />
+              </div>
+              <Outlet />
             </Box>
-          </Drawer>
-        </Box>
-        <Box
-          component="main"
-          sx={{ flexGrow: 1, width: { sm: `calc(100% - 240px)` }, height: '100vh', overflow: 'auto', p: 3 }}
-        >
-          <div style={{ marginBottom: 24 }}>
-            <InvitationsList />
-          </div>
-            <Outlet />
-        </Box>
-      </Box>
-      </PlayerDrawerUiProvider>
+          </Box>
+        </PlayerDrawerUiProvider>
       </SfxPlayerProvider>
     </GlobalPlayerProvider>
   );
 };
+
+const MainLayout = () => (
+  <DiarySidebarProvider>
+    <MainLayoutInner />
+  </DiarySidebarProvider>
+);
 
 export default MainLayout;

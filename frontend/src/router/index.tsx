@@ -23,6 +23,7 @@ import ProjectionSkylinePage from '../pages/ProjectionSkylinePage';
 import CharactersPage from '../pages/CharactersPage';
 import CharacterDetailPage from '../pages/CharacterDetailPage';
 import CombatPage from '../pages/CombatPage';
+import DiaryPage from '../pages/DiaryPage';
 
 const router = createBrowserRouter([
   // Ventana de proyección: ruta al margen del layout principal
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
           { path: 'combat', element: <CombatPage /> },
           { path: 'characters', element: <CharactersPage /> },
           { path: 'characters/:id', element: <CharacterDetailPage /> },
+          { path: 'diary', element: <DiaryPage /> },
           // ...other protected routes
         ],
       },

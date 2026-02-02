@@ -43,6 +43,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 interface SongMeta {
   id: string;
@@ -84,6 +85,7 @@ export const SoundtrackPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [snack, setSnack] = useState<{ msg: string; type: 'success' | 'error'} | null>(null);
   const [usage, setUsage] = useState<{ totalSize: number; count: number } | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Filtros
   const [q, setQ] = useState('');
@@ -392,14 +394,27 @@ export const SoundtrackPage = () => {
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
         <Typography variant="h4">Soundtrack</Typography>
         <Box display="flex" alignItems="center" gap={2}>
-          <Typography variant="body2" color="text.secondary">
-            {usage ? `${(usage.totalSize/1024/1024).toFixed(2)} MB / ${usage.count} pistas` : 'Calculando uso...'}
-          </Typography>
           <Button startIcon={<AddIcon />} variant="contained" onClick={() => setOpenCreate(true)}>Nueva Canción</Button>
+          {campaignId ? (
+            <Button
+              startIcon={<SettingsIcon />}
+              variant={showSettings ? 'contained' : 'outlined'}
+              onClick={() => setShowSettings(s => !s)}
+            >
+              Ajustes
+            </Button>
+          ) : null}
         </Box>
       </Box>
 
-      {campaignId ? <SoundtrackSettingsPanel campaignId={campaignId} canClearHistory={canClearHistory} /> : null}
+      {campaignId && showSettings ? (
+        <SoundtrackSettingsPanel
+          campaignId={campaignId}
+          canClearHistory={canClearHistory}
+          usage={usage}
+          onClose={() => setShowSettings(false)}
+        />
+      ) : null}
 
       <Card variant="outlined" sx={{ mb:2 }}>
         <CardContent>

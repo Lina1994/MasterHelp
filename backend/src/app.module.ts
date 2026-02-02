@@ -27,6 +27,7 @@ import { CharactersModule } from './characters/characters.module';
 import { Character } from './characters/entities/character.entity';
 import { Encounter } from './encounters/entities/encounter.entity';
 import { EncountersModule } from './encounters/encounters.module';
+import { DiaryModule } from './diary/diary.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { EncountersModule } from './encounters/encounters.module';
   MapsModule,
   CharactersModule,
   EncountersModule,
+  DiaryModule,
     ManualsModule,
     SpellsModule,
     RacesModule,
