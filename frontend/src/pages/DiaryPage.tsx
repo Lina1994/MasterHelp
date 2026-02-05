@@ -9,6 +9,7 @@ import {
   listDiarySessions,
   startDiarySession,
   endDiarySession,
+  deleteDiarySession,
   updateDiaryCalendar,
   upsertDiaryEntry,
   updateDiarySession,
@@ -224,6 +225,19 @@ export default function DiaryPage() {
     } catch {}
   };
 
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!campaignId || !isMaster) return;
+    setError(null);
+    try {
+      await deleteDiarySession(campaignId, sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      if (activeSession?.id === sessionId) setActiveSession(null);
+    } catch (e: any) {
+      setError(e?.response?.data?.message || 'Error eliminando la sesión');
+      throw e;
+    }
+  };
+
   if (!campaignId) {
     return <Alert severity="info">Selecciona una campaña para usar el Diario.</Alert>;
   }
@@ -289,6 +303,7 @@ export default function DiaryPage() {
       {tab === 'sessions' ? (
         <DiarySessionsPanel
           isMaster={isMaster}
+          calendarConfig={calendar}
           sessions={sessions}
           activeSession={activeSession}
           onStartSession={handleStartSession}
@@ -300,6 +315,7 @@ export default function DiaryPage() {
             const active = await getActiveDiarySession(campaignId);
             setActiveSession(active);
           }}
+          onDeleteSession={handleDeleteSession}
           onUpdateSession={handleUpdateSession}
           error={error}
         />

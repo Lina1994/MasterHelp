@@ -9,6 +9,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useActiveMap } from '../components/Map/ActiveMapContext';
 import ProjectedMapMirror from '../components/Map/ProjectedMapMirror';
 import AuthImage from '../components/common/AuthImage';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { createMap, createMapsBulk, deleteMap, getMapImageUrl, getMapImageUrlSized, listMaps, MapItemDto, updateMap, getMapsUsage } from '../api/maps';
 import AudioConfigEditor, { MusicConfig as MusicCfg, SfxConfig as SfxCfg } from '../components/soundtrack/AudioConfigEditor';
@@ -36,6 +37,8 @@ export default function MapsPage() {
   const [usage, setUsage] = useState<{ totalSize: number; count: number } | null>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>({ name: '', isWorldMap: false });
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [bulkHover, setBulkHover] = useState(false);
   const [localPreview, setLocalPreview] = useState<string | null>(null); // kept for future image previews (currently not used)
   const [projectionReady, setProjectionReady] = useState<boolean>(false);
@@ -153,11 +156,21 @@ export default function MapsPage() {
 
   const onDeleteFromDialog = async () => {
     if (!form.id) return;
-    const ok = window.confirm('¿Eliminar este mapa? Esta acción no se puede deshacer.');
-    if (!ok) return;
-    await deleteMap(form.id);
-    setOpen(false);
-    await refresh();
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!form.id) return;
+    setDeleting(true);
+    try {
+      await deleteMap(form.id);
+      setDeleteConfirmOpen(false);
+      setOpen(false);
+      await refresh();
+      await refreshUsage();
+    } finally {
+      setDeleting(false);
+    }
   };
 
   // Empty state cuando no hay campaña activa
@@ -423,14 +436,25 @@ export default function MapsPage() {
         </DialogContent>
         <DialogActions>
           {form.id && (
-            <Button color="error" onClick={onDeleteFromDialog} sx={{ mr: 'auto' }}>
+            <Button color="error" onClick={onDeleteFromDialog} sx={{ mr: 'auto' }} disabled={deleting}>
               Eliminar
             </Button>
           )}
-          <Button onClick={onClose}>Cancelar</Button>
-          <Button variant="contained" onClick={onSubmit}>{form.id ? 'Guardar' : 'Crear'}</Button>
+          <Button onClick={onClose} disabled={deleting}>Cancelar</Button>
+          <Button variant="contained" onClick={onSubmit} disabled={deleting}>{form.id ? 'Guardar' : 'Crear'}</Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title="Eliminar mapa"
+        message={form.id ? `¿Eliminar "${form.name || 'Mapa'}"? Esta acción no se puede deshacer.` : ''}
+        confirmLabel={deleting ? 'Eliminando…' : 'Eliminar'}
+        confirmColor="error"
+        confirmDisabled={deleting}
+        onClose={() => (deleting ? null : setDeleteConfirmOpen(false))}
+        onConfirm={handleConfirmDelete}
+      />
     </Box>
   );
 }

@@ -5,6 +5,11 @@ export type DiaryWeekdayConfig = { name: string };
 
 export type DiaryCalendarConfig = {
   currentYear: number;
+  /**
+   * Optional year label template. Use `{year}` placeholder.
+   * Example: `{year} después del colapso`.
+   */
+  yearLabelTemplate?: string;
   months: DiaryMonthConfig[];
   weekDays: DiaryWeekdayConfig[];
 };
@@ -120,4 +125,11 @@ export async function updateDiarySession(
 ) {
   const res = await api.patch<DiarySessionResponse>(`/diary/campaigns/${campaignId}/sessions/${sessionId}`, payload);
   return res.data;
+}
+
+/**
+ * Delete an ended diary session (masters only).
+ */
+export async function deleteDiarySession(campaignId: string, sessionId: string): Promise<void> {
+  await api.delete(`/diary/campaigns/${campaignId}/sessions/${sessionId}`);
 }

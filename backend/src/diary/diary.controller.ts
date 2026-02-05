@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -42,6 +45,7 @@ export class DiaryController {
   ) {
     return this.diaryService.updateCalendar(campaignId, req.user.userId, {
       currentYear: dto.currentYear,
+      yearLabelTemplate: dto.yearLabelTemplate,
       months: dto.months,
       weekDays: dto.weekDays,
     });
@@ -145,5 +149,15 @@ export class DiaryController {
       monthIndex: dto.day.monthIndex,
       dayIndex: dto.day.dayIndex,
     });
+  }
+
+  @Delete('campaigns/:campaignId/sessions/:sessionId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteSession(
+    @Param('campaignId') campaignId: string,
+    @Param('sessionId') sessionId: string,
+    @Req() req: any,
+  ): Promise<void> {
+    await this.diaryService.deleteSession(campaignId, req.user.userId, sessionId);
   }
 }

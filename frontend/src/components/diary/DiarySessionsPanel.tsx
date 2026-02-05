@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Button, Card, CardContent, Divider, IconButton, Stack, Switch, TextField, Typography } from '@mui/material';
-import type { DiarySessionResponse } from '../../api/diary/diaryApi';
+import type { DiaryCalendarConfig, DiarySessionResponse } from '../../api/diary/diaryApi';
 import { RichTextEditor } from '../common/RichTextEditor';
+import ConfirmDialog from '../common/ConfirmDialog';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { formatDayRefCompact } from './diaryUtils';
 
 type SessionItemDraft = {
   id?: string;
@@ -26,11 +28,13 @@ function mapApiItemToDraft(it: { id: string; title: string | null; html: string 
 
 export interface DiarySessionsPanelProps {
   isMaster: boolean;
+  calendarConfig?: DiaryCalendarConfig | null;
   sessions: DiarySessionResponse[];
   activeSession: DiarySessionResponse | null;
   onStartSession: () => Promise<void>;
   onEndSession: () => Promise<void>;
   onReload: () => Promise<void>;
+  onDeleteSession: (sessionId: string) => Promise<void>;
   onUpdateSession: (
     sessionId: string,
     patch: {
@@ -47,16 +51,20 @@ export interface DiarySessionsPanelProps {
  */
 export function DiarySessionsPanel({
   isMaster,
+  calendarConfig,
   sessions,
   activeSession,
   onStartSession,
   onEndSession,
   onReload,
+  onDeleteSession,
   onUpdateSession,
   error,
 }: DiarySessionsPanelProps) {
   const [draftBySessionId, setDraftBySessionId] = useState<Record<string, SessionItemDraft[]>>({});
   const [dirtyBySessionId, setDirtyBySessionId] = useState<Record<string, boolean>>({});
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DiarySessionResponse | null>(null);
 
   // Initialize drafts from server sessions (do not clobber dirty drafts).
   useEffect(() => {
@@ -68,8 +76,29 @@ export function DiarySessionsPanel({
       }
       return next;
     });
+
+    // Best-effort cleanup for removed sessions.
+    setDirtyBySessionId((prev) => {
+      const keep = new Set(sessions.map((s) => s.id));
+      const next: Record<string, boolean> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        if (keep.has(k)) next[k] = v;
+      }
+      return next;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions]);
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingSessionId(deleteTarget.id);
+    try {
+      await onDeleteSession(deleteTarget.id);
+    } finally {
+      setDeletingSessionId(null);
+      setDeleteTarget(null);
+    }
+  };
 
   const setDirty = (sessionId: string, value: boolean) => {
     setDirtyBySessionId((prev) => ({ ...prev, [sessionId]: value }));
@@ -139,10 +168,16 @@ export function DiarySessionsPanel({
   const formatDayRefs = useMemo(() => {
     const map: Record<string, string> = {};
     sessions.forEach((s) => {
-      map[s.id] = s.days.map((d) => `A${d.year}-M${d.monthIndex + 1}-D${d.dayIndex}`).join(', ') || '—';
+      map[s.id] =
+        s.days
+          .map((d) => {
+            if (calendarConfig) return formatDayRefCompact(calendarConfig, d);
+            return `A${d.year}-M${d.monthIndex + 1}-D${d.dayIndex}`;
+          })
+          .join(', ') || '—';
     });
     return map;
-  }, [sessions]);
+  }, [sessions, calendarConfig]);
 
   return (
     <Stack spacing={2}>
@@ -189,6 +224,17 @@ export function DiarySessionsPanel({
 
                   {isMaster ? (
                     <Stack direction="row" alignItems="center" gap={1}>
+                      {s.endedAt ? (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={() => setDeleteTarget(s)}
+                          disabled={deletingSessionId === s.id}
+                        >
+                          {deletingSessionId === s.id ? 'Eliminando…' : 'Eliminar'}
+                        </Button>
+                      ) : null}
+
                       <Typography variant="caption">Pública</Typography>
                       <Switch
                         checked={s.isPublic}
@@ -305,6 +351,17 @@ export function DiarySessionsPanel({
           <Alert severity="info">Aún no hay sesiones registradas.</Alert>
         ) : null}
       </Stack>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Eliminar sesión"
+        message={deleteTarget ? `¿Eliminar “${deleteTarget.title || 'Sesión'}”? Esta acción no se puede deshacer.` : ''}
+        confirmLabel="Eliminar"
+        confirmColor="error"
+        confirmDisabled={!!deletingSessionId}
+        onClose={() => (deletingSessionId ? null : setDeleteTarget(null))}
+        onConfirm={handleConfirmDelete}
+      />
     </Stack>
   );
 }

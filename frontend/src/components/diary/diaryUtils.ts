@@ -17,10 +17,31 @@ export function getWeekdayIndex(config: DiaryCalendarConfig, day: DiaryDayRef): 
   return getDayOfYearIndex(config, day) % weekLen;
 }
 
+/**
+ * Formats the year label using the optional template.
+ * Falls back to `Año N` when no valid template is configured.
+ */
+export function formatYearLabel(config: DiaryCalendarConfig, year: number): string {
+  const template = (config.yearLabelTemplate ?? '').trim();
+  if (template && template.includes('{year}')) {
+    return template.split('{year}').join(String(year));
+  }
+  return `Año ${year}`;
+}
+
+/**
+ * Compact day reference for lists (e.g. session visited days).
+ */
+export function formatDayRefCompact(config: DiaryCalendarConfig, day: DiaryDayRef): string {
+  const month = config.months[day.monthIndex];
+  const monthName = month?.name ?? `Mes ${day.monthIndex + 1}`;
+  return `${day.dayIndex} ${monthName} · ${formatYearLabel(config, day.year)}`;
+}
+
 export function formatDayLabel(config: DiaryCalendarConfig, day: DiaryDayRef): string {
   const month = config.months[day.monthIndex];
   const weekday = config.weekDays[getWeekdayIndex(config, day)];
   const monthName = month?.name ?? `Mes ${day.monthIndex + 1}`;
   const weekdayName = weekday?.name ?? `Día ${getWeekdayIndex(config, day) + 1}`;
-  return `${weekdayName} · ${day.dayIndex} ${monthName} · Año ${day.year}`;
+  return `${weekdayName} · ${day.dayIndex} ${monthName} · ${formatYearLabel(config, day.year)}`;
 }

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsInt, IsString, Min, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsInt, IsOptional, IsString, Matches, MaxLength, Min, ValidateNested } from 'class-validator';
 
 export class DiaryMonthConfigDto {
   /** Display name of the month. */
@@ -24,6 +24,16 @@ export class DiaryWeekdayConfigDto {
 export class UpdateDiaryCalendarDto {
   @IsInt()
   currentYear: number;
+
+  /**
+   * Optional template for year display.
+   * Must contain `{year}` placeholder.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  @Matches(/\{year\}/, { message: 'yearLabelTemplate must include {year}' })
+  yearLabelTemplate?: string;
 
   @IsArray()
   @ArrayMinSize(1)

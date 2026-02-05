@@ -91,4 +91,14 @@ export class DiarySessionRepository {
   async save(session: DiarySession): Promise<DiarySession> {
     return this.repo.save(session);
   }
+
+  /**
+   * Deletes a session by id.
+   *
+   * Note: This does not validate campaign ownership or business rules.
+   * Callers must validate access and invariants (e.g. endedAt != null) first.
+   */
+  async deleteById(id: string): Promise<void> {
+    await this.repo.delete({ id });
+  }
 }

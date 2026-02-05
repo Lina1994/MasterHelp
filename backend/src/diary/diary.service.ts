@@ -15,6 +15,7 @@ import { DiarySessionItem } from './entities/diary-session-item.entity';
 
 const DEFAULT_CALENDAR: DiaryCalendarConfig = {
   currentYear: 1,
+  yearLabelTemplate: 'Año {year}',
   months: [
     { name: 'Mes 1', days: 30 },
     { name: 'Mes 2', days: 30 },
@@ -190,6 +191,12 @@ export class DiaryService {
     if (!config.months?.length || !config.weekDays?.length) throw new BadRequestException('Invalid calendar config');
     if (config.months.some((m) => !m.name || !m.days || m.days < 1)) throw new BadRequestException('Invalid month config');
     if (config.weekDays.some((d) => !d.name)) throw new BadRequestException('Invalid week day config');
+    if (config.yearLabelTemplate !== undefined) {
+      const tmpl = String(config.yearLabelTemplate).trim();
+      if (!tmpl) throw new BadRequestException('yearLabelTemplate cannot be empty');
+      if (!tmpl.includes('{year}')) throw new BadRequestException('yearLabelTemplate must include {year}');
+      config.yearLabelTemplate = tmpl;
+    }
 
     return this.calendarRepo.upsertConfig(campaignId, config);
   }
@@ -530,6 +537,24 @@ export class DiaryService {
 
     const sessionWithItems = await this.sessionRepo.findByIdWithItems(session.id);
     return this.toSessionDto(sessionWithItems || session, true);
+  }
+
+  /**
+   * Deletes a diary session.
+   *
+   * Rules:
+   * - Only campaign masters can delete sessions.
+   * - Only ended sessions can be deleted.
+   * - Session must belong to the campaign.
+   */
+  async deleteSession(campaignId: string, userId: number, sessionId: string): Promise<void> {
+    await this.assertMaster({ campaignId, userId });
+
+    const session = await this.sessionRepo.findById(sessionId);
+    if (!session || session.campaignId !== campaignId) throw new NotFoundException('Session not found');
+    if (!session.endedAt) throw new BadRequestException('Only ended sessions can be deleted');
+
+    await this.sessionRepo.deleteById(session.id);
   }
 
   private toSessionDto(session: DiarySession, isMaster: boolean) {

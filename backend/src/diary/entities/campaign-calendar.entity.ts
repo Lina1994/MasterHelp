@@ -11,6 +11,12 @@ export type DiaryWeekdayConfig = {
 
 export type DiaryCalendarConfig = {
   currentYear: number;
+  /**
+   * Optional display template for the year label.
+   *
+   * Use `{year}` as a placeholder, e.g. `Año {year}` or `{year} después del colapso`.
+   */
+  yearLabelTemplate?: string;
   months: DiaryMonthConfig[];
   weekDays: DiaryWeekdayConfig[];
 };

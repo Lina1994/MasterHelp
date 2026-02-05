@@ -13,6 +13,11 @@ export interface DiaryCalendarSettingsProps {
  * Master-only calendar configuration editor.
  */
 export function DiaryCalendarSettings({ config, onChange, onSave, isSaving }: DiaryCalendarSettingsProps) {
+  const yearTemplate = (config.yearLabelTemplate ?? '').trim();
+  const yearPreview = yearTemplate && yearTemplate.includes('{year}')
+    ? yearTemplate.split('{year}').join(String(config.currentYear))
+    : `Año ${config.currentYear}`;
+
   return (
     <Card variant="outlined">
       <CardContent>
@@ -26,6 +31,26 @@ export function DiaryCalendarSettings({ config, onChange, onSave, isSaving }: Di
             value={config.currentYear}
             onChange={(e) => onChange({ ...config, currentYear: Number(e.target.value) })}
             sx={{ maxWidth: 240 }}
+          />
+
+          <TextField
+            label="Formato del año"
+            size="small"
+            value={config.yearLabelTemplate ?? ''}
+            placeholder="Año {year}"
+            helperText={
+              <>
+                Usa <code>{'{year}'}</code> como marcador. Vista previa: <strong>{yearPreview}</strong>
+              </>
+            }
+            onChange={(e) => {
+              const v = e.target.value;
+              onChange({
+                ...config,
+                yearLabelTemplate: v.trim() ? v : undefined,
+              });
+            }}
+            sx={{ maxWidth: 520 }}
           />
 
           <Box>
