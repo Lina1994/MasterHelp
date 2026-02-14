@@ -1,5 +1,5 @@
 import { Add as AddIcon, Delete as DeleteIcon, Save as SaveIcon } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
 import type { DiaryCalendarConfig } from '../../api/diary/diaryApi';
 
 export interface DiaryCalendarSettingsProps {
@@ -19,10 +19,7 @@ export function DiaryCalendarSettings({ config, onChange, onSave, isSaving }: Di
     : `Año ${config.currentYear}`;
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Stack spacing={2}>
-          <Typography variant="h5">Configuración del calendario</Typography>
+    <Stack spacing={2}>
 
           <TextField
             label="Año actual"
@@ -158,7 +155,5 @@ export function DiaryCalendarSettings({ config, onChange, onSave, isSaving }: Di
             </Button>
           </Stack>
         </Stack>
-      </CardContent>
-    </Card>
   );
 }

@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton, Typography
+  Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton, Typography, Stack
 } from '@mui/material';
+import { getDiaryCalendar, type DiaryCalendarConfig } from '../api/diary/diaryApi';
+import { formatDayLabel } from '../components/diary/diaryUtils';
 import logo from '../assets/logo.png';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
@@ -15,19 +17,126 @@ import GlobalPlayerDrawerControls from '../components/player/GlobalPlayerDrawerC
 import SfxPlayerDrawerControls from '../components/player/SfxPlayerDrawerControls';
 import MapAudioOrchestrator from '../components/Map/MapAudioOrchestrator';
 import { InvitationsList } from '../pages/InvitationsList';
-import MusicNoteIcon from '@mui/icons-material/MusicNote'; // nuevo icono
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MapIcon from '@mui/icons-material/Map';
 import PeopleIcon from '@mui/icons-material/People';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import EventNoteIcon from '@mui/icons-material/EventNote';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const MainLayoutInner = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { activeCampaign } = useActiveCampaign(); // Usar el hook personalizado
-  const { selectedDay, showSelectedDayInSidebar } = useDiarySidebar();
+  const { activeCampaign } = useActiveCampaign();
+  const { selectedDay, showSelectedDayInSidebar, showNoActiveSessionWarning, showDayNavigation, activeSessionId, setSelectedDay } = useDiarySidebar();
+  const [calendarConfig, setCalendarConfig] = useState<DiaryCalendarConfig | null>(null);
+
+  // Auto-cargar el día actual del calendario si hay campaña activa y no hay día seleccionado
+  useEffect(() => {
+    let cancelled = false;
+    
+    // Solo cargar si showSelectedDayInSidebar está activo
+    if (!showSelectedDayInSidebar || !activeCampaign?.id) return;
+    
+    // Si ya hay un día seleccionado de esta campaña, no hacer nada
+    if (selectedDay?.campaignId === activeCampaign.id) return;
+    
+    // Cargar calendario y establecer día actual
+    (async () => {
+      try {
+        const calendarData = await getDiaryCalendar(activeCampaign.id);
+        if (!cancelled && calendarData?.config) {
+          const config = calendarData.config;
+          const defaultDay = { year: config.currentYear, monthIndex: 0, dayIndex: 1 };
+          const label = formatDayLabel(config, defaultDay);
+          setSelectedDay({ label, campaignId: activeCampaign.id, day: defaultDay });
+        }
+      } catch {
+        // Si hay error al cargar el calendario, no hacer nada
+      }
+    })();
+    
+    return () => { cancelled = true; };
+  }, [activeCampaign?.id, selectedDay?.campaignId, showSelectedDayInSidebar, setSelectedDay]);
+
+  // Cargar configuración del calendario para los controles de navegación
+  useEffect(() => {
+    let cancelled = false;
+    
+    if (!activeCampaign?.id || !showDayNavigation) {
+      setCalendarConfig(null);
+      return;
+    }
+    
+    (async () => {
+      try {
+        const calendarData = await getDiaryCalendar(activeCampaign.id);
+        if (!cancelled && calendarData?.config) {
+          setCalendarConfig(calendarData.config);
+        }
+      } catch {
+        if (!cancelled) setCalendarConfig(null);
+      }
+    })();
+    
+    return () => { cancelled = true; };
+  }, [activeCampaign?.id, showDayNavigation]);
+
+  // Navegar al día anterior
+  const goToPreviousDay = () => {
+    if (!selectedDay?.day || !calendarConfig || !activeCampaign?.id) return;
+    
+    const { year, monthIndex, dayIndex } = selectedDay.day;
+    let newYear = year;
+    let newMonthIndex = monthIndex;
+    let newDayIndex = dayIndex - 1;
+    
+    if (newDayIndex < 1) {
+      // Ir al mes anterior
+      newMonthIndex -= 1;
+      if (newMonthIndex < 0) {
+        // Ir al año anterior
+        newYear -= 1;
+        newMonthIndex = calendarConfig.months.length - 1;
+      }
+      newDayIndex = calendarConfig.months[newMonthIndex]?.days || 30;
+    }
+    
+    const newDay = { year: newYear, monthIndex: newMonthIndex, dayIndex: newDayIndex };
+    const label = formatDayLabel(calendarConfig, newDay);
+    setSelectedDay({ label, campaignId: activeCampaign.id, day: newDay });
+  };
+
+  // Navegar al día siguiente
+  const goToNextDay = () => {
+    if (!selectedDay?.day || !calendarConfig || !activeCampaign?.id) return;
+    
+    const { year, monthIndex, dayIndex } = selectedDay.day;
+    const currentMonth = calendarConfig.months[monthIndex];
+    if (!currentMonth) return;
+    
+    let newYear = year;
+    let newMonthIndex = monthIndex;
+    let newDayIndex = dayIndex + 1;
+    
+    if (newDayIndex > currentMonth.days) {
+      // Ir al mes siguiente
+      newDayIndex = 1;
+      newMonthIndex += 1;
+      if (newMonthIndex >= calendarConfig.months.length) {
+        // Ir al año siguiente
+        newYear += 1;
+        newMonthIndex = 0;
+      }
+    }
+    
+    const newDay = { year: newYear, monthIndex: newMonthIndex, dayIndex: newDayIndex };
+    const label = formatDayLabel(calendarConfig, newDay);
+    setSelectedDay({ label, campaignId: activeCampaign.id, day: newDay });
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -104,7 +213,39 @@ const MainLayoutInner = () => {
       {showSelectedDayInSidebar && activeCampaign?.id && selectedDay?.campaignId === activeCampaign.id ? (
         <Box sx={{ px: 2, pb: 1 }}>
           <Divider sx={{ mb: 1 }} />
-          <Typography variant="body2">{selectedDay.label}</Typography>
+          {showDayNavigation && calendarConfig ? (
+            <Stack direction="row" alignItems="center" gap={0.5}>
+              <IconButton size="small" onClick={goToPreviousDay} sx={{ p: 0.5 }}>
+                <ChevronLeftIcon fontSize="small" />
+              </IconButton>
+              <Typography variant="body2" sx={{ flex: 1, textAlign: 'center' }}>
+                {selectedDay.label}
+              </Typography>
+              <IconButton size="small" onClick={goToNextDay} sx={{ p: 0.5 }}>
+                <ChevronRightIcon fontSize="small" />
+              </IconButton>
+            </Stack>
+          ) : (
+            <Typography variant="body2">{selectedDay.label}</Typography>
+          )}
+        </Box>
+      ) : null}
+
+      {showNoActiveSessionWarning && activeCampaign?.id && !activeSessionId ? (
+        <Box sx={{ px: 2, pb: 1 }}>
+          <Divider sx={{ mb: 1 }} />
+          <Box
+            onClick={() => navigate('/diary?tab=sessions&highlight=start')}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': { opacity: 0.8 },
+              transition: 'opacity 0.2s',
+            }}
+          >
+            <Typography variant="caption" color="warning.main" sx={{ fontWeight: 'medium' }}>
+              ⚠️ No hay sesión activa
+            </Typography>
+          </Box>
         </Box>
       ) : null}
     </>

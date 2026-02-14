@@ -1,13 +1,17 @@
 import { createContext, useContext, useMemo, useState } from 'react';
+import type { DiaryDayRef } from '../../api/diary/diaryApi';
 
 export type DiarySelectedDayInfo = {
   label: string;
   campaignId: string;
+  day: DiaryDayRef;
 } | null;
 
 const SHOW_DAY_KEY = 'diary_showSelectedDayInSidebar';
 const SHOW_DAY_IN_SKYLINE_KEY = 'diary_showSelectedDayInSkyline';
 const SELECTED_DAY_KEY = 'app.diary.selectedDay';
+const SHOW_NO_ACTIVE_SESSION_WARNING_KEY = 'diary_showNoActiveSessionWarning';
+const SHOW_DAY_NAVIGATION_KEY = 'diary_showDayNavigation';
 
 function loadShowSelectedDayInSidebar(): boolean {
   try {
@@ -29,6 +33,26 @@ function loadShowSelectedDayInSkyline(): boolean {
   }
 }
 
+function loadShowNoActiveSessionWarning(): boolean {
+  try {
+    const raw = localStorage.getItem(SHOW_NO_ACTIVE_SESSION_WARNING_KEY);
+    if (raw === null) return false; // default deshabilitado
+    return raw === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function loadShowDayNavigation(): boolean {
+  try {
+    const raw = localStorage.getItem(SHOW_DAY_NAVIGATION_KEY);
+    if (raw === null) return false; // default deshabilitado
+    return raw === 'true';
+  } catch {
+    return false;
+  }
+}
+
 function persistShowSelectedDayInSidebar(value: boolean) {
   try {
     localStorage.setItem(SHOW_DAY_KEY, String(value));
@@ -42,6 +66,32 @@ function persistShowSelectedDayInSkyline(value: boolean) {
     localStorage.setItem(SHOW_DAY_IN_SKYLINE_KEY, String(value));
   } catch {
     // ignore
+  }
+}
+
+function persistShowNoActiveSessionWarning(value: boolean) {
+  try {
+    localStorage.setItem(SHOW_NO_ACTIVE_SESSION_WARNING_KEY, String(value));
+  } catch {
+    // ignore
+  }
+}
+
+function persistShowDayNavigation(value: boolean) {
+  try {
+    localStorage.setItem(SHOW_DAY_NAVIGATION_KEY, String(value));
+  } catch {
+    // ignore
+  }
+}
+
+function loadSelectedDay(): DiarySelectedDayInfo {
+  try {
+    const raw = localStorage.getItem(SELECTED_DAY_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as DiarySelectedDayInfo;
+  } catch {
+    return null;
   }
 }
 
@@ -64,6 +114,12 @@ type DiarySidebarContextValue = {
   setShowSelectedDayInSidebar: (value: boolean) => void;
   showSelectedDayInSkyline: boolean;
   setShowSelectedDayInSkyline: (value: boolean) => void;
+  showNoActiveSessionWarning: boolean;
+  setShowNoActiveSessionWarning: (value: boolean) => void;
+  showDayNavigation: boolean;
+  setShowDayNavigation: (value: boolean) => void;
+  activeSessionId: string | null;
+  setActiveSessionId: (value: string | null) => void;
 };
 
 const DiarySidebarContext = createContext<DiarySidebarContextValue | undefined>(undefined);
@@ -72,9 +128,12 @@ const DiarySidebarContext = createContext<DiarySidebarContextValue | undefined>(
  * Provides diary UI state that needs to surface in the sidebar (e.g. selected day).
  */
 export function DiarySidebarProvider({ children }: { children: React.ReactNode }) {
-  const [selectedDay, setSelectedDayState] = useState<DiarySelectedDayInfo>(null);
+  const [selectedDay, setSelectedDayState] = useState<DiarySelectedDayInfo>(loadSelectedDay);
   const [showSelectedDayInSidebar, setShowSelectedDayInSidebarState] = useState<boolean>(loadShowSelectedDayInSidebar);
   const [showSelectedDayInSkyline, setShowSelectedDayInSkylineState] = useState<boolean>(loadShowSelectedDayInSkyline);
+  const [showNoActiveSessionWarning, setShowNoActiveSessionWarningState] = useState<boolean>(loadShowNoActiveSessionWarning);
+  const [showDayNavigation, setShowDayNavigationState] = useState<boolean>(loadShowDayNavigation);
+  const [activeSessionId, setActiveSessionIdState] = useState<string | null>(null);
 
   const setSelectedDay = (value: DiarySelectedDayInfo) => {
     setSelectedDayState(value);
@@ -91,6 +150,20 @@ export function DiarySidebarProvider({ children }: { children: React.ReactNode }
     persistShowSelectedDayInSkyline(value);
   };
 
+  const setShowNoActiveSessionWarning = (value: boolean) => {
+    setShowNoActiveSessionWarningState(value);
+    persistShowNoActiveSessionWarning(value);
+  };
+
+  const setShowDayNavigation = (value: boolean) => {
+    setShowDayNavigationState(value);
+    persistShowDayNavigation(value);
+  };
+
+  const setActiveSessionId = (value: string | null) => {
+    setActiveSessionIdState(value);
+  };
+
   const value = useMemo(
     () => ({
       selectedDay,
@@ -99,8 +172,14 @@ export function DiarySidebarProvider({ children }: { children: React.ReactNode }
       setShowSelectedDayInSidebar,
       showSelectedDayInSkyline,
       setShowSelectedDayInSkyline,
+      showNoActiveSessionWarning,
+      setShowNoActiveSessionWarning,
+      showDayNavigation,
+      setShowDayNavigation,
+      activeSessionId,
+      setActiveSessionId,
     }),
-    [selectedDay, showSelectedDayInSidebar, showSelectedDayInSkyline],
+    [selectedDay, showSelectedDayInSidebar, showSelectedDayInSkyline, showNoActiveSessionWarning, showDayNavigation, activeSessionId],
   );
 
   return <DiarySidebarContext.Provider value={value}>{children}</DiarySidebarContext.Provider>;

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Button, Card, CardContent, Divider, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardContent, Divider, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
+import { useSearchParams } from 'react-router-dom';
 import { getCurrentUser } from '../utils/getCurrentUser';
 import {
   getActiveDiarySession,
@@ -55,14 +57,23 @@ export default function DiaryPage() {
   const isMaster = isUserMaster(activeCampaign, currentUserId);
 
   const {
+    selectedDay: contextSelectedDay,
     setSelectedDay,
     showSelectedDayInSidebar,
     setShowSelectedDayInSidebar,
     showSelectedDayInSkyline,
     setShowSelectedDayInSkyline,
+    showNoActiveSessionWarning,
+    setShowNoActiveSessionWarning,
+    showDayNavigation,
+    setShowDayNavigation,
+    setActiveSessionId,
   } = useDiarySidebar();
 
   const [tab, setTab] = useState<'calendar' | 'sessions' | 'settings'>('calendar');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [highlightStartButton, setHighlightStartButton] = useState(false);
+  const [calendarSettingsExpanded, setCalendarSettingsExpanded] = useState(false);
 
   const [calendar, setCalendar] = useState<DiaryCalendarConfig | null>(null);
   const [calendarDraft, setCalendarDraft] = useState<DiaryCalendarConfig | null>(null);
@@ -99,10 +110,16 @@ export default function DiaryPage() {
       const active = await getActiveDiarySession(campaignId);
       setActiveSession(active);
 
-      // Set defaults
-      setSelectedMonthIndex(0);
-      const defaultDay: DiaryDayRef = { year: cal.config.currentYear, monthIndex: 0, dayIndex: 1 };
-      setSelectedDayState(defaultDay);
+      // Si hay un día guardado en el contexto para esta campaña, usarlo
+      if (contextSelectedDay?.campaignId === campaignId && contextSelectedDay.day) {
+        setSelectedMonthIndex(contextSelectedDay.day.monthIndex);
+        setSelectedDayState(contextSelectedDay.day);
+      } else {
+        // Si no, establecer valores por defecto
+        setSelectedMonthIndex(0);
+        const defaultDay: DiaryDayRef = { year: cal.config.currentYear, monthIndex: 0, dayIndex: 1 };
+        setSelectedDayState(defaultDay);
+      }
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Error cargando el diario');
     } finally {
@@ -115,6 +132,32 @@ export default function DiaryPage() {
     reloadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId]);
+
+  // Sincronizar el ID de la sesión activa con el contexto
+  useEffect(() => {
+    setActiveSessionId(activeSession?.id ?? null);
+  }, [activeSession, setActiveSessionId]);
+
+  // Detectar parámetros de URL para abrir pestaña de sesiones y animar
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    const highlightParam = searchParams.get('highlight');
+    
+    if (tabParam === 'sessions') {
+      setTab('sessions');
+      
+      if (highlightParam === 'start') {
+        // Animar el botón después de un pequeño delay
+        setTimeout(() => {
+          setHighlightStartButton(true);
+          setTimeout(() => setHighlightStartButton(false), 2000);
+        }, 300);
+      }
+      
+      // Limpiar parámetros de URL
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   const loadEntry = async (day: DiaryDayRef) => {
     if (!campaignId) return;
@@ -134,6 +177,7 @@ export default function DiaryPage() {
     setSelectedDay({
       label: formatDayLabel(calendar, selectedDay),
       campaignId: campaignId || '',
+      day: selectedDay,
     });
     // If a session is active, register the day (master only).
     if (campaignId && activeSession && isMaster) {
@@ -262,7 +306,24 @@ export default function DiaryPage() {
 
       {tab === 'calendar' ? (
         <Stack spacing={2} direction={{ xs: 'column', md: 'row' }}>
-          <Box sx={{ flex: 1, minWidth: 320 }}>
+          <Box sx={{ flex: 2, minWidth: 360 }}>
+            {calendar && selectedDay ? (
+              <DiaryEntryPanel
+                isMaster={isMaster}
+                dayLabel={dayLabel}
+                entry={entry}
+                items={itemsDraft}
+                onChangeItems={setItemsDraft}
+                onSave={handleSaveEntry}
+                isSaving={savingEntry}
+                error={error}
+              />
+            ) : (
+              <Alert severity="info">Selecciona un día…</Alert>
+            )}
+          </Box>
+
+          <Box sx={{ flex: 1, minWidth: 280, maxWidth: { md: 400 } }}>
             {calendar ? (
               <DiaryCalendarView
                 config={calendar}
@@ -278,23 +339,6 @@ export default function DiaryPage() {
               />
             ) : (
               <Alert severity="info">Cargando calendario…</Alert>
-            )}
-          </Box>
-
-          <Box sx={{ flex: 1, minWidth: 360 }}>
-            {calendar && selectedDay ? (
-              <DiaryEntryPanel
-                isMaster={isMaster}
-                dayLabel={dayLabel}
-                entry={entry}
-                items={itemsDraft}
-                onChangeItems={setItemsDraft}
-                onSave={handleSaveEntry}
-                isSaving={savingEntry}
-                error={error}
-              />
-            ) : (
-              <Alert severity="info">Selecciona un día…</Alert>
             )}
           </Box>
         </Stack>
@@ -318,6 +362,7 @@ export default function DiaryPage() {
           onDeleteSession={handleDeleteSession}
           onUpdateSession={handleUpdateSession}
           error={error}
+          highlightStartButton={highlightStartButton}
         />
       ) : null}
 
@@ -341,17 +386,42 @@ export default function DiaryPage() {
                     onChange={(_, v) => setShowSelectedDayInSkyline(v)}
                   />
                 </Stack>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                  <Typography variant="body2">Avisar en el sidebar si no hay sesión activa</Typography>
+                  <Switch
+                    checked={showNoActiveSessionWarning}
+                    onChange={(_, v) => setShowNoActiveSessionWarning(v)}
+                  />
+                </Stack>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                  <Typography variant="body2">Mostrar controles de navegación de día en el sidebar</Typography>
+                  <Switch
+                    checked={showDayNavigation}
+                    onChange={(_, v) => setShowDayNavigation(v)}
+                  />
+                </Stack>
               </Stack>
             </CardContent>
           </Card>
 
           {calendarDraft ? (
-            <DiaryCalendarSettings
-              config={calendarDraft}
-              onChange={setCalendarDraft}
-              onSave={handleSaveCalendar}
-              isSaving={loading}
-            />
+            <Accordion 
+              expanded={calendarSettingsExpanded} 
+              onChange={(_, isExpanded) => setCalendarSettingsExpanded(isExpanded)}
+              variant="outlined"
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="h6">Configuración del calendario</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <DiaryCalendarSettings
+                  config={calendarDraft}
+                  onChange={setCalendarDraft}
+                  onSave={handleSaveCalendar}
+                  isSaving={loading}
+                />
+              </AccordionDetails>
+            </Accordion>
           ) : (
             <Alert severity="info">Cargando…</Alert>
           )}
@@ -375,6 +445,20 @@ export default function DiaryPage() {
                 <Switch
                   checked={showSelectedDayInSkyline}
                   onChange={(_, v) => setShowSelectedDayInSkyline(v)}
+                />
+              </Stack>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                <Typography variant="body2">Avisar en el sidebar si no hay sesión activa</Typography>
+                <Switch
+                  checked={showNoActiveSessionWarning}
+                  onChange={(_, v) => setShowNoActiveSessionWarning(v)}
+                />
+              </Stack>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                <Typography variant="body2">Mostrar controles de navegación de día en el sidebar</Typography>
+                <Switch
+                  checked={showDayNavigation}
+                  onChange={(_, v) => setShowDayNavigation(v)}
                 />
               </Stack>
             </Stack>

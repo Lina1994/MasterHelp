@@ -252,7 +252,7 @@ export default function MapsPage() {
         gap: 1.5,
       }}>
         {filtered.map((it) => (
-          <Paper key={it.id} variant="outlined" sx={{ p: 1.25, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Paper key={it.id} variant="outlined" sx={{ p: 1.25, display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
             {/* Thumbnail */}
             <Box sx={{ width: 56, height: 56, borderRadius: 1, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {it.imageAvailable ? (
@@ -262,14 +262,14 @@ export default function MapsPage() {
               )}
             </Box>
             {/* Text */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
               <Typography variant="subtitle1" noWrap title={it.name}>{it.name}</Typography>
               {it.description && (
                 <Typography variant="body2" color="text.secondary" noWrap title={it.description}>{it.description}</Typography>
               )}
             </Box>
             {/* Actions */}
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
               {activeMapId === it.id && (
                 <Tooltip title="Activo"><span><CheckCircleIcon color="success" /></span></Tooltip>
               )}

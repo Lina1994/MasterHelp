@@ -44,6 +44,7 @@ export interface DiarySessionsPanelProps {
     },
   ) => Promise<DiarySessionResponse | void>;
   error: string | null;
+  highlightStartButton?: boolean;
 }
 
 /**
@@ -60,6 +61,7 @@ export function DiarySessionsPanel({
   onDeleteSession,
   onUpdateSession,
   error,
+  highlightStartButton = false,
 }: DiarySessionsPanelProps) {
   const [draftBySessionId, setDraftBySessionId] = useState<Record<string, SessionItemDraft[]>>({});
   const [dirtyBySessionId, setDirtyBySessionId] = useState<Record<string, boolean>>({});
@@ -188,7 +190,20 @@ export function DiarySessionsPanel({
             activeSession ? (
               <Button variant="contained" color="error" onClick={onEndSession}>Finalizar sesión</Button>
             ) : (
-              <Button variant="contained" onClick={onStartSession}>Iniciar sesión</Button>
+              <Button
+                variant="contained"
+                onClick={onStartSession}
+                sx={{
+                  animation: highlightStartButton ? 'pulse 1s ease-in-out 2' : 'none',
+                  '@keyframes pulse': {
+                    '0%': { transform: 'scale(1)', boxShadow: 3 },
+                    '50%': { transform: 'scale(1.05)', boxShadow: 6 },
+                    '100%': { transform: 'scale(1)', boxShadow: 3 },
+                  },
+                }}
+              >
+                Iniciar sesión
+              </Button>
             )
           ) : null}
           <Button variant="outlined" onClick={onReload}>Recargar</Button>
