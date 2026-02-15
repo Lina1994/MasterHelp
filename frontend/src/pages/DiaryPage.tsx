@@ -26,7 +26,7 @@ import { DiaryCalendarSettings } from '../components/diary/DiaryCalendarSettings
 import { DiaryCalendarView } from '../components/diary/DiaryCalendarView';
 import { DiaryEntryPanel } from '../components/diary/DiaryEntryPanel';
 import { DiarySessionsPanel } from '../components/diary/DiarySessionsPanel';
-import { formatDayLabel } from '../components/diary/diaryUtils';
+import { formatDayLabel, formatDayLabelCompact } from '../components/diary/diaryUtils';
 import { useDiarySidebar } from '../components/diary/DiarySidebarContext';
 
 import type { DiaryEntryItemDraft } from '../components/diary/DiaryEntryPanel';
@@ -67,6 +67,8 @@ export default function DiaryPage() {
     setShowNoActiveSessionWarning,
     showDayNavigation,
     setShowDayNavigation,
+    dayFormat,
+    setDayFormat,
     setActiveSessionId,
   } = useDiarySidebar();
 
@@ -92,8 +94,8 @@ export default function DiaryPage() {
 
   const dayLabel = useMemo(() => {
     if (!calendar || !selectedDay) return '';
-    return formatDayLabel(calendar, selectedDay);
-  }, [calendar, selectedDay]);
+    return dayFormat === 'compact' ? formatDayLabelCompact(calendar, selectedDay) : formatDayLabel(calendar, selectedDay);
+  }, [calendar, selectedDay, dayFormat]);
 
   const reloadAll = async () => {
     if (!campaignId) return;
@@ -132,6 +134,22 @@ export default function DiaryPage() {
     reloadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId]);
+
+  // Sincronizar cambios del día desde el contexto (navegación desde sidebar)
+  useEffect(() => {
+    if (!contextSelectedDay?.day) return;
+    if (!campaignId || contextSelectedDay.campaignId !== campaignId) return;
+    
+    // Si el día del contexto es diferente al local, sincronizar
+    const contextDay = contextSelectedDay.day;
+    if (!selectedDay || 
+        contextDay.year !== selectedDay.year || 
+        contextDay.monthIndex !== selectedDay.monthIndex || 
+        contextDay.dayIndex !== selectedDay.dayIndex) {
+      setSelectedDayState(contextDay);
+      setSelectedMonthIndex(contextDay.monthIndex);
+    }
+  }, [contextSelectedDay, campaignId, selectedDay]);
 
   // Sincronizar el ID de la sesión activa con el contexto
   useEffect(() => {
@@ -175,7 +193,7 @@ export default function DiaryPage() {
     if (!calendar || !selectedDay) return;
     void loadEntry(selectedDay);
     setSelectedDay({
-      label: formatDayLabel(calendar, selectedDay),
+      label: dayFormat === 'compact' ? formatDayLabelCompact(calendar, selectedDay) : formatDayLabel(calendar, selectedDay),
       campaignId: campaignId || '',
       day: selectedDay,
     });
@@ -184,7 +202,7 @@ export default function DiaryPage() {
       void visitDiaryDay(campaignId, activeSession.id, selectedDay).then(setActiveSession).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDay, calendar, campaignId, isMaster]);
+  }, [selectedDay, calendar, campaignId, isMaster, dayFormat]);
 
   const handleSaveEntry = async () => {
     if (!campaignId || !selectedDay || !isMaster) return;
@@ -400,6 +418,22 @@ export default function DiaryPage() {
                     onChange={(_, v) => setShowDayNavigation(v)}
                   />
                 </Stack>
+                <Divider />
+                <Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5 }}>Formato de fecha en sidebar</Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                  <Typography variant="body2">Formato extendido</Typography>
+                  <Switch
+                    checked={dayFormat === 'extended'}
+                    onChange={(_, v) => setDayFormat(v ? 'extended' : 'compact')}
+                  />
+                </Stack>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                  <Typography variant="body2">Formato compacto (DD/MM/YYYY)</Typography>
+                  <Switch
+                    checked={dayFormat === 'compact'}
+                    onChange={(_, v) => setDayFormat(v ? 'compact' : 'extended')}
+                  />
+                </Stack>
               </Stack>
             </CardContent>
           </Card>
@@ -459,6 +493,22 @@ export default function DiaryPage() {
                 <Switch
                   checked={showDayNavigation}
                   onChange={(_, v) => setShowDayNavigation(v)}
+                />
+              </Stack>
+              <Divider />
+              <Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5 }}>Formato de fecha en sidebar</Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                <Typography variant="body2">Formato extendido</Typography>
+                <Switch
+                  checked={dayFormat === 'extended'}
+                  onChange={(_, v) => setDayFormat(v ? 'extended' : 'compact')}
+                />
+              </Stack>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                <Typography variant="body2">Formato compacto (DD/MM/YYYY)</Typography>
+                <Switch
+                  checked={dayFormat === 'compact'}
+                  onChange={(_, v) => setDayFormat(v ? 'compact' : 'extended')}
                 />
               </Stack>
             </Stack>

@@ -23,7 +23,8 @@ import { createEncounter as apiCreateEncounter, updateEncounter as apiUpdateEnco
 import { computeEncounterMetrics } from '../../utils/encounterMetrics';
 import type { CharacterPayload } from '../../api/characters';
 import type { SongLite } from '../../api/soundtrack';
-import { fetchMonster } from '../../api/monsters';
+import { getCampaignMonster } from '../../api/bestiary/bestiaryApi';
+import type { CampaignMonsterListItem, CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
 import type { MonsterIndexItem, MonsterDetail } from '../../types/monsters';
 
 export interface EncounterFormDialogProps {
@@ -35,7 +36,7 @@ export interface EncounterFormDialogProps {
   campaignId: string;
   characters: CharacterPayload[];
   songs: SongLite[];
-  monsters: Array<MonsterIndexItem & { manualId: string; compositeId: string }>;
+  monsters: Array<CampaignMonsterListItem & { compositeId: string }>;
 }
 
 /**
@@ -54,7 +55,7 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
   const [musicSongId, setMusicSongId] = useState<string | ''>('');
   const [participants, setParticipants] = useState<EncounterSummary['participants']>([]);
   const [saving, setSaving] = useState(false);
-  const [monsterPreview, setMonsterPreview] = useState<MonsterDetail | null>(null);
+  const [monsterPreview, setMonsterPreview] = useState<CampaignMonsterDetail | null>(null);
   const [monsterPreviewLoading, setMonsterPreviewLoading] = useState(false);
 
   const metrics = useMemo(() => computeEncounterMetrics(participants), [participants]);
@@ -110,7 +111,7 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
     });
   };
 
-  const addEnemy = (monster?: MonsterIndexItem & { manualId?: string; compositeId?: string }) => {
+  const addEnemy = (monster?: CampaignMonsterListItem & { compositeId?: string }) => {
     const id = makeUuid();
     setParticipants((prev) => [...prev, {
       id,
@@ -118,8 +119,9 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
       kind: 'enemy',
       role: 'foe',
       cr: monster?.challengeRating ? Number(monster.challengeRating) : 0,
-      monsterManualId: monster?.manualId,
-      monsterSlug: monster?.slug,
+      monsterCampaignId: monster?.id, // usar el id del monstruo de campaña
+      monsterManualId: monster?.sourceManual || undefined,
+      monsterSlug: undefined, // ya no se usa el slug cuando viene del bestiario de campaña
     }]);
   };
 
@@ -274,7 +276,7 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
                     addEnemy(m);
                     setMonsterPreviewLoading(true);
                     try {
-                      const detail = await fetchMonster(m.manualId, m.slug, 'es').catch(async () => fetchMonster(m.manualId, m.slug, 'en'));
+                      const detail = await getCampaignMonster(campaignId, m.id, 'es').catch(async () => getCampaignMonster(campaignId, m.id, 'en'));
                       setMonsterPreview(detail);
                     } catch { setMonsterPreview(null); } finally { setMonsterPreviewLoading(false); }
                   }
@@ -285,9 +287,22 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
                 renderValue={(val) => (val ? val : (<em>Selecciona enemigo</em> as any))}
               >
                 <MenuItem value="" disabled>Selecciona enemigo</MenuItem>
-                {monsters.map((m) => (
-                  <MenuItem key={m.compositeId} value={m.compositeId}>{m.name}{m.challengeRating ? ` (CR ${m.challengeRating})` : ''}</MenuItem>
-                ))}
+                {monsters.map((m) => {
+                  const getOriginLabel = () => {
+                    if (m.origin === 'homebrew') return m.customOriginName || 'Homebrew';
+                    if (m.origin === 'manual-edited') return 'Manual (Editado)';
+                    return 'Manual';
+                  };
+                  const originLabel = getOriginLabel();
+                  return (
+                    <MenuItem key={m.compositeId} value={m.compositeId}>
+                      {m.name}
+                      {m.challengeRating ? ` (CR ${m.challengeRating})` : ''}
+                      {' · '}
+                      <span style={{ fontStyle: 'italic', fontSize: '0.9em', opacity: 0.7 }}>{originLabel}</span>
+                    </MenuItem>
+                  );
+                })}
               </Select>
             </FormControl>
             <Button size="small" startIcon={<AddIcon />} variant="outlined" onClick={() => addEnemy()}>Enemigo manual</Button>

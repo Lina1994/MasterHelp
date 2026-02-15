@@ -18,6 +18,7 @@ export interface EncounterParticipant {
   initiative?: number;
   monsterManualId?: string;
   monsterSlug?: string;
+  monsterCampaignId?: string;
 }
 
 export interface EncounterSummary {

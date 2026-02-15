@@ -17,6 +17,8 @@ export interface EncounterParticipant {
   /** Referencia opcional al bestiario para calcular atributos (p.ej., DEX). */
   monsterManualId?: string;
   monsterSlug?: string;
+  /** Referencia al monstruo del bestiario de campaña (alternativa a monsterManualId+monsterSlug). */
+  monsterCampaignId?: string;
 }
 
 @Entity()

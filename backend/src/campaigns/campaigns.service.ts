@@ -59,12 +59,51 @@ export class CampaignsService {
   async createWithOwner(createCampaignDto: CreateCampaignDto, ownerId: number): Promise<Campaign> {
     const owner = await this.campaignsRepository.manager.findOne(User, { where: { id: ownerId } });
     if (!owner) throw new Error('Owner user not found');
-    const campaign = this.campaignsRepository.create({ ...createCampaignDto, owner });
+    
+    // Validate manual IDs if provided
+    let validatedManualIds: string[] | undefined;
+    if (createCampaignDto.manualIds && createCampaignDto.manualIds.length > 0) {
+      const ids = createCampaignDto.manualIds.map((x) => (x || '').trim()).filter(Boolean);
+      const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
+      let validIds: string[] = [];
+      try {
+        const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
+        validIds = (raw?.manuals || []).map((m: any) => String(m.id));
+      } catch {}
+      const unknown = ids.filter((id) => !validIds.includes(id));
+      if (unknown.length) {
+        throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
+      }
+      validatedManualIds = ids;
+    }
+    
+    const campaign = this.campaignsRepository.create({ 
+      ...createCampaignDto, 
+      owner,
+      selectedManualIds: validatedManualIds || null
+    });
     const savedCampaign = await this.campaignsRepository.save(campaign);
     return this.findOne(savedCampaign.id) as Promise<Campaign>;
   }
 
   async update(id: string, updateCampaignDto: UpdateCampaignDto): Promise<Campaign> {
+    // Validate manual IDs if provided
+    if (updateCampaignDto.selectedManualIds !== undefined) {
+      const ids = (updateCampaignDto.selectedManualIds || []).map((x) => (x || '').trim()).filter(Boolean);
+      if (ids.length > 0) {
+        const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
+        let validIds: string[] = [];
+        try {
+          const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
+          validIds = (raw?.manuals || []).map((m: any) => String(m.id));
+        } catch {}
+        const unknown = ids.filter((id) => !validIds.includes(id));
+        if (unknown.length) {
+          throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
+        }
+      }
+    }
+    
     await this.campaignsRepository.update(id, updateCampaignDto);
     return this.findOne(id) as Promise<Campaign>;
   }

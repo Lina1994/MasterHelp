@@ -1,8 +1,11 @@
 import React from 'react';
 import { Box, Chip, Divider, Grid, Typography } from '@mui/material';
 import type { MonsterDetail } from '../../types/monsters';
+import type { CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
 
-export const MonsterStatBlock: React.FC<{ monster: MonsterDetail }> = ({ monster }) => {
+type MonsterLike = MonsterDetail | CampaignMonsterDetail;
+
+export const MonsterStatBlock: React.FC<{ monster: MonsterLike }> = ({ monster }) => {
   const { name, type, size, alignment, challengeRating, armorClass, hitPoints, speed, abilities } = monster;
   const speedEntries = Object.entries(speed || {}).filter(([, v]) => typeof v === 'number') as [string, number][];
   const savingThrows = monster.savingThrows || {};
@@ -25,8 +28,71 @@ export const MonsterStatBlock: React.FC<{ monster: MonsterDetail }> = ({ monster
     return entries.map(([k, v]) => `${title(k)} ${v >= 0 ? `+${v}` : v}`).join(', ');
   };
 
+  // Check if monster has image data (for CampaignMonsterDetail)
+  const campaignMonster = monster as CampaignMonsterDetail;
+  const hasIllustration = campaignMonster.imageUrls?.medium || campaignMonster.imageUrls?.high;
+  const hasToken = campaignMonster.tokenImageUrl || campaignMonster.tokenColor;
+
   return (
     <Box>
+      {/* Images Section */}
+      {(hasIllustration || hasToken) && (
+        <>
+          <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {hasIllustration && (
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                  Ilustración
+                </Typography>
+                <img
+                  src={campaignMonster.imageUrls?.medium || campaignMonster.imageUrls?.high}
+                  alt={name}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: 300,
+                    borderRadius: 8,
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                  }}
+                />
+              </Box>
+            )}
+            {hasToken && (
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                  Token
+                </Typography>
+                {campaignMonster.tokenKind === 'image' && campaignMonster.tokenImageUrl ? (
+                  <img
+                    src={campaignMonster.tokenImageUrl}
+                    alt={`${name} token`}
+                    style={{
+                      width: 100,
+                      height: 100,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '3px solid #ccc',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    }}
+                  />
+                ) : campaignMonster.tokenColor ? (
+                  <Box
+                    sx={{
+                      width: 100,
+                      height: 100,
+                      borderRadius: '50%',
+                      backgroundColor: campaignMonster.tokenColor,
+                      border: '3px solid #ccc',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    }}
+                  />
+                ) : null}
+              </Box>
+            )}
+          </Box>
+          <Divider sx={{ my: 2 }} />
+        </>
+      )}
+
       <Typography variant="h4" gutterBottom>{name}</Typography>
       <Typography variant="subtitle1" gutterBottom>
         {size || '-'} {type || '-'}{alignment ? `, ${alignment}` : ''} • CR {challengeRating || '-'}
@@ -110,6 +176,19 @@ export const MonsterStatBlock: React.FC<{ monster: MonsterDetail }> = ({ monster
           <Divider sx={{ my: 2 }} />
           <Typography variant="h6">Actions</Typography>
           {monster.actions.map((t, idx) => (
+            <Box key={t.name || idx} sx={{ mt: 1 }}>
+              {t.name ? (<Typography variant="subtitle2">{t.name}</Typography>) : null}
+              <Typography variant="body2">{(t as any).text || (t as any).desc || ''}</Typography>
+            </Box>
+          ))}
+        </>
+      ) : null}
+
+      {monster.reactions?.length ? (
+        <>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="h6">Reactions</Typography>
+          {monster.reactions.map((t, idx) => (
             <Box key={t.name || idx} sx={{ mt: 1 }}>
               {t.name ? (<Typography variant="subtitle2">{t.name}</Typography>) : null}
               <Typography variant="body2">{(t as any).text || (t as any).desc || ''}</Typography>

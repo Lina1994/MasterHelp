@@ -3,7 +3,7 @@ import {
   Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton, Typography, Stack
 } from '@mui/material';
 import { getDiaryCalendar, type DiaryCalendarConfig } from '../api/diary/diaryApi';
-import { formatDayLabel } from '../components/diary/diaryUtils';
+import { formatDayLabel, formatDayLabelCompact } from '../components/diary/diaryUtils';
 import logo from '../assets/logo.png';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
@@ -23,6 +23,7 @@ import MapIcon from '@mui/icons-material/Map';
 import PeopleIcon from '@mui/icons-material/People';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import EventNoteIcon from '@mui/icons-material/EventNote';
+import PetsIcon from '@mui/icons-material/Pets';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
@@ -31,7 +32,7 @@ const MainLayoutInner = () => {
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { activeCampaign } = useActiveCampaign();
-  const { selectedDay, showSelectedDayInSidebar, showNoActiveSessionWarning, showDayNavigation, activeSessionId, setSelectedDay } = useDiarySidebar();
+  const { selectedDay, showSelectedDayInSidebar, showNoActiveSessionWarning, showDayNavigation, dayFormat, activeSessionId, setSelectedDay } = useDiarySidebar();
   const [calendarConfig, setCalendarConfig] = useState<DiaryCalendarConfig | null>(null);
 
   // Auto-cargar el día actual del calendario si hay campaña activa y no hay día seleccionado
@@ -51,7 +52,7 @@ const MainLayoutInner = () => {
         if (!cancelled && calendarData?.config) {
           const config = calendarData.config;
           const defaultDay = { year: config.currentYear, monthIndex: 0, dayIndex: 1 };
-          const label = formatDayLabel(config, defaultDay);
+          const label = dayFormat === 'compact' ? formatDayLabelCompact(config, defaultDay) : formatDayLabel(config, defaultDay);
           setSelectedDay({ label, campaignId: activeCampaign.id, day: defaultDay });
         }
       } catch {
@@ -60,7 +61,7 @@ const MainLayoutInner = () => {
     })();
     
     return () => { cancelled = true; };
-  }, [activeCampaign?.id, selectedDay?.campaignId, showSelectedDayInSidebar, setSelectedDay]);
+  }, [activeCampaign?.id, selectedDay?.campaignId, showSelectedDayInSidebar, dayFormat, setSelectedDay]);
 
   // Cargar configuración del calendario para los controles de navegación
   useEffect(() => {
@@ -106,7 +107,7 @@ const MainLayoutInner = () => {
     }
     
     const newDay = { year: newYear, monthIndex: newMonthIndex, dayIndex: newDayIndex };
-    const label = formatDayLabel(calendarConfig, newDay);
+    const label = dayFormat === 'compact' ? formatDayLabelCompact(calendarConfig, newDay) : formatDayLabel(calendarConfig, newDay);
     setSelectedDay({ label, campaignId: activeCampaign.id, day: newDay });
   };
 
@@ -134,7 +135,7 @@ const MainLayoutInner = () => {
     }
     
     const newDay = { year: newYear, monthIndex: newMonthIndex, dayIndex: newDayIndex };
-    const label = formatDayLabel(calendarConfig, newDay);
+    const label = dayFormat === 'compact' ? formatDayLabelCompact(calendarConfig, newDay) : formatDayLabel(calendarConfig, newDay);
     setSelectedDay({ label, campaignId: activeCampaign.id, day: newDay });
   };
 
@@ -206,7 +207,12 @@ const MainLayoutInner = () => {
             <ListItemText primary={t('diary', 'Diario')} />
           </ListItemButton>
         </ListItem>
-        {/* Bestiary: accesible dentro de cada manual, no en el sidebar global */}
+        <ListItem key="campaign-bestiary" disablePadding>
+          <ListItemButton onClick={() => navigate('/campaign-bestiary')} disabled={!activeCampaign?.id}>
+            <ListItemIcon><PetsIcon /></ListItemIcon>
+            <ListItemText primary={t('bestiary', 'Bestiario')} />
+          </ListItemButton>
+        </ListItem>
         {/* Más items aquí */}
       </List>
 

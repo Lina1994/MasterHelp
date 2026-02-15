@@ -57,4 +57,9 @@ export class EncounterParticipantDto {
   @IsOptional()
   @IsString()
   monsterSlug?: string;
+
+  /** Referencia al monstruo del bestiario de campaña (alternativa a monsterManualId+monsterSlug). */
+  @IsOptional()
+  @IsString()
+  monsterCampaignId?: string;
 }

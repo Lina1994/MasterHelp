@@ -17,6 +17,7 @@ import MainLayout from '../layouts/MainLayout';
 import SpellsPage from '../pages/SpellsPage';
 import BestiaryListPage from '../pages/BestiaryListPage';
 import BestiaryDetailPage from '../pages/BestiaryDetailPage';
+import CampaignBestiaryPage from '../pages/CampaignBestiaryPage';
 import MapsPage from '../pages/MapsPage';
 import ProjectionMapPage from '../pages/ProjectionMapPage';
 import ProjectionSkylinePage from '../pages/ProjectionSkylinePage';
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
           { path: 'characters', element: <CharactersPage /> },
           { path: 'characters/:id', element: <CharacterDetailPage /> },
           { path: 'diary', element: <DiaryPage /> },
+          { path: 'campaign-bestiary', element: <CampaignBestiaryPage /> },
           // ...other protected routes
         ],
       },

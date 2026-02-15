@@ -14,7 +14,7 @@ import { listEncounters, deleteEncounter as apiDeleteEncounter, EncounterSummary
 import { listCharacters, CharacterPayload } from '../api/characters';
 import { listSongsForCampaign, SongLite } from '../api/soundtrack';
 import { getCampaignManuals } from '../api/campaigns/manuals';
-import { fetchMonsters } from '../api/monsters';
+import { listCampaignMonsters, CampaignMonsterListItem } from '../api/bestiary/bestiaryApi';
 import type { MonsterIndexItem } from '../types/monsters';
 import type { Campaign } from '../components/Campaign/types';
 import EncounterFormDialog from '../components/Combat/EncounterFormDialog';
@@ -35,7 +35,7 @@ const CombatPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [characters, setCharacters] = useState<CharacterPayload[]>([]);
   const [songs, setSongs] = useState<SongLite[]>([]);
-  const [monsters, setMonsters] = useState<Array<MonsterIndexItem & { manualId: string; compositeId: string }>>([]);
+  const [monsters, setMonsters] = useState<Array<CampaignMonsterListItem & { compositeId: string }>>([]);
   const [dialogState, setDialogState] = useState<{ mode: 'create' | 'edit'; open: boolean; encounter: EncounterSummary | null }>({ mode: 'create', open: false, encounter: null });
   const [deleteTarget, setDeleteTarget] = useState<EncounterSummary | null>(null);
 
@@ -126,34 +126,17 @@ const CombatPage: React.FC = () => {
     if (!cid) { setMonsters([]); return; }
     (async () => {
       try {
-        let manualIds = activeCampaign?.selectedManualIds?.length
-          ? activeCampaign.selectedManualIds
-          : [];
-        if (!manualIds.length) {
-          try {
-            manualIds = await getCampaignManuals(cid);
-          } catch {
-            manualIds = [];
-          }
-        }
-        const ids = manualIds.length ? manualIds : ['dnd5e-2014'];
-        const fetchOne = async (mid: string, lang: 'es' | 'en') => {
-          const r = await fetchMonsters(mid, { lang, page: 1, pageSize: 500 });
-          return r.items || [];
-        };
-        const combined: Record<string, MonsterIndexItem & { manualId: string; compositeId: string }> = {};
-        for (const mid of ids) {
-          let items: MonsterIndexItem[] = [];
-          try { items = await fetchOne(mid, 'es'); } catch {}
-          if (!items.length) {
-            try { items = await fetchOne(mid, 'en'); } catch {}
-          }
-          items.forEach((m) => {
-            const compositeId = `${mid}:${m.slug}`;
-            combined[compositeId] = { ...m, manualId: mid, compositeId };
-          });
-        }
-        const list = Object.values(combined).sort((a, b) => a.name.localeCompare(b.name));
+        // Obtener monstruos del bestiario de campaña (incluye manual, editados y homebrew)
+        const lang = 'es'; // TODO: usar i18n si está disponible
+        const response = await listCampaignMonsters(cid, { pageSize: 1000 }, lang);
+        const items = response.items || [];
+        
+        // Transformar para incluir compositeId para compatibilidad con EncounterFormDialog
+        const list = items.map((m: CampaignMonsterListItem) => ({
+          ...m,
+          compositeId: m.id, // usar el id de campaña como compositeId
+        })).sort((a: CampaignMonsterListItem & { compositeId: string }, b: CampaignMonsterListItem & { compositeId: string }) => a.name.localeCompare(b.name));
+        
         setMonsters(list);
       } catch {
         setMonsters([]);

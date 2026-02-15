@@ -12,6 +12,9 @@ const SHOW_DAY_IN_SKYLINE_KEY = 'diary_showSelectedDayInSkyline';
 const SELECTED_DAY_KEY = 'app.diary.selectedDay';
 const SHOW_NO_ACTIVE_SESSION_WARNING_KEY = 'diary_showNoActiveSessionWarning';
 const SHOW_DAY_NAVIGATION_KEY = 'diary_showDayNavigation';
+const DAY_FORMAT_KEY = 'diary_dayFormat';
+
+export type DayFormat = 'extended' | 'compact';
 
 function loadShowSelectedDayInSidebar(): boolean {
   try {
@@ -53,6 +56,16 @@ function loadShowDayNavigation(): boolean {
   }
 }
 
+function loadDayFormat(): DayFormat {
+  try {
+    const raw = localStorage.getItem(DAY_FORMAT_KEY);
+    if (raw === 'compact') return 'compact';
+    return 'extended'; // default
+  } catch {
+    return 'extended';
+  }
+}
+
 function persistShowSelectedDayInSidebar(value: boolean) {
   try {
     localStorage.setItem(SHOW_DAY_KEY, String(value));
@@ -80,6 +93,14 @@ function persistShowNoActiveSessionWarning(value: boolean) {
 function persistShowDayNavigation(value: boolean) {
   try {
     localStorage.setItem(SHOW_DAY_NAVIGATION_KEY, String(value));
+  } catch {
+    // ignore
+  }
+}
+
+function persistDayFormat(value: DayFormat) {
+  try {
+    localStorage.setItem(DAY_FORMAT_KEY, value);
   } catch {
     // ignore
   }
@@ -118,6 +139,8 @@ type DiarySidebarContextValue = {
   setShowNoActiveSessionWarning: (value: boolean) => void;
   showDayNavigation: boolean;
   setShowDayNavigation: (value: boolean) => void;
+  dayFormat: DayFormat;
+  setDayFormat: (value: DayFormat) => void;
   activeSessionId: string | null;
   setActiveSessionId: (value: string | null) => void;
 };
@@ -133,6 +156,7 @@ export function DiarySidebarProvider({ children }: { children: React.ReactNode }
   const [showSelectedDayInSkyline, setShowSelectedDayInSkylineState] = useState<boolean>(loadShowSelectedDayInSkyline);
   const [showNoActiveSessionWarning, setShowNoActiveSessionWarningState] = useState<boolean>(loadShowNoActiveSessionWarning);
   const [showDayNavigation, setShowDayNavigationState] = useState<boolean>(loadShowDayNavigation);
+  const [dayFormat, setDayFormatState] = useState<DayFormat>(loadDayFormat);
   const [activeSessionId, setActiveSessionIdState] = useState<string | null>(null);
 
   const setSelectedDay = (value: DiarySelectedDayInfo) => {
@@ -160,6 +184,11 @@ export function DiarySidebarProvider({ children }: { children: React.ReactNode }
     persistShowDayNavigation(value);
   };
 
+  const setDayFormat = (value: DayFormat) => {
+    setDayFormatState(value);
+    persistDayFormat(value);
+  };
+
   const setActiveSessionId = (value: string | null) => {
     setActiveSessionIdState(value);
   };
@@ -176,10 +205,12 @@ export function DiarySidebarProvider({ children }: { children: React.ReactNode }
       setShowNoActiveSessionWarning,
       showDayNavigation,
       setShowDayNavigation,
+      dayFormat,
+      setDayFormat,
       activeSessionId,
       setActiveSessionId,
     }),
-    [selectedDay, showSelectedDayInSidebar, showSelectedDayInSkyline, showNoActiveSessionWarning, showDayNavigation, activeSessionId],
+    [selectedDay, showSelectedDayInSidebar, showSelectedDayInSkyline, showNoActiveSessionWarning, showDayNavigation, dayFormat, activeSessionId],
   );
 
   return <DiarySidebarContext.Provider value={value}>{children}</DiarySidebarContext.Provider>;

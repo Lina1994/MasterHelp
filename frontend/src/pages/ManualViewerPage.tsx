@@ -112,7 +112,7 @@ export default function ManualViewerPage() {
         {/* Inserta el bestiario dentro del manual */}
         {nodeId === 'bestiary' && (
           <Box sx={{ mt: 3 }}>
-            <BestiaryListPage />
+            <BestiaryListPage manualId={manualId} />
           </Box>
         )}
         {section?.format === 'html' && section?.html && (

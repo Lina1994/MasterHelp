@@ -36,8 +36,8 @@ import { useEncounterMusic } from '../../hooks/useEncounterMusic';
 import { useSoundtrackMode } from '../../hooks/useSoundtrackMode';
 import { useBattleState } from '../../hooks/useBattleState';
 import { useTurnOrder } from '../../hooks/useTurnOrder';
-import { rollEnemyInitiative as rollEnemyInitiativeUtil, rollAllEnemiesInitiative as rollAllEnemiesInitiativeUtil } from '../../utils/initiative';
-import { rollAllEnemiesHp as rollAllEnemiesHpUtil } from '../../utils/hpRoll';
+import { getCampaignMonster } from '../../api/bestiary/bestiaryApi';
+import type { CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
 import { fetchMonster } from '../../api/monsters';
 import { updateCharacter } from '../../api/characters';
 import { EncounterSummary, EncounterDifficulty, updateEncounter as apiUpdateEncounter } from '../../api/encounters';
@@ -71,7 +71,7 @@ export interface CombatViewProps {
   onUpdateEncounter: (enc: EncounterSummary) => void;
   characters: CharacterPayload[];
   onPatchCharacterLocal: (id: string, patch: Partial<CharacterPayload>) => void;
-  monsters: Array<MonsterIndexItem & { manualId: string; compositeId: string }>;
+  monsters: Array<CampaignMonsterListItem & { compositeId: string }>;
 }
 
 const difficultyColor: Record<EncounterDifficulty, 'default' | 'success' | 'warning' | 'error'> = {
@@ -129,11 +129,11 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
 
   // Índice por nombre base (sin sufijo de letras) para resolver bestiario en enemigos repetidos
   const monsterIndexByName = useMemo(() => {
-    const map = new Map<string, { manualId: string; slug: string }>();
+    const map = new Map<string, { id: string }>();
     (monsters || []).forEach((m) => {
       const key = (m.name || '').trim().toLowerCase();
-      if (m.manualId && m.slug && key) {
-        if (!map.has(key)) map.set(key, { manualId: m.manualId, slug: m.slug });
+      if (m.id && key) {
+        if (!map.has(key)) map.set(key, { id: m.id });
       }
     });
     return map;
@@ -141,6 +141,17 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
 
   // Debug helper (enable with localStorage.setItem('debugBestiary','1'))
   const dbg = (...args: any[]) => { try { if (localStorage.getItem('debugBestiary') === '1') console.debug('[CombatView][Bestiary]', ...args); } catch {} };
+
+  // Wrapper para obtener monstruo desde el bestiario de campaña
+  const fetchMonsterFromCampaign = useCallback(async (monsterCampaignId: string, lang: 'en' | 'es'): Promise<MonsterDetail | null> => {
+    if (!campaign?.id) return null;
+    try {
+      const detail = await getCampaignMonster(campaign.id, monsterCampaignId, lang);
+      return detail as any; // CampaignMonsterDetail es compatible con MonsterDetail
+    } catch {
+      return null;
+    }
+  }, [campaign?.id]);
 
   // stripGroupSuffix moved to utils.ts
 
@@ -416,64 +427,58 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
         // If it is explicitly null, we generally don't retry to avoid loops.
         // We only retry when we now have enough data to resolve (e.g. index finished loading).
         if (existing === null) {
-          const canRetryNow = !!(p.monsterManualId && p.monsterSlug) || (monsterIndexByName.size > 0);
+          const canRetryNow = !!(p.monsterCampaignId) || (monsterIndexByName.size > 0);
           if (!canRetryNow) continue;
         }
         try {
-          dbg('Participant', { id: p.id, name: p.name, manualId: p.monsterManualId, slug: p.monsterSlug });
+          dbg('Participant', { id: p.id, name: p.name, campaignId: p.monsterCampaignId });
 
-          const candidates: Array<{ manualId: string; slug: string; reason: string }> = [];
-          const seen = new Set<string>();
-          const pushCandidate = (manualId?: string, slug?: string, reason?: string) => {
-            if (!manualId || !slug) return;
-            const key = `${manualId}:${slug}`;
-            if (seen.has(key)) return;
-            seen.add(key);
-            candidates.push({ manualId, slug, reason: reason || 'unknown' });
-          };
+          let monsterCampaignId: string | undefined = p.monsterCampaignId;
 
-          // 1) Prefer stored reference.
-          pushCandidate(p.monsterManualId, p.monsterSlug, 'stored');
+          // Si no tiene campaignId, intentar buscar por nombre en el índice
+          if (!monsterCampaignId) {
+            const rawName = (p.name || '').trim();
+            const exactKey = rawName.toLowerCase();
+            let exactRef = monsterIndexByName.get(exactKey);
+            
+            // Si no encuentra por nombre exacto, intentar sin sufijo de grupo
+            if (!exactRef) {
+              const strippedName = stripGroupSuffix(rawName).trim();
+              if (strippedName && strippedName.toLowerCase() !== exactKey) {
+                exactRef = monsterIndexByName.get(strippedName.toLowerCase());
+              }
+            }
 
-          // 2) Try exact name lookup (helps legacy encounters without monsterManualId/slug).
-          const rawName = (p.name || '').trim();
-          const exactKey = rawName.toLowerCase();
-          const exactRef = monsterIndexByName.get(exactKey);
-          pushCandidate(exactRef?.manualId, exactRef?.slug, 'name:exact');
-
-          // 3) Try stripping a trailing group suffix ("Zombie A", "Zombie AA", etc.).
-          const strippedName = stripGroupSuffix(rawName).trim();
-          if (strippedName && strippedName.toLowerCase() !== exactKey) {
-            const strippedRef = monsterIndexByName.get(strippedName.toLowerCase());
-            pushCandidate(strippedRef?.manualId, strippedRef?.slug, 'name:stripped');
+            monsterCampaignId = exactRef?.id;
+            dbg('Name lookup', { rawName, found: !!monsterCampaignId });
           }
 
-          if (!candidates.length) {
+          if (!monsterCampaignId) {
             // If the monsters index hasn't loaded yet, don't cache null; we'll try again once it's ready.
-            if (monsterIndexByName.size === 0 && !(p.monsterManualId && p.monsterSlug)) {
-              dbg('Resolution deferred (index not ready)', { rawName, strippedName });
+            if (monsterIndexByName.size === 0) {
+              dbg('Resolution deferred (index not ready)');
               continue;
             }
-            dbg('Resolution failed, marking null', { rawName, strippedName });
+            dbg('Resolution failed, marking null');
             if (!cancelled) setMonsterDetailByPid((prev) => ({ ...prev, [p.id]: null }));
             continue;
           }
 
+          // Obtener detalles del monstruo desde el bestiario de campaña
           let finalMd: MonsterDetail | null = null;
-          for (const c of candidates) {
-            dbg('Trying candidate', c);
-            const esMd = await fetchMonster(c.manualId, c.slug, 'es').catch(() => null);
-            dbg('ES fetch result', esMd ? { traits: esMd.traits?.length, actions: esMd.actions?.length, senses: esMd.senses ? Object.keys(esMd.senses).length : 0, skills: esMd.skills ? Object.keys(esMd.skills).length : 0 } : 'null');
-            if (esMd) {
-              finalMd = esMd as any;
-              if (needsEnglishFallback(finalMd)) {
-                dbg('ES incomplete, fetching EN fallback');
-                const enMd = await fetchMonster(c.manualId, c.slug, 'en').catch(() => null);
-                dbg('EN fetch result', enMd ? { traits: enMd.traits?.length, actions: enMd.actions?.length, senses: enMd.senses ? Object.keys(enMd.senses).length : 0, skills: enMd.skills ? Object.keys(enMd.skills).length : 0 } : 'null');
-                finalMd = mergeMonsterDetails(esMd as any, enMd as any);
-                dbg('Merged result', finalMd ? { traits: finalMd.traits?.length, actions: finalMd.actions?.length, sampleTrait: finalMd.traits?.[0], sampleAction: finalMd.actions?.[0] } : 'null');
-              }
-              break;
+          dbg('Fetching from campaign bestiary', { monsterCampaignId });
+          const esMd = await fetchMonsterFromCampaign(monsterCampaignId, 'es');
+          dbg('ES fetch result', esMd ? { traits: esMd.traits?.length, actions: esMd.actions?.length } : 'null');
+          
+          if (esMd) {
+            finalMd = esMd;
+            // Si está incompleto, intentar con inglés (aunque en campaña generalmente no aplica)
+            if (needsEnglishFallback(finalMd)) {
+              dbg('ES incomplete, fetching EN fallback');
+              const enMd = await fetchMonsterFromCampaign(monsterCampaignId, 'en');
+              dbg('EN fetch result', enMd ? { traits: enMd.traits?.length, actions: enMd.actions?.length } : 'null');
+              finalMd = mergeMonsterDetails(esMd as any, enMd as any);
+              dbg('Merged result', finalMd ? { traits: finalMd.traits?.length, actions: finalMd.actions?.length } : 'null');
             }
           }
 
@@ -485,7 +490,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       }
     })();
     return () => { cancelled = true; };
-  }, [participantsDraft, selectedEncounter?.id, monsterDetailByPid, monsterIndexByName]);
+  }, [participantsDraft, selectedEncounter?.id, monsterDetailByPid, monsterIndexByName, fetchMonsterFromCampaign]);
 
   useEffect(() => {
     const cid = campaign?.id;
@@ -567,17 +572,75 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const { startEncounterMusic, restorePreviousMusic } = useEncounterMusic({ campaignId: campaign?.id, selectedEncounter, songs, prioritizeEncounterMusic });
   const { mode: soundtrackMode } = useSoundtrackMode(campaign?.id || null);
 
+  // Roll de iniciativa para un único enemigo usando los detalles ya cargados
   const rollEnemyInitiative = useCallback(async (pid: string) => {
-    await rollEnemyInitiativeUtil(pid, participantsDraft, fetchMonster, setInitiativeLocal, schedulePersistInitiative);
-  }, [participantsDraft, schedulePersistInitiative]);
+    const p = participantsDraft.find((pp) => pp.id === pid);
+    if (!p) return;
+    
+    let mod = 0;
+    const detail = monsterDetailByPid[pid];
+    if (detail && detail.abilities?.dex) {
+      const dex = detail.abilities.dex;
+      mod = Math.floor((dex - 10) / 2);
+    }
+    
+    const d20 = 1 + Math.floor(Math.random() * 20);
+    const total = d20 + mod;
+    setInitiativeLocal(pid, total);
+    schedulePersistInitiative(pid);
+  }, [participantsDraft, monsterDetailByPid, setInitiativeLocal, schedulePersistInitiative]);
 
+  // Roll de iniciativa para todos los enemigos
   const rollAllEnemiesInitiative = useCallback(async () => {
-    await rollAllEnemiesInitiativeUtil(foes, fetchMonster, setInitiativeLocal, schedulePersistInitiative);
-  }, [foes, schedulePersistInitiative, setInitiativeLocal]);
+    foes.forEach((p) => {
+      let mod = 0;
+      const detail = monsterDetailByPid[p.id];
+      if (detail && detail.abilities?.dex) {
+        const dex = detail.abilities.dex;
+        mod = Math.floor((dex - 10) / 2);
+      }
+      
+      const d20 = 1 + Math.floor(Math.random() * 20);
+      const total = d20 + mod;
+      setInitiativeLocal(p.id, total);
+    });
+    foes.forEach((p) => schedulePersistInitiative(p.id));
+  }, [foes, monsterDetailByPid, setInitiativeLocal, schedulePersistInitiative]);
 
+  // Roll de HP para todos los enemigos
   const rollAllEnemiesHp = useCallback(async (mode: 'avg' | 'dice') => {
-    await rollAllEnemiesHpUtil(mode, foes, monsters, fetchMonster, setHpLocal, schedulePersistInitiative);
-  }, [foes, schedulePersistInitiative, setHpLocal, monsters]);
+    foes.forEach((p) => {
+      const detail = monsterDetailByPid[p.id];
+      let value: number | undefined;
+      
+      if (detail?.hitPoints) {
+        if (mode === 'avg') {
+          value = detail.hitPoints.average;
+        } else {
+          // Intentar parsear el roll de dados
+          const rollExpr = detail.hitPoints.roll;
+          if (rollExpr) {
+            const match = rollExpr.match(/^(\d+)d(\d+)(?:\s*\+\s*(\d+))?$/);
+            if (match) {
+              const dice = parseInt(match[1]);
+              const sides = parseInt(match[2]);
+              const mod = match[3] ? parseInt(match[3]) : 0;
+              const rolls = Array.from({ length: dice }, () => 1 + Math.floor(Math.random() * sides));
+              value = rolls.reduce((a, b) => a + b, 0) + mod;
+            }
+          }
+          // Fallback a average si no se pudo parsear
+          if (!value) value = detail.hitPoints.average;
+        }
+      }
+      
+      if (typeof value === 'number' && value > 0) {
+        setHpLocal(p.id, 'maxHp', value);
+        setHpLocal(p.id, 'currentHp', value);
+        schedulePersistInitiative(p.id);
+      }
+    });
+  }, [foes, monsterDetailByPid, setHpLocal, schedulePersistInitiative]);
 
   const handleStartBattle = useCallback(async () => {
     resetToStart();

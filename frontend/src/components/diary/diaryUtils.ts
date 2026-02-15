@@ -45,3 +45,14 @@ export function formatDayLabel(config: DiaryCalendarConfig, day: DiaryDayRef): s
   const weekdayName = weekday?.name ?? `Día ${getWeekdayIndex(config, day) + 1}`;
   return `${weekdayName} · ${day.dayIndex} ${monthName} · ${formatYearLabel(config, day.year)}`;
 }
+
+/**
+ * Formats day in compact format: Weekday · DD/MM/YYYY
+ * Example: Martes · 26/2/620
+ */
+export function formatDayLabelCompact(config: DiaryCalendarConfig, day: DiaryDayRef): string {
+  const weekday = config.weekDays[getWeekdayIndex(config, day)];
+  const weekdayName = weekday?.name ?? `Día ${getWeekdayIndex(config, day) + 1}`;
+  const monthNumber = day.monthIndex + 1;
+  return `${weekdayName} · ${day.dayIndex}/${monthNumber}/${day.year}`;
+}
