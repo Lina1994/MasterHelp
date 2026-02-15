@@ -37,7 +37,7 @@ import { useSoundtrackMode } from '../../hooks/useSoundtrackMode';
 import { useBattleState } from '../../hooks/useBattleState';
 import { useTurnOrder } from '../../hooks/useTurnOrder';
 import { getCampaignMonster } from '../../api/bestiary/bestiaryApi';
-import type { CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
+import type { CampaignMonsterListItem, CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
 import { fetchMonster } from '../../api/monsters';
 import { updateCharacter } from '../../api/characters';
 import { EncounterSummary, EncounterDifficulty, updateEncounter as apiUpdateEncounter } from '../../api/encounters';
@@ -93,11 +93,29 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const [maps, setMaps] = useState<MapItemDto[]>([]);
   const { battleStarted, setBattleStarted, hydrated } = useBattleState(campaign?.id, activeEncounterId);
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
-  const [monsterDetailByPid, setMonsterDetailByPid] = useState<Record<string, MonsterDetail | null>>({});
+  const [monsterDetailByPid, setMonsterDetailByPid] = useState<Record<string, CampaignMonsterDetail | null>>({});
   const [viewMode, setViewMode] = useState<'participants' | 'initiative'>('participants');
-  const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(false);
+  
+  // Initialize showInitiativeStrip from localStorage to avoid flicker when re-entering combat
+  const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('app.skyline.initiativeStrip');
+      if (raw) {
+        const data = JSON.parse(raw);
+        // Only use cached value if it's for current campaign and was enabled
+        if (data.campaignId === campaign?.id && data.enabled === true) {
+          return true;
+        }
+      }
+    } catch {}
+    return false;
+  });
+  
   const participantsRef = React.useRef<EncounterSummary['participants']>([]);
   const turnAlignedRef = React.useRef<boolean>(false);
+  const [isInitialized, setIsInitialized] = React.useState(false);
+  const mountTimeRef = React.useRef<number>(Date.now());
+  
   const charMap = useMemo(() => {
     const map = new Map<string, CharacterPayload>();
     (characters || []).forEach((c) => { if (c.id) map.set(c.id, c); });
@@ -108,6 +126,24 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const handleSelectEncounter = useCallback((id: string) => {
     setActiveEncounterId(id);
   }, [setActiveEncounterId]);
+
+  const handleToggleInitiativeStrip = useCallback(async (v: boolean) => {
+    setShowInitiativeStrip(v);
+    try {
+      if (campaign?.id) {
+        await setSkylineOverlaySettings(campaign.id, { showInitiativeStrip: v });
+        try { localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ campaignId: campaign.id, showInitiativeStrip: v, at: Date.now() })); } catch {}
+        try {
+          if ('BroadcastChannel' in window) {
+            const bc = new BroadcastChannel('campaign-sync');
+            bc.postMessage({ type: 'skylineSettingsChanged', campaignId: campaign.id, settings: { showInitiativeStrip: v } });
+            bc.close();
+          }
+        } catch {}
+      }
+    } catch {}
+  }, [campaign?.id]);
+
   const orderedParticipants = useMemo(() => {
     const base = participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || []);
     const list = base.filter((p) => typeof p.initiative === 'number' && !Number.isNaN(p.initiative as any));
@@ -143,11 +179,11 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const dbg = (...args: any[]) => { try { if (localStorage.getItem('debugBestiary') === '1') console.debug('[CombatView][Bestiary]', ...args); } catch {} };
 
   // Wrapper para obtener monstruo desde el bestiario de campaña
-  const fetchMonsterFromCampaign = useCallback(async (monsterCampaignId: string, lang: 'en' | 'es'): Promise<MonsterDetail | null> => {
+  const fetchMonsterFromCampaign = useCallback(async (monsterCampaignId: string, lang: 'en' | 'es'): Promise<CampaignMonsterDetail | null> => {
     if (!campaign?.id) return null;
     try {
       const detail = await getCampaignMonster(campaign.id, monsterCampaignId, lang);
-      return detail as any; // CampaignMonsterDetail es compatible con MonsterDetail
+      return detail;
     } catch {
       return null;
     }
@@ -155,7 +191,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
 
   // stripGroupSuffix moved to utils.ts
 
-  function needsEnglishFallback(md?: MonsterDetail | null): boolean {
+  function needsEnglishFallback(md?: CampaignMonsterDetail | null): boolean {
     if (!md) return true;
     // Si faltan bloques clave o están vacíos, intentamos EN: acciones, rasgos, lenguajes, sentidos, habilidades
     const arraysHaveContent = (arr?: Array<{ name?: string; desc?: string }>) => !!(arr && arr.some(x => (x?.name && x?.name.trim()) || (x?.desc && x?.desc.trim())));
@@ -166,10 +202,10 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     return lacksArrays || lacksLangSense || lacksSkills || lacksAbilities;
   }
 
-  function mergeMonsterDetails(primary?: MonsterDetail | null, fallback?: MonsterDetail | null): MonsterDetail | null {
+  function mergeMonsterDetails(primary?: CampaignMonsterDetail | null, fallback?: CampaignMonsterDetail | null): CampaignMonsterDetail | null {
     if (!primary && !fallback) return null;
-    const a = primary || ({} as MonsterDetail);
-    const b = fallback || ({} as MonsterDetail);
+    const a = primary || ({} as CampaignMonsterDetail);
+    const b = fallback || ({} as CampaignMonsterDetail);
     const pick = <T,>(pa: T | undefined, fb: T | undefined): T | undefined => (pa !== undefined && pa !== null ? pa : fb);
     const pickArr = <T,>(pa?: T[] | null, fb?: T[] | null): T[] | undefined => (pa && pa.length ? pa : (fb && fb.length ? fb : undefined));
     const combineArr = (pa?: Array<{ name?: string; desc?: string }>, fb?: Array<{ name?: string; desc?: string }>) => {
@@ -216,12 +252,29 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       legendaryActions: combineArr(a.legendaryActions, b.legendaryActions),
       lairActions: combineArr(a.lairActions, b.lairActions),
       regionalEffects: combineArr(a.regionalEffects, b.regionalEffects),
-    } as MonsterDetail;
+      // Preserve image fields from primary (already fetched with all fields)
+      tokenImageUrl: pick(a.tokenImageUrl, b.tokenImageUrl),
+      imageUrls: pick(a.imageUrls, b.imageUrls),
+    } as CampaignMonsterDetail;
   }
 
   // indexToLetters moved to utils.ts
 
   const enemyDisplayNameById = useMemo(() => computeEnemyDisplayNameById(foes), [foes]);
+  
+  // Convert monster size string to TokenSize
+  const normalizeSize = useCallback((sizeStr: string | undefined): import('../../api/maps').TokenSize => {
+    if (!sizeStr) return 'medium';
+    const normalized = sizeStr.toLowerCase().trim();
+    if (normalized === 'tiny') return 'tiny';
+    if (normalized === 'small') return 'small';
+    if (normalized === 'medium') return 'medium';
+    if (normalized === 'large') return 'large';
+    if (normalized === 'huge') return 'huge';
+    if (normalized === 'gargantuan') return 'gargantuan';
+    return 'medium'; // Default fallback
+  }, []);
+  
   // Tokens: allow preparing tokens for current encounter participants
   const { tokens, addToken } = useMapTokens(campaign?.id, activeMapId || undefined);
   const [activeMapNaturalSize, setActiveMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
@@ -242,6 +295,89 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       return { enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 };
     }
   }, [campaign?.id]);
+
+  // Helper: Calculate rotation to face nearest rival
+  const calculateRotationToNearestRival = useCallback((cellKey: string, tokenType: 'ally' | 'enemy', tokenSize: import('../../api/maps').TokenSize | undefined, existingTokens: MapTokenPayload[]): number => {
+    const getCenterFromCell = (key: string, size: import('../../api/maps').TokenSize | undefined): { x: number; y: number } => {
+      const [colStr, rowStr] = key.split(':');
+      const col = parseInt(colStr, 10) || 0;
+      const row = parseInt(rowStr, 10) || 0;
+      const r = gridSettingsForPlacement.cellSize || 40;
+      const tokenSize = size || 'medium';
+
+      if (gridSettingsForPlacement.type === 'square') {
+        // For square grids, large tokens are centered at the intersection point
+        const offset = (() => {
+          switch (tokenSize) {
+            case 'tiny':
+            case 'small':
+            case 'medium':
+              return { dx: r / 2, dy: r / 2 }; // Center of single cell
+            case 'large':
+              return { dx: r, dy: r }; // Intersection of 2x2 (1 cell offset)
+            case 'huge':
+              return { dx: r * 1.5, dy: r * 1.5 }; // Intersection of 3x3 (1.5 cells)
+            case 'gargantuan':
+              return { dx: r * 2, dy: r * 2 }; // Intersection of 4x4 (2 cells)
+            default:
+              return { dx: r / 2, dy: r / 2 };
+          }
+        })();
+        return { x: col * r + offset.dx, y: row * r + offset.dy };
+      } else {
+        // Hex grid (flat-top)
+        const hexR = r;
+        const hexH = Math.sqrt(3) * hexR;
+        const horizStep = 1.5 * hexR;
+        const vertStep = hexH;
+        const yOffset = (col % 2 === 0) ? 0 : hexH / 2;
+        
+        const baseX = col * horizStep + hexR;
+        const baseY = row * vertStep + hexH / 2 + yOffset;
+        
+        switch (tokenSize) {
+          case 'tiny':
+          case 'small':
+          case 'medium':
+            return { x: baseX, y: baseY };
+          case 'large':
+            return { x: baseX + hexR * 0.5, y: baseY };
+          case 'huge':
+            return { x: baseX, y: baseY };
+          case 'gargantuan':
+            return { x: baseX + hexR * 0.5, y: baseY };
+          default:
+            return { x: baseX, y: baseY };
+        }
+      }
+    };
+
+    const tokenCenter = getCenterFromCell(cellKey, tokenSize);
+    const targetType = tokenType === 'ally' ? 'enemy' : 'ally';
+    let nearestRival: { token: MapTokenPayload; distance: number } | null = null;
+
+    for (const rival of existingTokens) {
+      if (rival.type !== targetType) continue;
+      const rivalCenter = getCenterFromCell(rival.cellKey, rival.size);
+      const dx = rivalCenter.x - tokenCenter.x;
+      const dy = rivalCenter.y - tokenCenter.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (!nearestRival || distance < nearestRival.distance) {
+        nearestRival = { token: rival, distance };
+      }
+    }
+
+    if (nearestRival) {
+      const rivalCenter = getCenterFromCell(nearestRival.token.cellKey, nearestRival.token.size);
+      const dx = rivalCenter.x - tokenCenter.x;
+      const dy = rivalCenter.y - tokenCenter.y;
+      const angleRad = Math.atan2(dx, -dy);
+      return (angleRad * 180 / Math.PI + 360) % 360;
+    }
+
+    return 0; // Default facing north if no rivals
+  }, [gridSettingsForPlacement]);
 
   const prepareTokens = useCallback((which: 'all' | 'allies' | 'foes') => {
     const list = which === 'all' ? baseParticipants : which === 'allies' ? allies : foes;
@@ -313,9 +449,20 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       const label = (p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name) as string;
       const idStr = (p && (p as any).id) ? `${(p as any).id}` : (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
       const cellKey = placements[idx] || '0:0';
-      addToken({ id: idStr, type, label, cellKey });
+      
+      // Get size from monster details if enemy
+      let size: import('../../api/maps').TokenSize = 'medium';
+      if (p.role === 'foe') {
+        const md = monsterDetailByPid[p.id];
+        if (md?.size) {
+          size = normalizeSize(md.size);
+        }
+      }
+      
+      const rotationDeg = calculateRotationToNearestRival(cellKey, type, size, tokens || []);
+      addToken({ id: idStr, type, label, cellKey, rotationDeg, size });
     });
-  }, [baseParticipants, allies, foes, addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById]);
+  }, [baseParticipants, allies, foes, addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById, calculateRotationToNearestRival, monsterDetailByPid, normalizeSize]);
 
   const createTokenForParticipant = useCallback((p: EncounterSummary['participants'][number]) => {
     if (!p) return;
@@ -369,8 +516,19 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       anchorCellKey: '0:0',
       visibleRectPx,
     })[0] || '0:0';
-    addToken({ id: idStr, type, label, cellKey });
-  }, [addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById]);
+    
+    // Get size from monster details if enemy
+    let size: import('../../api/maps').TokenSize = 'medium';
+    if (p.role === 'foe') {
+      const md = monsterDetailByPid[p.id];
+      if (md?.size) {
+        size = normalizeSize(md.size);
+      }
+    }
+    
+    const rotationDeg = calculateRotationToNearestRival(cellKey, type, size, tokens || []);
+    addToken({ id: idStr, type, label, cellKey, rotationDeg, size });
+  }, [addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById, calculateRotationToNearestRival, monsterDetailByPid, normalizeSize]);
 
   const tokenCandidates = useMemo(() => {
     return {
@@ -405,13 +563,53 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     let cancelled = false;
     (async () => {
       try {
-        if (!campaign?.id) { setShowInitiativeStrip(false); return; }
+        if (!campaign?.id) { 
+          setShowInitiativeStrip(false); 
+          return; 
+        }
         const s = await getSkylineOverlaySettings(campaign.id);
-        if (!cancelled) setShowInitiativeStrip(!!s.showInitiativeStrip);
-      } catch { if (!cancelled) setShowInitiativeStrip(false); }
+        if (!cancelled) {
+          const newValue = !!s.showInitiativeStrip;
+          // Only update if value actually changed to avoid unnecessary re-renders
+          setShowInitiativeStrip(prev => prev === newValue ? prev : newValue);
+        }
+      } catch { 
+        if (!cancelled) setShowInitiativeStrip(false); 
+      }
     })();
     return () => { cancelled = true; };
   }, [campaign?.id]);
+
+  // Mark as initialized after initial data is fully loaded
+  // This prevents premature broadcasts to projection windows during mount
+  useEffect(() => {
+    // Once initialized, stay initialized (don't reset on encounter change)
+    if (isInitialized) return;
+    
+    if (!hydrated) return;
+    if (participantsDraft.length === 0 && selectedEncounter?.participants && selectedEncounter.participants.length > 0) {
+      // Participants not yet loaded
+      return;
+    }
+    
+    // Check if we have monster details for all enemies
+    const base = participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || []);
+    const enemies = base.filter(p => p.role === 'foe' && p.kind !== 'character');
+    
+    if (enemies.length > 0) {
+      // Check if all enemies have been processed (either loaded or marked as null)
+      const allEnemiesProcessed = enemies.every(e => e.id in monsterDetailByPid);
+      if (!allEnemiesProcessed) {
+        // Some enemies still loading
+        return;
+      }
+    }
+    
+    // All data ready - mark as initialized immediately
+    // No artificial delay needed since useSkylineInitiativeSync already handles
+    // preserving existing valid data during re-mounts
+    setIsInitialized(true);
+  }, [isInitialized, hydrated, participantsDraft, selectedEncounter?.participants, selectedEncounter?.id, monsterDetailByPid]);
 
   // Cargar detalles del bestiario para enemigos con fallback a EN si ES está incompleto
   useEffect(() => {
@@ -465,7 +663,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           }
 
           // Obtener detalles del monstruo desde el bestiario de campaña
-          let finalMd: MonsterDetail | null = null;
+          let finalMd: CampaignMonsterDetail | null = null;
           dbg('Fetching from campaign bestiary', { monsterCampaignId });
           const esMd = await fetchMonsterFromCampaign(monsterCampaignId, 'es');
           dbg('ES fetch result', esMd ? { traits: esMd.traits?.length, actions: esMd.actions?.length } : 'null');
@@ -477,7 +675,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
               dbg('ES incomplete, fetching EN fallback');
               const enMd = await fetchMonsterFromCampaign(monsterCampaignId, 'en');
               dbg('EN fetch result', enMd ? { traits: enMd.traits?.length, actions: enMd.actions?.length } : 'null');
-              finalMd = mergeMonsterDetails(esMd as any, enMd as any);
+              finalMd = mergeMonsterDetails(esMd, enMd);
               dbg('Merged result', finalMd ? { traits: finalMd.traits?.length, actions: finalMd.actions?.length } : 'null');
             }
           }
@@ -490,7 +688,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       }
     })();
     return () => { cancelled = true; };
-  }, [participantsDraft, selectedEncounter?.id, monsterDetailByPid, monsterIndexByName, fetchMonsterFromCampaign]);
+  }, [participantsDraft, selectedEncounter?.id, monsterIndexByName, fetchMonsterFromCampaign]);
 
   useEffect(() => {
     const cid = campaign?.id;
@@ -693,7 +891,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     orderedParticipants,
     enemyDisplayNameById,
     charMap,
+    monsterDetailByPid,
     showInitiativeStrip,
+    isInitialized,
   });
   /**
    * Renderiza una ficha de detalle compacta para un participante de combate.
@@ -717,22 +917,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           fogEnabled={fogEnabled}
           setFogEnabled={setFogEnabled}
           showInitiativeStrip={showInitiativeStrip}
-          onToggleInitiativeStrip={async (v) => {
-            setShowInitiativeStrip(v);
-            try {
-              if (campaign?.id) {
-                await setSkylineOverlaySettings(campaign.id, { showInitiativeStrip: v });
-                try { localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ campaignId: campaign.id, showInitiativeStrip: v, at: Date.now() })); } catch {}
-                try {
-                  if ('BroadcastChannel' in window) {
-                    const bc = new BroadcastChannel('campaign-sync');
-                    bc.postMessage({ type: 'skylineSettingsChanged', campaignId: campaign.id, settings: { showInitiativeStrip: v } });
-                    bc.close();
-                  }
-                } catch {}
-              }
-            } catch {}
-          }}
+          onToggleInitiativeStrip={handleToggleInitiativeStrip}
         />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Vista previa vinculada a la ventana de jugadores. Permite seleccionar otro mapa y encuentro sin salir de esta pantalla.
@@ -760,10 +945,18 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             existingTokenIds={existingTokenIds}
             onCreateTokenForCandidate={onCreateTokenForCandidate}
             tokenImageResolver={(id: string) => {
+              // Try to find ally character first
               const c = charMap.get(id);
-              if (!c) return undefined;
-              // Prefer explicit token image, fallback to character image
-              return c.tokenImageUrl || c.characterImageUrl || undefined;
+              if (c) {
+                // Prefer explicit token image, fallback to character image
+                return c.tokenImageUrl || c.characterImageUrl || undefined;
+              }
+              // Try to find enemy monster detail
+              const md = monsterDetailByPid[id];
+              if (md?.tokenImageUrl) {
+                return md.tokenImageUrl;
+              }
+              return undefined;
             }}
           />
         </Box>
@@ -784,6 +977,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
             foes={foes}
             charMap={charMap}
             enemyDisplayNameById={enemyDisplayNameById}
+            monsterDetailByPid={monsterDetailByPid}
             savingInitiative={savingInitiative}
             savingHp={savingHp}
             setHp={setHp}

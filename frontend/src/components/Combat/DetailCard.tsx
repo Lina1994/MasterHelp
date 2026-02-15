@@ -1,9 +1,10 @@
 import React from 'react';
-import { Paper, Stack, Typography, LinearProgress, Divider } from '@mui/material';
+import { Paper, Stack, Typography, LinearProgress, Divider, Box } from '@mui/material';
 import { EncounterSummary } from '../../api/encounters';
 import { CharacterPayload } from '../../api/characters';
-import { MonsterDetail } from '../../types/monsters';
+import type { CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
 import { prettySkill, prettySense } from './utils';
+import AuthImage from '../common/AuthImage';
 
 export interface DetailCardProps {
   /**
@@ -21,7 +22,7 @@ export interface DetailCardProps {
   /**
    * Detalles del bestiario por `participantId` para enemigos.
    */
-  monsterDetailByPid: Record<string, MonsterDetail | null>;
+  monsterDetailByPid: Record<string, CampaignMonsterDetail | null>;
   /**
    * Diccionario de nombre mostrado por enemigo (`participantId`).
    */
@@ -56,10 +57,20 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
   const armorClass = isAlly ? char?.armorClass : md?.armorClass?.value;
   const speedStrAlly = char?.speed;
   const speedStrEnemy = md?.speed ? Object.entries(md.speed).filter(([_, v]) => typeof v === 'number').map(([k, v]) => `${k} ${v} ft`).join(', ') : undefined;
+  const illustrationUrl = isEnemy && md ? (md.imageUrls?.medium || md.imageUrls?.low || md.imageUrls?.high) : undefined;
 
   return (
     <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 1, borderColor: `${colorKey}.main`, borderWidth: 1, borderStyle: 'solid', flex: '1 1 320px', minWidth: 280 }}>
       <Stack spacing={0.75}>
+        {illustrationUrl && (
+          <Box sx={{ width: '100%', height: 120, borderRadius: 1, overflow: 'hidden', mb: 1 }}>
+            <AuthImage
+              src={illustrationUrl}
+              alt={participant.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </Box>
+        )}
         <Typography variant="body1">{isEnemy ? (enemyDisplayNameById[participant.id] || participant.name) : participant.name}</Typography>
         <Typography variant="caption" color="text.secondary">{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {participant.initiative ?? '—'}</Typography>
         {/* Sección: Datos de combate clave */}

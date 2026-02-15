@@ -11,6 +11,10 @@ export type MapTokenItem = {
   color?: string | null;
   /** Visual facing direction in degrees (0..360). */
   rotationDeg?: number | null;
+  /** Size of the token (default: medium). */
+  size?: 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan' | null;
+  /** Orientation for hex grids (0-5 for Large/Gargantuan tokens). */
+  orientation?: number | null;
 };
 
 /**

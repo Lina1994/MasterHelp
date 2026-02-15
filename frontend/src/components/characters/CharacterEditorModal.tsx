@@ -108,11 +108,11 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
     }
   };
 
-  if (!draft) return null;
-
   const canCropToken = useMemo(() => {
-    return draft.tokenKind === 'image' && typeof draft.tokenImageUrl === 'string' && draft.tokenImageUrl.trim().length > 0;
-  }, [draft.tokenKind, draft.tokenImageUrl]);
+    return draft?.tokenKind === 'image' && typeof draft?.tokenImageUrl === 'string' && draft.tokenImageUrl.trim().length > 0;
+  }, [draft?.tokenKind, draft?.tokenImageUrl]);
+
+  if (!draft) return null;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>

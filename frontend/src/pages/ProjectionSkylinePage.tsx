@@ -53,7 +53,7 @@ const ProjectionSkylinePage: React.FC = () => {
   const [skylineCharacter, setSkylineCharacter] = useState<CharacterPayload | null>(null);
   const [showSongTitle, setShowSongTitle] = useState<boolean>(false);
   const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(false);
-  const [initiativeStrip, setInitiativeStrip] = useState<{ battleStarted: boolean; enabled: boolean; currentTurnId: string | null; items: Array<{ id: string; name: string; imageUrl: string | null }> } | null>(null);
+  const [initiativeStrip, setInitiativeStrip] = useState<{ battleStarted: boolean; enabled: boolean; currentTurnId: string | null; items: Array<{ id: string; name: string; imageUrl: string | null; role?: 'ally' | 'foe' }> } | null>(null);
   const [battleStateStarted, setBattleStateStarted] = useState<boolean>(false);
   const [nowPlayingTitle, setNowPlayingTitle] = useState<string | null>(null);
   const [showSelectedDayInSkyline, setShowSelectedDayInSkyline] = useState<boolean>(loadShowSelectedDayInSkyline);
@@ -172,7 +172,30 @@ const ProjectionSkylinePage: React.FC = () => {
           }
           if (data?.type === 'initiativeStripUpdated' && data?.campaignId === cid) {
             const payload = data as any;
-            setInitiativeStrip({ battleStarted: !!payload.battleStarted, enabled: !!payload.enabled, currentTurnId: payload.currentTurnId || null, items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null })) });
+            const newStrip = { 
+              battleStarted: !!payload.battleStarted, 
+              enabled: !!payload.enabled, 
+              currentTurnId: payload.currentTurnId || null, 
+              items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null, role: x.role })) 
+            };
+            // Only update if the content actually changed to prevent unnecessary re-renders and image flickering
+            setInitiativeStrip(prev => {
+              // Quick comparison: count, enabled, battleStarted, currentTurn
+              if (prev.items.length !== newStrip.items.length) return newStrip;
+              if (prev.enabled !== newStrip.enabled) return newStrip;
+              if (prev.battleStarted !== newStrip.battleStarted) return newStrip;
+              if (prev.currentTurnId !== newStrip.currentTurnId) return newStrip;
+              // Deep comparison of items (id, name, imageUrl, role)
+              for (let i = 0; i < prev.items.length; i++) {
+                const p = prev.items[i];
+                const n = newStrip.items[i];
+                if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.role !== n.role) {
+                  return newStrip;
+                }
+              }
+              // No changes detected, keep previous reference
+              return prev;
+            });
           }
         };
       }
@@ -203,7 +226,28 @@ const ProjectionSkylinePage: React.FC = () => {
         const bs = await getCampaignBattleStatePublic(cid);
         setBattleStateStarted(!!bs.started);
         if (Array.isArray(bs.items)) {
-          setInitiativeStrip({ battleStarted: !!bs.started, enabled: showInitiativeStrip, currentTurnId: bs.currentTurnId || null, items: bs.items.map((x) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null })) });
+          const newStrip = { 
+            battleStarted: !!bs.started, 
+            enabled: showInitiativeStrip, 
+            currentTurnId: bs.currentTurnId || null, 
+            items: bs.items.map((x) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null, role: x.role })) 
+          };
+          // Only update if the content actually changed to prevent unnecessary re-renders and image flickering
+          setInitiativeStrip(prev => {
+            if (prev.items.length !== newStrip.items.length) return newStrip;
+            if (prev.enabled !== newStrip.enabled) return newStrip;
+            if (prev.battleStarted !== newStrip.battleStarted) return newStrip;
+            if (prev.currentTurnId !== newStrip.currentTurnId) return newStrip;
+            // Deep comparison of items (id, name, imageUrl, role)
+            for (let i = 0; i < prev.items.length; i++) {
+              const p = prev.items[i];
+              const n = newStrip.items[i];
+              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.role !== n.role) {
+                return newStrip;
+              }
+            }
+            return prev;
+          });
         }
       } catch {}
     };
@@ -222,7 +266,27 @@ const ProjectionSkylinePage: React.FC = () => {
       if (raw) {
         const payload = JSON.parse(raw);
         if (payload?.campaignId === cid) {
-          setInitiativeStrip({ battleStarted: !!payload.battleStarted, enabled: !!payload.enabled, currentTurnId: payload.currentTurnId || null, items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null })) });
+          const newStrip = { 
+            battleStarted: !!payload.battleStarted, 
+            enabled: !!payload.enabled, 
+            currentTurnId: payload.currentTurnId || null, 
+            items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null, role: x.role })) 
+          };
+          // Only update if content changed
+          setInitiativeStrip(prev => {
+            if (prev.items.length !== newStrip.items.length) return newStrip;
+            if (prev.enabled !== newStrip.enabled) return newStrip;
+            if (prev.battleStarted !== newStrip.battleStarted) return newStrip;
+            if (prev.currentTurnId !== newStrip.currentTurnId) return newStrip;
+            for (let i = 0; i < prev.items.length; i++) {
+              const p = prev.items[i];
+              const n = newStrip.items[i];
+              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.role !== n.role) {
+                return newStrip;
+              }
+            }
+            return prev;
+          });
         }
       }
     } catch {}
@@ -353,7 +417,27 @@ const ProjectionSkylinePage: React.FC = () => {
         const cid = payload.campaignId as string | undefined;
         if (!cid) return;
         if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
-          setInitiativeStrip({ battleStarted: !!payload.battleStarted, enabled: !!payload.enabled, currentTurnId: payload.currentTurnId || null, items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null })) });
+          const newStrip = { 
+            battleStarted: !!payload.battleStarted, 
+            enabled: !!payload.enabled, 
+            currentTurnId: payload.currentTurnId || null, 
+            items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null, role: x.role })) 
+          };
+          // Only update if content changed to prevent flickering
+          setInitiativeStrip(prev => {
+            if (prev.items.length !== newStrip.items.length) return newStrip;
+            if (prev.enabled !== newStrip.enabled) return newStrip;
+            if (prev.battleStarted !== newStrip.battleStarted) return newStrip;
+            if (prev.currentTurnId !== newStrip.currentTurnId) return newStrip;
+            for (let i = 0; i < prev.items.length; i++) {
+              const p = prev.items[i];
+              const n = newStrip.items[i];
+              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.role !== n.role) {
+                return newStrip;
+              }
+            }
+            return prev;
+          });
         }
       } catch {}
     };
@@ -436,12 +520,27 @@ const ProjectionSkylinePage: React.FC = () => {
           {initiativeStrip.items.slice(0, 10).map((it) => {
             const isCurrent = initiativeStrip.currentTurnId === it.id;
             const sz = isCurrent ? 100 : 24;
+            const borderColor = it.role === 'foe' ? '#f44336' : '#4caf50';
             return (
               <Box key={it.id} sx={{ display: 'flex', alignItems: 'end', bgcolor: 'rgba(0, 0, 0, 0.56)', borderRadius: 4, gap: 0.5 }}>
                 {it.imageUrl ? (
-                  <img src={it.imageUrl} alt={it.name} style={{ width: sz, height: sz, objectFit: 'cover', borderRadius: 4 }} />
+                  <Box
+                    sx={{
+                      width: sz,
+                      height: sz,
+                      borderRadius: 4,
+                      border: `3px solid ${borderColor}`,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <AuthImage
+                      src={it.imageUrl}
+                      alt={it.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </Box>
                 ) : (
-                  <Box sx={{ width: sz, height: sz, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.15)' }} />
+                  <Box sx={{ width: sz, height: sz, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.15)', border: `3px solid ${borderColor}` }} />
                 )}
                 <Typography variant="caption" color="white" noWrap sx={{ maxWidth: 120 }}>{it.name}</Typography>
               </Box>
@@ -459,7 +558,11 @@ const StackedCharacterOverlay: React.FC<{ src?: string; initials: string; bg: st
     <Box sx={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
       {src ? (
         <Box sx={{ width: size, height: size, borderRadius: 2, overflow: 'hidden', boxShadow: 4, border: 'none', bgcolor: 'transparent' }}>
-          <img src={src} alt={initials} style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'transparent', display: 'block' }} />
+          <AuthImage
+            src={src}
+            alt={initials}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'transparent', display: 'block' }}
+          />
         </Box>
       ) : (
         <Avatar

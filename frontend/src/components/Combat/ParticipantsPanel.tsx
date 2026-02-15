@@ -5,6 +5,8 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { EncounterSummary } from '../../api/encounters';
 import { CharacterPayload } from '../../api/characters';
 import { Paper } from '@mui/material';
+import AuthImage from '../common/AuthImage';
+import type { CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
 
 export interface ParticipantsPanelProps {
   isMaster: boolean;
@@ -12,6 +14,7 @@ export interface ParticipantsPanelProps {
   foes: EncounterSummary['participants'];
   charMap: Map<string, CharacterPayload>;
   enemyDisplayNameById: Record<string, string>;
+  monsterDetailByPid: Record<string, CampaignMonsterDetail | null>;
   savingInitiative: Record<string, boolean>;
   savingHp: Record<string, boolean>;
   setHp: (p: EncounterSummary['participants'][number], kind: 'currentHp' | 'tempHp', value: number | undefined) => void;
@@ -29,6 +32,7 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
   foes,
   charMap,
   enemyDisplayNameById,
+  monsterDetailByPid,
   savingInitiative,
   savingHp,
   setHp,
@@ -154,11 +158,24 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
             const ch = typeof p.currentHp === 'number' ? p.currentHp : undefined;
             const mx = typeof p.maxHp === 'number' ? p.maxHp : undefined;
             const percent = ch !== undefined && mx && mx > 0 ? Math.max(0, Math.min(100, (ch / mx) * 100)) : undefined;
+            const md = monsterDetailByPid[p.id];
+            const illustrationUrl = md?.imageUrls?.medium || md?.imageUrls?.low || md?.imageUrls?.high;
             return (
               <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
                 <Paper variant="outlined" sx={{ p: 1, borderRadius: 1 }}>
                   <Stack spacing={0.75}>
-                    <Typography variant="body1">{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      {illustrationUrl && (
+                        <Box sx={{ width: 48, height: 48, flexShrink: 0, borderRadius: 1, overflow: 'hidden' }}>
+                          <AuthImage
+                            src={illustrationUrl}
+                            alt={p.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        </Box>
+                      )}
+                      <Typography variant="body1" sx={{ flex: 1 }}>{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
+                    </Stack>
                     {percent !== undefined ? (
                       <Stack spacing={0.5}>
                         <LinearProgress variant="determinate" value={percent} />

@@ -25,6 +25,13 @@ export default function AuthImage({ src, alt, style, className, onErrorIcon, onL
         setObjectUrl(null);
       }
       lastSrc.current = src;
+      
+      // If src is a data URL (base64), use it directly without authentication
+      if (src.startsWith('data:')) {
+        if (!cancelled) setObjectUrl(src);
+        return;
+      }
+      
       try {
         const res = await api.get(src, { responseType: 'blob' });
         if (cancelled) return;
@@ -43,7 +50,9 @@ export default function AuthImage({ src, alt, style, className, onErrorIcon, onL
     if (src) load();
     return () => {
       cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      if (objectUrl && !objectUrl.startsWith('data:')) {
+        URL.revokeObjectURL(objectUrl);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src]);

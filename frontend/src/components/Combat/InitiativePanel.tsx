@@ -5,7 +5,7 @@ import OutboundIcon from '@mui/icons-material/Outbound';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { EncounterSummary } from '../../api/encounters';
 import { CharacterPayload } from '../../api/characters';
-import { MonsterDetail } from '../../types/monsters';
+import type { CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
 import { stripGroupSuffix } from './utils';
 
 export interface InitiativePanelProps {
@@ -23,7 +23,7 @@ export interface InitiativePanelProps {
   isMaster: boolean;
   charMap: Map<string, CharacterPayload>;
   enemyDisplayNameById: Record<string, string>;
-  monsterDetailByPid: Record<string, MonsterDetail | null>;
+  monsterDetailByPid: Record<string, CampaignMonsterDetail | null>;
   savingInitiative: Record<string, boolean>;
   savingHp: Record<string, boolean>;
   setHp: (p: EncounterSummary['participants'][number], kind: 'currentHp' | 'tempHp', value: number | undefined) => void;

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { getActiveMapId as apiGetActiveMapId, setActiveMapId as apiSetActiveMapId } from '../../api/campaigns/activeMap';
 
@@ -82,7 +82,7 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return () => { cancelled = true; };
   }, [activeCampaign?.id]);
 
-  const refreshFromServer = async () => {
+  const refreshFromServer = useCallback(async () => {
     const cid = activeCampaign?.id;
     if (!cid) return;
     try {
@@ -94,14 +94,15 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           return prev;
         }
         if (prev !== serverId) {
-          try { const key = getKey(); if (serverId) localStorage.setItem(key, serverId); else localStorage.removeItem(key); } catch {}
+          const key = cid ? `app.activeMapId:${cid}` : LEGACY_KEY;
+          try { if (serverId) localStorage.setItem(key, serverId); else localStorage.removeItem(key); } catch {}
           recentChangeRef.current = { from: prev, to: serverId, until: Date.now() + 1500 };
           return serverId;
         }
         return prev;
       });
     } catch {}
-  };
+  }, [activeCampaign?.id]);
 
   // Poll server periodically to reflect remote changes (multi-device control)
   useEffect(() => {
@@ -151,19 +152,19 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return () => { disposed = true; clearInterval(interval); };
   }, [activeCampaign?.id]);
 
-  const setActiveMapId = (id: string | null) => {
+  const setActiveMapId = useCallback((id: string | null) => {
     // eslint-disable-next-line no-console
     console.log('[ActiveMap] setActiveMapId called', { id, campaignId: activeCampaign?.id });
     setActiveMapIdState(prev => {
       recentChangeRef.current = { from: prev, to: id, until: Date.now() + 1500 };
       return id;
     });
+    const cid = activeCampaign?.id;
+    const key = cid ? `app.activeMapId:${cid}` : LEGACY_KEY;
     try {
-      const key = getKey();
       if (id) localStorage.setItem(key, id); else localStorage.removeItem(key);
     } catch {}
     // Persist to server if we have an active campaign (best-effort)
-    const cid = activeCampaign?.id;
     if (cid) {
       // Mark a pending local change to avoid poll reverting to old server value.
       pendingTargetIdRef.current = id;
@@ -188,7 +189,7 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           refreshFromServer();
         });
     }
-  };
+  }, [activeCampaign?.id, refreshFromServer]);
 
   // Listen for fast-sync hints via BroadcastChannel and refresh immediately when matching campaign
   useEffect(() => {
@@ -209,7 +210,7 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return () => { try { bc?.close(); } catch {} };
   }, [activeCampaign?.id]);
 
-  const value = useMemo(() => ({ activeMapId, setActiveMapId, refreshFromServer }), [activeMapId, activeCampaign?.id]);
+  const value = useMemo(() => ({ activeMapId, setActiveMapId, refreshFromServer }), [activeMapId, setActiveMapId, refreshFromServer]);
   return <ActiveMapContext.Provider value={value}>{children}</ActiveMapContext.Provider>;
 };
 

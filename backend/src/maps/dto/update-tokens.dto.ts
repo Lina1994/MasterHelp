@@ -23,6 +23,15 @@ export class MapTokenDto {
   @IsOptional()
   @IsNumber()
   rotationDeg?: number;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'])
+  size?: 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
+
+  @IsOptional()
+  @IsNumber()
+  orientation?: number;
 }
 
 /**

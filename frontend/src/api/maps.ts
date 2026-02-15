@@ -214,6 +214,8 @@ export async function hasMapImageForTod(
 }
 
 // TOKENS API
+export type TokenSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
+
 export type MapTokenPayload = {
   id: string;
   cellKey: string;
@@ -222,6 +224,10 @@ export type MapTokenPayload = {
   color?: string;
   /** Visual facing direction in degrees (0..360). */
   rotationDeg?: number;
+  /** Size of the token (default: medium). */
+  size?: TokenSize;
+  /** Orientation for hex grids (0-5 for Large/Gargantuan tokens). */
+  orientation?: number;
 };
 
 export async function getMapTokens(mapId: string, campaignId: string) {

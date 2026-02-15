@@ -15,7 +15,7 @@ import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { useMapTokens } from '../hooks/useMapTokens';
 import MapTokensOverlay from '../components/Map/MapTokensOverlay';
 import { computeClearedFogByAllies, subtractClearedFog } from '../utils/fogHelpers';
-import { useCharacterTokenImageResolver } from '../hooks/useCharacterTokenImageResolver';
+import { useTokenImageResolver } from '../hooks/useTokenImageResolver';
 
 const ProjectionMapPage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
@@ -27,8 +27,9 @@ const ProjectionMapPage: React.FC = () => {
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
-  const { resolver: tokenImageResolver } = useCharacterTokenImageResolver(activeCampaign?.id, { pollMs: 5000 });
+  const { resolver: tokenImageResolver } = useTokenImageResolver(activeCampaign?.id, { pollMs: 5000 });
   const [currentTurnId, setCurrentTurnId] = useState<string | null>(null);
+  const [battleStateItems, setBattleStateItems] = useState<Array<{ id: string; name: string; imageUrl: string | null }>>([]);
   const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
@@ -103,10 +104,15 @@ const ProjectionMapPage: React.FC = () => {
     const tick = async () => {
       if (disposed) return;
       try {
-        if (!activeCampaign?.id) { setCurrentTurnId(null); return; }
+        if (!activeCampaign?.id) {
+          setCurrentTurnId(null);
+          setBattleStateItems([]);
+          return;
+        }
         const s = await getCampaignBattleStatePublic(activeCampaign.id);
         if (disposed) return;
         setCurrentTurnId(typeof s?.currentTurnId === 'string' ? s.currentTurnId : null);
+        setBattleStateItems(Array.isArray(s?.items) ? s.items : []);
       } catch {
         // ignore
       }
@@ -125,6 +131,26 @@ const ProjectionMapPage: React.FC = () => {
     if (token.type === 'enemy' && coveredByFog) return null;
     return new Set([currentTurnId]);
   }, [currentTurnId, tokens, effectiveFogCells]);
+
+  // Build a map of participant ID -> imageUrl from battle state (active combat participants)
+  const battleParticipantImageMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+    for (const item of battleStateItems) {
+      if (item.imageUrl) {
+        map.set(item.id, item.imageUrl);
+      }
+    }
+    return map;
+  }, [battleStateItems]);
+
+  // Enhanced token resolver: first check battle participants (active combat), then fallback to character/monster bestiary
+  const enhancedTokenImageResolver = React.useCallback((tokenId: string): string | undefined => {
+    // Priority 1: Check if this token is a participant in active combat (battle state)
+    const battleImage = battleParticipantImageMap.get(tokenId);
+    if (battleImage) return battleImage;
+    // Priority 2: Fallback to character/monster bestiary resolver
+    return tokenImageResolver(tokenId);
+  }, [battleParticipantImageMap, tokenImageResolver]);
 
   // Si viene campaignId en la URL (?campaignId=...), fijarlo en el contexto para que esta ventana use la misma campaña.
   useEffect(() => {
@@ -399,7 +425,7 @@ const ProjectionMapPage: React.FC = () => {
                   renderLabel={false}
                   renderFacing={false}
                   highlightIds={highlightIds}
-                  getTokenImage={(t) => tokenImageResolver(t.id)}
+                  getTokenImage={(t) => enhancedTokenImageResolver(t.id)}
                 />
               )}
               {/* Fog overlay (players: black) above everything to truly mask hidden areas */}

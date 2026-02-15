@@ -454,7 +454,7 @@ const TokensBridge: React.FC<{
   previewScale: number;
   transform: { zoom?: number; rotationDeg?: number } | null;
   tokens: import('../../api/maps').MapTokenPayload[];
-  onAddToken: (t: { id: string; cellKey: string; type: 'ally'|'enemy'; label?: string; color?: string }) => void;
+  onAddToken: (t: { id: string; cellKey: string; type: 'ally'|'enemy'; label?: string; color?: string; rotationDeg?: number; size?: import('../../api/maps').TokenSize }) => void;
   onMoveToken: (id: string, patch: Partial<import('../../api/maps').MapTokenPayload>) => void;
   onRemoveToken: (id: string) => void;
   onSelectToken?: (token: import('../../api/maps').MapTokenPayload, anchor: { left: number; top: number }) => void;
@@ -463,8 +463,54 @@ const TokensBridge: React.FC<{
 }> = ({ gridSettings, widthPx, heightPx, tokenMode, previewScale, transform, tokens, onAddToken, onMoveToken, onRemoveToken, onSelectToken, highlightIds, tokenImageResolver }) => {
   const onAdd = React.useCallback((cellKey: string, type: 'ally'|'enemy') => {
     const id = crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    onAddToken({ id, cellKey, type });
-  }, [onAddToken]);
+    
+    // Calculate initial rotation to face nearest rival
+    let rotationDeg = 0;
+    const getCenterFromCell = (key: string): { x: number; y: number } => {
+      const [colStr, rowStr] = key.split(':');
+      const col = parseInt(colStr, 10) || 0;
+      const row = parseInt(rowStr, 10) || 0;
+      const r = gridSettings.cellSize || 40;
+      if (gridSettings.type === 'square') {
+        return { x: col * r + r / 2, y: row * r + r / 2 };
+      } else {
+        const hexR = r;
+        const hexH = Math.sqrt(3) * hexR;
+        const horizStep = 1.5 * hexR;
+        const vertStep = hexH;
+        const yOffset = (col % 2 === 0) ? 0 : hexH / 2;
+        const cx = col * horizStep + hexR;
+        const cy = row * vertStep + hexH / 2 + yOffset;
+        return { x: cx, y: cy };
+      }
+    };
+    
+    const newTokenCenter = getCenterFromCell(cellKey);
+    const targetType = type === 'ally' ? 'enemy' : 'ally';
+    let nearestRival: { token: import('../../api/maps').MapTokenPayload; distance: number } | null = null;
+    
+    for (const rival of tokens) {
+      if (rival.type !== targetType) continue;
+      const rivalCenter = getCenterFromCell(rival.cellKey);
+      const dx = rivalCenter.x - newTokenCenter.x;
+      const dy = rivalCenter.y - newTokenCenter.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (!nearestRival || distance < nearestRival.distance) {
+        nearestRival = { token: rival, distance };
+      }
+    }
+    
+    if (nearestRival) {
+      const rivalCenter = getCenterFromCell(nearestRival.token.cellKey);
+      const dx = rivalCenter.x - newTokenCenter.x;
+      const dy = rivalCenter.y - newTokenCenter.y;
+      const angleRad = Math.atan2(dx, -dy);
+      rotationDeg = (angleRad * 180 / Math.PI + 360) % 360;
+    }
+    
+    onAddToken({ id, cellKey, type, rotationDeg });
+  }, [onAddToken, tokens, gridSettings]);
   const onMove = React.useCallback((id: string, cellKey: string) => { onMoveToken(id, { cellKey }); }, [onMoveToken]);
   const onUpdate = React.useCallback((id: string, patch: Partial<import('../../api/maps').MapTokenPayload>) => { onMoveToken(id, patch); }, [onMoveToken]);
   const onRemove = React.useCallback((id: string) => { onRemoveToken(id); }, [onRemoveToken]);
