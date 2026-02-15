@@ -25,6 +25,14 @@ export class UpdateDiaryCalendarDto {
   @IsInt()
   currentYear: number;
 
+  @IsInt()
+  @Min(0)
+  currentMonthIndex: number;
+
+  @IsInt()
+  @Min(1)
+  currentDayIndex: number;
+
   /**
    * Optional template for year display.
    * Must contain `{year}` placeholder.

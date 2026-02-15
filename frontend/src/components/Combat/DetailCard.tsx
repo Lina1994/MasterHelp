@@ -45,19 +45,29 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
 
   const isEnemy = participant.role === 'foe';
   const isAlly = !isEnemy;
-  const char = isAlly && participant.kind === 'character' ? charMap.get(participant.id) : undefined;
-  const ch = isAlly ? (char?.currentHp ?? participant.currentHp) : (typeof participant.currentHp === 'number' ? participant.currentHp : undefined);
-  const mx = isAlly ? (char?.maxHp ?? participant.maxHp) : (typeof participant.maxHp === 'number' ? participant.maxHp : undefined);
-  const temp = isAlly ? (char?.tempHp) : undefined;
+  
+  // Get character data if participant is a character (ally or enemy)
+  // Also check if an 'enemy' kind participant is actually a character by looking up in charMap
+  const char = (participant.kind === 'character' || charMap.has(participant.id)) 
+    ? charMap.get(participant.id) 
+    : undefined;
+  
+  // Only get monster details if it's a non-character enemy
+  const md = isEnemy && participant.kind !== 'character' ? monsterDetailByPid[participant.id] : undefined;
+  
+  const ch = char ? (char.currentHp ?? participant.currentHp) : (typeof participant.currentHp === 'number' ? participant.currentHp : undefined);
+  const mx = char ? (char.maxHp ?? participant.maxHp) : (typeof participant.maxHp === 'number' ? participant.maxHp : undefined);
+  const temp = char?.tempHp;
   const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
   const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
   const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
 
-  const md = isEnemy && participant.kind !== 'character' ? monsterDetailByPid[participant.id] : undefined;
-  const armorClass = isAlly ? char?.armorClass : md?.armorClass?.value;
+  const armorClass = char?.armorClass ?? md?.armorClass?.value;
   const speedStrAlly = char?.speed;
   const speedStrEnemy = md?.speed ? Object.entries(md.speed).filter(([_, v]) => typeof v === 'number').map(([k, v]) => `${k} ${v} ft`).join(', ') : undefined;
-  const illustrationUrl = isEnemy && md ? (md.imageUrls?.medium || md.imageUrls?.low || md.imageUrls?.high) : undefined;
+  
+  // Get illustration: character image for characters, monster image for monsters
+  const illustrationUrl = char?.characterImageUrl ?? (md ? (md.imageUrls?.medium || md.imageUrls?.low || md.imageUrls?.high) : undefined);
 
   return (
     <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 1, borderColor: `${colorKey}.main`, borderWidth: 1, borderStyle: 'solid', flex: '1 1 320px', minWidth: 280 }}>
@@ -75,23 +85,23 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
         <Typography variant="caption" color="text.secondary">{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {participant.initiative ?? '—'}</Typography>
         {/* Sección: Datos de combate clave */}
         <Typography variant="caption" color="text.secondary">
-          {typeof armorClass === 'number' ? `CA ${armorClass}` : ''}{participant.initiative !== undefined ? ` · Ini ${participant.initiative}` : ''}{(isAlly && speedStrAlly) ? ` · Vel ${speedStrAlly}` : ''}{(isEnemy && speedStrEnemy) ? ` · Vel ${speedStrEnemy}` : ''}
+          {typeof armorClass === 'number' ? `CA ${armorClass}` : ''}{participant.initiative !== undefined ? ` · Ini ${participant.initiative}` : ''}{(char && speedStrAlly) ? ` · Vel ${speedStrAlly}` : ''}{(md && speedStrEnemy) ? ` · Vel ${speedStrEnemy}` : ''}
         </Typography>
         {percent !== undefined ? (
           <Stack spacing={0.5}>
             <LinearProgress variant="determinate" value={percent} />
             <Typography variant="caption" color="text.secondary">
-              HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{isAlly && typeof temp === 'number' ? ` · Temp ${temp}` : ''}
+              HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{typeof temp === 'number' ? ` · Temp ${temp}` : ''}
             </Typography>
           </Stack>
         ) : (
           <Typography variant="caption" color="text.secondary">HP —</Typography>
         )}
         {/* Sección: Meta */}
-        {isAlly && (
+        {char && (
           <>
             <Divider />
-            <Typography variant="subtitle2">Ficha del aliado</Typography>
+            <Typography variant="subtitle2">{isEnemy ? 'Ficha del enemigo (personaje)' : 'Ficha del aliado'}</Typography>
             <Typography variant="caption" color="text.secondary">
               {(char?.className ? `Clase ${char.className}` : '')}{typeof char?.level === 'number' ? ` · Nivel ${char.level}` : ''}{char?.race ? ` · Raza ${char.race}` : ''}{char?.background ? ` · Trasfondo ${char.background}` : ''}{char?.alignment ? ` · Alineamiento ${char.alignment}` : ''}{char?.playerName ? ` · Jugador ${char.playerName}` : ''}
             </Typography>
@@ -148,7 +158,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
           </>
         )}
 
-        {isEnemy && (
+        {md && (
           <>
             <Divider />
             <Typography variant="subtitle2">Ficha del enemigo</Typography>

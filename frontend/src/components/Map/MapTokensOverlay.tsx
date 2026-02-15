@@ -410,7 +410,9 @@ const MapTokensOverlay: React.FC<{
   transform?: { zoom?: number; rotationDeg?: number } | null; // active map transform
   getTokenImage?: (token: MapTokenPayload) => string | undefined;
   highlightIds?: Set<string> | null;
-}> = ({ settings, widthPx, heightPx, tokens, editable = false, editMode = 'none', renderTokenBody = true, renderLabel = true, renderFacing = true, zIndex, onSelectToken, onAddToken, onMoveToken, onUpdateToken, onRemoveToken, previewScale = 1, transform, getTokenImage, highlightIds }) => {
+  showGuideDots?: boolean; // show guide dots for large token placement (default true)
+  showCellShading?: boolean; // show cell shading preview for large tokens (default true)
+}> = ({ settings, widthPx, heightPx, tokens, editable = false, editMode = 'none', renderTokenBody = true, renderLabel = true, renderFacing = true, zIndex, onSelectToken, onAddToken, onMoveToken, onUpdateToken, onRemoveToken, previewScale = 1, transform, getTokenImage, highlightIds, showGuideDots = true, showCellShading = true }) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [drag, setDrag] = useState<{ id: string; startX: number; startY: number; moved: boolean; orientation?: number } | null>(null);
   const [dragPointer, setDragPointer] = useState<{ clientX: number; clientY: number } | null>(null);
@@ -763,13 +765,22 @@ const MapTokensOverlay: React.FC<{
           const imgUrl = getTokenImage ? getTokenImage(t) : undefined;
           const isDataUrl = !!imgUrl && /^data:/i.test(imgUrl);
           const labelText = (t.label || (t.type === 'ally' ? 'Aliado' : 'Enemigo')) as string;
-          const pad = Math.max(8, Math.round(size * 0.45));
+          
+          // For tiny tokens, use larger padding to ensure label doesn't get cut off
+          const tokenSize = t.size || 'medium';
+          const basePad = Math.max(8, Math.round(size * 0.45));
+          const pad = tokenSize === 'tiny' ? Math.max(basePad, 14) : basePad;
+          
           const box = size + pad * 2;
           const circleLeft = pad;
           const circleTop = pad;
           const cx = box / 2;
           const cy = box / 2;
-          const rText = (size / 2) + Math.max(6, Math.round(size * 0.12));
+          
+          // For tiny tokens, increase text radius to prevent clipping
+          const baseRText = (size / 2) + Math.max(6, Math.round(size * 0.12));
+          const rText = tokenSize === 'tiny' ? baseRText + 4 : baseRText;
+          
           const fontSize = Math.max(10, Math.round(size * 0.22));
           const safeLabel = labelText.length > 22 ? `${labelText.slice(0, 22)}…` : labelText;
           const arcId = `token-arc-${String(t.id).replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -796,7 +807,7 @@ const MapTokensOverlay: React.FC<{
                     width={box}
                     height={box}
                     viewBox={`0 0 ${box} ${box}`}
-                    style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+                    style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible' }}
                   >
                     <defs>
                       <path
@@ -935,7 +946,7 @@ const MapTokensOverlay: React.FC<{
       })}
       
       {/* Shaded cells preview when dragging large tokens */}
-      {drag && dragPointer && (() => {
+      {showCellShading && drag && dragPointer && (() => {
         const draggedToken = tokenById.get(drag.id);
         if (!draggedToken) return null;
         const tokenSize = draggedToken.size || 'medium';
@@ -1020,7 +1031,7 @@ const MapTokensOverlay: React.FC<{
       })()}
       
       {/* Guide dots when dragging large tokens */}
-      {drag && (() => {
+      {showGuideDots && drag && dragPointer && (() => {
         const draggedToken = tokenById.get(drag.id);
         if (!draggedToken) return null;
         const tokenSize = draggedToken.size || 'medium';
@@ -1030,11 +1041,33 @@ const MapTokensOverlay: React.FC<{
           return null;
         }
         
+        // Get cursor position in canvas coordinates
+        const el = rootRef.current;
+        if (!el) return null;
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        let dx = dragPointer.clientX - cx;
+        let dy = dragPointer.clientY - cy;
+        const ps = previewScale || 1;
+        if (ps && ps !== 1) { dx /= ps; dy /= ps; }
+        const angle = -((transform?.rotationDeg || 0) * Math.PI / 180);
+        if (angle) {
+          const cos = Math.cos(angle), sin = Math.sin(angle);
+          const rx = dx * cos - dy * sin;
+          const ry = dx * sin + dy * cos;
+          dx = rx; dy = ry;
+        }
+        const z = transform?.zoom || 1;
+        if (z && z !== 1) { dx /= z; dy /= z; }
+        const cursorX = dx + (widthPx || 0) / 2;
+        const cursorY = dy + (heightPx || 0) / 2;
+        
         // Calculate grid dimensions
         const maxCol = widthPx ? Math.ceil(widthPx / (square ? r : horizStep)) + 1 : 20;
         const maxRow = heightPx ? Math.ceil(heightPx / (square ? r : vertStep)) + 1 : 20;
         
-        const guideDots: Array<{ x: number; y: number; key: string }> = [];
+        const guideDots: Array<{ x: number; y: number; key: string; distance: number }> = [];
         
         if (square) {
           // For square grids, show intersection points
@@ -1042,7 +1075,8 @@ const MapTokensOverlay: React.FC<{
             for (let row = 0; row <= maxRow; row++) {
               const cellKey = `${col}:${row}`;
               const center = getTokenCenter(cellKey, tokenSize, true, r);
-              guideDots.push({ x: center.x, y: center.y, key: cellKey });
+              const dist = Math.sqrt((center.x - cursorX) ** 2 + (center.y - cursorY) ** 2);
+              guideDots.push({ x: center.x, y: center.y, key: cellKey, distance: dist });
             }
           }
         } else {
@@ -1072,10 +1106,12 @@ const MapTokensOverlay: React.FC<{
                   if (!seenPositions.has(posKey)) {
                     seenPositions.add(posKey);
                     
+                    const dist = Math.sqrt((vx - cursorX) ** 2 + (vy - cursorY) ** 2);
+                    
                     // For Large, all vertices are valid centers
                     // For Gargantuan, we also use vertices as valid positions
                     // (the actual center will be calculated by getTokenCenter via getCellFromPointForToken)
-                    guideDots.push({ x: vx, y: vy, key: `${col}:${row}-v${i}` });
+                    guideDots.push({ x: vx, y: vy, key: `${col}:${row}-v${i}`, distance: dist });
                   }
                 }
               }
@@ -1089,32 +1125,52 @@ const MapTokensOverlay: React.FC<{
                 const posKey = `${Math.round(center.x * 10)},${Math.round(center.y * 10)}`;
                 if (!seenPositions.has(posKey)) {
                   seenPositions.add(posKey);
-                  guideDots.push({ x: center.x, y: center.y, key: cellKey });
+                  const dist = Math.sqrt((center.x - cursorX) ** 2 + (center.y - cursorY) ** 2);
+                  guideDots.push({ x: center.x, y: center.y, key: cellKey, distance: dist });
                 }
               }
             }
           }
         }
         
+        // Calculate intensity based on distance
+        // Find max distance for normalization
+        const maxDistance = Math.max(...guideDots.map(d => d.distance), 1);
+        
         return (
           <>
-            {guideDots.map((dot, idx) => (
-              <div
-                key={`guide-${dot.key}-${idx}`}
-                style={{
-                  position: 'absolute',
-                  left: dot.x - 3,
-                  top: dot.y - 3,
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(255, 215, 0, 0.8)',
-                  border: '1px solid rgba(0, 0, 0, 0.5)',
-                  pointerEvents: 'none',
-                  boxShadow: '0 0 4px rgba(255, 215, 0, 0.6)',
-                }}
-              />
-            ))}
+            {guideDots.map((dot, idx) => {
+              // Normalize distance: 0 (closest) to 1 (farthest)
+              const normalizedDist = dot.distance / maxDistance;
+              
+              // Calculate opacity: closest = 0.8, farthest = 0.05
+              const opacity = 0.8 - normalizedDist * 0.75;
+              
+              // Calculate size: closest = 7px, farthest = 2px
+              const size = 7 - normalizedDist * 5;
+              const halfSize = size / 2;
+              
+              // Calculate glow intensity: closest = 0.8, farthest = 0.05
+              const glowOpacity = 0.8 - normalizedDist * 0.75;
+              
+              return (
+                <div
+                  key={`guide-${dot.key}-${idx}`}
+                  style={{
+                    position: 'absolute',
+                    left: dot.x - halfSize,
+                    top: dot.y - halfSize,
+                    width: size,
+                    height: size,
+                    borderRadius: '50%',
+                    backgroundColor: `rgba(255, 215, 0, ${opacity})`,
+                    border: '1px solid rgba(0, 0, 0, 0.5)',
+                    pointerEvents: 'none',
+                    boxShadow: `0 0 ${3 + (1 - normalizedDist) * 5}px rgba(255, 215, 0, ${glowOpacity})`,
+                  }}
+                />
+              );
+            })}
           </>
         );
       })()}

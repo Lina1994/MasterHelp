@@ -49,5 +49,11 @@ export class BattleStripItemDto {
   imageUrl?: string | null;
   @IsString()
   @IsOptional()
+  fullImageUrl?: string | null;
+  @IsString()
+  @IsOptional()
+  size?: string | null;
+  @IsString()
+  @IsOptional()
   role?: 'ally' | 'foe';
 }

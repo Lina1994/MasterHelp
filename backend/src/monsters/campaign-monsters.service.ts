@@ -445,15 +445,34 @@ export class CampaignMonstersService {
         return imageUrls; // Can't process
       }
 
-      // Generate three resolutions
-      const lowBuffer = await sharp(buffer).resize(100, 100, { fit: 'inside' }).jpeg({ quality: 60 }).toBuffer();
-      const mediumBuffer = await sharp(buffer).resize(400, 400, { fit: 'inside' }).jpeg({ quality: 80 }).toBuffer();
-      const highBuffer = await sharp(buffer).resize(1200, 1200, { fit: 'inside' }).jpeg({ quality: 90 }).toBuffer();
+      // Check if image has alpha channel (transparency)
+      const metadata = await sharp(buffer).metadata();
+      const hasAlpha = metadata.hasAlpha;
+
+      // Generate three resolutions - use PNG if has transparency, JPEG otherwise
+      let lowBuffer: Buffer;
+      let mediumBuffer: Buffer;
+      let highBuffer: Buffer;
+      let mimeType: string;
+
+      if (hasAlpha) {
+        // Preserve transparency with PNG
+        lowBuffer = await sharp(buffer).resize(100, 100, { fit: 'inside' }).png({ quality: 80 }).toBuffer();
+        mediumBuffer = await sharp(buffer).resize(400, 400, { fit: 'inside' }).png({ quality: 85 }).toBuffer();
+        highBuffer = await sharp(buffer).resize(1200, 1200, { fit: 'inside' }).png({ quality: 90 }).toBuffer();
+        mimeType = 'image/png';
+      } else {
+        // Use JPEG for better compression when no transparency
+        lowBuffer = await sharp(buffer).resize(100, 100, { fit: 'inside' }).jpeg({ quality: 60 }).toBuffer();
+        mediumBuffer = await sharp(buffer).resize(400, 400, { fit: 'inside' }).jpeg({ quality: 80 }).toBuffer();
+        highBuffer = await sharp(buffer).resize(1200, 1200, { fit: 'inside' }).jpeg({ quality: 90 }).toBuffer();
+        mimeType = 'image/jpeg';
+      }
 
       return {
-        low: `data:image/jpeg;base64,${lowBuffer.toString('base64')}`,
-        medium: `data:image/jpeg;base64,${mediumBuffer.toString('base64')}`,
-        high: `data:image/jpeg;base64,${highBuffer.toString('base64')}`,
+        low: `data:${mimeType};base64,${lowBuffer.toString('base64')}`,
+        medium: `data:${mimeType};base64,${mediumBuffer.toString('base64')}`,
+        high: `data:${mimeType};base64,${highBuffer.toString('base64')}`,
       };
     } catch (err) {
       console.error('Error processing monster images:', err);

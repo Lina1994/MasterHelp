@@ -3,18 +3,20 @@
  * Usa el contexto de campaña activa para decidir el contenido y el nivel de permisos
  * (máster con control total; jugador en modo lectura/seguimiento).
  */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Box, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { getCurrentUser } from '../utils/getCurrentUser';
 import EncounterList from '../components/Combat/EncounterList';
 import CombatViewExt from '../components/Combat/CombatView';
+import CombatSettingsView from '../components/Combat/CombatSettingsView';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { listEncounters, deleteEncounter as apiDeleteEncounter, EncounterSummary } from '../api/encounters';
 import { listCharacters, CharacterPayload } from '../api/characters';
 import { listSongsForCampaign, SongLite } from '../api/soundtrack';
 import { getCampaignManuals } from '../api/campaigns/manuals';
 import { listCampaignMonsters, CampaignMonsterListItem } from '../api/bestiary/bestiaryApi';
+import { setSkylineOverlaySettings } from '../api/campaigns/skylineOverlay';
 import type { MonsterIndexItem } from '../types/monsters';
 import type { Campaign } from '../components/Campaign/types';
 import EncounterFormDialog from '../components/Combat/EncounterFormDialog';
@@ -29,15 +31,60 @@ const CombatPage: React.FC = () => {
   const { activeCampaign } = useActiveCampaign();
   const user = getCurrentUser();
   const isMaster = useMemo(() => computeIsMaster(activeCampaign, user?.id), [activeCampaign, user?.id]);
-  const [tab, setTab] = useState<'encounters' | 'combat'>('combat');
+  const [tab, setTab] = useState<'encounters' | 'combat' | 'settings'>('combat');
   const [encounters, setEncounters] = useState<EncounterSummary[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingCharacters, setLoadingCharacters] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [characters, setCharacters] = useState<CharacterPayload[]>([]);
   const [songs, setSongs] = useState<SongLite[]>([]);
   const [monsters, setMonsters] = useState<Array<CampaignMonsterListItem & { compositeId: string }>>([]);
   const [dialogState, setDialogState] = useState<{ mode: 'create' | 'edit'; open: boolean; encounter: EncounterSummary | null }>({ mode: 'create', open: false, encounter: null });
   const [deleteTarget, setDeleteTarget] = useState<EncounterSummary | null>(null);
+
+  // Ajustes compartidos entre CombatView y CombatSettingsView
+  const [prioritizeEncounterMusic, setPrioritizeEncounterMusic] = useState(true);
+  
+  // Initialize showInitiativeStrip from localStorage to avoid flicker
+  const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('app.skyline.initiativeStrip');
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.campaignId === activeCampaign?.id && data.enabled === true) {
+          return true;
+        }
+      }
+    } catch {}
+    return false;
+  });
+
+  const handleToggleInitiativeStrip = useCallback(async (v: boolean) => {
+    setShowInitiativeStrip(v);
+    try {
+      if (activeCampaign?.id) {
+        await setSkylineOverlaySettings(activeCampaign.id, { showInitiativeStrip: v });
+        try { 
+          localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ 
+            campaignId: activeCampaign.id, 
+            showInitiativeStrip: v, 
+            at: Date.now() 
+          })); 
+        } catch {}
+        try {
+          if ('BroadcastChannel' in window) {
+            const bc = new BroadcastChannel('campaign-sync');
+            bc.postMessage({ 
+              type: 'skylineSettingsChanged', 
+              campaignId: activeCampaign.id, 
+              settings: { showInitiativeStrip: v } 
+            });
+            bc.close();
+          }
+        } catch {}
+      }
+    } catch {}
+  }, [activeCampaign?.id]);
 
   const reloadTimersRef = useRef<{ encounters?: any; characters?: any }>({});
 
@@ -109,8 +156,16 @@ const CombatPage: React.FC = () => {
 
   useEffect(() => {
     const cid = activeCampaign?.id;
-    if (!cid) { setCharacters([]); return; }
-    listCharacters(cid).then(setCharacters).catch(() => setCharacters([]));
+    if (!cid) { 
+      setCharacters([]); 
+      setLoadingCharacters(false);
+      return; 
+    }
+    setLoadingCharacters(true);
+    listCharacters(cid)
+      .then(setCharacters)
+      .catch(() => setCharacters([]))
+      .finally(() => setLoadingCharacters(false));
   }, [activeCampaign?.id]);
 
   useEffect(() => {
@@ -182,6 +237,7 @@ const CombatPage: React.FC = () => {
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab value="encounters" label="Encuentros" />
         <Tab value="combat" label="Combate" />
+        <Tab value="settings" label="Ajustes" />
       </Tabs>
       {tab === 'encounters' && (
         <Stack spacing={2}>
@@ -197,15 +253,35 @@ const CombatPage: React.FC = () => {
         </Stack>
       )}
       {tab === 'combat' && (
-        <CombatViewExt
-          encounters={encounters.length ? encounters : []}
+        loadingCharacters ? (
+          <Paper variant="outlined" sx={{ p: 3 }}>
+            <Alert severity="info">Cargando personajes...</Alert>
+          </Paper>
+        ) : (
+          <CombatViewExt
+            encounters={encounters.length ? encounters : []}
+            isMaster={isMaster}
+            campaign={activeCampaign}
+            songs={songs}
+            onUpdateEncounter={(enc) => setEncounters((prev) => prev.map((e) => e.id === enc.id ? enc : e))}
+            characters={characters}
+            onPatchCharacterLocal={(id, patch) => setCharacters((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)))}
+            monsters={monsters}
+            prioritizeEncounterMusic={prioritizeEncounterMusic}
+            setPrioritizeEncounterMusic={setPrioritizeEncounterMusic}
+            showInitiativeStrip={showInitiativeStrip}
+            onToggleInitiativeStrip={handleToggleInitiativeStrip}
+          />
+        )
+      )}
+      {tab === 'settings' && (
+        <CombatSettingsView
           isMaster={isMaster}
           campaign={activeCampaign}
-          songs={songs}
-          onUpdateEncounter={(enc) => setEncounters((prev) => prev.map((e) => e.id === enc.id ? enc : e))}
-          characters={characters}
-          onPatchCharacterLocal={(id, patch) => setCharacters((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)))}
-          monsters={monsters}
+          prioritizeEncounterMusic={prioritizeEncounterMusic}
+          setPrioritizeEncounterMusic={setPrioritizeEncounterMusic}
+          showInitiativeStrip={showInitiativeStrip}
+          onToggleInitiativeStrip={handleToggleInitiativeStrip}
         />
       )}
 

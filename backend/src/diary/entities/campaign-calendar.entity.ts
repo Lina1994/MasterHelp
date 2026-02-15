@@ -11,6 +11,8 @@ export type DiaryWeekdayConfig = {
 
 export type DiaryCalendarConfig = {
   currentYear: number;
+  currentMonthIndex: number;
+  currentDayIndex: number;
   /**
    * Optional display template for the year label.
    *

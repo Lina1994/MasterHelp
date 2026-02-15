@@ -15,6 +15,8 @@ import { DiarySessionItem } from './entities/diary-session-item.entity';
 
 const DEFAULT_CALENDAR: DiaryCalendarConfig = {
   currentYear: 1,
+  currentMonthIndex: 0,
+  currentDayIndex: 1,
   yearLabelTemplate: 'Año {year}',
   months: [
     { name: 'Mes 1', days: 30 },
@@ -181,7 +183,12 @@ export class DiaryService {
   async getCalendar(campaignId: string, userId: number) {
     await this.assertCampaignMember({ campaignId, userId });
     const existing = await this.calendarRepo.findByCampaignId(campaignId);
-    if (existing) return existing;
+    if (existing) {
+      // Ensure backward compatibility: add default values if missing
+      if (existing.config.currentMonthIndex === undefined) existing.config.currentMonthIndex = 0;
+      if (existing.config.currentDayIndex === undefined) existing.config.currentDayIndex = 1;
+      return existing;
+    }
     return this.calendarRepo.upsertConfig(campaignId, DEFAULT_CALENDAR);
   }
 
@@ -199,6 +206,28 @@ export class DiaryService {
     }
 
     return this.calendarRepo.upsertConfig(campaignId, config);
+  }
+
+  async updateCurrentDay(campaignId: string, userId: number, monthIndex: number, dayIndex: number) {
+    await this.assertMaster({ campaignId, userId });
+
+    const calendar = await this.calendarRepo.findByCampaignId(campaignId);
+    if (!calendar) throw new BadRequestException('Calendar not found');
+
+    // Validate month and day indices
+    if (monthIndex < 0 || monthIndex >= calendar.config.months.length) {
+      throw new BadRequestException('Invalid month index');
+    }
+    const maxDays = calendar.config.months[monthIndex].days;
+    if (dayIndex < 1 || dayIndex > maxDays) {
+      throw new BadRequestException(`Invalid day index. Month ${monthIndex} has ${maxDays} days`);
+    }
+
+    // Update only the current day fields
+    calendar.config.currentMonthIndex = monthIndex;
+    calendar.config.currentDayIndex = dayIndex;
+
+    return this.calendarRepo.upsertConfig(campaignId, calendar.config);
   }
 
   async getDiaryEntry(params: {

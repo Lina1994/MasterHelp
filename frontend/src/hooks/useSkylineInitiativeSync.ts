@@ -56,18 +56,42 @@ export function useSkylineInitiativeSync(params: SkylineSyncParams) {
       const orderedByTurn = [...orderedParticipants.slice(turnIdx), ...orderedParticipants.slice(0, turnIdx)];
       const items = orderedByTurn.slice(0, maxItems).map((p) => {
         let imageUrl: string | null = null;
+        let fullImageUrl: string | null = null;
+        let size: string | null = null;
+        
+        // Check if this is a character (either explicitly marked or found in charMap)
+        const isCharacter = p.kind === 'character' || charMap.has(p.id);
+        
         if (p.role === 'foe') {
-          // For enemies, use tokenImageUrl from monster details
-          const md = monsterDetailByPid[p.id];
-          imageUrl = md?.tokenImageUrl || null;
+          if (isCharacter) {
+            // For enemy characters, use character data
+            const char = charMap.get(p.id);
+            imageUrl = char?.tokenImageUrl || char?.characterImageUrl || null;
+            fullImageUrl = char?.characterImageUrl || null;
+            size = null; // Characters don't have size field
+          } else {
+            // For monster enemies, use monster details
+            const md = monsterDetailByPid[p.id];
+            imageUrl = md?.tokenImageUrl || null;
+            // Full image: use illustration (high/medium/low resolution)
+            fullImageUrl = md?.imageUrls?.high || md?.imageUrls?.medium || md?.imageUrls?.low || null;
+            size = md?.size || null;
+          }
         } else if (p.kind === 'character') {
           // For allies, use tokenImageUrl or characterImageUrl
-          imageUrl = charMap.get(p.id)?.tokenImageUrl || charMap.get(p.id)?.characterImageUrl || null;
+          const char = charMap.get(p.id);
+          imageUrl = char?.tokenImageUrl || char?.characterImageUrl || null;
+          // Full image: use character image
+          fullImageUrl = char?.characterImageUrl || null;
+          // Characters don't have size field, default to null (will be treated as Medium)
+          size = null;
         }
         return {
           id: p.id,
           name: p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name,
           imageUrl,
+          fullImageUrl,
+          size,
           role: p.role,
         };
       });
@@ -103,18 +127,42 @@ export function useSkylineInitiativeSync(params: SkylineSyncParams) {
       currentTurnId: currentTurnId || null,
       items: orderedByTurn.slice(0, maxItems).map((p) => {
         let imageUrl: string | null = null;
+        let fullImageUrl: string | null = null;
+        let size: string | null = null;
+        
+        // Check if this is a character (either explicitly marked or found in charMap)
+        const isCharacter = p.kind === 'character' || charMap.has(p.id);
+        
         if (p.role === 'foe') {
-          // For enemies, use tokenImageUrl from monster details
-          const md = monsterDetailByPid[p.id];
-          imageUrl = md?.tokenImageUrl || null;
+          if (isCharacter) {
+            // For enemy characters, use character data
+            const char = charMap.get(p.id);
+            imageUrl = char?.tokenImageUrl || char?.characterImageUrl || null;
+            fullImageUrl = char?.characterImageUrl || null;
+            size = null; // Characters don't have size field
+          } else {
+            // For monster enemies, use monster details
+            const md = monsterDetailByPid[p.id];
+            imageUrl = md?.tokenImageUrl || null;
+            // Full image: use illustration (high/medium/low resolution)
+            fullImageUrl = md?.imageUrls?.high || md?.imageUrls?.medium || md?.imageUrls?.low || null;
+            size = md?.size || null;
+          }
         } else if (p.kind === 'character') {
           // For allies, use tokenImageUrl or characterImageUrl
-          imageUrl = charMap.get(p.id)?.tokenImageUrl || charMap.get(p.id)?.characterImageUrl || null;
+          const char = charMap.get(p.id);
+          imageUrl = char?.tokenImageUrl || char?.characterImageUrl || null;
+          // Full image: use character image
+          fullImageUrl = char?.characterImageUrl || null;
+          // Characters don't have size field, default to null (will be treated as Medium)
+          size = null;
         }
         return {
           id: p.id,
           name: p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name,
           imageUrl,
+          fullImageUrl,
+          size,
           role: p.role,
         };
       }),

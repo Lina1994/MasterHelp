@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import { getDiaryCalendar, type DiaryCalendarConfig } from '../api/diary/diaryApi';
 import { formatDayLabel, formatDayLabelCompact } from '../components/diary/diaryUtils';
+import { getCurrentUser } from '../utils/getCurrentUser';
 import logo from '../assets/logo.png';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
@@ -24,8 +25,15 @@ import PeopleIcon from '@mui/icons-material/People';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import PetsIcon from '@mui/icons-material/Pets';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+
+function isUserMaster(activeCampaign: any, userId: number | undefined): boolean {
+  if (!activeCampaign?.id || !userId) return false;
+  if (activeCampaign?.owner?.id === userId) return true;
+  return !!activeCampaign?.players?.some((p: any) => p?.user?.id === userId && p?.status === 'active' && p?.role === 'master');
+}
 
 const MainLayoutInner = () => {
   const navigate = useNavigate();
@@ -34,6 +42,8 @@ const MainLayoutInner = () => {
   const { activeCampaign } = useActiveCampaign();
   const { selectedDay, showSelectedDayInSidebar, showNoActiveSessionWarning, showDayNavigation, dayFormat, activeSessionId, setSelectedDay } = useDiarySidebar();
   const [calendarConfig, setCalendarConfig] = useState<DiaryCalendarConfig | null>(null);
+  const currentUserId = getCurrentUser()?.id as number | undefined;
+  const isMaster = isUserMaster(activeCampaign, currentUserId);
 
   // Auto-cargar el día actual del calendario si hay campaña activa y no hay día seleccionado
   useEffect(() => {
@@ -87,7 +97,7 @@ const MainLayoutInner = () => {
   }, [activeCampaign?.id, showDayNavigation]);
 
   // Navegar al día anterior
-  const goToPreviousDay = () => {
+  const goToPreviousDay = async () => {
     if (!selectedDay?.day || !calendarConfig || !activeCampaign?.id) return;
     
     const { year, monthIndex, dayIndex } = selectedDay.day;
@@ -109,10 +119,22 @@ const MainLayoutInner = () => {
     const newDay = { year: newYear, monthIndex: newMonthIndex, dayIndex: newDayIndex };
     const label = dayFormat === 'compact' ? formatDayLabelCompact(calendarConfig, newDay) : formatDayLabel(calendarConfig, newDay);
     setSelectedDay({ label, campaignId: activeCampaign.id, day: newDay });
+    
+    // Update current day in backend if user is master
+    if (isMaster && activeCampaign.id) {
+      const { updateCurrentDay } = await import('../api/diary/diaryApi');
+      try {
+        const saved = await updateCurrentDay(activeCampaign.id, newMonthIndex, newDayIndex);
+        // Update local calendar config to reflect the change
+        setCalendarConfig(saved.config);
+      } catch (e) {
+        console.error('Failed to update current day:', e);
+      }
+    }
   };
 
   // Navegar al día siguiente
-  const goToNextDay = () => {
+  const goToNextDay = async () => {
     if (!selectedDay?.day || !calendarConfig || !activeCampaign?.id) return;
     
     const { year, monthIndex, dayIndex } = selectedDay.day;
@@ -137,6 +159,18 @@ const MainLayoutInner = () => {
     const newDay = { year: newYear, monthIndex: newMonthIndex, dayIndex: newDayIndex };
     const label = dayFormat === 'compact' ? formatDayLabelCompact(calendarConfig, newDay) : formatDayLabel(calendarConfig, newDay);
     setSelectedDay({ label, campaignId: activeCampaign.id, day: newDay });
+    
+    // Update current day in backend if user is master
+    if (isMaster && activeCampaign.id) {
+      const { updateCurrentDay } = await import('../api/diary/diaryApi');
+      try {
+        const saved = await updateCurrentDay(activeCampaign.id, newMonthIndex, newDayIndex);
+        // Update local calendar config to reflect the change
+        setCalendarConfig(saved.config);
+      } catch (e) {
+        console.error('Failed to update current day:', e);
+      }
+    }
   };
 
   const handleDrawerToggle = () => {
@@ -199,6 +233,12 @@ const MainLayoutInner = () => {
           <ListItemButton onClick={() => navigate('/characters')} disabled={!activeCampaign?.id}>
             <ListItemIcon><PeopleIcon /></ListItemIcon>
             <ListItemText primary={t('characters', 'Personajes')} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem key="quests" disablePadding>
+          <ListItemButton onClick={() => navigate('/quests')} disabled={!activeCampaign?.id}>
+            <ListItemIcon><AssignmentIcon /></ListItemIcon>
+            <ListItemText primary={t('quests', 'Misiones')} />
           </ListItemButton>
         </ListItem>
         <ListItem key="diary" disablePadding>

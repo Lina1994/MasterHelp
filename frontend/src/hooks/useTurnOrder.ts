@@ -59,13 +59,16 @@ export function useTurnOrder(sessionKey: string | null, participants: TurnPartic
     if (!hydrated || !participants || participants.length === 0) return;
     if (currentId && !alignedRef.current) {
       const idx = participants.findIndex(p => p.id === currentId);
-      if (idx >= 0) setIndex(idx);
-      else if (index >= participants.length) setIndex(0);
-      alignedRef.current = true;
+      if (idx >= 0) {
+        setIndex(idx);
+        alignedRef.current = true; // Only mark as aligned if we successfully found the participant
+      }
+      // Don't reset index to 0 or mark as aligned if participant not found yet
+      // This allows for re-alignment when participants list updates with more data
     } else if (!currentId && index >= participants.length) {
       setIndex(0);
     }
-  }, [hydrated, participants, currentId]);
+  }, [hydrated, participants, currentId, index]);
 
   // Persist changes
   useEffect(() => {
@@ -76,37 +79,59 @@ export function useTurnOrder(sessionKey: string | null, participants: TurnPartic
     } catch {}
   }, [key, round, index, currentId, hydrated]);
 
-  // Keep currentId in sync with index
+  // Keep currentId in sync with index (but only after initial hydration and alignment)
   useEffect(() => {
+    // Don't sync until we're hydrated and have participants
+    if (!hydrated || participants.length === 0) return;
+    // Don't sync during initial alignment phase
+    if (currentId && !alignedRef.current) return;
+    
     const id = participants[index]?.id ?? null;
-    setCurrentId(id);
-  }, [participants, index]);
+    if (id !== currentId) {
+      setCurrentId(id);
+    }
+  }, [participants, index, hydrated]); // Removed currentId to avoid loop
 
   const nextTurn = () => {
     const len = participants.length;
     if (len === 0) return;
+    let newIndex: number;
     if (index + 1 >= len) {
+      newIndex = 0;
       setIndex(0);
       setRound(r => r + 1);
     } else {
-      setIndex(i => i + 1);
+      newIndex = index + 1;
+      setIndex(newIndex);
     }
+    // Update currentId immediately
+    const id = participants[newIndex]?.id ?? null;
+    setCurrentId(id);
   };
 
   const previousTurn = () => {
     const len = participants.length;
     if (len === 0) return;
+    let newIndex: number;
     if (index - 1 < 0) {
-      setIndex(len - 1);
+      newIndex = len - 1;
+      setIndex(newIndex);
       setRound(r => Math.max(1, r - 1));
     } else {
-      setIndex(i => i - 1);
+      newIndex = index - 1;
+      setIndex(newIndex);
     }
+    // Update currentId immediately
+    const id = participants[newIndex]?.id ?? null;
+    setCurrentId(id);
   };
 
   const resetToStart = () => {
     setIndex(0);
     setRound(1);
+    // Update currentId immediately
+    const id = participants[0]?.id ?? null;
+    setCurrentId(id);
   };
 
   return { round, index, currentId, hydrated, nextTurn, previousTurn, setRound, setIndex, resetToStart };

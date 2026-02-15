@@ -53,7 +53,36 @@ const ProjectionSkylinePage: React.FC = () => {
   const [skylineCharacter, setSkylineCharacter] = useState<CharacterPayload | null>(null);
   const [showSongTitle, setShowSongTitle] = useState<boolean>(false);
   const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(false);
-  const [initiativeStrip, setInitiativeStrip] = useState<{ battleStarted: boolean; enabled: boolean; currentTurnId: string | null; items: Array<{ id: string; name: string; imageUrl: string | null; role?: 'ally' | 'foe' }> } | null>(null);
+  const [showCurrentTurnImage, setShowCurrentTurnImage] = useState<boolean>(() => {
+    try {
+      const val = localStorage.getItem('app.combat.showCurrentTurnImage');
+      return val === null ? true : val === 'true';
+    } catch {
+      return true;
+    }
+  });
+  const [currentTurnImagePosition, setCurrentTurnImagePosition] = useState<string>(() => {
+    try {
+      return localStorage.getItem('app.combat.currentTurnImagePosition') || 'center-right';
+    } catch {
+      return 'center-right';
+    }
+  });
+  const [imageSizes, setImageSizes] = useState<Record<string, number>>(() => {
+    try {
+      const stored = localStorage.getItem('app.combat.currentTurnImageSizes');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return {
+      Tiny: 15,
+      Small: 20,
+      Medium: 30,
+      Large: 40,
+      Huge: 50,
+      Gargantuan: 60,
+    };
+  });
+  const [initiativeStrip, setInitiativeStrip] = useState<{ battleStarted: boolean; enabled: boolean; currentTurnId: string | null; items: Array<{ id: string; name: string; imageUrl: string | null; fullImageUrl?: string | null; size?: string | null; role?: 'ally' | 'foe' }> }>({ battleStarted: false, enabled: false, currentTurnId: null, items: [] });
   const [battleStateStarted, setBattleStateStarted] = useState<boolean>(false);
   const [nowPlayingTitle, setNowPlayingTitle] = useState<string | null>(null);
   const [showSelectedDayInSkyline, setShowSelectedDayInSkyline] = useState<boolean>(loadShowSelectedDayInSkyline);
@@ -169,6 +198,9 @@ const ProjectionSkylinePage: React.FC = () => {
             const st = data?.settings;
             if (typeof st?.showSongTitle === 'boolean') setShowSongTitle(!!st.showSongTitle);
             if (typeof st?.showInitiativeStrip === 'boolean') setShowInitiativeStrip(!!st.showInitiativeStrip);
+            if (typeof st?.showCurrentTurnImage === 'boolean') setShowCurrentTurnImage(!!st.showCurrentTurnImage);
+            if (typeof st?.currentTurnImagePosition === 'string') setCurrentTurnImagePosition(st.currentTurnImagePosition);
+            if (st?.currentTurnImageSizes && typeof st.currentTurnImageSizes === 'object') setImageSizes(st.currentTurnImageSizes);
           }
           if (data?.type === 'initiativeStripUpdated' && data?.campaignId === cid) {
             const payload = data as any;
@@ -176,7 +208,14 @@ const ProjectionSkylinePage: React.FC = () => {
               battleStarted: !!payload.battleStarted, 
               enabled: !!payload.enabled, 
               currentTurnId: payload.currentTurnId || null, 
-              items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null, role: x.role })) 
+              items: (payload.items || []).map((x: any) => ({ 
+                id: x.id, 
+                name: x.name, 
+                imageUrl: x.imageUrl ?? null, 
+                fullImageUrl: x.fullImageUrl ?? null,
+                size: x.size ?? null,
+                role: x.role 
+              })) 
             };
             // Only update if the content actually changed to prevent unnecessary re-renders and image flickering
             setInitiativeStrip(prev => {
@@ -185,11 +224,11 @@ const ProjectionSkylinePage: React.FC = () => {
               if (prev.enabled !== newStrip.enabled) return newStrip;
               if (prev.battleStarted !== newStrip.battleStarted) return newStrip;
               if (prev.currentTurnId !== newStrip.currentTurnId) return newStrip;
-              // Deep comparison of items (id, name, imageUrl, role)
+              // Deep comparison of items (id, name, imageUrl, fullImageUrl, size, role)
               for (let i = 0; i < prev.items.length; i++) {
                 const p = prev.items[i];
                 const n = newStrip.items[i];
-                if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.role !== n.role) {
+                if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.fullImageUrl !== n.fullImageUrl || p.size !== n.size || p.role !== n.role) {
                   return newStrip;
                 }
               }
@@ -230,7 +269,14 @@ const ProjectionSkylinePage: React.FC = () => {
             battleStarted: !!bs.started, 
             enabled: showInitiativeStrip, 
             currentTurnId: bs.currentTurnId || null, 
-            items: bs.items.map((x) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null, role: x.role })) 
+            items: bs.items.map((x) => ({ 
+              id: x.id, 
+              name: x.name, 
+              imageUrl: x.imageUrl ?? null, 
+              fullImageUrl: x.fullImageUrl ?? null,
+              size: x.size ?? null,
+              role: x.role 
+            })) 
           };
           // Only update if the content actually changed to prevent unnecessary re-renders and image flickering
           setInitiativeStrip(prev => {
@@ -238,11 +284,11 @@ const ProjectionSkylinePage: React.FC = () => {
             if (prev.enabled !== newStrip.enabled) return newStrip;
             if (prev.battleStarted !== newStrip.battleStarted) return newStrip;
             if (prev.currentTurnId !== newStrip.currentTurnId) return newStrip;
-            // Deep comparison of items (id, name, imageUrl, role)
+            // Deep comparison of items (id, name, imageUrl, fullImageUrl, size, role)
             for (let i = 0; i < prev.items.length; i++) {
               const p = prev.items[i];
               const n = newStrip.items[i];
-              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.role !== n.role) {
+              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.fullImageUrl !== n.fullImageUrl || p.size !== n.size || p.role !== n.role) {
                 return newStrip;
               }
             }
@@ -270,7 +316,14 @@ const ProjectionSkylinePage: React.FC = () => {
             battleStarted: !!payload.battleStarted, 
             enabled: !!payload.enabled, 
             currentTurnId: payload.currentTurnId || null, 
-            items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null, role: x.role })) 
+            items: (payload.items || []).map((x: any) => ({ 
+              id: x.id, 
+              name: x.name, 
+              imageUrl: x.imageUrl ?? null, 
+              fullImageUrl: x.fullImageUrl ?? null,
+              size: x.size ?? null,
+              role: x.role 
+            })) 
           };
           // Only update if content changed
           setInitiativeStrip(prev => {
@@ -281,7 +334,7 @@ const ProjectionSkylinePage: React.FC = () => {
             for (let i = 0; i < prev.items.length; i++) {
               const p = prev.items[i];
               const n = newStrip.items[i];
-              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.role !== n.role) {
+              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.fullImageUrl !== n.fullImageUrl || p.size !== n.size || p.role !== n.role) {
                 return newStrip;
               }
             }
@@ -421,7 +474,14 @@ const ProjectionSkylinePage: React.FC = () => {
             battleStarted: !!payload.battleStarted, 
             enabled: !!payload.enabled, 
             currentTurnId: payload.currentTurnId || null, 
-            items: (payload.items || []).map((x: any) => ({ id: x.id, name: x.name, imageUrl: x.imageUrl ?? null, role: x.role })) 
+            items: (payload.items || []).map((x: any) => ({ 
+              id: x.id, 
+              name: x.name, 
+              imageUrl: x.imageUrl ?? null, 
+              fullImageUrl: x.fullImageUrl ?? null,
+              size: x.size ?? null,
+              role: x.role 
+            })) 
           };
           // Only update if content changed to prevent flickering
           setInitiativeStrip(prev => {
@@ -432,7 +492,7 @@ const ProjectionSkylinePage: React.FC = () => {
             for (let i = 0; i < prev.items.length; i++) {
               const p = prev.items[i];
               const n = newStrip.items[i];
-              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.role !== n.role) {
+              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.fullImageUrl !== n.fullImageUrl || p.size !== n.size || p.role !== n.role) {
                 return newStrip;
               }
             }
@@ -486,6 +546,12 @@ const ProjectionSkylinePage: React.FC = () => {
     );
   }, [skylineCharacter]);
 
+  // Calculate current turn participant for image display
+  const currentTurnParticipant = React.useMemo(() => {
+    if (!initiativeStrip?.currentTurnId) return null;
+    return initiativeStrip.items.find(it => it.id === initiativeStrip.currentTurnId) || null;
+  }, [initiativeStrip]);
+
   return (
     <Box id="projection-skyline-root" sx={{ width: '100vw', height: '100vh', bgcolor: 'black', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       {activeMapId ? (
@@ -514,6 +580,68 @@ const ProjectionSkylinePage: React.FC = () => {
           <Typography variant="subtitle1" color="white" noWrap title={selectedDayLabel}>{selectedDayLabel}</Typography>
         </Box>
       ) : null}
+
+      {/* Current turn image overlay */}
+      {showCurrentTurnImage && currentTurnParticipant && currentTurnParticipant.fullImageUrl && (initiativeStrip?.battleStarted || battleStateStarted) ? (() => {
+        // Get size category (default to Medium if not specified)
+        const sizeCategory = currentTurnParticipant.size || 'Medium';
+        const sizeVw = imageSizes[sizeCategory] || imageSizes['Medium'] || 30;
+        
+        // Calculate position based on currentTurnImagePosition
+        let positionSx: any = { position: 'absolute' };
+        switch (currentTurnImagePosition) {
+          case 'center-center':
+            positionSx = { ...positionSx, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+            break;
+          case 'center-right':
+            positionSx = { ...positionSx, top: '50%', right: 32, transform: 'translateY(-50%)' };
+            break;
+          case 'center-left':
+            positionSx = { ...positionSx, top: '50%', left: 32, transform: 'translateY(-50%)' };
+            break;
+          case 'top-center':
+            positionSx = { ...positionSx, top: 32, left: '50%', transform: 'translateX(-50%)' };
+            break;
+          case 'top-right':
+            positionSx = { ...positionSx, top: 32, right: 32 };
+            break;
+          case 'top-left':
+            positionSx = { ...positionSx, top: 32, left: 32 };
+            break;
+          case 'bottom-center':
+            positionSx = { ...positionSx, bottom: 32, left: '50%', transform: 'translateX(-50%)' };
+            break;
+          case 'bottom-right':
+            positionSx = { ...positionSx, bottom: 32, right: 32 };
+            break;
+          case 'bottom-left':
+            positionSx = { ...positionSx, bottom: 32, left: 32 };
+            break;
+          default:
+            positionSx = { ...positionSx, top: '50%', right: 32, transform: 'translateY(-50%)' };
+        }
+        
+        return (
+          <Box 
+            sx={{ 
+              ...positionSx,
+              width: `${sizeVw}vw`,
+              maxWidth: 800,
+              minWidth: 150,
+            }}
+          >
+            <AuthImage
+              src={currentTurnParticipant.fullImageUrl}
+              alt=""
+              style={{ 
+                width: '100%', 
+                height: 'auto',
+                display: 'block'
+              }}
+            />
+          </Box>
+        );
+      })() : null}
 
       {showInitiativeStrip && (initiativeStrip?.battleStarted || battleStateStarted) && initiativeStrip?.enabled && (initiativeStrip.items?.length > 0) ? (
         <Box sx={{ position: 'absolute', bottom: 16, left: 16, px: 1, py: 0.75, bgcolor: 'rgba(0, 0, 0, 0)', borderRadius: 1, display: 'flex', alignItems: 'end', gap: 1 }}>

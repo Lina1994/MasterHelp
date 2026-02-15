@@ -70,6 +70,51 @@ const ProjectedMapMirror: React.FC<{
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
 
+  // Token visualization settings (guide dots and cell shading)
+  const [showGuideDots, setShowGuideDots] = useState<boolean>(() => {
+    try {
+      const val = localStorage.getItem('app.combat.showTokenAnchors');
+      return val === null ? true : val === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  const [showCellShading, setShowCellShading] = useState<boolean>(() => {
+    try {
+      const val = localStorage.getItem('app.combat.showTokenShadow');
+      return val === null ? true : val === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  // Listen for token visualization setting changes from other windows
+  useEffect(() => {
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel('campaign-sync');
+      bc.onmessage = (e: MessageEvent) => {
+        const data = e?.data;
+        if (!data || data.type !== 'tokenVisualizationUpdated') return;
+        if (data.campaignId !== activeCampaign?.id) return;
+        
+        if (typeof data.showTokenAnchors === 'boolean') {
+          setShowGuideDots(data.showTokenAnchors);
+        }
+        if (typeof data.showTokenShadow === 'boolean') {
+          setShowCellShading(data.showTokenShadow);
+        }
+      };
+    } catch {}
+
+    return () => {
+      try {
+        bc?.close();
+      } catch {}
+    };
+  }, [activeCampaign?.id]);
+
   // Load FoW settings from server (campaign-scoped) so Electron and Web match even across origins.
   useEffect(() => {
     let cancelled = false;
@@ -157,6 +202,15 @@ const ProjectedMapMirror: React.FC<{
   useEffect(() => {
     try { localStorage.setItem('app.projection.previewZoom', String(previewZoom)); } catch {}
   }, [previewZoom]);
+
+  // Sync tokenInfo when tokens change (from server or broadcast)
+  useEffect(() => {
+    if (!tokenInfo?.token?.id) return;
+    const updatedToken = tokens.find(t => t.id === tokenInfo.token.id);
+    if (updatedToken) {
+      setTokenInfo(prev => prev ? { ...prev, token: updatedToken } : null);
+    }
+  }, [tokens, tokenInfo?.token?.id]);
 
   // Note: onProjectionMapShow removed; we rely on server-side activeMap state.
 
@@ -394,6 +448,8 @@ const ProjectedMapMirror: React.FC<{
                             }}
                             highlightIds={(highlightTokenId ? new Set([highlightTokenId]) : null)}
                             tokenImageResolver={tokenImageResolver || defaultTokenImageResolver}
+                            showGuideDots={showGuideDots}
+                            showCellShading={showCellShading}
                           />
                           {/* Editor layer captures pointer events only when explicit fog edit is enabled */}
                           {fogEnabled && fogEditEnabled && (
@@ -437,6 +493,16 @@ const ProjectedMapMirror: React.FC<{
         campaignId={activeCampaign?.id}
         resolveTokenImage={resolveTokenImage}
         onClose={() => setTokenInfo(null)}
+        onUpdateToken={(id, patch) => {
+          updateToken(id, patch);
+          // Update tokenInfo to reflect changes in real-time
+          if (tokenInfo?.token?.id === id) {
+            setTokenInfo({
+              ...tokenInfo,
+              token: { ...tokenInfo.token, ...patch },
+            });
+          }
+        }}
       />
     </Paper>
   );
@@ -460,7 +526,9 @@ const TokensBridge: React.FC<{
   onSelectToken?: (token: import('../../api/maps').MapTokenPayload, anchor: { left: number; top: number }) => void;
   highlightIds: Set<string> | null;
   tokenImageResolver?: (id: string) => string | undefined;
-}> = ({ gridSettings, widthPx, heightPx, tokenMode, previewScale, transform, tokens, onAddToken, onMoveToken, onRemoveToken, onSelectToken, highlightIds, tokenImageResolver }) => {
+  showGuideDots?: boolean;
+  showCellShading?: boolean;
+}> = ({ gridSettings, widthPx, heightPx, tokenMode, previewScale, transform, tokens, onAddToken, onMoveToken, onRemoveToken, onSelectToken, highlightIds, tokenImageResolver, showGuideDots, showCellShading }) => {
   const onAdd = React.useCallback((cellKey: string, type: 'ally'|'enemy') => {
     const id = crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     
@@ -535,6 +603,8 @@ const TokensBridge: React.FC<{
       transform={{ zoom: transform?.zoom ?? 1, rotationDeg: transform?.rotationDeg ?? 0 }}
       highlightIds={highlightIds}
       getTokenImage={getTokenImage}
+      showGuideDots={showGuideDots}
+      showCellShading={showCellShading}
     />
   );
 };

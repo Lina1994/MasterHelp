@@ -94,7 +94,7 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
     setParticipants((prev) => [...prev, {
       id: ch.id!,
       name: ch.name,
-      kind: asEnemy ? 'enemy' : 'character',
+      kind: 'character', // Always 'character' since it comes from characters list
       role: asEnemy ? 'foe' : 'ally',
       level: ch.level,
     }]);

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardContent, Divider, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
@@ -13,6 +13,7 @@ import {
   endDiarySession,
   deleteDiarySession,
   updateDiaryCalendar,
+  updateCurrentDay,
   upsertDiaryEntry,
   updateDiarySession,
   visitDiaryDay,
@@ -76,6 +77,11 @@ export default function DiaryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [highlightStartButton, setHighlightStartButton] = useState(false);
   const [calendarSettingsExpanded, setCalendarSettingsExpanded] = useState(false);
+  
+  // Flag to prevent infinite loop when updating day from calendar
+  const isUpdatingFromLocal = useRef(false);
+  // Ref to keep track of latest calendar without causing re-renders
+  const calendarRef = useRef<DiaryCalendarConfig | null>(null);
 
   const [calendar, setCalendar] = useState<DiaryCalendarConfig | null>(null);
   const [calendarDraft, setCalendarDraft] = useState<DiaryCalendarConfig | null>(null);
@@ -105,6 +111,7 @@ export default function DiaryPage() {
       const cal = await getDiaryCalendar(campaignId);
       setCalendar(cal.config);
       setCalendarDraft(cal.config);
+      calendarRef.current = cal.config;
 
       const sessionsList = await listDiarySessions(campaignId);
       setSessions(sessionsList);
@@ -137,6 +144,12 @@ export default function DiaryPage() {
 
   // Sincronizar cambios del día desde el contexto (navegación desde sidebar)
   useEffect(() => {
+    // Skip if we're currently updating from local calendar selection
+    if (isUpdatingFromLocal.current) {
+      isUpdatingFromLocal.current = false;
+      return;
+    }
+    
     if (!contextSelectedDay?.day) return;
     if (!campaignId || contextSelectedDay.campaignId !== campaignId) return;
     
@@ -148,8 +161,30 @@ export default function DiaryPage() {
         contextDay.dayIndex !== selectedDay.dayIndex) {
       setSelectedDayState(contextDay);
       setSelectedMonthIndex(contextDay.monthIndex);
+      
+      // Immediately update calendar state to reflect new current day
+      // This prevents the icon from lagging behind
+      if (isMaster && calendarRef.current) {
+        const updatedCalendar = {
+          ...calendarRef.current,
+          currentMonthIndex: contextDay.monthIndex,
+          currentDayIndex: contextDay.dayIndex,
+        };
+        setCalendar(updatedCalendar);
+        setCalendarDraft(updatedCalendar);
+        calendarRef.current = updatedCalendar;
+        
+        // Then reload from backend to ensure sync (but don't block on this)
+        getDiaryCalendar(campaignId)
+          .then((cal) => {
+            setCalendar(cal.config);
+            setCalendarDraft(cal.config);
+            calendarRef.current = cal.config;
+          })
+          .catch((e) => console.error('Failed to reload calendar:', e));
+      }
     }
-  }, [contextSelectedDay, campaignId, selectedDay]);
+  }, [contextSelectedDay, campaignId, selectedDay, isMaster]);
 
   // Sincronizar el ID de la sesión activa con el contexto
   useEffect(() => {
@@ -235,11 +270,34 @@ export default function DiaryPage() {
     setError(null);
     setLoading(true);
     try {
-      const saved = await updateDiaryCalendar(campaignId, calendarDraft);
+      // Ensure required fields have defaults for backward compatibility
+      const configToSave: DiaryCalendarConfig = {
+        ...calendarDraft,
+        currentMonthIndex: calendarDraft.currentMonthIndex ?? 0,
+        currentDayIndex: calendarDraft.currentDayIndex ?? 1,
+      };
+      const saved = await updateDiaryCalendar(campaignId, configToSave);
       setCalendar(saved.config);
       setCalendarDraft(saved.config);
+      calendarRef.current = saved.config;
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Error guardando el calendario');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSetCurrentDay = async () => {
+    if (!campaignId || !selectedDay || !isMaster) return;
+    setError(null);
+    setLoading(true);
+    try {
+      const saved = await updateCurrentDay(campaignId, selectedDay.monthIndex, selectedDay.dayIndex);
+      setCalendar(saved.config);
+      setCalendarDraft(saved.config);
+      calendarRef.current = saved.config;
+    } catch (e: any) {
+      setError(e?.response?.data?.message || 'Error actualizando el día actual');
     } finally {
       setLoading(false);
     }
@@ -343,18 +401,50 @@ export default function DiaryPage() {
 
           <Box sx={{ flex: 1, minWidth: 280, maxWidth: { md: 400 } }}>
             {calendar ? (
-              <DiaryCalendarView
-                config={calendar}
-                selectedDay={selectedDay}
-                selectedMonthIndex={selectedMonthIndex}
-                onMonthChange={(idx) => setSelectedMonthIndex(idx)}
-                onSelectDay={(day) => {
-                  setSelectedDayState(day);
-                  if (calendar) {
-                    setSelectedMonthIndex(day.monthIndex);
-                  }
-                }}
-              />
+              <Stack spacing={2}>
+                <DiaryCalendarView
+                  config={calendar}
+                  selectedDay={selectedDay}
+                  selectedMonthIndex={selectedMonthIndex}
+                  onMonthChange={(idx) => setSelectedMonthIndex(idx)}
+                  onSelectDay={async (day) => {
+                    // Avoid infinite loop: only update if day is actually different
+                    const isDifferent = !selectedDay ||
+                      day.year !== selectedDay.year ||
+                      day.monthIndex !== selectedDay.monthIndex ||
+                      day.dayIndex !== selectedDay.dayIndex;
+                    
+                    if (!isDifferent) return;
+                    
+                    // Set flag to prevent sync from context
+                    isUpdatingFromLocal.current = true;
+                    
+                    setSelectedDayState(day);
+                    if (calendar) {
+                      setSelectedMonthIndex(day.monthIndex);
+                    }
+                    
+                    // Auto-update current day when master selects a day
+                    if (isMaster && campaignId) {
+                      const needsUpdate = 
+                        calendar.currentMonthIndex !== day.monthIndex ||
+                        calendar.currentDayIndex !== day.dayIndex;
+                      
+                      if (needsUpdate) {
+                        try {
+                          const saved = await updateCurrentDay(campaignId, day.monthIndex, day.dayIndex);
+                          setCalendar(saved.config);
+                          setCalendarDraft(saved.config);
+                          calendarRef.current = saved.config;
+                        } catch (e) {
+                          // Silent fail - day selection still works
+                          console.error('Failed to update current day:', e);
+                        }
+                      }
+                    }
+                  }}
+                />
+              </Stack>
             ) : (
               <Alert severity="info">Cargando calendario…</Alert>
             )}

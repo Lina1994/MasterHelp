@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, Button, Divider, Popover, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Divider, MenuItem, Popover, Stack, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AuthImage from '../common/AuthImage';
-import type { MapTokenPayload } from '../../api/maps';
+import type { MapTokenPayload, TokenSize } from '../../api/maps';
 import { listEncounters, updateEncounter, type EncounterParticipant, type EncounterSummary } from '../../api/encounters';
 import { getCharacter, updateCharacter, type CharacterPayload } from '../../api/characters';
 import { useCombatNotes } from '../../hooks/useCombatNotes';
@@ -38,7 +38,8 @@ export const TokenQuickInfoPopover: React.FC<{
   campaignId?: string | null;
   resolveTokenImage: (id: string) => string | undefined;
   onClose: () => void;
-}> = ({ open, token, anchorPosition, campaignId, resolveTokenImage, onClose }) => {
+  onUpdateToken?: (id: string, patch: Partial<MapTokenPayload>) => void;
+}> = ({ open, token, anchorPosition, campaignId, resolveTokenImage, onClose, onUpdateToken }) => {
   const navigate = useNavigate();
   const { activeEncounterId } = useActiveEncounter();
 
@@ -57,6 +58,16 @@ export const TokenQuickInfoPopover: React.FC<{
   const [notesDraft, setNotesDraft] = useState<string>('');
   const [savingHp, setSavingHp] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
+
+  const TOKEN_SIZES: TokenSize[] = ['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'];
+  const TOKEN_SIZE_LABELS: Record<TokenSize, string> = {
+    tiny: 'Diminuto',
+    small: 'Pequeño',
+    medium: 'Mediano',
+    large: 'Grande',
+    huge: 'Enorme',
+    gargantuan: 'Colosal',
+  };
 
   const isCharacterToken = !!character?.id;
   const isEncounterParticipant = !!participant?.id;
@@ -407,6 +418,47 @@ export const TokenQuickInfoPopover: React.FC<{
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
             Casilla: <strong>{token.cellKey}</strong> · Rotación: <strong>{Math.round(Number((token as any).rotationDeg ?? 0))}°</strong>
           </Typography>
+
+          {onUpdateToken && (
+            <>
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 600 }}>Tamaño del token</Typography>
+              <TextField
+                select
+                size="small"
+                fullWidth
+                label="Tamaño actual"
+                value={token.size || 'medium'}
+                onChange={(e) => {
+                  const newSize = e.target.value as TokenSize;
+                  onUpdateToken(token.id, {
+                    size: newSize,
+                    originalSize: token.originalSize || token.size || 'medium',
+                  });
+                }}
+              >
+                {TOKEN_SIZES.map((size) => (
+                  <MenuItem key={size} value={size}>
+                    {TOKEN_SIZE_LABELS[size]}
+                    {(token.originalSize || token.size || 'medium') === size && ' (Original)'}
+                  </MenuItem>
+                ))}
+              </TextField>
+              {token.originalSize && token.size !== token.originalSize && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  sx={{ mt: 1 }}
+                  onClick={() => {
+                    onUpdateToken(token.id, { size: token.originalSize });
+                  }}
+                >
+                  Restaurar a {TOKEN_SIZE_LABELS[token.originalSize]}
+                </Button>
+              )}
+            </>
+          )}
         </Box>
       )}
     </Popover>

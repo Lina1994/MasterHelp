@@ -13,6 +13,8 @@ export type MapTokenItem = {
   rotationDeg?: number | null;
   /** Size of the token (default: medium). */
   size?: 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan' | null;
+  /** Original size before any manual adjustments (to allow reset). */
+  originalSize?: 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan' | null;
   /** Orientation for hex grids (0-5 for Large/Gargantuan tokens). */
   orientation?: number | null;
 };

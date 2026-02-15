@@ -5,6 +5,8 @@ export type DiaryWeekdayConfig = { name: string };
 
 export type DiaryCalendarConfig = {
   currentYear: number;
+  currentMonthIndex: number;
+  currentDayIndex: number;
   /**
    * Optional year label template. Use `{year}` placeholder.
    * Example: `{year} después del colapso`.
@@ -66,6 +68,15 @@ export async function getDiaryCalendar(campaignId: string) {
 /** Update calendar configuration (masters only). */
 export async function updateDiaryCalendar(campaignId: string, config: DiaryCalendarConfig) {
   const res = await api.patch<CampaignCalendarResponse>(`/diary/campaigns/${campaignId}/calendar`, config);
+  return res.data;
+}
+
+/** Update the current day of the campaign (masters only). */
+export async function updateCurrentDay(campaignId: string, monthIndex: number, dayIndex: number) {
+  const res = await api.patch<CampaignCalendarResponse>(`/diary/campaigns/${campaignId}/calendar/current-day`, {
+    monthIndex,
+    dayIndex,
+  });
   return res.data;
 }
 

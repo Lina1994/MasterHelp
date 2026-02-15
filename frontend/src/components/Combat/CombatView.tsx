@@ -72,6 +72,11 @@ export interface CombatViewProps {
   characters: CharacterPayload[];
   onPatchCharacterLocal: (id: string, patch: Partial<CharacterPayload>) => void;
   monsters: Array<CampaignMonsterListItem & { compositeId: string }>;
+  // Ajustes de combate (compartidos con CombatSettingsView)
+  prioritizeEncounterMusic: boolean;
+  setPrioritizeEncounterMusic: (v: boolean) => void;
+  showInitiativeStrip: boolean;
+  onToggleInitiativeStrip: (v: boolean) => void;
 }
 
 const difficultyColor: Record<EncounterDifficulty, 'default' | 'success' | 'warning' | 'error'> = {
@@ -81,10 +86,22 @@ const difficultyColor: Record<EncounterDifficulty, 'default' | 'success' | 'warn
   'Mortal': 'error',
 };
 
-export default function CombatView({ encounters, isMaster, campaign, songs, onUpdateEncounter, characters, onPatchCharacterLocal, monsters }: CombatViewProps) {
+export default function CombatView({ 
+  encounters, 
+  isMaster, 
+  campaign, 
+  songs, 
+  onUpdateEncounter, 
+  characters, 
+  onPatchCharacterLocal, 
+  monsters,
+  prioritizeEncounterMusic,
+  setPrioritizeEncounterMusic,
+  showInitiativeStrip,
+  onToggleInitiativeStrip
+}: CombatViewProps) {
   const { activeEncounterId, setActiveEncounterId } = useActiveEncounter();
   const [selectedMapName, setSelectedMapName] = useState<string>('Mapa activo');
-  const [prioritizeEncounterMusic, setPrioritizeEncounterMusic] = useState(true);
   const [fogEnabled, setFogEnabled] = useState(true);
   const [participantsDraft, setParticipantsDraft] = useState<EncounterSummary['participants']>([]);
   const [savingInitiative, setSavingInitiative] = useState<Record<string, boolean>>({});
@@ -95,21 +112,6 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [monsterDetailByPid, setMonsterDetailByPid] = useState<Record<string, CampaignMonsterDetail | null>>({});
   const [viewMode, setViewMode] = useState<'participants' | 'initiative'>('participants');
-  
-  // Initialize showInitiativeStrip from localStorage to avoid flicker when re-entering combat
-  const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(() => {
-    try {
-      const raw = localStorage.getItem('app.skyline.initiativeStrip');
-      if (raw) {
-        const data = JSON.parse(raw);
-        // Only use cached value if it's for current campaign and was enabled
-        if (data.campaignId === campaign?.id && data.enabled === true) {
-          return true;
-        }
-      }
-    } catch {}
-    return false;
-  });
   
   const participantsRef = React.useRef<EncounterSummary['participants']>([]);
   const turnAlignedRef = React.useRef<boolean>(false);
@@ -126,23 +128,6 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const handleSelectEncounter = useCallback((id: string) => {
     setActiveEncounterId(id);
   }, [setActiveEncounterId]);
-
-  const handleToggleInitiativeStrip = useCallback(async (v: boolean) => {
-    setShowInitiativeStrip(v);
-    try {
-      if (campaign?.id) {
-        await setSkylineOverlaySettings(campaign.id, { showInitiativeStrip: v });
-        try { localStorage.setItem('app.skyline.settingsUpdated', JSON.stringify({ campaignId: campaign.id, showInitiativeStrip: v, at: Date.now() })); } catch {}
-        try {
-          if ('BroadcastChannel' in window) {
-            const bc = new BroadcastChannel('campaign-sync');
-            bc.postMessage({ type: 'skylineSettingsChanged', campaignId: campaign.id, settings: { showInitiativeStrip: v } });
-            bc.close();
-          }
-        } catch {}
-      }
-    } catch {}
-  }, [campaign?.id]);
 
   const orderedParticipants = useMemo(() => {
     const base = participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || []);
@@ -452,7 +437,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       
       // Get size from monster details if enemy
       let size: import('../../api/maps').TokenSize = 'medium';
-      if (p.role === 'foe') {
+      // Check if this is a character (skip size lookup for characters)
+      const isCharacter = p.kind === 'character' || charMap.has(p.id);
+      if (p.role === 'foe' && !isCharacter) {
         const md = monsterDetailByPid[p.id];
         if (md?.size) {
           size = normalizeSize(md.size);
@@ -462,7 +449,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       const rotationDeg = calculateRotationToNearestRival(cellKey, type, size, tokens || []);
       addToken({ id: idStr, type, label, cellKey, rotationDeg, size });
     });
-  }, [baseParticipants, allies, foes, addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById, calculateRotationToNearestRival, monsterDetailByPid, normalizeSize]);
+  }, [baseParticipants, allies, foes, addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById, calculateRotationToNearestRival, monsterDetailByPid, normalizeSize, charMap]);
 
   const createTokenForParticipant = useCallback((p: EncounterSummary['participants'][number]) => {
     if (!p) return;
@@ -519,7 +506,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     
     // Get size from monster details if enemy
     let size: import('../../api/maps').TokenSize = 'medium';
-    if (p.role === 'foe') {
+    // Check if this is a character (skip size lookup for characters)
+    const isCharacter = p.kind === 'character' || charMap.has(p.id);
+    if (p.role === 'foe' && !isCharacter) {
       const md = monsterDetailByPid[p.id];
       if (md?.size) {
         size = normalizeSize(md.size);
@@ -528,7 +517,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     
     const rotationDeg = calculateRotationToNearestRival(cellKey, type, size, tokens || []);
     addToken({ id: idStr, type, label, cellKey, rotationDeg, size });
-  }, [addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById, calculateRotationToNearestRival, monsterDetailByPid, normalizeSize]);
+  }, [addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById, calculateRotationToNearestRival, monsterDetailByPid, normalizeSize, charMap]);
 
   const tokenCandidates = useMemo(() => {
     return {
@@ -564,21 +553,23 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
     (async () => {
       try {
         if (!campaign?.id) { 
-          setShowInitiativeStrip(false); 
+          onToggleInitiativeStrip(false); 
           return; 
         }
         const s = await getSkylineOverlaySettings(campaign.id);
         if (!cancelled) {
           const newValue = !!s.showInitiativeStrip;
           // Only update if value actually changed to avoid unnecessary re-renders
-          setShowInitiativeStrip(prev => prev === newValue ? prev : newValue);
+          if (showInitiativeStrip !== newValue) {
+            onToggleInitiativeStrip(newValue);
+          }
         }
       } catch { 
-        if (!cancelled) setShowInitiativeStrip(false); 
+        if (!cancelled) onToggleInitiativeStrip(false); 
       }
     })();
     return () => { cancelled = true; };
-  }, [campaign?.id]);
+  }, [campaign?.id, onToggleInitiativeStrip, showInitiativeStrip]);
 
   // Mark as initialized after initial data is fully loaded
   // This prevents premature broadcasts to projection windows during mount
@@ -618,7 +609,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       const base = participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || []);
       for (const p of base) {
         if (p.role !== 'foe') continue;
-        if (p.kind === 'character') continue; // si es personaje, no hace falta bestiario
+        // Skip if this is a character (check both kind and charMap)
+        const isCharacter = p.kind === 'character' || charMap.has(p.id);
+        if (isCharacter) continue;
         const existing = monsterDetailByPid[p.id];
         // If we already have a non-null detail, don't refetch.
         if (existing) continue;
@@ -756,7 +749,9 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   }, [persistParticipants]);
 
   const setHp = useCallback((p: EncounterSummary['participants'][number], kind: 'currentHp' | 'tempHp', value: number | undefined) => {
-    if (p.kind === 'character' && p.id) {
+    // Check if this is a character (either explicitly marked or found in charMap)
+    const isCharacter = p.kind === 'character' || (p.id && charMap.has(p.id));
+    if (isCharacter && p.id) {
       const payload: any = {};
       if (kind === 'currentHp') payload.currentHp = value;
       if (kind === 'tempHp') payload.tempHp = value;
@@ -765,7 +760,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       if (kind === 'currentHp') setHpLocal(p.id, 'currentHp', value);
       schedulePersistInitiative(p.id);
     }
-  }, [setHpLocal, schedulePersistInitiative, updateCharacterHp]);
+  }, [setHpLocal, schedulePersistInitiative, updateCharacterHp, charMap]);
 
   const { startEncounterMusic, restorePreviousMusic } = useEncounterMusic({ campaignId: campaign?.id, selectedEncounter, songs, prioritizeEncounterMusic });
   const { mode: soundtrackMode } = useSoundtrackMode(campaign?.id || null);
@@ -792,10 +787,23 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
   const rollAllEnemiesInitiative = useCallback(async () => {
     foes.forEach((p) => {
       let mod = 0;
-      const detail = monsterDetailByPid[p.id];
-      if (detail && detail.abilities?.dex) {
-        const dex = detail.abilities.dex;
-        mod = Math.floor((dex - 10) / 2);
+      
+      // Check if this enemy is actually a character
+      const isCharacter = p.kind === 'character' || charMap.has(p.id);
+      
+      if (isCharacter) {
+        // For enemy characters, use character's DEX modifier
+        const char = charMap.get(p.id);
+        if (char && typeof char.dex === 'number') {
+          mod = Math.floor((char.dex - 10) / 2);
+        }
+      } else {
+        // For monster enemies, use monster detail's DEX modifier
+        const detail = monsterDetailByPid[p.id];
+        if (detail && detail.abilities?.dex) {
+          const dex = detail.abilities.dex;
+          mod = Math.floor((dex - 10) / 2);
+        }
       }
       
       const d20 = 1 + Math.floor(Math.random() * 20);
@@ -803,11 +811,15 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
       setInitiativeLocal(p.id, total);
     });
     foes.forEach((p) => schedulePersistInitiative(p.id));
-  }, [foes, monsterDetailByPid, setInitiativeLocal, schedulePersistInitiative]);
+  }, [foes, charMap, monsterDetailByPid, setInitiativeLocal, schedulePersistInitiative]);
 
   // Roll de HP para todos los enemigos
   const rollAllEnemiesHp = useCallback(async (mode: 'avg' | 'dice') => {
     foes.forEach((p) => {
+      // Skip character enemies - they already have HP defined
+      const isCharacter = p.kind === 'character' || charMap.has(p.id);
+      if (isCharacter) return;
+      
       const detail = monsterDetailByPid[p.id];
       let value: number | undefined;
       
@@ -838,7 +850,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
         schedulePersistInitiative(p.id);
       }
     });
-  }, [foes, monsterDetailByPid, setHpLocal, schedulePersistInitiative]);
+  }, [foes, charMap, monsterDetailByPid, setHpLocal, schedulePersistInitiative]);
 
   const handleStartBattle = useCallback(async () => {
     resetToStart();
@@ -917,7 +929,7 @@ export default function CombatView({ encounters, isMaster, campaign, songs, onUp
           fogEnabled={fogEnabled}
           setFogEnabled={setFogEnabled}
           showInitiativeStrip={showInitiativeStrip}
-          onToggleInitiativeStrip={handleToggleInitiativeStrip}
+          onToggleInitiativeStrip={onToggleInitiativeStrip}
         />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Vista previa vinculada a la ventana de jugadores. Permite seleccionar otro mapa y encuentro sin salir de esta pantalla.

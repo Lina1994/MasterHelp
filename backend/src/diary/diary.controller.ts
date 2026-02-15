@@ -14,6 +14,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { DiaryService } from './diary.service';
 import { UpdateDiaryCalendarDto } from './dto/update-calendar.dto';
+import { UpdateCurrentDayDto } from './dto/update-current-day.dto';
 import { UpsertDiaryEntryDto } from './dto/upsert-diary-entry.dto';
 import {
   CreateDiarySessionDto,
@@ -45,10 +46,21 @@ export class DiaryController {
   ) {
     return this.diaryService.updateCalendar(campaignId, req.user.userId, {
       currentYear: dto.currentYear,
+      currentMonthIndex: dto.currentMonthIndex,
+      currentDayIndex: dto.currentDayIndex,
       yearLabelTemplate: dto.yearLabelTemplate,
       months: dto.months,
       weekDays: dto.weekDays,
     });
+  }
+
+  @Patch('campaigns/:campaignId/calendar/current-day')
+  async updateCurrentDay(
+    @Param('campaignId') campaignId: string,
+    @Body() dto: UpdateCurrentDayDto,
+    @Req() req: any,
+  ) {
+    return this.diaryService.updateCurrentDay(campaignId, req.user.userId, dto.monthIndex, dto.dayIndex);
   }
 
   @Post('campaigns/:campaignId/entries/upsert')

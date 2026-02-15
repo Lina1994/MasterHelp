@@ -158,8 +158,19 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
             const ch = typeof p.currentHp === 'number' ? p.currentHp : undefined;
             const mx = typeof p.maxHp === 'number' ? p.maxHp : undefined;
             const percent = ch !== undefined && mx && mx > 0 ? Math.max(0, Math.min(100, (ch / mx) * 100)) : undefined;
-            const md = monsterDetailByPid[p.id];
-            const illustrationUrl = md?.imageUrls?.medium || md?.imageUrls?.low || md?.imageUrls?.high;
+            
+            // Get illustration: character image for character enemies, monster image for monster enemies
+            // Also check if an 'enemy' kind participant is actually a character by looking up in charMap
+            let illustrationUrl: string | undefined;
+            const isCharacter = p.kind === 'character' || charMap.has(p.id);
+            if (isCharacter) {
+              const char = charMap.get(p.id);
+              illustrationUrl = char?.characterImageUrl || undefined;
+            } else {
+              const md = monsterDetailByPid[p.id];
+              illustrationUrl = md?.imageUrls?.medium || md?.imageUrls?.low || md?.imageUrls?.high;
+            }
+            
             return (
               <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
                 <Paper variant="outlined" sx={{ p: 1, borderRadius: 1 }}>

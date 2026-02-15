@@ -25,6 +25,7 @@ import CharactersPage from '../pages/CharactersPage';
 import CharacterDetailPage from '../pages/CharacterDetailPage';
 import CombatPage from '../pages/CombatPage';
 import DiaryPage from '../pages/DiaryPage';
+import QuestsPage from '../pages/QuestsPage';
 
 const router = createBrowserRouter([
   // Ventana de proyección: ruta al margen del layout principal
@@ -56,6 +57,7 @@ const router = createBrowserRouter([
           { path: 'characters', element: <CharactersPage /> },
           { path: 'characters/:id', element: <CharacterDetailPage /> },
           { path: 'diary', element: <DiaryPage /> },
+          { path: 'quests', element: <QuestsPage /> },
           { path: 'campaign-bestiary', element: <CampaignBestiaryPage /> },
           // ...other protected routes
         ],

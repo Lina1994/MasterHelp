@@ -226,6 +226,8 @@ export type MapTokenPayload = {
   rotationDeg?: number;
   /** Size of the token (default: medium). */
   size?: TokenSize;
+  /** Original size before any manual adjustments (to allow reset). */
+  originalSize?: TokenSize;
   /** Orientation for hex grids (0-5 for Large/Gargantuan tokens). */
   orientation?: number;
 };

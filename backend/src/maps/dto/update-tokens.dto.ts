@@ -30,6 +30,11 @@ export class MapTokenDto {
   size?: 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
 
   @IsOptional()
+  @IsString()
+  @IsIn(['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'])
+  originalSize?: 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
+
+  @IsOptional()
   @IsNumber()
   orientation?: number;
 }
