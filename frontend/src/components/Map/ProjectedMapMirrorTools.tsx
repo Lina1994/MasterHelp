@@ -64,6 +64,9 @@ export type ProjectedMapMirrorToolsProps = {
   /** Optional helpers to auto-create tokens for encounter participants (Combat preview only). */
   onPrepareTokens?: (which: 'allies' | 'foes' | 'all') => void;
 
+  /** Optional handler to clear all tokens from the map. */
+  onClearAllTokens?: () => void;
+
   /** Optional lists to create tokens individually (Combat preview only). */
   tokenCandidates?: {
     allies: TokenCandidate[];
@@ -352,6 +355,21 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                 <MenuItem value="rotate">Rotar token</MenuItem>
                 <MenuItem value="erase">Borrar token</MenuItem>
               </TextField>
+
+              {props.onClearAllTokens && (
+                <>
+                  <Divider sx={{ my: 1 }} />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    onClick={props.onClearAllTokens}
+                    fullWidth
+                  >
+                    Limpiar todos
+                  </Button>
+                </>
+              )}
             </Stack>
           )}
         </Box>

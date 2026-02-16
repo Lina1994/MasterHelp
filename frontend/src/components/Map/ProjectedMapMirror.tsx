@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Paper, Typography, TextField, MenuItem, Stack, Button, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Paper, Typography, TextField, MenuItem, Stack, Button, ToggleButton, ToggleButtonGroup, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useActiveMap } from './ActiveMapContext';
 import AuthImage from '../common/AuthImage';
 import { getMapImageUrlSized, getMapSkylineUrlSized, listMaps } from '../../api/maps';
@@ -63,9 +63,10 @@ const ProjectedMapMirror: React.FC<{
   const [fogEditEnabled, setFogEditEnabled] = useState<boolean>(false);
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [tokenMode, setTokenMode] = useState<TokenEditMode>('none');
-  const { tokens, addToken, updateToken, removeToken } = useMapTokens(activeCampaign?.id, mapId || undefined);
+  const { tokens, addToken, updateToken, removeToken, setTokens } = useMapTokens(activeCampaign?.id, mapId || undefined);
   const { resolver: defaultTokenImageResolver } = useCharacterTokenImageResolver(activeCampaign?.id);
   const [tokenInfo, setTokenInfo] = useState<{ token: import('../../api/maps').MapTokenPayload; pos: { left: number; top: number } } | null>(null);
+  const [confirmClearTokens, setConfirmClearTokens] = useState(false);
   const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
@@ -355,6 +356,7 @@ const ProjectedMapMirror: React.FC<{
           tokenCandidates={tokenCandidates}
           onCreateTokenForCandidate={onCreateTokenForCandidate}
           existingTokenIds={existingTokenIds}
+          onClearAllTokens={() => setConfirmClearTokens(true)}
         />
       )}
       <Box ref={containerRef} sx={{ width: '100%', overflow: 'auto' }}>
@@ -504,6 +506,34 @@ const ProjectedMapMirror: React.FC<{
           }
         }}
       />
+
+      <Dialog
+        open={confirmClearTokens}
+        onClose={() => setConfirmClearTokens(false)}
+      >
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro de que quieres eliminar todos los tokens del mapa?
+            Esta acción no se puede deshacer.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmClearTokens(false)} autoFocus>
+            Cancelar
+          </Button>
+          <Button
+            onClick={() => {
+              setTokens([]);
+              setConfirmClearTokens(false);
+            }}
+            color="error"
+            variant="contained"
+          >
+            Eliminar todos
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

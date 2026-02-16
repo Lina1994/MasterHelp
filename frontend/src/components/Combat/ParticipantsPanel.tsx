@@ -155,9 +155,13 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
         </Stack>
         <Stack direction="row" spacing={1} flexWrap="wrap">
           {foes.map((p) => {
-            const ch = typeof p.currentHp === 'number' ? p.currentHp : undefined;
-            const mx = typeof p.maxHp === 'number' ? p.maxHp : undefined;
-            const percent = ch !== undefined && mx && mx > 0 ? Math.max(0, Math.min(100, (ch / mx) * 100)) : undefined;
+            const char = p.kind === 'character' ? charMap.get(p.id) : undefined;
+            const ch = (char?.currentHp ?? p.currentHp);
+            const mx = (char?.maxHp ?? p.maxHp);
+            const temp = (char?.tempHp);
+            const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
+            const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
+            const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
             
             // Get illustration: character image for character enemies, monster image for monster enemies
             // Also check if an 'enemy' kind participant is actually a character by looking up in charMap
@@ -190,25 +194,67 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
                     {percent !== undefined ? (
                       <Stack spacing={0.5}>
                         <LinearProgress variant="determinate" value={percent} />
-                        <Typography variant="caption" color="text.secondary">HP {ch}/{mx}</Typography>
+                        <Typography variant="caption" color="text.secondary">HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{typeof temp === 'number' ? ` · Temp ${temp}` : ''}</Typography>
                       </Stack>
                     ) : (
                       <Typography variant="caption" color="text.secondary">HP —</Typography>
                     )}
                     {isMaster ? (
                       <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="HP"
-                          inputProps={{ min: 0, style: { width: 64 } }}
-                          value={p.currentHp ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? undefined : Number(e.target.value);
-                            setHpLocal(p.id, 'currentHp', val);
-                            schedulePersistInitiative(p.id);
-                          }}
-                        />
+                        {p.kind === 'character' ? (
+                          <>
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP"
+                              inputProps={{ min: 0, style: { width: 64 } }}
+                              value={hasCh ? Number(ch) : ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHp(p, 'currentHp', val);
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); } }}
+                            />
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="Temp"
+                              inputProps={{ min: 0, style: { width: 64 } }}
+                              value={typeof temp === 'number' ? temp : ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHp(p, 'tempHp', val);
+                              }}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP"
+                              inputProps={{ min: 0, style: { width: 64 } }}
+                              value={hasCh ? Number(ch) : ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHpLocal(p.id, 'currentHp', val);
+                                schedulePersistInitiative(p.id);
+                              }}
+                            />
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="HP Max"
+                              inputProps={{ min: 1, style: { width: 64 } }}
+                              value={hasMx ? Number(mx) : ''}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? undefined : Number(e.target.value);
+                                setHpLocal(p.id, 'maxHp', val);
+                                schedulePersistInitiative(p.id);
+                              }}
+                            />
+                          </>
+                        )}
                         <TextField
                           size="small"
                           type="number"

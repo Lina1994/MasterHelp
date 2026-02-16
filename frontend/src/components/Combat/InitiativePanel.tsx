@@ -83,10 +83,10 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
         {orderedParticipants.map((p) => {
           const isEnemy = p.role === 'foe';
           const isAlly = !isEnemy;
-          const char = isAlly && p.kind === 'character' ? charMap.get(p.id) : undefined;
-          const ch = isAlly ? (char?.currentHp ?? p.currentHp) : (typeof p.currentHp === 'number' ? p.currentHp : undefined);
-          const mx = isAlly ? (char?.maxHp ?? p.maxHp) : (typeof p.maxHp === 'number' ? p.maxHp : undefined);
-          const temp = isAlly ? (char?.tempHp) : undefined;
+          const char = p.kind === 'character' ? charMap.get(p.id) : undefined;
+          const ch = (char?.currentHp ?? p.currentHp);
+          const mx = (char?.maxHp ?? p.maxHp);
+          const temp = (char?.tempHp);
           const hasCh = typeof ch === 'number' && !Number.isNaN(ch as any);
           const hasMx = typeof mx === 'number' && !Number.isNaN(mx as any) && (mx as number) > 0;
           const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
@@ -117,9 +117,6 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
                       sampleTrait: md.traits?.[0],
                       sampleAction: md.actions?.[0],
                     } : null;
-                    const ch = isAlly ? (char?.currentHp ?? p.currentHp) : (typeof p.currentHp === 'number' ? p.currentHp : undefined);
-                    const mx = isAlly ? (char?.maxHp ?? p.maxHp) : (typeof p.maxHp === 'number' ? p.maxHp : undefined);
-                    const temp = isAlly ? (char?.tempHp) : undefined;
                     console.log('[CombatView][Select]', {
                       participant: {
                         id: p.id,
@@ -161,7 +158,7 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
                     <Stack spacing={0.5}>
                       <LinearProgress variant="determinate" value={percent} />
                       <Typography variant="caption" color="text.secondary">
-                        HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{isAlly && typeof temp === 'number' ? ` · Temp ${temp}` : ''}
+                        HP {hasCh ? ch : '—'}/{hasMx ? mx : '—'}{typeof temp === 'number' ? ` · Temp ${temp}` : ''}
                       </Typography>
                     </Stack>
                   ) : (
@@ -169,7 +166,7 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
                   )}
                   {isMaster ? (
                     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                      {isAlly ? (
+                      {p.kind === 'character' ? (
                         <>
                           <TextField
                             size="small"
@@ -183,19 +180,17 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
                             }}
                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); } }}
                           />
-                          {p.kind === 'character' && (
-                            <TextField
-                              size="small"
-                              type="number"
-                              label="Temp"
-                              inputProps={{ min: 0, style: { width: 64 } }}
-                              value={typeof temp === 'number' ? temp : ''}
-                              onChange={(e) => {
-                                const val = e.target.value === '' ? undefined : Number(e.target.value);
-                                setHp(p, 'tempHp', val);
-                              }}
-                            />
-                          )}
+                          <TextField
+                            size="small"
+                            type="number"
+                            label="Temp"
+                            inputProps={{ min: 0, style: { width: 64 } }}
+                            value={typeof temp === 'number' ? temp : ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? undefined : Number(e.target.value);
+                              setHp(p, 'tempHp', val);
+                            }}
+                          />
                         </>
                       ) : (
                         <>
@@ -204,7 +199,7 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
                             type="number"
                             label="HP"
                             inputProps={{ min: 0, style: { width: 64 } }}
-                            value={p.currentHp ?? ''}
+                            value={hasCh ? Number(ch) : ''}
                             onChange={(e) => {
                               const val = e.target.value === '' ? undefined : Number(e.target.value);
                               setHpLocal(p.id, 'currentHp', val);
@@ -217,7 +212,7 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
                             type="number"
                             label="HP Max"
                             inputProps={{ min: 1, style: { width: 64 } }}
-                            value={p.maxHp ?? ''}
+                            value={hasMx ? Number(mx) : ''}
                             onChange={(e) => {
                               const val = e.target.value === '' ? undefined : Number(e.target.value);
                               setHpLocal(p.id, 'maxHp', val);
