@@ -25,6 +25,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import PetsIcon from '@mui/icons-material/Pets';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -251,6 +252,12 @@ const MainLayoutInner = () => {
           <ListItemButton onClick={() => navigate('/campaign-bestiary')} disabled={!activeCampaign?.id}>
             <ListItemIcon><PetsIcon /></ListItemIcon>
             <ListItemText primary={t('bestiary', 'Bestiario')} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem key="campaign-spells" disablePadding>
+          <ListItemButton onClick={() => navigate('/campaign-spells')} disabled={!activeCampaign?.id}>
+            <ListItemIcon><AutoFixHighIcon /></ListItemIcon>
+            <ListItemText primary={t('spells', 'Hechizos')} />
           </ListItemButton>
         </ListItem>
         {/* Más items aquí */}
