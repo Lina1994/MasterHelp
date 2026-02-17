@@ -9,6 +9,7 @@ import { SoundtrackModule } from './soundtrack/soundtrack.module';
 import { User } from './users/entities/user.entity';
 import { Campaign } from './campaigns/entities/campaign.entity';
 import { CampaignPlayer } from './campaigns/entities/campaign-player.entity';
+import { SkylineItemOverlay } from './campaigns/entities/skyline-item-overlay.entity';
 import { Song } from './soundtrack/entities/song.entity';
 import { Playlist } from './soundtrack/entities/playlist.entity';
 import { SoundEffect } from './soundtrack/soundeffects/entities/sound-effect.entity';
@@ -29,6 +30,12 @@ import { Encounter } from './encounters/entities/encounter.entity';
 import { EncountersModule } from './encounters/encounters.module';
 import { DiaryModule } from './diary/diary.module';
 import { QuestsModule } from './quests/quests.module';
+import { ShopsModule } from './shops/shops.module';
+import { Shop } from './shops/entities/shop.entity';
+import { ShopSection } from './shops/entities/shop-section.entity';
+import { ShopColumn } from './shops/entities/shop-column.entity';
+import { ShopEntry } from './shops/entities/shop-entry.entity';
+import { ShopCell } from './shops/entities/shop-cell.entity';
 
 @Module({
   imports: [
@@ -48,6 +55,7 @@ import { QuestsModule } from './quests/quests.module';
           User,
           Campaign,
           CampaignPlayer,
+          SkylineItemOverlay,
           Song,
           Playlist,
           SoundEffect,
@@ -58,6 +66,11 @@ import { QuestsModule } from './quests/quests.module';
           MapSkylineImage,
           Character,
           Encounter,
+          Shop,
+          ShopSection,
+          ShopColumn,
+          ShopEntry,
+          ShopCell,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -75,6 +88,7 @@ import { QuestsModule } from './quests/quests.module';
   EncountersModule,
   DiaryModule,
   QuestsModule,
+  ShopsModule,
     ManualsModule,
     SpellsModule,
     RacesModule,

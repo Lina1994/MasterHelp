@@ -4,6 +4,8 @@ import { RichTextEditor } from '../common/RichTextEditor';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import EditIcon from '@mui/icons-material/Edit';
+import { useState } from 'react';
 
 export type DiaryEntryItemDraft = {
   id?: string;
@@ -37,17 +39,23 @@ export function DiaryEntryPanel({
   isSaving,
   error,
 }: DiaryEntryPanelProps) {
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+
   const addItem = () => {
     const clientId = `new-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    onChangeItems([
-      ...items,
+    const newItems = [
+      // Add new item at the beginning (top) since newest items are shown first
       {
         clientId,
         title: null,
         html: '',
         isPublic: false, // default private
       },
-    ]);
+      ...items,
+    ];
+    onChangeItems(newItems);
+    // Set the new item as editing
+    setEditingItemId(clientId);
   };
 
   const updateItem = (clientId: string, patch: Partial<DiaryEntryItemDraft>) => {
@@ -113,7 +121,53 @@ export function DiaryEntryPanel({
                 <Alert severity="info">Aún no hay entradas para este día.</Alert>
               ) : null}
 
-              {items.map((it, idx) => (
+              {items.map((it, idx) => {
+                const isFirstItem = idx === 0;
+                const isEditing = editingItemId === it.clientId || isFirstItem;
+
+                if (!isEditing) {
+                  // Compact view
+                  return (
+                    <Box
+                      key={it.clientId}
+                      onClick={() => setEditingItemId(it.clientId)}
+                      sx={{
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        p: 2,
+                        cursor: 'pointer',
+                        '&:hover': {
+                          bgcolor: 'action.hover',
+                        },
+                        position: 'relative',
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}>
+                        {it.title ? (
+                          <Typography variant="subtitle2" fontWeight="bold">{it.title}</Typography>
+                        ) : (
+                          <Typography variant="caption" color="text.secondary" fontStyle="italic">Sin título</Typography>
+                        )}
+                        <Stack direction="row" alignItems="center" gap={0.5}>
+                          <Typography variant="caption" color={it.isPublic ? 'success.main' : 'text.secondary'}>
+                            {it.isPublic ? 'Pública' : 'Privada'}
+                          </Typography>
+                          <IconButton size="small" onClick={(e) => { e.stopPropagation(); setEditingItemId(it.clientId); }}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                      </Stack>
+                      <Box
+                        sx={{ mt: 1 }}
+                        dangerouslySetInnerHTML={{ __html: it.html || '<p><em>Sin contenido</em></p>' }}
+                      />
+                    </Box>
+                  );
+                }
+
+                // Full edit view
+                return (
                 <Box key={it.clientId} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
                   <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
                     <TextField
@@ -149,7 +203,8 @@ export function DiaryEntryPanel({
                     placeholder={it.isPublic ? 'Contenido público (visible para jugadores)' : 'Contenido privado (solo master)'}
                   />
                 </Box>
-              ))}
+                );
+              })}
             </Stack>
           )}
 

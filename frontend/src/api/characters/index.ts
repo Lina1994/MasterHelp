@@ -22,6 +22,8 @@ export interface CharacterPayload {
   age?: string; height?: string; weight?: string; eyes?: string; skin?: string; hair?: string;
   tokenKind?: 'color'|'image'; tokenColor?: string; tokenImageUrl?: string; characterImageUrl?: string;
   spellcastingAbility?: 'int'|'wis'|'cha' | null; spellSaveDC?: number | null; spellAttackBonus?: number | null; cantrips?: string[]; spellsByLevel?: Record<string,string[]>;
+  experiencePoints?: number;
+  cp?: number; sp?: number; ep?: number; gp?: number; pp?: number;
   alliesAndOrganizations?: string; backstory?: string; treasure?: string;
   visibleToPlayers?: boolean;
 }

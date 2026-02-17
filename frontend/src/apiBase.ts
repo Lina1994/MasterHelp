@@ -39,15 +39,22 @@ api.interceptors.response.use(
 	(error) => {
 		const status = error?.response?.status;
 		if ((status === 401 || status === 403) && !isLoggingOut) {
-			isLoggingOut = true;
-			try {
-				localStorage.removeItem('access_token');
-				localStorage.removeItem('current_user');
-				localStorage.removeItem('activeCampaignId');
-			} catch {}
-			// Redirige a login de forma segura
-			if (typeof window !== 'undefined') {
-				window.location.href = '/login';
+			// Never redirect projection windows to login – they should keep
+			// displaying whatever they have and recover via polling.
+			const isProjection = typeof window !== 'undefined' &&
+				(window.location.pathname.startsWith('/projection') ||
+				 window.location.hash.includes('/projection'));
+			if (!isProjection) {
+				isLoggingOut = true;
+				try {
+					localStorage.removeItem('access_token');
+					localStorage.removeItem('current_user');
+					localStorage.removeItem('activeCampaignId');
+				} catch {}
+				// Redirige a login de forma segura
+				if (typeof window !== 'undefined') {
+					window.location.href = '/login';
+				}
 			}
 		}
 		return Promise.reject(error);

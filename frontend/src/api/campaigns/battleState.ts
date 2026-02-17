@@ -25,3 +25,18 @@ export async function getCampaignBattleStatePublic(campaignId: string): Promise<
 export async function setCampaignBattleState(campaignId: string, state: Partial<CampaignBattleState>): Promise<void> {
   await api.patch(`/campaigns/${campaignId}/battle-state`, state);
 }
+
+/**
+ * Public (no-auth) mapping of encounter participant IDs → bestiary monster IDs.
+ * Used by the projection window to resolve token images without authentication.
+ *
+ * @returns Record where key = participantId, value = monsterCampaignId.
+ */
+export async function getParticipantMonsterMapPublic(
+  campaignId: string,
+): Promise<Record<string, string>> {
+  const res = await api.get<Record<string, string>>(
+    `/campaigns/projection/${campaignId}/participant-monster-map`,
+  );
+  return res.data;
+}

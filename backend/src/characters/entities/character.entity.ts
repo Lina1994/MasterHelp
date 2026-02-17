@@ -133,6 +133,28 @@ export class Character {
   @Column({ type: 'simple-json', nullable: true })
   spellsByLevel?: { [level: string]: string[] } | null; // e.g., { '1': ['Magic Missile'], '2': [...] }
 
+  // --- Experience ---
+  /** Total experience points accumulated. */
+  @Column({ type: 'int', default: 0 })
+  experiencePoints: number;
+
+  // --- Currency (D&D standard denominations) ---
+  /** Copper pieces. */
+  @Column({ type: 'int', default: 0 })
+  cp: number;
+  /** Silver pieces. */
+  @Column({ type: 'int', default: 0 })
+  sp: number;
+  /** Electrum pieces. */
+  @Column({ type: 'int', default: 0 })
+  ep: number;
+  /** Gold pieces. */
+  @Column({ type: 'int', default: 0 })
+  gp: number;
+  /** Platinum pieces. */
+  @Column({ type: 'int', default: 0 })
+  pp: number;
+
   // --- Social & story ---
   @Column({ type: 'text', nullable: true })
   alliesAndOrganizations?: string | null;

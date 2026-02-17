@@ -14,6 +14,7 @@ import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
 import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
 import { Character } from '../characters/entities/character.entity';
 import { Encounter } from '../encounters/entities/encounter.entity';
+import { CampaignMonster } from '../monsters/entities/campaign-monster.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 import { BattleStateDto } from './dto/battle-state.dto';
@@ -459,6 +460,31 @@ export class CampaignsService {
     };
   }
 
+  /**
+   * Public read-only mapping of encounter participant IDs to their bestiary
+   * monster `monsterCampaignId`. The projection window uses this to match
+   * tokens (keyed by participant ID) to the monster images it already has.
+   *
+   * @returns Record where key = participantId, value = monsterCampaignId.
+   */
+  async getParticipantMonsterMappingPublic(
+    campaignId: string,
+  ): Promise<Record<string, string>> {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['activeEncounter'],
+    });
+    if (!campaign?.activeEncounter?.participants?.length) return {};
+
+    const result: Record<string, string> = {};
+    for (const p of campaign.activeEncounter.participants) {
+      if (p.monsterCampaignId) {
+        result[p.id] = p.monsterCampaignId;
+      }
+    }
+    return result;
+  }
+
   async setBattleState(campaignId: string, dto: BattleStateDto) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['activeEncounter'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
@@ -507,6 +533,100 @@ export class CampaignsService {
     }
     campaign.selectedManualIds = ids;
     await this.campaignsRepository.save(campaign);
+    return { ok: true };
+  }
+
+  // --- Skyline Item Overlays ---
+  
+  /**
+   * Get all skyline item overlays for a campaign.
+   * Only owner can view (players don't control skyline).
+   */
+  async getSkylineItems(campaignId: string, requestingUserId: number) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner'],
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== requestingUserId) {
+      throw new ForbiddenException('Only campaign owner can manage skyline items');
+    }
+
+    const SkylineItemOverlay = this.campaignsRepository.manager.getRepository('SkylineItemOverlay');
+    const items = await SkylineItemOverlay.find({
+      where: { campaignId },
+      order: { order: 'ASC', createdAt: 'ASC' },
+    });
+    return items;
+  }
+
+  /**
+   * Add a new skyline item overlay.
+   * Only owner can add.
+   * Removes all existing items before adding the new one (only one item at a time).
+   */
+  async addSkylineItem(campaignId: string, requestingUserId: number, dto: { cellId: string; label?: string; order?: number }) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner'],
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== requestingUserId) {
+      throw new ForbiddenException('Only campaign owner can add skyline items');
+    }
+
+    const SkylineItemOverlay = this.campaignsRepository.manager.getRepository('SkylineItemOverlay');
+    
+    // Remove all existing items for this campaign (only one item at a time)
+    await SkylineItemOverlay.delete({ campaignId });
+    
+    const item = SkylineItemOverlay.create({
+      campaignId,
+      cellId: dto.cellId,
+      label: dto.label || null,
+      order: dto.order ?? 0,
+    });
+    await SkylineItemOverlay.save(item);
+    return item;
+  }
+
+  /**
+   * Remove a skyline item overlay.
+   * Only owner can remove.
+   */
+  async removeSkylineItem(itemId: string, requestingUserId: number) {
+    const SkylineItemOverlay = this.campaignsRepository.manager.getRepository('SkylineItemOverlay');
+    const item = await SkylineItemOverlay.findOne({
+      where: { id: itemId },
+      relations: ['campaign', 'campaign.owner'],
+    });
+    if (!item) throw new NotFoundException('Skyline item not found');
+    
+    const campaign = item.campaign as any;
+    if (campaign?.owner?.id !== requestingUserId) {
+      throw new ForbiddenException('Only campaign owner can remove skyline items');
+    }
+
+    await SkylineItemOverlay.remove(item);
+    return { ok: true };
+  }
+
+  /**
+   * Remove all skyline items for a campaign.
+   * Only owner can clear.
+   */
+  async clearSkylineItems(campaignId: string, requestingUserId: number) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations: ['owner'],
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== requestingUserId) {
+      throw new ForbiddenException('Only campaign owner can clear skyline items');
+    }
+
+    const SkylineItemOverlay = this.campaignsRepository.manager.getRepository('SkylineItemOverlay');
+    await SkylineItemOverlay.delete({ campaignId });
     return { ok: true };
   }
 }

@@ -65,6 +65,14 @@ export class CreateCharacterDto {
   @IsOptional() @IsArray() @Transform(({ value }) => Array.isArray(value) ? value.map(String) : []) cantrips?: string[];
   @IsOptional() @IsObject() spellsByLevel?: { [level: string]: string[] };
 
+  @IsOptional() @IsInt() @Min(0) experiencePoints?: number;
+
+  @IsOptional() @IsInt() @Min(0) cp?: number;
+  @IsOptional() @IsInt() @Min(0) sp?: number;
+  @IsOptional() @IsInt() @Min(0) ep?: number;
+  @IsOptional() @IsInt() @Min(0) gp?: number;
+  @IsOptional() @IsInt() @Min(0) pp?: number;
+
   @IsOptional() @IsString() alliesAndOrganizations?: string;
   @IsOptional() @IsString() backstory?: string;
   @IsOptional() @IsString() treasure?: string;

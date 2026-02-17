@@ -42,6 +42,31 @@ export class CampaignsController {
     return this.campaignsService.setActiveSkylineCharacter(id, body?.characterId ?? null);
   }
 
+  // --- Skyline Item Overlays endpoints ---
+  @Get(':id/skyline-items')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async getSkylineItems(@Request() req, @Param('id') campaignId: string) {
+    return this.campaignsService.getSkylineItems(campaignId, req.user.userId);
+  }
+
+  @Post(':id/skyline-items')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async addSkylineItem(@Request() req, @Param('id') campaignId: string, @Body() body: { cellId: string; label?: string; order?: number }) {
+    return this.campaignsService.addSkylineItem(campaignId, req.user.userId, body);
+  }
+
+  @Delete('skyline-items/:itemId')
+  @UseGuards(JwtAuthGuard)
+  async removeSkylineItem(@Request() req, @Param('itemId') itemId: string) {
+    return this.campaignsService.removeSkylineItem(itemId, req.user.userId);
+  }
+
+  @Delete(':id/skyline-items')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async clearSkylineItems(@Request() req, @Param('id') campaignId: string) {
+    return this.campaignsService.clearSkylineItems(campaignId, req.user.userId);
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard)
   findAll(@Request() req) {
@@ -208,6 +233,17 @@ export class CampaignsController {
   @Get('projection/:id/battle-state')
   async getBattleStatePublic(@Param('id') id: string) {
     return this.campaignsService.getBattleStatePublic(id);
+  }
+
+  /**
+   * Public mapping of encounter participant IDs to their bestiary monster IDs.
+   * Used by the projection window to resolve token images without authentication.
+   *
+   * @returns Record&lt;participantId, monsterCampaignId&gt;
+   */
+  @Get('projection/:id/participant-monster-map')
+  async getParticipantMonsterMapPublic(@Param('id') id: string) {
+    return this.campaignsService.getParticipantMonsterMappingPublic(id);
   }
 
   /**

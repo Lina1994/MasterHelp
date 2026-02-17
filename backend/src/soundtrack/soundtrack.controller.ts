@@ -10,7 +10,6 @@ import { Response } from 'express';
 import { CreatePlaylistDto } from './dto/create-playlist.dto';
 import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 
-@UseGuards(JwtAuthGuard)
 @Controller('soundtrack')
 export class SoundtrackController {
   constructor(private readonly service: SoundtrackService) {}
@@ -23,6 +22,7 @@ export class SoundtrackController {
   }
 
   @Post('songs')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async create(@Req() req, @Body() dto: CreateSongDto, @UploadedFile() file?: { buffer: Buffer; mimetype: string; size: number }) {
     // campaignId (opcional) puede venir en el multipart form-data y el DTO lo recogerá
@@ -37,6 +37,7 @@ export class SoundtrackController {
   }
 
   @Get('campaigns/:campaignId/songs')
+  @UseGuards(JwtAuthGuard)
   async listForCampaign(
     @Req() req,
     @Param('campaignId') campaignId: string,
@@ -57,6 +58,7 @@ export class SoundtrackController {
   }
 
   @Get('songs')
+  @UseGuards(JwtAuthGuard)
   async listOwned(
     @Req() req,
     @Query('q') q?: string,
@@ -77,32 +79,38 @@ export class SoundtrackController {
   }
 
   @Get('filters')
+  @UseGuards(JwtAuthGuard)
   async listOwnedFilters(@Req() req) {
     return this.service.getFilterOptions(req.user);
   }
 
   @Get('campaigns/:campaignId/filters')
+  @UseGuards(JwtAuthGuard)
   async listCampaignFilters(@Req() req, @Param('campaignId') campaignId: string) {
     return this.service.getFilterOptions(req.user, campaignId);
   }
 
   @Get('usage')
+  @UseGuards(JwtAuthGuard)
   async getUsage(@Req() req) {
     return this.service.getUsage(req.user);
   }
 
   // ===== Playlists =====
   @Get('campaigns/:campaignId/playlists')
+  @UseGuards(JwtAuthGuard)
   async listPlaylists(@Req() req, @Param('campaignId') campaignId: string) {
     return this.service.listPlaylists(req.user, campaignId);
   }
 
   @Post('campaigns/:campaignId/playlists')
+  @UseGuards(JwtAuthGuard)
   async createPlaylist(@Req() req, @Param('campaignId') campaignId: string, @Body() dto: CreatePlaylistDto) {
     return this.service.createPlaylist(req.user, campaignId, dto);
   }
 
   @Patch('campaigns/:campaignId/playlists/:playlistId')
+  @UseGuards(JwtAuthGuard)
   async updatePlaylist(
     @Req() req,
     @Param('campaignId') campaignId: string,
@@ -113,31 +121,37 @@ export class SoundtrackController {
   }
 
   @Delete('campaigns/:campaignId/playlists/:playlistId')
+  @UseGuards(JwtAuthGuard)
   async deletePlaylist(@Req() req, @Param('campaignId') campaignId: string, @Param('playlistId') playlistId: string) {
     return this.service.deletePlaylist(req.user, campaignId, playlistId);
   }
 
   @Patch('songs/:songId')
+  @UseGuards(JwtAuthGuard)
   async update(@Req() req, @Param('songId') songId: string, @Body() dto: UpdateSongDto) {
     return this.service.update(req.user, songId, dto);
   }
 
   @Post('songs/:songId/associate')
+  @UseGuards(JwtAuthGuard)
   async associate(@Req() req, @Param('songId') songId: string, @Body() body: AssociateSongDto) {
     return this.service.associate(req.user, songId, body.campaignIds);
   }
 
   @Delete('songs/:songId/associate/:campaignId')
+  @UseGuards(JwtAuthGuard)
   async unassociate(@Req() req, @Param('songId') songId: string, @Param('campaignId') campaignId: string) {
     return this.service.unassociate(req.user, songId, campaignId);
   }
 
   @Delete('songs/:songId')
+  @UseGuards(JwtAuthGuard)
   async remove(@Req() req, @Param('songId') songId: string) {
     return this.service.remove(req.user, songId);
   }
 
   @Get('songs/:songId/stream')
+  @UseGuards(JwtAuthGuard)
   async stream(@Req() req, @Param('songId') songId: string, @Query('campaignId') campaignId: string | undefined, @Res() res: Response) {
     const normalizedCampaignId = campaignId && campaignId.trim().length > 0 ? campaignId : undefined;
     const song = await this.service.getStreamable(req.user, songId, normalizedCampaignId);
@@ -174,6 +188,7 @@ export class SoundtrackController {
   }
 
   @Post('songs/:songId/played')
+  @UseGuards(JwtAuthGuard)
   async markPlayed(@Req() req, @Param('songId') songId: string, @Query('campaignId') campaignId?: string) {
     const normalizedCampaignId = campaignId && campaignId.trim().length > 0 ? campaignId : undefined;
     return this.service.markPlayed(req.user, songId, normalizedCampaignId);
@@ -184,6 +199,7 @@ export class SoundtrackController {
    * Consecutive duplicates are already de-duplicated server-side.
    */
   @Get('campaigns/:campaignId/history')
+  @UseGuards(JwtAuthGuard)
   async getHistory(
     @Req() req,
     @Param('campaignId') campaignId: string,
@@ -205,6 +221,7 @@ export class SoundtrackController {
    * Only campaign owner can clear.
    */
   @Delete('campaigns/:campaignId/history')
+  @UseGuards(JwtAuthGuard)
   async clearHistory(@Req() req, @Param('campaignId') campaignId: string) {
     return this.service.clearCampaignPlayHistory(req.user.userId, campaignId);
   }
@@ -214,6 +231,7 @@ export class SoundtrackController {
    * Used by Skyline projection windows to show current song title.
    */
   @Get('campaigns/:campaignId/now-playing')
+  @UseGuards(JwtAuthGuard)
   async getNowPlaying(@Req() req, @Param('campaignId') campaignId: string) {
     return this.service.getNowPlayingTitle(req.user.userId, campaignId);
   }

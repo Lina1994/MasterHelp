@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Box, Typography } from '@mui/material';
 import AuthImage from '../components/common/AuthImage';
 import { getMapSkylineUrlSized, listMaps } from '../api/maps';
@@ -11,6 +11,8 @@ import { getActiveEncounterId } from '../api/campaigns/activeEncounter';
 import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { getSkylineOverlaySettingsPublic } from '../api/campaigns/skylineOverlay';
 import { getCampaignNowPlayingTitlePublic } from '../api/soundtrack/nowPlaying';
+import { getSkylineItems, SkylineItemOverlay } from '../api/campaigns/skylineItems';
+import { getCellStreamUrl } from '../api/shops';
 
 const SHOW_DAY_IN_SKYLINE_KEY = 'diary_showSelectedDayInSkyline';
 const SELECTED_DAY_KEY = 'app.diary.selectedDay';
@@ -87,6 +89,12 @@ const ProjectionSkylinePage: React.FC = () => {
   const [nowPlayingTitle, setNowPlayingTitle] = useState<string | null>(null);
   const [showSelectedDayInSkyline, setShowSelectedDayInSkyline] = useState<boolean>(loadShowSelectedDayInSkyline);
   const [selectedDayLabel, setSelectedDayLabel] = useState<string | null>(null);
+  const [skylineItems, setSkylineItems] = useState<SkylineItemOverlay[]>([]);
+  const [connectionError, setConnectionError] = useState<boolean>(false);
+  const [lastConnectionAttempt, setLastConnectionAttempt] = useState<number>(Date.now());
+  // Tracks when the initiative strip was last updated via BroadcastChannel/localStorage
+  // to prevent polling from overwriting with stale server data.
+  const lastBroadcastStripUpdateRef = useRef<number>(0);
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
@@ -117,16 +125,28 @@ const ProjectionSkylinePage: React.FC = () => {
       try {
         const fetched = await getActiveSkylineCharacterId(campaignIdFromQuery || activeCampaign?.id || '');
         charId = fetched ?? undefined;
-      } catch {
+        setConnectionError(false); // Clear error on successful request
+      } catch (err: any) {
         charId = undefined;
+        // Check if it's a network/connection error
+        if (!err?.response) {
+          setConnectionError(true);
+          setLastConnectionAttempt(Date.now());
+        }
       }
     }
     if (!charId) { setSkylineCharacter(null); return; }
     try {
       const ch = await getCharacter(charId);
       setSkylineCharacter(ch);
-    } catch {
+      setConnectionError(false); // Clear error on successful request
+    } catch (err: any) {
       setSkylineCharacter(null);
+      // Check if it's a network/connection error
+      if (!err?.response) {
+        setConnectionError(true);
+        setLastConnectionAttempt(Date.now());
+      }
     }
   }, [activeCampaign?.activeSkylineCharacter?.id, activeCampaign?.id, campaignIdFromQuery]);
 
@@ -139,6 +159,41 @@ const ProjectionSkylinePage: React.FC = () => {
       setShowInitiativeStrip(!!settings.showInitiativeStrip);
     } catch {}
   }, [activeCampaign?.id, campaignIdFromQuery]);
+
+  const loadSkylineItems = useCallback(async () => {
+    const cid = campaignIdFromQuery || activeCampaign?.id;
+    if (!cid) {
+      setSkylineItems([]);
+      return;
+    }
+    try {
+      const items = await getSkylineItems(cid);
+      setSkylineItems(items);
+      setConnectionError(false); // Clear error on successful request
+    } catch (err: any) {
+      console.error('[ProjectionSkyline] Failed to load skyline items:', err);
+      setSkylineItems([]);
+      // Check if it's a network/connection error
+      if (!err?.response) {
+        setConnectionError(true);
+        setLastConnectionAttempt(Date.now());
+      }
+    }
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
+  // Auto-retry connection when there's a connection error
+  useEffect(() => {
+    if (!connectionError) return;
+    
+    const retryInterval = setInterval(() => {
+      console.log('[ProjectionSkyline] Attempting to reconnect...');
+      // Trigger a reload which will clear the error on success
+      loadSkylineCharacter().catch(() => {});
+      loadSkylineItems().catch(() => {});
+    }, 5000); // Retry every 5 seconds
+
+    return () => clearInterval(retryInterval);
+  }, [connectionError, loadSkylineCharacter, loadSkylineItems]);
 
   // Load active skyline character when campaign context or query changes
   useEffect(() => {
@@ -155,6 +210,14 @@ const ProjectionSkylinePage: React.FC = () => {
     run();
     return () => { cancelled = true; };
   }, [loadSkylineSettings]);
+
+  // Load skyline items when campaign context or query changes
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => { if (!cancelled) await loadSkylineItems(); };
+    run();
+    return () => { cancelled = true; };
+  }, [loadSkylineItems]);
 
   // Listen to storage events (other window toggled skyline) and reload
   useEffect(() => {
@@ -177,6 +240,24 @@ const ProjectionSkylinePage: React.FC = () => {
     return () => window.removeEventListener('storage', handler);
   }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter]);
 
+  // Listen to storage events for skyline items updates
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key !== 'app.skyline.itemsUpdated') return;
+      try {
+        const payload = e.newValue ? JSON.parse(e.newValue) : null;
+        if (!payload) return;
+        const cid = payload.campaignId as string | undefined;
+        if (!cid) return;
+        if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
+          loadSkylineItems();
+        }
+      } catch {}
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineItems]);
+
   // Fast-sync via BroadcastChannel
   useEffect(() => {
     const cid = activeCampaign?.id || campaignIdFromQuery;
@@ -189,6 +270,9 @@ const ProjectionSkylinePage: React.FC = () => {
           const data = e?.data;
           if (data?.type === 'activeSkylineChanged' && data?.campaignId === cid) {
             loadSkylineCharacter();
+          }
+          if (data?.type === 'skylineItemsChanged' && data?.campaignId === cid) {
+            loadSkylineItems();
           }
           if (data?.type === 'nowPlayingChanged' && data?.campaignId === cid) {
             // Cross-context robust update: re-fetch via public endpoint
@@ -203,6 +287,9 @@ const ProjectionSkylinePage: React.FC = () => {
             if (st?.currentTurnImageSizes && typeof st.currentTurnImageSizes === 'object') setImageSizes(st.currentTurnImageSizes);
           }
           if (data?.type === 'initiativeStripUpdated' && data?.campaignId === cid) {
+            // Mark this as a fresh BroadcastChannel update so polling skips
+            // overwriting with potentially stale server data.
+            lastBroadcastStripUpdateRef.current = Date.now();
             const payload = data as any;
             const newStrip = { 
               battleStarted: !!payload.battleStarted, 
@@ -217,6 +304,8 @@ const ProjectionSkylinePage: React.FC = () => {
                 role: x.role 
               })) 
             };
+            // Also update battleStateStarted to stay in sync
+            setBattleStateStarted(!!payload.battleStarted);
             // Only update if the content actually changed to prevent unnecessary re-renders and image flickering
             setInitiativeStrip(prev => {
               // Quick comparison: count, enabled, battleStarted, currentTurn
@@ -240,22 +329,26 @@ const ProjectionSkylinePage: React.FC = () => {
       }
     } catch {}
     return () => { try { bc?.close(); } catch {} };
-  }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter]);
+  }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter, loadSkylineItems]);
 
-  // Poll server periodically to reflect remote changes (multi-device control)
+  // Poll server periodically to reflect remote changes (multi-device control).
+  // Uses a ref to avoid restarting the interval when callbacks change,
+  // and a guard flag to prevent concurrent poll runs.
+  const pollFnRef = useRef<() => Promise<void>>();
   useEffect(() => {
     const cid = activeCampaign?.id || campaignIdFromQuery;
-    if (!cid) return;
-    let disposed = false;
-    const intervalMs = 2000;
-    const doPoll = async () => {
-      if (disposed) return;
+    pollFnRef.current = async () => {
+      if (!cid) return;
       await loadSkylineCharacter();
+      // Fetch settings – capture value locally so the strip update below
+      // uses the *freshly-fetched* showInitiativeStrip rather than the
+      // (potentially stale) closure-captured React state.
+      let fetchedShowInitiativeStrip = showInitiativeStrip;
       try {
-        // Refresh skyline settings to ensure show/hide state updates across app/web contexts
         const settings = await getSkylineOverlaySettingsPublic(cid);
         setShowSongTitle(!!settings.showSongTitle);
         setShowInitiativeStrip(!!settings.showInitiativeStrip);
+        fetchedShowInitiativeStrip = !!settings.showInitiativeStrip;
       } catch {}
       try {
         const r = await getCampaignNowPlayingTitlePublic(cid);
@@ -263,47 +356,122 @@ const ProjectionSkylinePage: React.FC = () => {
       } catch {}
       try {
         const bs = await getCampaignBattleStatePublic(cid);
-        setBattleStateStarted(!!bs.started);
-        if (Array.isArray(bs.items)) {
-          const newStrip = { 
-            battleStarted: !!bs.started, 
-            enabled: showInitiativeStrip, 
-            currentTurnId: bs.currentTurnId || null, 
-            items: bs.items.map((x) => ({ 
-              id: x.id, 
-              name: x.name, 
-              imageUrl: x.imageUrl ?? null, 
-              fullImageUrl: x.fullImageUrl ?? null,
-              size: x.size ?? null,
-              role: x.role 
-            })) 
-          };
-          // Only update if the content actually changed to prevent unnecessary re-renders and image flickering
-          setInitiativeStrip(prev => {
-            if (prev.items.length !== newStrip.items.length) return newStrip;
-            if (prev.enabled !== newStrip.enabled) return newStrip;
-            if (prev.battleStarted !== newStrip.battleStarted) return newStrip;
-            if (prev.currentTurnId !== newStrip.currentTurnId) return newStrip;
-            // Deep comparison of items (id, name, imageUrl, fullImageUrl, size, role)
-            for (let i = 0; i < prev.items.length; i++) {
-              const p = prev.items[i];
-              const n = newStrip.items[i];
-              if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.fullImageUrl !== n.fullImageUrl || p.size !== n.size || p.role !== n.role) {
-                return newStrip;
+        // Skip overwriting ALL initiative-related state if a
+        // BroadcastChannel / storage-event / LS-hydration update was
+        // received recently – that local data is fresher than the server
+        // data because the server PATCH arrives with a 250 ms delay.
+        const GRACE_MS = 5000;
+        const lastLocalUpdate = lastBroadcastStripUpdateRef.current;
+        const withinGrace = lastLocalUpdate > 0 && (Date.now() - lastLocalUpdate) < GRACE_MS;
+        if (!withinGrace) {
+          // Server says battle is active and has items → apply update.
+          // Server says battle NOT active → only reset if we have never
+          // received a BC/LS update (lastLocalUpdate === 0).  When BC is
+          // active, the "battle ended" signal arrives via BC instantly;
+          // stale server data should never erase a locally-valid strip.
+          const serverHasActiveData = !!bs.started && Array.isArray(bs.items) && bs.items.length > 0;
+          const neverReceivedLocalUpdate = lastLocalUpdate === 0;
+
+          if (serverHasActiveData || neverReceivedLocalUpdate) {
+            setBattleStateStarted(!!bs.started);
+          }
+          if (serverHasActiveData) {
+            const newStrip = { 
+              battleStarted: !!bs.started, 
+              enabled: fetchedShowInitiativeStrip, 
+              currentTurnId: bs.currentTurnId || null, 
+              items: bs.items.map((x) => ({ 
+                id: x.id, 
+                name: x.name, 
+                imageUrl: x.imageUrl ?? null, 
+                fullImageUrl: (x as any).fullImageUrl ?? null,
+                size: (x as any).size ?? null,
+                role: (x as any).role 
+              })) 
+            };
+            setInitiativeStrip(prev => {
+              if (prev.items.length !== newStrip.items.length) return newStrip;
+              if (prev.enabled !== newStrip.enabled) return newStrip;
+              if (prev.battleStarted !== newStrip.battleStarted) return newStrip;
+              if (prev.currentTurnId !== newStrip.currentTurnId) return newStrip;
+              for (let i = 0; i < prev.items.length; i++) {
+                const p = prev.items[i];
+                const n = newStrip.items[i];
+                if (p.id !== n.id || p.name !== n.name || p.imageUrl !== n.imageUrl || p.fullImageUrl !== n.fullImageUrl || p.size !== n.size || p.role !== n.role) {
+                  return newStrip;
+                }
               }
-            }
-            return prev;
-          });
+              return prev;
+            });
+          } else if (neverReceivedLocalUpdate && Array.isArray(bs.items)) {
+            // Server says battle inactive and we have no local data → clear
+            setInitiativeStrip({ battleStarted: false, enabled: false, currentTurnId: null, items: [] });
+          }
         }
       } catch {}
+    };
+  });
+
+  useEffect(() => {
+    const cid = activeCampaign?.id || campaignIdFromQuery;
+    if (!cid) return;
+    let disposed = false;
+    let polling = false;
+    const intervalMs = 2000;
+    const doPoll = async () => {
+      if (disposed || polling) return;
+      // Skip polling when the page is hidden (browser throttles timers anyway)
+      if (document.visibilityState === 'hidden') return;
+      polling = true;
+      try {
+        await pollFnRef.current?.();
+      } catch (err) {
+        console.error('[ProjectionSkyline] poll error:', err);
+      } finally {
+        polling = false;
+      }
     };
     // Immediate poll once
     doPoll();
     const interval = setInterval(doPoll, intervalMs);
     return () => { disposed = true; clearInterval(interval); };
-  }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter]);
+  }, [activeCampaign?.id, campaignIdFromQuery]);
 
-  // On mount or campaign change, read last-known initiative strip from localStorage
+  // Recover when the page becomes visible again (e.g. after sleep/hibernate/tab switch)
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('[ProjectionSkyline] Page became visible, refreshing all data...');
+        refreshFromServer();
+        loadSkylineCharacter();
+        loadSkylineSettings();
+        loadSkylineItems();
+        // Do NOT call pollFnRef.current here — the next scheduled
+        // poll interval will pick it up.  Calling it immediately would
+        // bypass the interval's concurrency guard and could double-fire.
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  }, [refreshFromServer, loadSkylineCharacter, loadSkylineSettings, loadSkylineItems]);
+
+  // Recover when network comes back online
+  useEffect(() => {
+    const handler = () => {
+      console.log('[ProjectionSkyline] Network online, refreshing all data...');
+      setConnectionError(false);
+      refreshFromServer();
+      loadSkylineCharacter();
+      loadSkylineSettings();
+      loadSkylineItems();
+    };
+    window.addEventListener('online', handler);
+    return () => window.removeEventListener('online', handler);
+  }, [refreshFromServer, loadSkylineCharacter, loadSkylineSettings, loadSkylineItems]);
+
+  // On mount or campaign change, read last-known initiative strip from localStorage.
+  // Also sets battleStateStarted and marks lastBroadcastStripUpdateRef so the
+  // immediate first poll does NOT overwrite with potentially default server data.
   useEffect(() => {
     const cid = activeCampaign?.id || campaignIdFromQuery;
     if (!cid) return;
@@ -325,7 +493,12 @@ const ProjectionSkylinePage: React.FC = () => {
               role: x.role 
             })) 
           };
-          // Only update if content changed
+          // Protect this hydrated data from being overwritten by the first
+          // poll cycle — mark as if a BC update just arrived.
+          if (newStrip.items.length > 0) {
+            lastBroadcastStripUpdateRef.current = Date.now();
+            setBattleStateStarted(!!payload.battleStarted);
+          }
           setInitiativeStrip(prev => {
             if (prev.items.length !== newStrip.items.length) return newStrip;
             if (prev.enabled !== newStrip.enabled) return newStrip;
@@ -361,7 +534,9 @@ const ProjectionSkylinePage: React.FC = () => {
     } catch {}
   }, [activeCampaign?.id, campaignIdFromQuery]);
 
-  // Rehydrate battle state from localStorage based on active encounter
+  // Rehydrate battle state from localStorage based on active encounter.
+  // Respects the BroadcastChannel grace period to avoid overriding fresh
+  // BC data with stale or absent localStorage values.
   useEffect(() => {
     const cid = activeCampaign?.id || campaignIdFromQuery;
     if (!cid) return;
@@ -369,15 +544,27 @@ const ProjectionSkylinePage: React.FC = () => {
     (async () => {
       try {
         const encId = await getActiveEncounterId(cid);
-        if (!encId) { if (!disposed) setBattleStateStarted(false); return; }
+        if (!encId) {
+          // Only clear if no recent BroadcastChannel update
+          if (!disposed && (Date.now() - lastBroadcastStripUpdateRef.current) > 5000) {
+            setBattleStateStarted(false);
+          }
+          return;
+        }
         const key = `battle.state:${cid}:${encId}`;
         try {
           const raw = localStorage.getItem(key);
           if (raw) {
             const obj = JSON.parse(raw);
-            if (!disposed) setBattleStateStarted(!!obj?.started);
+            if (!disposed && (Date.now() - lastBroadcastStripUpdateRef.current) > 5000) {
+              setBattleStateStarted(!!obj?.started);
+            }
           }
-        } catch { if (!disposed) setBattleStateStarted(false); }
+        } catch {
+          if (!disposed && (Date.now() - lastBroadcastStripUpdateRef.current) > 5000) {
+            setBattleStateStarted(false);
+          }
+        }
         const handler = (e: StorageEvent) => {
           if (e.key !== key) return;
           try {
@@ -388,7 +575,11 @@ const ProjectionSkylinePage: React.FC = () => {
         };
         window.addEventListener('storage', handler);
         return () => { window.removeEventListener('storage', handler); };
-      } catch { if (!disposed) setBattleStateStarted(false); }
+      } catch {
+        if (!disposed && (Date.now() - lastBroadcastStripUpdateRef.current) > 5000) {
+          setBattleStateStarted(false);
+        }
+      }
     })();
     return () => { disposed = true; };
   }, [activeCampaign?.id, campaignIdFromQuery]);
@@ -470,6 +661,9 @@ const ProjectionSkylinePage: React.FC = () => {
         const cid = payload.campaignId as string | undefined;
         if (!cid) return;
         if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
+          // Mark as fresh local update to protect from stale poll data
+          lastBroadcastStripUpdateRef.current = Date.now();
+          setBattleStateStarted(!!payload.battleStarted);
           const newStrip = { 
             battleStarted: !!payload.battleStarted, 
             enabled: !!payload.enabled, 
@@ -554,6 +748,36 @@ const ProjectionSkylinePage: React.FC = () => {
 
   return (
     <Box id="projection-skyline-root" sx={{ width: '100vw', height: '100vh', bgcolor: 'black', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Connection error overlay */}
+      {connectionError && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'rgba(255, 0, 0, 0.8)',
+            color: 'white',
+            px: 4,
+            py: 3,
+            borderRadius: 2,
+            zIndex: 10000,
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          }}
+        >
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            ⚠️ Error de Conexión
+          </Typography>
+          <Typography variant="body1">
+            No se puede conectar con el servidor backend.
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1, opacity: 0.9 }}>
+            Intentando reconectar automáticamente...
+          </Typography>
+        </Box>
+      )}
+
       {activeMapId ? (
         hasSkyline ? (
           <AuthImage
@@ -676,6 +900,41 @@ const ProjectionSkylinePage: React.FC = () => {
           })}
         </Box>
       ) : null}
+
+      {/* Skyline Item Overlays - rendered in order, stacked on top of everything */}
+      {skylineItems.map((item) => {
+        const token = localStorage.getItem('access_token');
+        const streamUrl = getCellStreamUrl(item.cellId);
+        const fullUrl = `${streamUrl}?token=${token}`;
+        
+        return (
+          <Box 
+            key={item.id}
+            sx={{ 
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              maxWidth: '80vw',
+              maxHeight: '80vh',
+              zIndex: 1000 + item.order, // Ensure items are on top, ordered by their order field
+            }}
+          >
+            <AuthImage
+              src={fullUrl}
+              alt={item.label || 'Shop item'}
+              style={{ 
+                width: 'auto', 
+                height: 'auto',
+                maxWidth: '80vw',
+                maxHeight: '80vh',
+                objectFit: 'contain',
+                display: 'block'
+              }}
+            />
+          </Box>
+        );
+      })}
     </Box>
   );
 };

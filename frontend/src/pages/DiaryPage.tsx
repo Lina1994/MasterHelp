@@ -218,7 +218,8 @@ export default function DiaryPage() {
     try {
       const e = await getDiaryEntry(campaignId, day);
       setEntry(e);
-      setItemsDraft((e.items || []).map(mapApiItemToDraft));
+      // Reverse order so newest items (highest order) appear first (top)
+      setItemsDraft((e.items || []).reverse().map(mapApiItemToDraft));
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Error cargando la entrada del diario');
     }
@@ -253,11 +254,13 @@ export default function DiaryPage() {
           title: it.title,
           html: it.html,
           isPublic: it.isPublic,
-          order: idx,
+          // Reverse order: first item in UI (idx=0) gets highest order number
+          order: itemsDraft.length - 1 - idx,
         })),
       });
       setEntry(saved);
-      setItemsDraft((saved.items || []).map(mapApiItemToDraft));
+      // Reverse order so newest items (highest order) appear first (top)
+      setItemsDraft((saved.items || []).reverse().map(mapApiItemToDraft));
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Error guardando la entrada');
     } finally {

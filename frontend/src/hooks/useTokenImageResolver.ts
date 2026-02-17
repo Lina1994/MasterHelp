@@ -1,22 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { listCharacters, type CharacterPayload } from '../api/characters';
 import { listCampaignMonsters, type CampaignMonsterListItem } from '../api/bestiary/bestiaryApi';
+import { getParticipantMonsterMapPublic } from '../api/campaigns/battleState';
 
 export type TokenImageResolver = (id: string) => string | undefined;
 
 /**
  * useTokenImageResolver
  *
- * Fetches both campaign characters (allies) and campaign monsters (enemies) 
- * and builds a unified resolver to map a token id to an image URL.
+ * Fetches campaign characters (allies), campaign monsters (enemies) and the
+ * active encounter's participant→monster mapping.  Builds a unified resolver
+ * to map a token / participant id to an image URL.
  *
  * For characters (allies):
  * - Prefers `tokenImageUrl`, falls back to `characterImageUrl`.
  *
  * For monsters (enemies):
  * - Uses `tokenImageUrl` from the campaign bestiary.
+ * - Token ids on the map are encounter **participant** ids which differ from
+ *   bestiary monster ids.  The `participantToMonsterId` mapping (fetched from
+ *   a public endpoint) bridges this gap.
  *
- * This hook is designed for the projection window where both types of tokens need to be rendered.
+ * This hook is designed for the projection window where both types of tokens
+ * need to be rendered.
  */
 export function useTokenImageResolver(
   campaignId: string | undefined,
@@ -30,6 +36,8 @@ export function useTokenImageResolver(
   const pollMs = options?.pollMs ?? 0;
   const [characters, setCharacters] = useState<CharacterPayload[]>([]);
   const [monsters, setMonsters] = useState<CampaignMonsterListItem[]>([]);
+  /** Maps encounter participantId → bestiary monsterCampaignId */
+  const [participantToMonsterId, setParticipantToMonsterId] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const lastCampaignId = useRef<string | undefined>(undefined);
 
@@ -40,23 +48,27 @@ export function useTokenImageResolver(
       if (!campaignId) {
         setCharacters([]);
         setMonsters([]);
+        setParticipantToMonsterId({});
         return;
       }
       setLoading(true);
       try {
-        // Load characters and monsters in parallel
-        const [charsData, monstersData] = await Promise.all([
+        // Load characters, monsters, and participant mapping in parallel
+        const [charsData, monstersData, mapping] = await Promise.all([
           listCharacters(campaignId),
-          listCampaignMonsters(campaignId, { pageSize: 1000 }, 'es'), // Load with large page size to get all
+          listCampaignMonsters(campaignId, { pageSize: 1000 }, 'es'),
+          getParticipantMonsterMapPublic(campaignId).catch(() => ({} as Record<string, string>)),
         ]);
         
         if (disposed) return;
         setCharacters(Array.isArray(charsData) ? charsData : []);
         setMonsters(monstersData?.items || []);
+        setParticipantToMonsterId(mapping && typeof mapping === 'object' ? mapping : {});
       } catch {
         if (disposed) return;
         setCharacters([]);
         setMonsters([]);
+        setParticipantToMonsterId({});
       } finally {
         if (!disposed) setLoading(false);
       }
@@ -107,15 +119,24 @@ export function useTokenImageResolver(
         return ch.tokenImageUrl || ch.characterImageUrl || undefined;
       }
       
-      // Try to resolve as monster (enemy)
+      // Try direct bestiary monster id match
       const monster = monstersById.get(id);
       if (monster) {
         return monster.tokenImageUrl || undefined;
       }
+
+      // Try via participant→monster mapping (encounter participant id → bestiary monster id)
+      const monsterCampaignId = participantToMonsterId[id];
+      if (monsterCampaignId) {
+        const mapped = monstersById.get(monsterCampaignId);
+        if (mapped) {
+          return mapped.tokenImageUrl || undefined;
+        }
+      }
       
       return undefined;
     };
-  }, [charactersById, monstersById]);
+  }, [charactersById, monstersById, participantToMonsterId]);
 
   return { resolver, charactersById, monstersById, loading };
 }

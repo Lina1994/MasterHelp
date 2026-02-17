@@ -27,6 +27,7 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import PetsIcon from '@mui/icons-material/Pets';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
@@ -240,6 +241,12 @@ const MainLayoutInner = () => {
           <ListItemButton onClick={() => navigate('/quests')} disabled={!activeCampaign?.id}>
             <ListItemIcon><AssignmentIcon /></ListItemIcon>
             <ListItemText primary={t('quests', 'Misiones')} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem key="shops" disablePadding>
+          <ListItemButton onClick={() => navigate('/shops')} disabled={!activeCampaign?.id}>
+            <ListItemIcon><StorefrontIcon /></ListItemIcon>
+            <ListItemText primary={t('shops', 'Tiendas')} />
           </ListItemButton>
         </ListItem>
         <ListItem key="diary" disablePadding>
