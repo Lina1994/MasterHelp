@@ -5,12 +5,44 @@ import { Box } from '@mui/material';
 
 import 'react-quill/dist/quill.snow.css';
 
+/*
+ * Allow the custom `worldpedia://` protocol inside Quill links.
+ *
+ * Quill's Link blot calls `Link.sanitize(url)` which rejects any protocol
+ * not in `PROTOCOL_WHITELIST`, replacing the href with `about:blank`.
+ * Patching the array alone is unreliable across bundled copies, so we
+ * override the `sanitize` static method directly – the safest approach.
+ */
+const QuillStatic = ReactQuill.Quill;
+const Link = QuillStatic.import('formats/link') as any;
+
+const _originalSanitize: (url: string) => string = Link.sanitize.bind(Link);
+Link.sanitize = function sanitize(url: string): string {
+  if (typeof url === 'string' && url.startsWith('worldpedia://')) {
+    return url;
+  }
+  return _originalSanitize(url);
+};
+
+/* Also keep the whitelist updated for any code path that checks it */
+if (Array.isArray(Link.PROTOCOL_WHITELIST) && !Link.PROTOCOL_WHITELIST.includes('worldpedia')) {
+  Link.PROTOCOL_WHITELIST = [...Link.PROTOCOL_WHITELIST, 'worldpedia'];
+}
+
+QuillStatic.register(Link, true);
+
 export interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   readOnly?: boolean;
   placeholder?: string;
   minHeight?: number;
+  /**
+   * Optional ref callback that receives the ReactQuill instance.
+   * Allows parent components to access the underlying Quill editor
+   * (e.g. to read the current selection or insert formatted text).
+   */
+  editorRef?: React.MutableRefObject<ReactQuill | null>;
 }
 
 /**
@@ -28,6 +60,7 @@ export function RichTextEditor({
   readOnly = false,
   placeholder,
   minHeight = 160,
+  editorRef,
 }: RichTextEditorProps) {
   const quillRef = useRef<ReactQuill | null>(null);
 
@@ -107,6 +140,7 @@ export function RichTextEditor({
       <ReactQuill
         ref={(r) => {
           quillRef.current = r;
+          if (editorRef) editorRef.current = r;
         }}
         theme="snow"
         value={value}

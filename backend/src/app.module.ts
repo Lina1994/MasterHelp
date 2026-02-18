@@ -36,6 +36,10 @@ import { ShopSection } from './shops/entities/shop-section.entity';
 import { ShopColumn } from './shops/entities/shop-column.entity';
 import { ShopEntry } from './shops/entities/shop-entry.entity';
 import { ShopCell } from './shops/entities/shop-cell.entity';
+import { WorldpediaModule } from './worldpedia/worldpedia.module';
+import { WorldpediaFolder } from './worldpedia/entities/worldpedia-folder.entity';
+import { WorldpediaNote } from './worldpedia/entities/worldpedia-note.entity';
+import { WorldpediaNoteLink } from './worldpedia/entities/worldpedia-note-link.entity';
 
 @Module({
   imports: [
@@ -71,6 +75,9 @@ import { ShopCell } from './shops/entities/shop-cell.entity';
           ShopColumn,
           ShopEntry,
           ShopCell,
+          WorldpediaFolder,
+          WorldpediaNote,
+          WorldpediaNoteLink,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -94,6 +101,7 @@ import { ShopCell } from './shops/entities/shop-cell.entity';
     RacesModule,
     ClassesModule,
     MonstersModule,
+    WorldpediaModule,
   ],
   controllers: [],
   providers: [],

@@ -28,6 +28,7 @@ import PetsIcon from '@mui/icons-material/Pets';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
@@ -249,6 +250,14 @@ const MainLayoutInner = () => {
             <ListItemText primary={t('shops', 'Tiendas')} />
           </ListItemButton>
         </ListItem>
+        {isMaster && (
+          <ListItem key="worldpedia" disablePadding>
+            <ListItemButton onClick={() => navigate('/worldpedia')} disabled={!activeCampaign?.id}>
+              <ListItemIcon><AutoStoriesIcon /></ListItemIcon>
+              <ListItemText primary={t('worldpedia', 'Worldpedia')} />
+            </ListItemButton>
+          </ListItem>
+        )}
         <ListItem key="diary" disablePadding>
           <ListItemButton onClick={() => navigate('/diary')} disabled={!activeCampaign?.id}>
             <ListItemIcon><EventNoteIcon /></ListItemIcon>

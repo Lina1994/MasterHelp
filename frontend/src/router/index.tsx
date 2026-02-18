@@ -28,6 +28,7 @@ import CombatPage from '../pages/CombatPage';
 import DiaryPage from '../pages/DiaryPage';
 import QuestsPage from '../pages/QuestsPage';
 import ShopsPage from '../pages/ShopsPage';
+import WorldpediaPage from '../pages/WorldpediaPage';
 
 const router = createBrowserRouter([
   // Ventana de proyección: ruta al margen del layout principal
@@ -61,6 +62,7 @@ const router = createBrowserRouter([
           { path: 'diary', element: <DiaryPage /> },
           { path: 'quests', element: <QuestsPage /> },
           { path: 'shops', element: <ShopsPage /> },
+          { path: 'worldpedia', element: <WorldpediaPage /> },
           { path: 'campaign-bestiary', element: <CampaignBestiaryPage /> },
           { path: 'campaign-spells', element: <CampaignSpellsPage /> },
           // ...other protected routes
