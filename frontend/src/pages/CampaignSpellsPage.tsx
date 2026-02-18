@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box, Button, Chip, Container, Dialog, DialogActions, DialogContent, DialogTitle,
   FormControl, IconButton, InputLabel, MenuItem, Pagination, Select, Stack,
   TextField, Typography, Paper, Tooltip, Alert, Card, CardContent,
-  Checkbox, ListItemText
+  Checkbox, ListItemText, Snackbar
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,6 +11,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterListOffIcon from '@mui/icons-material/FilterListOff';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { getCurrentUser } from '../utils/getCurrentUser';
@@ -21,6 +23,8 @@ import {
   updateCampaignSpell,
   copySpellFromManual,
   createCampaignSpell,
+  exportSpellsExcel,
+  importSpellsExcel,
   type CampaignSpellListItem,
   type CampaignSpellDetail,
 } from '../api/spells/spellsApi';
@@ -59,6 +63,10 @@ export default function CampaignSpellsPage() {
   const [editDialog, setEditDialog] = useState(false);
   const [editingSpell, setEditingSpell] = useState<CampaignSpellDetail | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [importSnackbar, setImportSnackbar] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const pageSize = PAGE_SIZE;
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / pageSize)), [total]);
@@ -216,6 +224,43 @@ export default function CampaignSpellsPage() {
 
   const hasActiveFilters = q || school || levelValues.length > 0 || concentration || ritual || origin || sort !== 'name';
 
+  /** Export all campaign spells to an .xlsx file. */
+  const handleExport = async () => {
+    if (!campaignId) return;
+    setExporting(true);
+    try {
+      await exportSpellsExcel(campaignId, lang);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al exportar hechizos');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  /** Open file picker for import. */
+  const handleImportClick = () => fileInputRef.current?.click();
+
+  /** Handle the selected file and upload it. */
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !campaignId) return;
+    setImporting(true);
+    setError(null);
+    try {
+      const result = await importSpellsExcel(campaignId, file, lang);
+      setImportSnackbar(
+        t('import_result', 'Importación completada: {{created}} creados, {{updated}} actualizados, {{skipped}} omitidos', result),
+      );
+      loadSpells();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al importar hechizos');
+    } finally {
+      setImporting(false);
+      // Reset file input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const originChipColor = (origin: string): 'default' | 'primary' | 'secondary' => {
     switch (origin) {
       case 'manual':
@@ -249,10 +294,37 @@ export default function CampaignSpellsPage() {
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
         <Typography variant="h4">{t('spells', 'Hechizos')}</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateDialog}>
-          {t('add_spell', 'Añadir Hechizo')}
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExport}
+            disabled={exporting}
+          >
+            {t('export_spells', 'Exportar')}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<FileUploadIcon />}
+            onClick={handleImportClick}
+            disabled={importing}
+          >
+            {t('import_spells', 'Importar')}
+          </Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateDialog}>
+            {t('add_spell', 'Añadir Hechizo')}
+          </Button>
+        </Stack>
       </Stack>
+
+      {/* Hidden file input for Excel import */}
+      <input
+        type="file"
+        accept=".xlsx,.xls"
+        ref={fileInputRef}
+        onChange={handleImportFile}
+        style={{ display: 'none' }}
+      />
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
@@ -447,6 +519,13 @@ export default function CampaignSpellsPage() {
         availableManuals={availableManuals}
         onClose={handleCloseEditDialog}
         onSave={handleSaveSpell}
+      />
+
+      <Snackbar
+        open={!!importSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setImportSnackbar(null)}
+        message={importSnackbar}
       />
     </Container>
   );

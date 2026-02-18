@@ -83,7 +83,10 @@
   "add_attack": "Añadir ataque",
   "cantrips": "Trucos",
   "level": "Nivel",
-  "lvl_abbr": "Niv"
+  "lvl_abbr": "Niv",
+  "export_spells": "Exportar",
+  "import_spells": "Importar",
+  "import_result": "Importación: {{created}} creados, {{updated}} actualizados, {{skipped}} omitidos"
   ,
   "quests": "Misiones",
   "new_quest": "Nueva Misión",

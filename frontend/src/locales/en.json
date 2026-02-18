@@ -83,7 +83,10 @@
   "add_attack": "Add attack",
   "cantrips": "Cantrips",
   "level": "Level",
-  "lvl_abbr": "Lvl"
+  "lvl_abbr": "Lvl",
+  "export_spells": "Export",
+  "import_spells": "Import",
+  "import_result": "Import: {{created}} created, {{updated}} updated, {{skipped}} skipped"
   ,
   "quests": "Quests",
   "new_quest": "New Quest",
