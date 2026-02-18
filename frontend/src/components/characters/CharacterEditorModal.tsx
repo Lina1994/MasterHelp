@@ -12,6 +12,7 @@ import {
   FormControl,
   FormControlLabel,
   FormHelperText,
+  IconButton,
   InputLabel,
   MenuItem,
   Paper,
@@ -28,6 +29,8 @@ import Grid from '@mui/material/Grid';
 import ShieldIcon from '@mui/icons-material/Shield';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { ImageUploader } from '../Campaign/ImageUploader';
 import { TokenImageCropDialog } from './TokenImageCropDialog';
 import { SpellAutocomplete } from './SpellAutocomplete';
@@ -58,6 +61,53 @@ const abilityMod = (score: number | undefined): string => {
   const mod = Math.floor((score - 10) / 2);
   return mod >= 0 ? `+${mod}` : `${mod}`;
 };
+
+/* ──────────────────── constants ──────────────────── */
+
+/** The six ability keys used for saving throws. */
+const ABILITY_KEYS = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
+
+/**
+ * D&D 5e skill definitions: internal key, i18n label key with Spanish fallback,
+ * and the governing ability.
+ */
+const SKILL_DEFS: { key: string; labelKey: string; fallback: string; ability: typeof ABILITY_KEYS[number] }[] = [
+  { key: 'acrobatics',      labelKey: 'skill_acrobatics',      fallback: 'Acrobacias',         ability: 'dex' },
+  { key: 'athletics',       labelKey: 'skill_athletics',       fallback: 'Atletismo',          ability: 'str' },
+  { key: 'arcana',          labelKey: 'skill_arcana',          fallback: 'C. Arcano',          ability: 'int' },
+  { key: 'deception',       labelKey: 'skill_deception',       fallback: 'Engaño',             ability: 'cha' },
+  { key: 'history',         labelKey: 'skill_history',         fallback: 'Historia',           ability: 'int' },
+  { key: 'performance',     labelKey: 'skill_performance',     fallback: 'Interpretación',     ability: 'cha' },
+  { key: 'intimidation',    labelKey: 'skill_intimidation',    fallback: 'Intimidación',       ability: 'cha' },
+  { key: 'investigation',   labelKey: 'skill_investigation',   fallback: 'Investigación',      ability: 'int' },
+  { key: 'sleightOfHand',   labelKey: 'skill_sleight_of_hand', fallback: 'Juego de Manos',     ability: 'dex' },
+  { key: 'medicine',        labelKey: 'skill_medicine',        fallback: 'Medicina',           ability: 'wis' },
+  { key: 'nature',          labelKey: 'skill_nature',          fallback: 'Naturaleza',         ability: 'int' },
+  { key: 'perception',      labelKey: 'skill_perception',      fallback: 'Percepción',         ability: 'wis' },
+  { key: 'insight',         labelKey: 'skill_insight',         fallback: 'Perspicacia',        ability: 'wis' },
+  { key: 'persuasion',      labelKey: 'skill_persuasion',      fallback: 'Persuasión',         ability: 'cha' },
+  { key: 'religion',        labelKey: 'skill_religion',        fallback: 'Religión',           ability: 'int' },
+  { key: 'stealth',         labelKey: 'skill_stealth',         fallback: 'Sigilo',             ability: 'dex' },
+  { key: 'survival',        labelKey: 'skill_survival',        fallback: 'Supervivencia',      ability: 'wis' },
+  { key: 'animalHandling',  labelKey: 'skill_animal_handling', fallback: 'T. con Animales',    ability: 'wis' },
+];
+
+/**
+ * Computes a numeric ability modifier for a given score.
+ * @param score - Ability score (e.g. 10, 14, 8).
+ * @returns Numeric modifier (e.g. 0, 2, -1).
+ */
+const abilityModNum = (score: number | undefined): number => {
+  if (score === undefined || score === null) return 0;
+  return Math.floor((score - 10) / 2);
+};
+
+/**
+ * Formats a numeric modifier with a sign prefix.
+ * @param mod - Numeric modifier.
+ * @returns Formatted string (e.g. "+2", "-1", "+0").
+ */
+const formatMod = (mod: number): string => (mod >= 0 ? `+${mod}` : `${mod}`);
 
 /* ──────────────────── sub-components ──────────────────── */
 
@@ -165,6 +215,35 @@ const SheetSection: React.FC<{ title: string; children?: React.ReactNode }> = ({
   </Paper>
 );
 
+/**
+ * A single row in the saving-throws / skills list: proficiency checkbox,
+ * auto-calculated modifier, and label.
+ */
+const ProficiencyRow: React.FC<{
+  label: string;
+  proficient: boolean;
+  modifier: number;
+  onToggle: () => void;
+}> = ({ label, proficient, modifier, onToggle }) => (
+  <Stack direction="row" alignItems="center" spacing={0.5} sx={{ py: 0.15 }}>
+    <Checkbox
+      size="small"
+      checked={proficient}
+      onChange={onToggle}
+      sx={{ p: 0.25 }}
+    />
+    <Typography
+      variant="body2"
+      sx={{ width: 32, textAlign: 'right', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'monospace' }}
+    >
+      {formatMod(modifier)}
+    </Typography>
+    <Typography variant="body2" sx={{ fontSize: '0.8rem', ml: 0.5 }}>
+      {label}
+    </Typography>
+  </Stack>
+);
+
 
 
 /* ──────────────────── main component ──────────────────── */
@@ -265,7 +344,7 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
       <DialogContent sx={{ p: 0 }}>
         {/* ═══════════════ D&D-STYLE EDITOR SHEET ═══════════════ */}
 
@@ -345,6 +424,20 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
               </FormControl>
             )}
           </Stack>
+
+          {/* Experience Points inline */}
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem' }}>
+              {t('experience_points', 'Puntos de Experiencia')}
+            </Typography>
+            <TextField
+              type="number"
+              value={draft.experiencePoints ?? 0}
+              onChange={(e) => setDraft({ ...draft, experiencePoints: Math.max(0, Number(e.target.value)) })}
+              size="small"
+              sx={{ width: 140, '& .MuiInputBase-input': { fontWeight: 700 } }}
+            />
+          </Stack>
         </Box>
 
         {/* Error display */}
@@ -365,35 +458,93 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
           <Box sx={{ p: { xs: 1, sm: 2 } }}>
             <Grid container spacing={2}>
 
-              {/* ─── LEFT COLUMN: Abilities ─── */}
-              <Grid size={{ xs: 12, md: 2 }}>
-                <Stack spacing={1} alignItems="center">
-                  {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as const).map((k) => (
-                    <EditableAbilityBlock
-                      key={k}
-                      label={abilityLabels[k]}
-                      value={(draft as any)[k]}
-                      onChange={(v) => setDraft({ ...draft, [k]: v } as any)}
-                    />
-                  ))}
-                </Stack>
+              {/* ─── COLS 1+2: Abilities + Proficiency / Saves / Skills (nested, tight) ─── */}
+              <Grid size={{ xs: 12, md: 3 }}>
+                <Grid container spacing={0.5}>
+                  {/* COL 1: Ability Scores */}
+                  <Grid size={{ xs: 4 }}>
+                    <Stack spacing={1}>
+                      {(ABILITY_KEYS).map((k) => (
+                        <EditableAbilityBlock
+                          key={k}
+                          label={abilityLabels[k]}
+                          value={(draft as any)[k]}
+                          onChange={(v) => setDraft({ ...draft, [k]: v } as any)}
+                        />
+                      ))}
+                    </Stack>
+                  </Grid>
 
-                {/* Proficiency bonus */}
-                <Paper variant="outlined" sx={{ mt: 2, textAlign: 'center', py: 1, borderRadius: 2 }}>
-                  <TextField
-                    type="number"
-                    value={draft.proficiencyBonus ?? 2}
-                    onChange={(e) => setDraft({ ...draft, proficiencyBonus: Number(e.target.value) })}
-                    size="small"
-                    sx={{ width: 56, '& .MuiInputBase-input': { textAlign: 'center', fontWeight: 700, fontSize: '1.1rem' } }}
-                  />
-                  <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.6rem', display: 'block' }}>
-                    {t('proficiency_bonus', 'Competencia')}
-                  </Typography>
-                </Paper>
+                  {/* COL 2: Proficiency, Saving Throws, Skills */}
+                  <Grid size={{ xs: 8 }}>
+                    {/* Proficiency bonus */}
+                    <Paper variant="outlined" sx={{ textAlign: 'center', py: 1, borderRadius: 2, mb: 2 }}>
+                      <TextField
+                        type="number"
+                        value={draft.proficiencyBonus ?? 2}
+                        onChange={(e) => setDraft({ ...draft, proficiencyBonus: Number(e.target.value) })}
+                        size="small"
+                        sx={{ width: 56, '& .MuiInputBase-input': { textAlign: 'center', fontWeight: 700, fontSize: '1.1rem' } }}
+                      />
+                      <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.6rem', display: 'block' }}>
+                        {t('proficiency_bonus', 'Competencia')}
+                      </Typography>
+                    </Paper>
+
+                    {/* ── Saving Throws ── */}
+                    <SheetSection title={t('saving_throws', 'Tiradas de Salvación')}>
+                      {ABILITY_KEYS.map((k) => {
+                        const prof = !!(draft.savingThrowProficiencies || {})[k];
+                        const mod = abilityModNum((draft as any)[k]) + (prof ? (draft.proficiencyBonus ?? 2) : 0);
+                        return (
+                          <ProficiencyRow
+                            key={k}
+                            label={abilityLabels[k]}
+                            proficient={prof}
+                            modifier={mod}
+                            onToggle={() =>
+                              setDraft({
+                                ...draft,
+                                savingThrowProficiencies: {
+                                  ...(draft.savingThrowProficiencies || {}),
+                                  [k]: !prof,
+                                },
+                              })
+                            }
+                          />
+                        );
+                      })}
+                    </SheetSection>
+
+                    {/* ── Skills ── */}
+                    <SheetSection title={t('skills', 'Habilidades')}>
+                      {SKILL_DEFS.map(({ key, labelKey, fallback, ability }) => {
+                        const prof = !!(draft.skillProficiencies || {})[key];
+                        const mod = abilityModNum((draft as any)[ability]) + (prof ? (draft.proficiencyBonus ?? 2) : 0);
+                        return (
+                          <ProficiencyRow
+                            key={key}
+                            label={`${t(labelKey, fallback)} (${abilityLabels[ability]})`}
+                            proficient={prof}
+                            modifier={mod}
+                            onToggle={() =>
+                              setDraft({
+                                ...draft,
+                                skillProficiencies: {
+                                  ...(draft.skillProficiencies || {}),
+                                  [key]: !prof,
+                                },
+                              })
+                            }
+                          />
+                        );
+                      })}
+                    </SheetSection>
+                  </Grid>
+                </Grid>
               </Grid>
 
-              {/* ─── CENTER COLUMN: Combat + Equipment + Spells ─── */}
+              {/* ─── COL 3: Combat + Attacks + Spells ─── */}
               <Grid size={{ xs: 12, md: 5 }}>
 
                 {/* AC / Initiative / Speed */}
@@ -435,20 +586,153 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                   </Stack>
                 </Paper>
 
-                {/* Experience Points */}
-                <Paper variant="outlined" sx={{ borderRadius: 2, p: 1.5, mb: 2, textAlign: 'center' }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 0.5 }}>
-                    {t('experience_points', 'Puntos de Experiencia')}
-                  </Typography>
+                {/* ── Attacks & Spellcasting ── */}
+                <SheetSection title={t('attacks_and_spellcasting', 'Ataques y Lanzamiento de Conjuros')}>
+                  {/* Attacks table */}
+                  <Stack spacing={0.5} sx={{ mb: 1 }}>
+                    {/* Header */}
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Typography variant="caption" sx={{ flex: 2, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.6rem' }}>
+                        {t('attack_name', 'Nombre')}
+                      </Typography>
+                      <Typography variant="caption" sx={{ flex: 1, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.6rem' }}>
+                        {t('attack_bonus', 'Bonificador')}
+                      </Typography>
+                      <Typography variant="caption" sx={{ flex: 2, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.6rem' }}>
+                        {t('attack_damage', 'Daño/Tipo')}
+                      </Typography>
+                      <Box sx={{ width: 32 }} />
+                    </Stack>
+                    {/* Rows */}
+                    {(draft.attacks || []).map((atk, idx) => (
+                      <Stack key={idx} direction="row" spacing={0.5} alignItems="center">
+                        <TextField
+                          size="small"
+                          value={atk.name}
+                          onChange={(e) => {
+                            const next = [...(draft.attacks || [])];
+                            next[idx] = { ...next[idx], name: e.target.value };
+                            setDraft({ ...draft, attacks: next });
+                          }}
+                          sx={{ flex: 2 }}
+                        />
+                        <TextField
+                          size="small"
+                          value={atk.bonus}
+                          onChange={(e) => {
+                            const next = [...(draft.attacks || [])];
+                            next[idx] = { ...next[idx], bonus: e.target.value };
+                            setDraft({ ...draft, attacks: next });
+                          }}
+                          sx={{ flex: 1 }}
+                        />
+                        <TextField
+                          size="small"
+                          value={atk.damage}
+                          onChange={(e) => {
+                            const next = [...(draft.attacks || [])];
+                            next[idx] = { ...next[idx], damage: e.target.value };
+                            setDraft({ ...draft, attacks: next });
+                          }}
+                          sx={{ flex: 2 }}
+                        />
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => {
+                            const next = (draft.attacks || []).filter((_, i) => i !== idx);
+                            setDraft({ ...draft, attacks: next.length ? next : null });
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    ))}
+                    <Button
+                      size="small"
+                      startIcon={<AddIcon />}
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          attacks: [...(draft.attacks || []), { name: '', bonus: '', damage: '' }],
+                        })
+                      }
+                    >
+                      {t('add_attack', 'Añadir ataque')}
+                    </Button>
+                  </Stack>
+                  {/* Notes */}
                   <TextField
-                    type="number"
-                    value={draft.experiencePoints ?? 0}
-                    onChange={(e) => setDraft({ ...draft, experiencePoints: Math.max(0, Number(e.target.value)) })}
-                    size="small"
+                    value={draft.attacksNotes || ''}
+                    onChange={(e) => setDraft({ ...draft, attacksNotes: e.target.value })}
                     fullWidth
-                    sx={{ mt: 0.5, '& .MuiInputBase-input': { textAlign: 'center', fontWeight: 700, fontSize: '1.1rem' } }}
+                    multiline
+                    minRows={2}
+                    size="small"
+                    placeholder={t('attacks_notes', 'Notas')}
                   />
-                </Paper>
+                </SheetSection>
+
+                {/* ── Spellcasting ── */}
+                <SheetSection title={t('magic', 'Magia')}>
+                  <Stack spacing={1.5}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>{t('spellcasting_ability', 'Aptitud Mágica')}</InputLabel>
+                      <Select
+                        label={t('spellcasting_ability', 'Aptitud Mágica')}
+                        value={draft.spellcastingAbility || ''}
+                        onChange={(e) => setDraft({ ...draft, spellcastingAbility: (e.target.value || null) as any })}
+                      >
+                        <MenuItem value="">{t('none', 'Ninguna')}</MenuItem>
+                        <MenuItem value="int">INT</MenuItem>
+                        <MenuItem value="wis">WIS</MenuItem>
+                        <MenuItem value="cha">CHA</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Stack direction="row" spacing={1}>
+                      <TextField size="small" type="number" label={t('spell_save_dc', 'CD Salvación')} value={draft.spellSaveDC ?? ''} onChange={(e) => setDraft({ ...draft, spellSaveDC: e.target.value === '' ? null : Number(e.target.value) })} sx={{ flex: 1 }} />
+                      <TextField size="small" type="number" label={t('spell_attack_bonus', 'Bonif. Ataque')} value={draft.spellAttackBonus ?? ''} onChange={(e) => setDraft({ ...draft, spellAttackBonus: e.target.value === '' ? null : Number(e.target.value) })} sx={{ flex: 1 }} />
+                    </Stack>
+                    <SpellAutocomplete
+                      campaignId={draft.campaignId}
+                      spellLevel={0}
+                      value={draft.cantrips || []}
+                      onChange={(spells) => setDraft({ ...draft, cantrips: spells })}
+                      label={t('cantrips', 'Trucos')}
+                    />
+                    {(['1', '2', '3', '4', '5', '6', '7', '8'] as const).map((lvl) => (
+                      <SpellAutocomplete
+                        key={lvl}
+                        campaignId={draft.campaignId}
+                        spellLevel={Number(lvl)}
+                        value={(draft.spellsByLevel || {})[lvl] || []}
+                        onChange={(spells) => setDraft({ ...draft, spellsByLevel: { ...(draft.spellsByLevel || {}), [lvl]: spells } })}
+                        label={`${t('spells_level', 'Nivel')} ${lvl}`}
+                      />
+                    ))}
+                  </Stack>
+                </SheetSection>
+              </Grid>
+
+              {/* ─── COL 4: Image + Traits + Money + Equipment + Proficiencies ─── */}
+              <Grid size={{ xs: 12, md: 4 }}>
+
+                {/* Character illustration upload */}
+                <SheetSection title={t('character_image', 'Imagen del Personaje')}>
+                  <ImageUploader initialValue={draft.characterImageUrl} onChange={(v) => setDraft({ ...draft, characterImageUrl: v })} />
+                </SheetSection>
+
+                {/* Traits & Features */}
+                <SheetSection title={t('traits_and_features', 'Rasgos y Características')}>
+                  <TextField
+                    value={draft.traitsAndFeatures || ''}
+                    onChange={(e) => setDraft({ ...draft, traitsAndFeatures: e.target.value })}
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    size="small"
+                  />
+                </SheetSection>
 
                 {/* Money */}
                 <SheetSection title={t('money', 'Dinero')}>
@@ -501,67 +785,27 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                     size="small"
                   />
                 </SheetSection>
-
-                {/* ── Spellcasting ── */}
-                <SheetSection title={t('magic', 'Magia')}>
-                  <Stack spacing={1.5}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>{t('spellcasting_ability', 'Aptitud Mágica')}</InputLabel>
-                      <Select
-                        label={t('spellcasting_ability', 'Aptitud Mágica')}
-                        value={draft.spellcastingAbility || ''}
-                        onChange={(e) => setDraft({ ...draft, spellcastingAbility: (e.target.value || null) as any })}
-                      >
-                        <MenuItem value="">{t('none', 'Ninguna')}</MenuItem>
-                        <MenuItem value="int">INT</MenuItem>
-                        <MenuItem value="wis">WIS</MenuItem>
-                        <MenuItem value="cha">CHA</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <Stack direction="row" spacing={1}>
-                      <TextField size="small" type="number" label={t('spell_save_dc', 'CD Salvación')} value={draft.spellSaveDC ?? ''} onChange={(e) => setDraft({ ...draft, spellSaveDC: e.target.value === '' ? null : Number(e.target.value) })} sx={{ flex: 1 }} />
-                      <TextField size="small" type="number" label={t('spell_attack_bonus', 'Bonif. Ataque')} value={draft.spellAttackBonus ?? ''} onChange={(e) => setDraft({ ...draft, spellAttackBonus: e.target.value === '' ? null : Number(e.target.value) })} sx={{ flex: 1 }} />
-                    </Stack>
-                    <SpellAutocomplete
-                      campaignId={draft.campaignId}
-                      spellLevel={0}
-                      value={draft.cantrips || []}
-                      onChange={(spells) => setDraft({ ...draft, cantrips: spells })}
-                      label={t('cantrips', 'Trucos')}
-                    />
-                    {(['1', '2', '3', '4', '5', '6', '7', '8'] as const).map((lvl) => (
-                      <SpellAutocomplete
-                        key={lvl}
-                        campaignId={draft.campaignId}
-                        spellLevel={Number(lvl)}
-                        value={(draft.spellsByLevel || {})[lvl] || []}
-                        onChange={(spells) => setDraft({ ...draft, spellsByLevel: { ...(draft.spellsByLevel || {}), [lvl]: spells } })}
-                        label={`${t('spells_level', 'Nivel')} ${lvl}`}
-                      />
-                    ))}
-                  </Stack>
-                </SheetSection>
               </Grid>
+            </Grid>
+          </Box>
+        )}
 
-              {/* ─── RIGHT COLUMN: Image + Traits + Appearance + Token ─── */}
+        {/* ═══ TAB 1: STORY & BACKSTORY ═══ */}
+        {tab === 1 && (
+          <Box sx={{ p: { xs: 1, sm: 2 } }}>
+            <Grid container spacing={2}>
+              {/* Left: Image preview + Appearance + Token */}
               <Grid size={{ xs: 12, md: 5 }}>
-
-                {/* Character illustration upload */}
-                <SheetSection title={t('character_image', 'Imagen del Personaje')}>
-                  <ImageUploader initialValue={draft.characterImageUrl} onChange={(v) => setDraft({ ...draft, characterImageUrl: v })} />
-                </SheetSection>
-
-                {/* Traits & Features */}
-                <SheetSection title={t('traits_and_features', 'Rasgos y Características')}>
-                  <TextField
-                    value={draft.traitsAndFeatures || ''}
-                    onChange={(e) => setDraft({ ...draft, traitsAndFeatures: e.target.value })}
-                    fullWidth
-                    multiline
-                    minRows={2}
-                    size="small"
-                  />
-                </SheetSection>
+                {draft.characterImageUrl && (
+                  <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', mb: 2 }}>
+                    <Box
+                      component="img"
+                      src={draft.characterImageUrl}
+                      alt={draft.name}
+                      sx={{ width: '100%', maxHeight: 480, objectFit: 'contain', display: 'block', bgcolor: 'action.hover' }}
+                    />
+                  </Paper>
+                )}
 
                 {/* Appearance */}
                 <SheetSection title={t('appearance', 'Apariencia')}>
@@ -642,27 +886,6 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                     )}
                   </Stack>
                 </SheetSection>
-              </Grid>
-            </Grid>
-          </Box>
-        )}
-
-        {/* ═══ TAB 1: STORY & BACKSTORY ═══ */}
-        {tab === 1 && (
-          <Box sx={{ p: { xs: 1, sm: 2 } }}>
-            <Grid container spacing={2}>
-              {/* Left: Image preview */}
-              <Grid size={{ xs: 12, md: 5 }}>
-                {draft.characterImageUrl && (
-                  <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', mb: 2 }}>
-                    <Box
-                      component="img"
-                      src={draft.characterImageUrl}
-                      alt={draft.name}
-                      sx={{ width: '100%', maxHeight: 480, objectFit: 'contain', display: 'block', bgcolor: 'action.hover' }}
-                    />
-                  </Paper>
-                )}
               </Grid>
 
               {/* Right: Editable backstory, allies, treasure */}

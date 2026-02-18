@@ -75,6 +75,12 @@
   "features": "Features",
   "subclasses": "Subclasses",
   "spells": "Spells",
+  "attacks_and_spellcasting": "Attacks & Spellcasting",
+  "attack_name": "Name",
+  "attack_bonus": "Bonus",
+  "attack_damage": "Damage/Type",
+  "attacks_notes": "Notes",
+  "add_attack": "Add attack",
   "cantrips": "Cantrips",
   "level": "Level",
   "lvl_abbr": "Lvl"
@@ -117,6 +123,8 @@
   "new": "New",
   "characters": "Characters",
   "no_characters": "No characters",
+  "pc": "PC",
+  "npc": "NPC",
   "timeOfDay": {
     "all": "All day",
     "dawn": "Dawn",

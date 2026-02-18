@@ -75,6 +75,12 @@
   "features": "Rasgos",
   "subclasses": "Subclases",
   "spells": "Conjuros",
+  "attacks_and_spellcasting": "Ataques y Lanzamiento de Conjuros",
+  "attack_name": "Nombre",
+  "attack_bonus": "Bonificador",
+  "attack_damage": "Daño/Tipo",
+  "attacks_notes": "Notas",
+  "add_attack": "Añadir ataque",
   "cantrips": "Trucos",
   "level": "Nivel",
   "lvl_abbr": "Niv"
@@ -117,6 +123,8 @@
   "new": "Nuevo",
   "characters": "Personajes",
   "no_characters": "No hay personajes",
+  "pc": "PJ",
+  "npc": "NPC",
   "timeOfDay": {
     "all": "Todo el día",
     "dawn": "Madrugada",

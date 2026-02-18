@@ -206,10 +206,9 @@ export const CharacterList: React.FC = () => {
                           <Chip size="small" label={`PG ${c.currentHp}/${c.maxHp}`} />
                         )}
                         <Chip size="small" label={c.visibleToPlayers ? t('visible','Visible') : t('hidden','Oculto')} color={c.visibleToPlayers ? 'success' : 'default'} />
-                        {c.ownerPlayerId ? (
+                        <Chip size="small" label={c.kind === 'pc' ? t('pc','PC') : t('npc','NPC')} variant="outlined" />
+                        {c.ownerPlayerId && (
                           <Tooltip title={t('owner','Propietario') as string}><Chip size="small" label={c.ownerPlayer?.username || `UID ${c.ownerPlayerId}`} /></Tooltip>
-                        ) : (
-                          <Chip size="small" label={t('npc','NPC')} variant="outlined" />
                         )}
                       </Stack>
                     </CardContent>

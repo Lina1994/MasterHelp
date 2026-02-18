@@ -163,6 +163,25 @@ export class Character {
   @Column({ type: 'text', nullable: true })
   treasure?: string | null;
 
+  // --- Attacks & Spellcasting ---
+  /** JSON array of attack entries: each with name, bonus, and damage/type. */
+  @Column({ type: 'simple-json', nullable: true })
+  attacks?: { name: string; bonus: string; damage: string }[] | null;
+
+  /** Free-text notes shown below the attacks table. */
+  @Column({ type: 'text', nullable: true })
+  attacksNotes?: string | null;
+
+  // --- Saving throw proficiencies ---
+  /** JSON map of saving throw proficiency flags. Keys: str, dex, con, int, wis, cha. */
+  @Column({ type: 'simple-json', nullable: true })
+  savingThrowProficiencies?: Record<string, boolean> | null;
+
+  // --- Skill proficiencies ---
+  /** JSON map of skill proficiency flags. Keys match D&D 5e skill names in camelCase. */
+  @Column({ type: 'simple-json', nullable: true })
+  skillProficiencies?: Record<string, boolean> | null;
+
   // --- Visibility ---
   /** visible to players when true; master always sees all. */
   @Column({ type: 'boolean', default: false })

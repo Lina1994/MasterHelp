@@ -25,6 +25,10 @@ export interface CharacterPayload {
   experiencePoints?: number;
   cp?: number; sp?: number; ep?: number; gp?: number; pp?: number;
   alliesAndOrganizations?: string; backstory?: string; treasure?: string;
+  attacks?: { name: string; bonus: string; damage: string }[] | null;
+  attacksNotes?: string | null;
+  savingThrowProficiencies?: Record<string, boolean> | null;
+  skillProficiencies?: Record<string, boolean> | null;
   visibleToPlayers?: boolean;
 }
 

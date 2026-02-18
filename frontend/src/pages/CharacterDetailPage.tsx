@@ -43,6 +43,51 @@ const abilityMod = (score: number | undefined): string => {
   return mod >= 0 ? `+${mod}` : `${mod}`;
 };
 
+/**
+ * Returns the numeric ability modifier for a given score.
+ * @param score - Ability score (e.g. 10, 14, 8).
+ * @returns Numeric modifier (e.g. 0, 2, -1).
+ */
+const abilityModNum = (score: number | undefined): number => {
+  if (score === undefined || score === null) return 0;
+  return Math.floor((score - 10) / 2);
+};
+
+/**
+ * Formats a numeric modifier with a sign prefix.
+ * @param mod - Numeric modifier.
+ * @returns Formatted string (e.g. "+2", "-1", "+0").
+ */
+const formatMod = (mod: number): string => (mod >= 0 ? `+${mod}` : `${mod}`);
+
+/** The six ability keys used for saving throws. */
+const ABILITY_KEYS = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
+
+/**
+ * D&D 5e skill definitions: internal key, i18n label key with Spanish fallback,
+ * and the governing ability.
+ */
+const SKILL_DEFS: { key: string; labelKey: string; fallback: string; ability: typeof ABILITY_KEYS[number] }[] = [
+  { key: 'acrobatics',      labelKey: 'skill_acrobatics',      fallback: 'Acrobacias',         ability: 'dex' },
+  { key: 'athletics',       labelKey: 'skill_athletics',       fallback: 'Atletismo',          ability: 'str' },
+  { key: 'arcana',          labelKey: 'skill_arcana',          fallback: 'C. Arcano',          ability: 'int' },
+  { key: 'deception',       labelKey: 'skill_deception',       fallback: 'Engaño',             ability: 'cha' },
+  { key: 'history',         labelKey: 'skill_history',         fallback: 'Historia',           ability: 'int' },
+  { key: 'performance',     labelKey: 'skill_performance',     fallback: 'Interpretación',     ability: 'cha' },
+  { key: 'intimidation',    labelKey: 'skill_intimidation',    fallback: 'Intimidación',       ability: 'cha' },
+  { key: 'investigation',   labelKey: 'skill_investigation',   fallback: 'Investigación',      ability: 'int' },
+  { key: 'sleightOfHand',   labelKey: 'skill_sleight_of_hand', fallback: 'Juego de Manos',     ability: 'dex' },
+  { key: 'medicine',        labelKey: 'skill_medicine',        fallback: 'Medicina',           ability: 'wis' },
+  { key: 'nature',          labelKey: 'skill_nature',          fallback: 'Naturaleza',         ability: 'int' },
+  { key: 'perception',      labelKey: 'skill_perception',      fallback: 'Percepción',         ability: 'wis' },
+  { key: 'insight',         labelKey: 'skill_insight',         fallback: 'Perspicacia',        ability: 'wis' },
+  { key: 'persuasion',      labelKey: 'skill_persuasion',      fallback: 'Persuasión',         ability: 'cha' },
+  { key: 'religion',        labelKey: 'skill_religion',        fallback: 'Religión',           ability: 'int' },
+  { key: 'stealth',         labelKey: 'skill_stealth',         fallback: 'Sigilo',             ability: 'dex' },
+  { key: 'survival',        labelKey: 'skill_survival',        fallback: 'Supervivencia',      ability: 'wis' },
+  { key: 'animalHandling',  labelKey: 'skill_animal_handling', fallback: 'T. con Animales',    ability: 'wis' },
+];
+
 const getInitials = (name: string | undefined | null): string => {
   const trimmed = (name || '').trim();
   if (!trimmed) return '?';
@@ -186,6 +231,39 @@ const SheetRow: React.FC<{ label: string; value?: React.ReactNode }> = ({ label,
   </Stack>
 );
 
+/**
+ * Read-only proficiency row for saving throws / skills.
+ * Shows a filled/empty circle, the modifier, and the label.
+ */
+const ReadOnlyProficiencyRow: React.FC<{
+  label: string;
+  proficient: boolean;
+  modifier: number;
+}> = ({ label, proficient, modifier }) => (
+  <Stack direction="row" alignItems="center" spacing={0.5} sx={{ py: 0.15 }}>
+    <Box
+      sx={{
+        width: 10,
+        height: 10,
+        borderRadius: '50%',
+        border: '1.5px solid',
+        borderColor: 'text.secondary',
+        bgcolor: proficient ? 'text.primary' : 'transparent',
+        flexShrink: 0,
+      }}
+    />
+    <Typography
+      variant="body2"
+      sx={{ width: 32, textAlign: 'right', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'monospace' }}
+    >
+      {formatMod(modifier)}
+    </Typography>
+    <Typography variant="body2" sx={{ fontSize: '0.8rem', ml: 0.5 }}>
+      {label}
+    </Typography>
+  </Stack>
+);
+
 /* ───────────────────────── PAGE ──────────────────────────── */
 
 const CharacterDetailPage: React.FC = () => {
@@ -321,7 +399,7 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
   };
 
   return (
-    <Box sx={{ p: { xs: 1, sm: 2 }, maxWidth: 1200, mx: 'auto' }}>
+    <Box sx={{ p: { xs: 1, sm: 2 }, maxWidth: 1400, mx: 'auto' }}>
       {/* ── toolbar ── */}
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }} flexWrap="wrap" gap={1}>
         <Stack direction="row" spacing={2} alignItems="center">
@@ -398,14 +476,24 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
             )}
           </Box>
 
-          {/* Quick badges */}
-          <Stack direction="row" spacing={0.5} flexWrap="wrap">
-            {data.kind && <Chip size="small" label={data.kind.toUpperCase()} sx={{ bgcolor: 'rgba(255,255,255,.2)', color: 'inherit' }} />}
-            <Chip
-              size="small"
-              label={data.visibleToPlayers ? t('visible', 'Visible') : t('hidden', 'Oculto')}
-              color={data.visibleToPlayers ? 'success' : 'default'}
-            />
+          {/* Quick badges + XP */}
+          <Stack direction="column" spacing={0.5} alignItems="flex-end">
+            <Stack direction="row" spacing={0.5} flexWrap="wrap">
+              {data.kind && <Chip size="small" label={data.kind === 'pc' ? t('pc','PC') : t('npc','NPC')} sx={{ bgcolor: 'rgba(255,255,255,.2)', color: 'inherit' }} />}
+              <Chip
+                size="small"
+                label={data.visibleToPlayers ? t('visible', 'Visible') : t('hidden', 'Oculto')}
+                color={data.visibleToPlayers ? 'success' : 'default'}
+              />
+            </Stack>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <Typography variant="caption" sx={{ opacity: 0.75, textTransform: 'uppercase', fontWeight: 700, fontSize: '0.6rem' }}>
+                {t('experience_points', 'XP')}
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                {(data.experiencePoints ?? 0).toLocaleString()}
+              </Typography>
+            </Stack>
           </Stack>
         </Box>
 
@@ -422,29 +510,69 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
         <Box sx={{ p: { xs: 1, sm: 2 } }}>
           <Grid container spacing={2}>
 
-            {/* ═══ LEFT COLUMN: Abilities ═══ */}
-            <Grid size={{ xs: 12, md: 2 }}>
-              <Stack spacing={1} alignItems="center">
-                {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as const).map((k) => (
-                  <AbilityBlock key={k} label={abilityLabels[k]} score={(data as any)[k]} />
-                ))}
-              </Stack>
+            {/* ═══ COLS 1+2: Abilities + Proficiency / Saves / Skills (nested, tight) ═══ */}
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Grid container spacing={0.5}>
+                {/* COL 1: Ability Scores */}
+                <Grid size={{ xs: 4 }}>
+                  <Stack spacing={1}>
+                    {(ABILITY_KEYS).map((k) => (
+                      <AbilityBlock key={k} label={abilityLabels[k]} score={(data as any)[k]} />
+                    ))}
+                  </Stack>
+                </Grid>
 
-              {/* Proficiency bonus below abilities */}
-              <Paper
-                variant="outlined"
-                sx={{ mt: 2, textAlign: 'center', py: 1, borderRadius: 2 }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  +{data.proficiencyBonus ?? 2}
-                </Typography>
-                <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.6rem' }}>
-                  {t('proficiency_bonus', 'Competencia')}
-                </Typography>
-              </Paper>
+                {/* COL 2: Proficiency, Saving Throws, Skills */}
+                <Grid size={{ xs: 8 }}>
+                  {/* Proficiency bonus */}
+                  <Paper
+                    variant="outlined"
+                    sx={{ textAlign: 'center', py: 1, borderRadius: 2, mb: 2 }}
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      +{data.proficiencyBonus ?? 2}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.6rem' }}>
+                      {t('proficiency_bonus', 'Competencia')}
+                    </Typography>
+                  </Paper>
+
+                  {/* ── Saving Throws ── */}
+                  <SheetSection title={t('saving_throws', 'Tiradas de Salvación')}>
+                    {ABILITY_KEYS.map((k) => {
+                      const prof = !!(data.savingThrowProficiencies || {})[k];
+                      const mod = abilityModNum((data as any)[k]) + (prof ? (data.proficiencyBonus ?? 2) : 0);
+                      return (
+                        <ReadOnlyProficiencyRow
+                          key={k}
+                          label={abilityLabels[k]}
+                          proficient={prof}
+                          modifier={mod}
+                        />
+                      );
+                    })}
+                  </SheetSection>
+
+                  {/* ── Skills ── */}
+                  <SheetSection title={t('skills', 'Habilidades')}>
+                    {SKILL_DEFS.map(({ key, labelKey, fallback, ability }) => {
+                      const prof = !!(data.skillProficiencies || {})[key];
+                      const mod = abilityModNum((data as any)[ability]) + (prof ? (data.proficiencyBonus ?? 2) : 0);
+                      return (
+                        <ReadOnlyProficiencyRow
+                          key={key}
+                          label={`${t(labelKey, fallback)} (${abilityLabels[ability]})`}
+                          proficient={prof}
+                          modifier={mod}
+                        />
+                      );
+                    })}
+                  </SheetSection>
+                </Grid>
+              </Grid>
             </Grid>
 
-            {/* ═══ CENTER COLUMN: Combat + Equipment + Spells ═══ */}
+            {/* ═══ COL 3: Combat + Attacks + Spells ═══ */}
             <Grid size={{ xs: 12, md: 5 }}>
 
               {/* AC / Initiative / Speed row */}
@@ -477,15 +605,107 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
                 <SheetRow label={t('hit_dice', 'Dados de Golpe')} value={data.hitDice} />
               </Paper>
 
-              {/* Experience Points */}
-              <Paper variant="outlined" sx={{ borderRadius: 2, p: 1.5, mb: 2, textAlign: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 0.5 }}>
-                  {t('experience_points', 'Puntos de Experiencia')}
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  {(data.experiencePoints ?? 0).toLocaleString()}
-                </Typography>
-              </Paper>
+              {/* ── Attacks & Spellcasting ── */}
+              {((data.attacks && data.attacks.length > 0) || data.attacksNotes) && (
+                <SheetSection title={t('attacks_and_spellcasting', 'Ataques y Lanzamiento de Conjuros')}>
+                  {data.attacks && data.attacks.length > 0 && (
+                    <Box sx={{ mb: data.attacksNotes ? 1.5 : 0 }}>
+                      {/* Table header */}
+                      <Stack direction="row" spacing={1} sx={{ mb: 0.5 }}>
+                        <Typography variant="caption" sx={{ flex: 2, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.6rem' }}>
+                          {t('attack_name', 'Nombre')}
+                        </Typography>
+                        <Typography variant="caption" sx={{ flex: 1, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.6rem' }}>
+                          {t('attack_bonus', 'Bonificador')}
+                        </Typography>
+                        <Typography variant="caption" sx={{ flex: 2, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.6rem' }}>
+                          {t('attack_damage', 'Daño/Tipo')}
+                        </Typography>
+                      </Stack>
+                      <Divider sx={{ mb: 0.5 }} />
+                      {data.attacks.map((atk, idx) => (
+                        <Stack key={idx} direction="row" spacing={1} sx={{ py: 0.25 }}>
+                          <Typography variant="body2" sx={{ flex: 2, fontWeight: 600 }}>{atk.name || '—'}</Typography>
+                          <Typography variant="body2" sx={{ flex: 1, fontFamily: 'monospace', fontWeight: 700 }}>{atk.bonus || '—'}</Typography>
+                          <Typography variant="body2" sx={{ flex: 2 }}>{atk.damage || '—'}</Typography>
+                        </Stack>
+                      ))}
+                    </Box>
+                  )}
+                  {data.attacksNotes && (
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{data.attacksNotes}</Typography>
+                  )}
+                </SheetSection>
+              )}
+
+              {/* ── Spellcasting ── */}
+              {(data.spellcastingAbility || (data.cantrips && data.cantrips.length > 0) || (data.spellsByLevel && Object.keys(data.spellsByLevel).length > 0)) && (
+                <SheetSection title={t('magic', 'Magia')}>
+                  <Stack direction="row" spacing={2} sx={{ mb: 1 }} flexWrap="wrap">
+                    {data.spellcastingAbility && (
+                      <Chip size="small" variant="outlined" label={`${t('spellcasting_ability', 'Aptitud')}: ${data.spellcastingAbility.toUpperCase()}`} />
+                    )}
+                    {data.spellSaveDC !== undefined && data.spellSaveDC !== null && (
+                      <Chip size="small" variant="outlined" label={`${t('spell_save_dc', 'CD Salvación')}: ${data.spellSaveDC}`} />
+                    )}
+                    {data.spellAttackBonus !== undefined && data.spellAttackBonus !== null && (
+                      <Chip size="small" variant="outlined" label={`${t('spell_attack_bonus', 'Ataque')}: +${data.spellAttackBonus}`} />
+                    )}
+                  </Stack>
+
+                  {data.cantrips && data.cantrips.length > 0 && (
+                    <>
+                      <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem' }}>
+                        {t('cantrips', 'Trucos')}
+                      </Typography>
+                      <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ mt: 0.5, mb: 1 }}>
+                        {data.cantrips.map((c) => (
+                          <Chip key={c} size="small" label={c} onClick={() => handleSpellClick(c)} sx={{ cursor: 'pointer' }} />
+                        ))}
+                      </Stack>
+                    </>
+                  )}
+
+                  {data.spellsByLevel && Object.entries(data.spellsByLevel).map(([lvl, spells]) => (
+                    <Box key={lvl} sx={{ mb: 1 }}>
+                      <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem' }}>
+                        {t('spells_level', 'Nivel')} {lvl}
+                      </Typography>
+                      <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ mt: 0.5 }}>
+                        {spells.map((s) => (
+                          <Chip key={`${lvl}-${s}`} size="small" label={s} onClick={() => handleSpellClick(s)} sx={{ cursor: 'pointer' }} />
+                        ))}
+                      </Stack>
+                    </Box>
+                  ))}
+                </SheetSection>
+              )}
+            </Grid>
+
+            {/* ═══ RIGHT COLUMN: Traits, Description, Image ═══ */}
+            {/* ═══ COL 4: Image + Traits + Money + Equipment + Proficiencies ═══ */}
+            <Grid size={{ xs: 12, md: 4 }}>
+
+              {/* Character illustration */}
+              {data.characterImageUrl && (
+                <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', mb: 2 }}>
+                  <Box
+                    component="img"
+                    src={data.characterImageUrl}
+                    alt={data.name}
+                    sx={{ width: '100%', maxHeight: 320, objectFit: 'contain', display: 'block', bgcolor: 'action.hover' }}
+                  />
+                </Paper>
+              )}
+
+              {/* Traits & Features */}
+              <SheetSection title={t('traits_and_features', 'Rasgos y Características')}>
+                {data.traitsAndFeatures ? (
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{data.traitsAndFeatures}</Typography>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">—</Typography>
+                )}
+              </SheetSection>
 
               {/* Money */}
               <SheetSection title={t('money', 'Dinero')}>
@@ -535,113 +755,6 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
                   <Typography variant="body2" color="text.secondary">—</Typography>
                 )}
               </SheetSection>
-
-              {/* ── Spellcasting ── */}
-              {(data.spellcastingAbility || (data.cantrips && data.cantrips.length > 0) || (data.spellsByLevel && Object.keys(data.spellsByLevel).length > 0)) && (
-                <SheetSection title={t('magic', 'Magia')}>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }} flexWrap="wrap">
-                    {data.spellcastingAbility && (
-                      <Chip size="small" variant="outlined" label={`${t('spellcasting_ability', 'Aptitud')}: ${data.spellcastingAbility.toUpperCase()}`} />
-                    )}
-                    {data.spellSaveDC !== undefined && data.spellSaveDC !== null && (
-                      <Chip size="small" variant="outlined" label={`${t('spell_save_dc', 'CD Salvación')}: ${data.spellSaveDC}`} />
-                    )}
-                    {data.spellAttackBonus !== undefined && data.spellAttackBonus !== null && (
-                      <Chip size="small" variant="outlined" label={`${t('spell_attack_bonus', 'Ataque')}: +${data.spellAttackBonus}`} />
-                    )}
-                  </Stack>
-
-                  {data.cantrips && data.cantrips.length > 0 && (
-                    <>
-                      <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem' }}>
-                        {t('cantrips', 'Trucos')}
-                      </Typography>
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ mt: 0.5, mb: 1 }}>
-                        {data.cantrips.map((c) => (
-                          <Chip key={c} size="small" label={c} onClick={() => handleSpellClick(c)} sx={{ cursor: 'pointer' }} />
-                        ))}
-                      </Stack>
-                    </>
-                  )}
-
-                  {data.spellsByLevel && Object.entries(data.spellsByLevel).map(([lvl, spells]) => (
-                    <Box key={lvl} sx={{ mb: 1 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem' }}>
-                        {t('spells_level', 'Nivel')} {lvl}
-                      </Typography>
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ mt: 0.5 }}>
-                        {spells.map((s) => (
-                          <Chip key={`${lvl}-${s}`} size="small" label={s} onClick={() => handleSpellClick(s)} sx={{ cursor: 'pointer' }} />
-                        ))}
-                      </Stack>
-                    </Box>
-                  ))}
-                </SheetSection>
-              )}
-            </Grid>
-
-            {/* ═══ RIGHT COLUMN: Traits, Description, Image ═══ */}
-            <Grid size={{ xs: 12, md: 5 }}>
-
-              {/* Character illustration */}
-              {data.characterImageUrl && (
-                <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', mb: 2 }}>
-                  <Box
-                    component="img"
-                    src={data.characterImageUrl}
-                    alt={data.name}
-                    sx={{ width: '100%', maxHeight: 320, objectFit: 'contain', display: 'block', bgcolor: 'action.hover' }}
-                  />
-                </Paper>
-              )}
-
-              {/* Traits & Features */}
-              <SheetSection title={t('traits_and_features', 'Rasgos y Características')}>
-                {data.traitsAndFeatures ? (
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{data.traitsAndFeatures}</Typography>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">—</Typography>
-                )}
-              </SheetSection>
-
-              {/* Physical description */}
-              <SheetSection title={t('appearance', 'Apariencia')}>
-                <Grid container spacing={1}>
-                  {[
-                    { label: t('age', 'Edad'), value: data.age },
-                    { label: t('height', 'Altura'), value: data.height },
-                    { label: t('weight', 'Peso'), value: data.weight },
-                    { label: t('eyes', 'Ojos'), value: data.eyes },
-                    { label: t('skin', 'Piel'), value: data.skin },
-                    { label: t('hair', 'Pelo'), value: data.hair },
-                  ].map(({ label, value }) => (
-                    <Grid key={label} size={{ xs: 6, sm: 4 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.6rem' }}>
-                        {label}
-                      </Typography>
-                      <Typography variant="body2">{value || '—'}</Typography>
-                    </Grid>
-                  ))}
-                </Grid>
-              </SheetSection>
-
-              {/* Token preview */}
-              <Paper variant="outlined" sx={{ borderRadius: 2, p: 1.5 }}>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem' }}>
-                    Token
-                  </Typography>
-                  {data.tokenKind === 'image' && data.tokenImageUrl ? (
-                    <Avatar src={data.tokenImageUrl} alt={data.name} sx={{ width: 40, height: 40 }} />
-                  ) : (
-                    <Avatar sx={{ bgcolor: avatarBg, width: 40, height: 40 }}>{getInitials(data.name)}</Avatar>
-                  )}
-                  <Typography variant="body2" color="text.secondary">
-                    {data.tokenKind === 'image' ? t('image', 'Imagen') : data.tokenKind === 'color' ? t('color', 'Color') : t('none', 'Ninguno')}
-                    {data.tokenKind === 'color' && data.tokenColor ? ` (${data.tokenColor})` : ''}
-                  </Typography>
-                </Stack>
-              </Paper>
             </Grid>
           </Grid>
         </Box>

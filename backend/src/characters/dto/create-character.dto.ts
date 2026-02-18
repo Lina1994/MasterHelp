@@ -77,5 +77,17 @@ export class CreateCharacterDto {
   @IsOptional() @IsString() backstory?: string;
   @IsOptional() @IsString() treasure?: string;
 
+  /** Array of attack entries (name, bonus, damage/type). */
+  @IsOptional() @IsArray() attacks?: { name: string; bonus: string; damage: string }[];
+
+  /** Free-text notes below the attacks table. */
+  @IsOptional() @IsString() attacksNotes?: string;
+
+  /** Saving throw proficiency flags (e.g. { str: true, dex: false, … }). */
+  @IsOptional() @IsObject() savingThrowProficiencies?: Record<string, boolean>;
+
+  /** Skill proficiency flags (e.g. { acrobatics: true, athletics: false, … }). */
+  @IsOptional() @IsObject() skillProficiencies?: Record<string, boolean>;
+
   @IsOptional() @IsBoolean() visibleToPlayers?: boolean;
 }
