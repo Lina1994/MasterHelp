@@ -12,7 +12,9 @@ interface ImportMeta {
 
 const API_BASE_URL =
 	(import.meta.env && import.meta.env.VITE_API_BASE_URL) ||
-	`${window.location.protocol}//${window.location.hostname}:3000`;
+	(window.location.protocol === 'file:'
+		? 'http://localhost:3000'
+		: `${window.location.protocol}//${window.location.hostname}:3000`);
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -51,9 +53,13 @@ api.interceptors.response.use(
 					localStorage.removeItem('current_user');
 					localStorage.removeItem('activeCampaignId');
 				} catch {}
-				// Redirige a login de forma segura
+				// Redirige a login de forma segura (compatible con HashRouter y BrowserRouter)
 				if (typeof window !== 'undefined') {
-					window.location.href = '/login';
+					if (window.location.protocol === 'file:') {
+						window.location.hash = '#/login';
+					} else {
+						window.location.href = '/#/login';
+					}
 				}
 			}
 		}

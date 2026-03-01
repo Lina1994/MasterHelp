@@ -7,33 +7,10 @@ import CssBaseline from '@mui/material/CssBaseline'; // CssBaseline resetea esti
 
 import App from './App';
 import './i18n';
-import axios from 'axios';
 import { getCurrentUser } from './utils/getCurrentUser';
 import { fetchUserFromApi } from './utils/fetchUserFromApi';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-// Interceptor global para manejar expiración de sesión (401)
-axios.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('current_user');
-      // Redirigir a login solo si no estamos ya en login, register, forgot-password o reset-password
-      const path = window.location.pathname;
-      if (
-        !path.startsWith('/login') &&
-        !path.startsWith('/register') &&
-        !path.startsWith('/forgot-password') &&
-        !path.startsWith('/reset-password')
-      ) {
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-
 
 function Main() {
   const { i18n } = useTranslation();

@@ -7,7 +7,14 @@
     "start:backend": "npm --prefix backend run start:dev",
     "start:frontend": "npm --prefix frontend run dev",
     "start:electron": "wait-on http://localhost:5173 && .\\node_modules\\.bin\\electron electron.js",
-    "start:desktop": "concurrently \"npm:start:backend\" \"npm:start:frontend\" \"npm:start:electron\""
+    "start:desktop": "concurrently \"npm:start:backend\" \"npm:start:frontend\" \"npm:start:electron\"",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "build:all": "npm run build:frontend && npm run build:backend",
+    "dist": "npm run build:all && electron-builder --win",
+    "dist:mac": "npm run build:all && electron-builder --mac",
+    "dist:all": "npm run build:all && electron-builder --win --mac",
+    "dist:dir": "npm run build:all && electron-builder --win --dir"
   },
   "repository": {
     "type": "git",
@@ -24,9 +31,82 @@
     "url": "https://github.com/Lina1994/MasterHelp/issues"
   },
   "homepage": "https://github.com/Lina1994/MasterHelp#readme",
+  "build": {
+    "appId": "com.masterhelp.desktop",
+    "productName": "MasterHelp",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron.js",
+      "preload.js",
+      "frontend/dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "backend/dist",
+        "to": "backend/dist",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "backend/data",
+        "to": "backend/data",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "backend/node_modules",
+        "to": "backend/node_modules",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "backend/package.json",
+        "to": "backend/package.json"
+      },
+      {
+        "from": "backend/.env",
+        "to": "backend/.env"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MasterHelp"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": null,
+      "category": "public.app-category.games",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "MasterHelp",
+      "contents": [
+        { "x": 130, "y": 220 },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ]
+    }
+  },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "electron": "^38.2.0",
+    "electron-builder": "^26.8.1",
     "wait-on": "^9.0.1"
   }
 }

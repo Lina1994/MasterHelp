@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createHashRouter } from 'react-router-dom';
 import ProtectedLayout from '../layouts/ProtectedLayout'; // Importa el nuevo layout protegido
 import HomePage from '../pages/HomePage';
 import LoginPage from '../pages/LoginPage';
@@ -30,7 +30,7 @@ import QuestsPage from '../pages/QuestsPage';
 import ShopsPage from '../pages/ShopsPage';
 import WorldpediaPage from '../pages/WorldpediaPage';
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   // Ventana de proyección: ruta al margen del layout principal
   {
     path: '/projection/maps',

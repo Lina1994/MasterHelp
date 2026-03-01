@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, QueryFailedError } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Resend } from 'resend';
 import { User } from '../users/entities/user.entity';
@@ -31,8 +31,14 @@ export class AuthService {
       await this.usersRepository.save(user);
       return { message: 'User registered successfully' };
     } catch (error) {
-      if (error.code === '23505') {
-        throw new UnauthorizedException('Username or email already exists');
+      // PostgreSQL: 23505, SQLite: SQLITE_CONSTRAINT / UNIQUE constraint failed
+      const isUniqueViolation =
+        error.code === '23505' ||
+        (error instanceof QueryFailedError &&
+          error.message?.includes('UNIQUE constraint failed'));
+
+      if (isUniqueViolation) {
+        throw new ConflictException('Username or email already exists');
       }
       throw error;
     }

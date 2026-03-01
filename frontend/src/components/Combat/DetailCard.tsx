@@ -223,7 +223,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
               <Stack spacing={0.25}>
                 <Typography variant="caption" color="text.secondary">Rasgos:</Typography>
                 {md.traits.map((t, i) => {
-                  const text = (t as any)?.text || t.desc;
+                  const text = t.text || t.desc;
                   const name = t.name;
                   return (
                     <Typography key={i} variant="caption" color="text.secondary">
@@ -237,7 +237,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
               <Stack spacing={0.25}>
                 <Typography variant="caption" color="text.secondary">Acciones:</Typography>
                 {md.actions.map((t, i) => {
-                  const text = (t as any)?.text || t.desc;
+                  const text = t.text || t.desc;
                   const name = t.name;
                   return (
                     <Typography key={i} variant="caption" color="text.secondary">
@@ -251,7 +251,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
               <Stack spacing={0.25}>
                 <Typography variant="caption" color="text.secondary">Reacciones:</Typography>
                 {md.reactions.map((t, i) => {
-                  const text = (t as any)?.text || t.desc;
+                  const text = t.text || t.desc;
                   const name = t.name;
                   return (
                     <Typography key={i} variant="caption" color="text.secondary">
@@ -265,7 +265,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
               <Stack spacing={0.25}>
                 <Typography variant="caption" color="text.secondary">Acciones legendarias:</Typography>
                 {md.legendaryActions.map((t, i) => {
-                  const text = (t as any)?.text || t.desc;
+                  const text = t.text || t.desc;
                   const name = t.name;
                   return (
                     <Typography key={i} variant="caption" color="text.secondary">
@@ -279,7 +279,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
               <Stack spacing={0.25}>
                 <Typography variant="caption" color="text.secondary">Acciones de guarida:</Typography>
                 {md.lairActions.map((t, i) => {
-                  const text = (t as any)?.text || t.desc;
+                  const text = t.text || t.desc;
                   const name = t.name;
                   return (
                     <Typography key={i} variant="caption" color="text.secondary">
@@ -293,7 +293,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ participant, colorKey = 'primar
               <Stack spacing={0.25}>
                 <Typography variant="caption" color="text.secondary">Efectos regionales:</Typography>
                 {md.regionalEffects.map((t, i) => {
-                  const text = (t as any)?.text || t.desc;
+                  const text = t.text || t.desc;
                   const name = t.name;
                   return (
                     <Typography key={i} variant="caption" color="text.secondary">

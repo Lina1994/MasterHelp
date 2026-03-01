@@ -32,6 +32,7 @@ import { useMapTokens } from '../../hooks/useMapTokens';
 import { useActiveEncounter } from '../../components/Encounter/ActiveEncounterContext';
 import { useActiveMap } from '../../components/Map/ActiveMapContext';
 import { listMaps, MapItemDto, getMapImageUrlSized } from '../../api/maps';
+import type { MapTokenPayload } from '../../api/maps';
 import { useEncounterMusic } from '../../hooks/useEncounterMusic';
 import { useSoundtrackMode } from '../../hooks/useSoundtrackMode';
 import { useBattleState } from '../../hooks/useBattleState';

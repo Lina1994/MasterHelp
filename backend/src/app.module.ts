@@ -46,6 +46,7 @@ import { WorldpediaNoteLink } from './worldpedia/entities/worldpedia-note-link.e
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env', // Especifica el archivo de entorno
+      ignoreEnvFile: false, // Intentar leer .env, pero no fallar si no existe
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -81,8 +82,8 @@ import { WorldpediaNoteLink } from './worldpedia/entities/worldpedia-note-link.e
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
-        // synchronize: true en cualquier entorno que no sea producción (facilita dev local)
-        synchronize: configService.get<string>('NODE_ENV') !== 'production',
+        // synchronize: true siempre en SQLite (app de escritorio, sin riesgo de pérdida)
+        synchronize: true,
         logging: false,
       }),
     }),

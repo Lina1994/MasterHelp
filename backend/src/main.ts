@@ -7,8 +7,11 @@ import { join } from 'path';
 import { json, urlencoded } from 'express';
 
 async function bootstrap() {
-  // Asegurar que el directorio de datos para SQLite exista
-  const dataDir = join(__dirname, '..', '..', 'data');
+  // Asegurar que el directorio de datos para SQLite exista.
+  // En producción (Electron empaquetado) DB_DATABASE es una ruta absoluta;
+  // en desarrollo se resuelve relativa al cwd (backend/).
+  const dbPath = process.env.DB_DATABASE || join(__dirname, '..', 'data', 'dm_app.db');
+  const dataDir = join(dbPath, '..');
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
     console.log(`Directorio de datos creado en: ${dataDir}`);

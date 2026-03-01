@@ -37,10 +37,15 @@ export interface CampaignMonsterDetail extends CampaignMonsterListItem {
   conditionImmunities?: string[];
   senses?: Record<string, any>;
   languages?: string;
-  traits?: Array<{ name?: string; text: string }>;
-  actions?: Array<{ name?: string; text: string }>;
-  reactions?: Array<{ name?: string; text: string }>;
-  legendaryActions?: Array<{ name?: string; text: string }>;
+  traits?: Array<{ name?: string; text: string; desc?: string }>;
+  actions?: Array<{ name?: string; text: string; desc?: string }>;
+  reactions?: Array<{ name?: string; text: string; desc?: string }>;
+  legendaryActions?: Array<{ name?: string; text: string; desc?: string }>;
+  lairActions?: Array<{ name?: string; text: string; desc?: string }>;
+  regionalEffects?: Array<{ name?: string; text: string; desc?: string }>;
+  proficiencyBonus?: number;
+  environment?: string[];
+  notes?: string[];
   description?: string;
 }
 

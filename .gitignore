@@ -104,3 +104,4 @@ dist
 
 # Project-specific ignores
 /backend/data/dm_app.db
+/release/
