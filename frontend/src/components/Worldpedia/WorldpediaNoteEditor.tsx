@@ -66,8 +66,12 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
   const [noteViewerOpen, setNoteViewerOpen] = useState(false);
   const [viewerNoteId, setViewerNoteId] = useState<string | null>(null);
 
-  /** Ref to the Box wrapping the RichTextEditor, used for click delegation. */
-  const editorContainerRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * Container node for click delegation.
+   * Stored in state (callback-ref pattern) so the effect re-runs when the
+   * node mounts/unmounts (e.g. after a loading cycle).
+   */
+  const [editorContainerNode, setEditorContainerNode] = useState<HTMLDivElement | null>(null);
 
   /** Ref to the underlying ReactQuill instance (used for selection & inline formatting). */
   const quillEditorRef = useRef<ReactQuill | null>(null);
@@ -126,8 +130,7 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
    * - Any other `http(s)://` link → open in new tab.
    */
   useEffect(() => {
-    const container = editorContainerRef.current;
-    if (!container) return;
+    if (!editorContainerNode) return;
 
     const handleClick = (e: MouseEvent) => {
       const anchor = (e.target as HTMLElement).closest('a') as HTMLAnchorElement | null;
@@ -178,9 +181,9 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
       }
     };
 
-    container.addEventListener('click', handleClick, true);
-    return () => container.removeEventListener('click', handleClick, true);
-  }, [openNoteViewer, openEntityViewer]);
+    editorContainerNode.addEventListener('click', handleClick, true);
+    return () => editorContainerNode.removeEventListener('click', handleClick, true);
+  }, [editorContainerNode, openNoteViewer, openEntityViewer]);
 
   /* ── Handlers ──────────────────────────────────────────────────── */
 
@@ -326,7 +329,7 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
       </Typography>
 
       {/* Rich text editor – wrapped for click delegation on inline links */}
-      <Box ref={editorContainerRef}>
+      <Box ref={setEditorContainerNode}>
         <RichTextEditor
           value={html}
           onChange={handleHtmlChange}

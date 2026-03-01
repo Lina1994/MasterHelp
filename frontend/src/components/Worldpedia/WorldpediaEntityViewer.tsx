@@ -1,26 +1,38 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  Avatar,
   Box,
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Divider,
-  Drawer,
   IconButton,
+  Paper,
   Stack,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import CloseIcon from '@mui/icons-material/Close';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ShieldIcon from '@mui/icons-material/Shield';
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import { useTranslation } from 'react-i18next';
 import { getCharacter, type CharacterPayload } from '../../api/characters';
 import { getCampaignMonster, type CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
 import { getCampaignSpell, type CampaignSpellDetail } from '../../api/spells/spellsApi';
-import { listMaps, getMapImageUrlSized, type MapItemDto } from '../../api/maps';
+import { listMaps, getMapImageUrlSized, getMapSkylineUrlSized, hasMapSkylineForTod, type MapItemDto } from '../../api/maps';
 import { getShop, type Shop } from '../../api/shops';
+import { listSongsForCampaign, listPlaylists, type SongLite, type PlaylistLite } from '../../api/soundtrack';
 import { getQuest, type QuestPayload } from '../../api/quests';
 import { listEncounters, type EncounterSummary } from '../../api/encounters';
 import { setActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
+import { MonsterStatBlock } from '../bestiary/MonsterStatBlock';
+import { SpellStatBlock } from '../spells/SpellStatBlock';
+import AuthImage from '../common/AuthImage';
 
 interface Props {
   open: boolean;
@@ -30,12 +42,124 @@ interface Props {
   onClose: () => void;
 }
 
+/* ───────────────────────── helpers ───────────────────────── */
+
+/** Computes the ability modifier for a given score. */
+const abilityMod = (score: number | undefined): string => {
+  if (score === undefined || score === null) return '+0';
+  const mod = Math.floor((score - 10) / 2);
+  return mod >= 0 ? `+${mod}` : `${mod}`;
+};
+
+/** Numeric ability modifier. */
+const abilityModNum = (score: number | undefined): number => {
+  if (score === undefined || score === null) return 0;
+  return Math.floor((score - 10) / 2);
+};
+
+/** Formats a numeric modifier with a sign prefix. */
+const formatMod = (mod: number): string => (mod >= 0 ? `+${mod}` : `${mod}`);
+
+/** The six ability keys. */
+const ABILITY_KEYS = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
+
+/** Skill definitions. */
+const SKILL_DEFS: { key: string; labelKey: string; fallback: string; ability: typeof ABILITY_KEYS[number] }[] = [
+  { key: 'acrobatics',      labelKey: 'skill_acrobatics',      fallback: 'Acrobacias',         ability: 'dex' },
+  { key: 'athletics',       labelKey: 'skill_athletics',       fallback: 'Atletismo',          ability: 'str' },
+  { key: 'arcana',          labelKey: 'skill_arcana',          fallback: 'C. Arcano',          ability: 'int' },
+  { key: 'deception',       labelKey: 'skill_deception',       fallback: 'Engaño',             ability: 'cha' },
+  { key: 'history',         labelKey: 'skill_history',         fallback: 'Historia',           ability: 'int' },
+  { key: 'performance',     labelKey: 'skill_performance',     fallback: 'Interpretación',     ability: 'cha' },
+  { key: 'intimidation',    labelKey: 'skill_intimidation',    fallback: 'Intimidación',       ability: 'cha' },
+  { key: 'investigation',   labelKey: 'skill_investigation',   fallback: 'Investigación',      ability: 'int' },
+  { key: 'sleightOfHand',   labelKey: 'skill_sleight_of_hand', fallback: 'Juego de Manos',     ability: 'dex' },
+  { key: 'medicine',        labelKey: 'skill_medicine',        fallback: 'Medicina',           ability: 'wis' },
+  { key: 'nature',          labelKey: 'skill_nature',          fallback: 'Naturaleza',         ability: 'int' },
+  { key: 'perception',      labelKey: 'skill_perception',      fallback: 'Percepción',         ability: 'wis' },
+  { key: 'insight',         labelKey: 'skill_insight',         fallback: 'Perspicacia',        ability: 'wis' },
+  { key: 'persuasion',      labelKey: 'skill_persuasion',      fallback: 'Persuasión',         ability: 'cha' },
+  { key: 'religion',        labelKey: 'skill_religion',        fallback: 'Religión',           ability: 'int' },
+  { key: 'stealth',         labelKey: 'skill_stealth',         fallback: 'Sigilo',             ability: 'dex' },
+  { key: 'survival',        labelKey: 'skill_survival',        fallback: 'Supervivencia',      ability: 'wis' },
+  { key: 'animalHandling',  labelKey: 'skill_animal_handling', fallback: 'T. con Animales',    ability: 'wis' },
+];
+
+/* ──────── Character sub-components (read-only) ──────── */
+
+const AbilityBlock: React.FC<{ label: string; score: number | undefined }> = ({ label, score }) => (
+  <Paper
+    variant="outlined"
+    sx={{ width: 72, textAlign: 'center', py: 1, borderRadius: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.25 }}
+  >
+    <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.65rem' }}>{label}</Typography>
+    <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.1 }}>{abilityMod(score)}</Typography>
+    <Paper variant="outlined" sx={{ width: 32, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', mt: 0.25 }}>
+      <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{score ?? '—'}</Typography>
+    </Paper>
+  </Paper>
+);
+
+const StatBox: React.FC<{ label: string; value: React.ReactNode; icon?: React.ReactNode }> = ({ label, value, icon }) => (
+  <Paper variant="outlined" sx={{ flex: 1, textAlign: 'center', py: 1.5, px: 1, borderRadius: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+    {icon}
+    <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>{value ?? '—'}</Typography>
+    <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.6rem', letterSpacing: 0.5 }}>{label}</Typography>
+  </Paper>
+);
+
+const HpBar: React.FC<{ current?: number; max?: number; temp?: number }> = ({ current, max, temp }) => {
+  const cur = current ?? 0;
+  const mx = max ?? 1;
+  const pct = Math.max(0, Math.min(100, (cur / mx) * 100));
+  const color = pct > 50 ? 'success.main' : pct > 25 ? 'warning.main' : 'error.main';
+  return (
+    <Paper variant="outlined" sx={{ borderRadius: 2, p: 1.5 }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <FavoriteIcon sx={{ fontSize: 16, color: 'error.main' }} />
+          <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem' }}>Hit Points</Typography>
+        </Stack>
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+          {cur} / {mx}
+          {(temp ?? 0) > 0 && <Typography component="span" variant="body2" color="info.main" sx={{ ml: 0.5 }}>(+{temp} temp)</Typography>}
+        </Typography>
+      </Stack>
+      <Box sx={{ width: '100%', height: 8, bgcolor: 'action.hover', borderRadius: 1, overflow: 'hidden' }}>
+        <Box sx={{ width: `${pct}%`, height: '100%', bgcolor: color, borderRadius: 1, transition: 'width .3s' }} />
+      </Box>
+    </Paper>
+  );
+};
+
+const SheetSection: React.FC<{ title: string; children?: React.ReactNode }> = ({ title, children }) => (
+  <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', mb: 2 }}>
+    <Box sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', px: 1.5, py: 0.5 }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1 }}>{title}</Typography>
+    </Box>
+    <Box sx={{ p: 1.5 }}>{children}</Box>
+  </Paper>
+);
+
+const ProficiencyRow: React.FC<{ label: string; proficient: boolean; modifier: number }> = ({ label, proficient, modifier }) => (
+  <Stack direction="row" alignItems="center" spacing={0.5} sx={{ py: 0.15 }}>
+    <Box sx={{ width: 10, height: 10, borderRadius: '50%', border: '1.5px solid', borderColor: 'text.secondary', bgcolor: proficient ? 'text.primary' : 'transparent', flexShrink: 0 }} />
+    <Typography variant="body2" sx={{ width: 32, textAlign: 'right', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'monospace' }}>{formatMod(modifier)}</Typography>
+    <Typography variant="body2" sx={{ fontSize: '0.8rem', ml: 0.5 }}>{label}</Typography>
+  </Stack>
+);
+
+/* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
+
 /**
- * A slide-out drawer that previews an app entity referenced from a
- * Worldpedia note link.
+ * A centered dialog that displays a detailed preview of an app entity
+ * referenced from a Worldpedia note link.
  *
- * Supported entity types: `character`, `monster`, `map`, `spell`.
- * For characters it also offers a "Send to Skyline" button.
+ * Reuses `MonsterStatBlock` and `SpellStatBlock` for monsters and spells,
+ * and renders a full D&D-style character sheet for characters.
+ *
+ * Supported entity types: `character`, `monster`, `spell`, `map`, `shop`,
+ * `quest`, `encounter`.
  */
 export default function WorldpediaEntityViewer({
   open,
@@ -54,7 +178,12 @@ export default function WorldpediaEntityViewer({
   const [entity, setEntity] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  /* ── Fetch entity when drawer opens ────────────────────────────── */
+  /** Extra map data: which skyline ToDs are available + resolved music names. */
+  const [mapSkylineTods, setMapSkylineTods] = useState<('dawn' | 'morning' | 'afternoon' | 'night')[]>([]);
+  /** Resolved music entries from musicConfig: { tod, situation, name }[]. */
+  const [mapMusicEntries, setMapMusicEntries] = useState<{ tod: string; situation: string; name: string }[]>([]);
+
+  /* ── Fetch entity when dialog opens ────────────────────────────── */
 
   useEffect(() => {
     if (!open || !entityType || !entityId) {
@@ -81,9 +210,40 @@ export default function WorldpediaEntityViewer({
             data = await getCampaignSpell(campaignId, entityId, lang);
             break;
           case 'map': {
-            // No getMap(id) endpoint — fetch the list and find the entry.
             const maps = await listMaps({ campaignId });
             data = maps.find((m) => m.id === entityId) ?? null;
+            /* Resolve skyline availability per ToD */
+            if (data) {
+              const tods: ('dawn' | 'morning' | 'afternoon' | 'night')[] = ['dawn', 'morning', 'afternoon', 'night'];
+              const checks = await Promise.all(tods.map((td) => hasMapSkylineForTod(entityId, td, 'full').catch(() => false)));
+              if (!cancelled) setMapSkylineTods(tods.filter((_, i) => checks[i]));
+              /* Resolve music config → human-readable names */
+              const mc = (data as MapItemDto).musicConfig as Record<string, Record<string, { type: 'song' | 'playlist'; id: string }>> | undefined;
+              if (mc && Object.keys(mc).length > 0) {
+                try {
+                  const [{ associated, reusable }, pls] = await Promise.all([
+                    listSongsForCampaign(campaignId),
+                    listPlaylists(campaignId),
+                  ]);
+                  const songMap = new Map<string, string>();
+                  [...associated, ...reusable].forEach((s) => songMap.set(s.id, s.name));
+                  const plMap = new Map<string, string>();
+                  pls.forEach((p) => plMap.set(p.id, p.name));
+                  const entries: { tod: string; situation: string; name: string }[] = [];
+                  for (const [tod, situationMap] of Object.entries(mc)) {
+                    for (const [situation, ref] of Object.entries(situationMap)) {
+                      const resolved = ref.type === 'playlist' ? plMap.get(ref.id) : songMap.get(ref.id);
+                      if (resolved) entries.push({ tod, situation, name: resolved });
+                    }
+                  }
+                  if (!cancelled) setMapMusicEntries(entries);
+                } catch { /* non-critical */ }
+              } else if (!cancelled) {
+                setMapMusicEntries([]);
+              }
+            } else {
+              if (!cancelled) { setMapSkylineTods([]); setMapMusicEntries([]); }
+            }
             break;
           }
           case 'shop':
@@ -116,209 +276,272 @@ export default function WorldpediaEntityViewer({
     if (!activeCampaign?.id || !entityId) return;
     try {
       await setActiveSkylineCharacterId(activeCampaign.id, entityId);
-      // Notify projection window
       localStorage.setItem(
         'app.skyline.activeCharacterUpdated',
         JSON.stringify({ campaignId: activeCampaign.id, characterId: entityId, ts: Date.now() }),
       );
       try {
-        new BroadcastChannel('campaign-sync').postMessage({
-          type: 'activeSkylineChanged',
-          campaignId: activeCampaign.id,
-        });
+        new BroadcastChannel('campaign-sync').postMessage({ type: 'activeSkylineChanged', campaignId: activeCampaign.id });
       } catch { /* BroadcastChannel not supported */ }
       try {
-        (window as any).electronAPI?.projectionPoke?.({
-          kind: 'activeSkylineChanged',
-          campaignId: activeCampaign.id,
-        });
+        (window as any).electronAPI?.projectionPoke?.({ kind: 'activeSkylineChanged', campaignId: activeCampaign.id });
       } catch { /* electron not present */ }
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
   }, [activeCampaign?.id, entityId]);
 
-  /* ── Render ────────────────────────────────────────────────────── */
+  /* ── Ability labels (translated) ───────────────────────────────── */
 
-  const renderCharacter = (ch: CharacterPayload) => (
-    <Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{ch.name}</Typography>
-      {ch.characterImageUrl && (
-        <Box
-          component="img"
-          src={ch.characterImageUrl}
-          alt={ch.name}
-          sx={{ width: '100%', maxHeight: 240, objectFit: 'contain', borderRadius: 1, mb: 2 }}
-        />
-      )}
-      <Stack spacing={0.5}>
-        {ch.race && <Typography variant="body2"><strong>Race:</strong> {ch.race}</Typography>}
-        {ch.className && <Typography variant="body2"><strong>Class:</strong> {ch.className} {ch.level ? `Lv.${ch.level}` : ''}</Typography>}
-        {ch.alignment && <Typography variant="body2"><strong>Alignment:</strong> {ch.alignment}</Typography>}
-        {ch.armorClass != null && <Typography variant="body2"><strong>AC:</strong> {ch.armorClass}</Typography>}
-        {ch.maxHp != null && <Typography variant="body2"><strong>HP:</strong> {ch.currentHp ?? '?'}/{ch.maxHp}</Typography>}
-        {ch.speed && <Typography variant="body2"><strong>Speed:</strong> {ch.speed}</Typography>}
-      </Stack>
+  const abilityLabels: Record<string, string> = {
+    str: t('str', 'FUE'), dex: t('dex', 'DES'), con: t('con', 'CON'),
+    int: t('int', 'INT'), wis: t('wis', 'SAB'), cha: t('cha', 'CAR'),
+  };
 
-      {/* Ability scores */}
-      <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 2 }}>
-        {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as const).map((ab) => (
-          <Box key={ab} sx={{ textAlign: 'center', minWidth: 48 }}>
-            <Typography variant="caption" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>{ab}</Typography>
-            <Typography variant="body2">{(ch as any)[ab] ?? '—'}</Typography>
+  /* ── Render: Character (full sheet) ────────────────────────────── */
+
+  const renderCharacter = (ch: CharacterPayload) => {
+    const initials = (ch.name || '?').split(' ').map((s) => s[0]).slice(0, 2).join('').toUpperCase();
+    const avatarBg = ch.tokenColor || '#607d8b';
+
+    return (
+      <Box>
+        {/* Header bar */}
+        <Box sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', px: 2, py: 1.5, borderRadius: 1, mb: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
+          {ch.tokenKind === 'image' && ch.tokenImageUrl ? (
+            <Avatar src={ch.tokenImageUrl} alt={ch.name} sx={{ width: 64, height: 64, border: '2px solid', borderColor: 'primary.contrastText' }} />
+          ) : (
+            <Avatar sx={{ bgcolor: avatarBg, width: 64, height: 64, fontSize: 24, fontWeight: 700, border: '2px solid', borderColor: 'primary.contrastText' }}>{initials}</Avatar>
+          )}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{ch.name}</Typography>
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              {[ch.race, ch.className && ch.level ? `${ch.className} ${ch.level}` : ch.className, ch.alignment, ch.background].filter(Boolean).join(' · ')}
+            </Typography>
+            {ch.playerName && <Typography variant="caption" sx={{ opacity: 0.75 }}>{t('player_name', 'Jugador')}: {ch.playerName}</Typography>}
           </Box>
-        ))}
-      </Stack>
+          {ch.characterImageUrl && (
+            <Box component="img" src={ch.characterImageUrl} alt={ch.name} sx={{ maxHeight: 80, borderRadius: 1, objectFit: 'contain' }} />
+          )}
+        </Box>
 
-      <Button
-        variant="contained"
-        size="small"
-        sx={{ mt: 3 }}
-        onClick={handleSendToSkyline}
-      >
-        Enviar a Skyline
-      </Button>
-    </Box>
-  );
+        <Grid container spacing={2}>
+          {/* Col 1: Abilities + proficiency + saves + skills */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Grid container spacing={0.5}>
+              <Grid size={{ xs: 4 }}>
+                <Stack spacing={1}>
+                  {ABILITY_KEYS.map((k) => <AbilityBlock key={k} label={abilityLabels[k]} score={(ch as any)[k]} />)}
+                </Stack>
+              </Grid>
+              <Grid size={{ xs: 8 }}>
+                <Paper variant="outlined" sx={{ textAlign: 'center', py: 1, borderRadius: 2, mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>+{ch.proficiencyBonus ?? 2}</Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.6rem' }}>{t('proficiency_bonus', 'Competencia')}</Typography>
+                </Paper>
 
-  /* ── Monster ────────────────────────────────────────────────────── */
+                <SheetSection title={t('saving_throws', 'Tiradas de Salvación')}>
+                  {ABILITY_KEYS.map((k) => {
+                    const prof = !!(ch.savingThrowProficiencies || {})[k];
+                    const mod = abilityModNum((ch as any)[k]) + (prof ? (ch.proficiencyBonus ?? 2) : 0);
+                    return <ProficiencyRow key={k} label={abilityLabels[k]} proficient={prof} modifier={mod} />;
+                  })}
+                </SheetSection>
 
-  const renderMonster = (m: CampaignMonsterDetail) => (
+                <SheetSection title={t('skills', 'Habilidades')}>
+                  {SKILL_DEFS.map(({ key, labelKey, fallback, ability }) => {
+                    const prof = !!(ch.skillProficiencies || {})[key];
+                    const mod = abilityModNum((ch as any)[ability]) + (prof ? (ch.proficiencyBonus ?? 2) : 0);
+                    return <ProficiencyRow key={key} label={`${t(labelKey, fallback)} (${abilityLabels[ability]})`} proficient={prof} modifier={mod} />;
+                  })}
+                </SheetSection>
+              </Grid>
+            </Grid>
+          </Grid>
+
+          {/* Col 2: Combat stats + attacks + spells */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+              <StatBox label={t('armor_class', 'CA')} value={ch.armorClass} icon={<ShieldIcon sx={{ fontSize: 20, color: 'text.secondary' }} />} />
+              <StatBox label={t('initiative', 'Iniciativa')} value={ch.initiative != null ? (ch.initiative >= 0 ? `+${ch.initiative}` : ch.initiative) : '—'} />
+              <StatBox label={t('speed', 'Velocidad')} value={ch.speed} icon={<DirectionsRunIcon sx={{ fontSize: 20, color: 'text.secondary' }} />} />
+            </Stack>
+
+            <Box sx={{ mb: 2 }}>
+              <HpBar current={ch.currentHp} max={ch.maxHp} temp={ch.tempHp} />
+            </Box>
+
+            {ch.attacks && ch.attacks.length > 0 && (
+              <SheetSection title={t('attacks', 'Ataques')}>
+                {ch.attacks.map((a, i) => (
+                  <Stack key={i} direction="row" justifyContent="space-between" sx={{ py: 0.25 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{a.name}</Typography>
+                    <Typography variant="body2">{a.bonus} | {a.damage}</Typography>
+                  </Stack>
+                ))}
+                {ch.attacksNotes && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontStyle: 'italic' }}>{ch.attacksNotes}</Typography>}
+              </SheetSection>
+            )}
+
+            {ch.spellsByLevel && Object.keys(ch.spellsByLevel).length > 0 && (
+              <SheetSection title={t('spells', 'Hechizos')}>
+                {ch.spellcastingAbility && (
+                  <Stack direction="row" flexWrap="wrap" gap={0.5} sx={{ mb: 1 }}>
+                    <Chip size="small" label={`${t('spellcasting_ability', 'Aptitud')}: ${abilityLabels[ch.spellcastingAbility] ?? ch.spellcastingAbility}`} />
+                    {ch.spellSaveDC != null && <Chip size="small" label={`DC ${ch.spellSaveDC}`} />}
+                    {ch.spellAttackBonus != null && <Chip size="small" label={`Atk ${ch.spellAttackBonus >= 0 ? '+' : ''}${ch.spellAttackBonus}`} />}
+                  </Stack>
+                )}
+                {ch.cantrips && ch.cantrips.length > 0 && (
+                  <Box sx={{ mb: 0.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700 }}>{t('cantrips', 'Trucos')}</Typography>
+                    <Typography variant="body2">{ch.cantrips.join(', ')}</Typography>
+                  </Box>
+                )}
+                {Object.entries(ch.spellsByLevel).sort(([a], [b]) => Number(a) - Number(b)).map(([lvl, spells]) => (
+                  <Box key={lvl} sx={{ mb: 0.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700 }}>{t('level', 'Nivel')} {lvl}</Typography>
+                    <Typography variant="body2">{spells.join(', ')}</Typography>
+                  </Box>
+                ))}
+              </SheetSection>
+            )}
+          </Grid>
+
+          {/* Col 3: Traits, equipment, proficiencies */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            {ch.traitsAndFeatures && (
+              <SheetSection title={t('traits_and_features', 'Rasgos y Características')}>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ch.traitsAndFeatures}</Typography>
+              </SheetSection>
+            )}
+            {ch.equipment && (
+              <SheetSection title={t('equipment', 'Equipo')}>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ch.equipment}</Typography>
+              </SheetSection>
+            )}
+            {ch.otherProficienciesAndLanguages && (
+              <SheetSection title={t('proficiencies_and_languages', 'Competencias e Idiomas')}>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ch.otherProficienciesAndLanguages}</Typography>
+              </SheetSection>
+            )}
+
+            {/* Currency */}
+            {(ch.cp || ch.sp || ch.ep || ch.gp || ch.pp) && (
+              <SheetSection title={t('currency', 'Moneda')}>
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {ch.cp != null && ch.cp > 0 && <Chip size="small" label={`${ch.cp} CP`} />}
+                  {ch.sp != null && ch.sp > 0 && <Chip size="small" label={`${ch.sp} SP`} />}
+                  {ch.ep != null && ch.ep > 0 && <Chip size="small" label={`${ch.ep} EP`} />}
+                  {ch.gp != null && ch.gp > 0 && <Chip size="small" label={`${ch.gp} GP`} />}
+                  {ch.pp != null && ch.pp > 0 && <Chip size="small" label={`${ch.pp} PP`} />}
+                </Stack>
+              </SheetSection>
+            )}
+
+            {ch.backstory && (
+              <SheetSection title={t('backstory', 'Trasfondo')}>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ch.backstory}</Typography>
+              </SheetSection>
+            )}
+          </Grid>
+        </Grid>
+
+        {/* Skyline button */}
+        <Box sx={{ mt: 2, textAlign: 'right' }}>
+          <Button variant="contained" size="small" onClick={handleSendToSkyline}>
+            {t('send_to_skyline', 'Enviar a Skyline')}
+          </Button>
+        </Box>
+      </Box>
+    );
+  };
+
+  /* ── Render: Map ───────────────────────────────────────────────── */
+
+  /** Translates a ToD key to a human label. */
+  const todLabel = (tod: string): string => {
+    const map: Record<string, string> = { dawn: t('tod_dawn', 'Amanecer'), morning: t('tod_morning', 'Mañana'), afternoon: t('tod_afternoon', 'Tarde'), night: t('tod_night', 'Noche') };
+    return map[tod] ?? tod;
+  };
+
+  /** Translates a music situation key. */
+  const situationLabel = (s: string): string => {
+    const map: Record<string, string> = { base: 'Base', battleEasy: t('battle_easy', 'Batalla (Fácil)'), battleMedium: t('battle_medium', 'Batalla (Media)'), battleHard: t('battle_hard', 'Batalla (Difícil)'), battleDeadly: t('battle_deadly', 'Batalla (Letal)') };
+    return map[s] ?? s;
+  };
+
+  const renderMap = (m: MapItemDto) => (
     <Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{m.name}</Typography>
-      {m.type && <Typography variant="body2" color="text.secondary">{m.size} {m.type}, {m.alignment}</Typography>}
-      <Stack spacing={0.5} sx={{ mt: 2 }}>
-        {m.armorClass && <Typography variant="body2"><strong>AC:</strong> {typeof m.armorClass === 'object' ? `${m.armorClass.value} (${m.armorClass.type || ''})` : m.armorClass}</Typography>}
-        {m.hitPoints && <Typography variant="body2"><strong>HP:</strong> {m.hitPoints.average ?? m.hitPoints} ({(m.hitPoints as any).formula || (m.hitPoints as any).roll || ''})</Typography>}
-        {m.challengeRating && <Typography variant="body2"><strong>CR:</strong> {m.challengeRating}</Typography>}
+      {/* Main map image */}
+      {m.imageAvailable && (
+        <Box sx={{ mb: 2 }}>
+          <AuthImage src={getMapImageUrlSized(m.id, 'preview')} alt={m.name} style={{ width: '100%', maxHeight: 480, objectFit: 'contain', borderRadius: 4 }} />
+        </Box>
+      )}
+
+      {/* Description and meta */}
+      {m.description && <Typography variant="body2" sx={{ mb: 2 }}>{m.description}</Typography>}
+      <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mb: 2 }}>
+        {m.group && <Chip label={m.group} size="small" variant="outlined" />}
+        {m.timeOfDay && <Chip label={todLabel(m.timeOfDay)} size="small" color="info" variant="outlined" />}
+        {m.isWorldMap && <Chip label={t('world_map', 'Mapa del Mundo')} size="small" color="primary" variant="outlined" />}
       </Stack>
 
-      {/* Abilities */}
-      {m.abilities && (
-        <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 2 }}>
-          {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as const).map((ab) => (
-            <Box key={ab} sx={{ textAlign: 'center', minWidth: 48 }}>
-              <Typography variant="caption" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>{ab}</Typography>
-              <Typography variant="body2">{m.abilities?.[ab] ?? '—'}</Typography>
+      <Divider sx={{ my: 2 }} />
+
+      {/* Skyline scenes */}
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>{t('skyline_scenes', 'Escenas de Skyline')}</Typography>
+      {mapSkylineTods.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">{t('no_skyline_scenes', 'No hay escenas de skyline configuradas para este mapa.')}</Typography>
+      ) : (
+        <Stack direction="row" flexWrap="wrap" gap={2} sx={{ mb: 1 }}>
+          {mapSkylineTods.map((td) => (
+            <Box key={td} sx={{ textAlign: 'center' }}>
+              <AuthImage
+                src={getMapSkylineUrlSized(m.id, 'preview', { timeOfDay: td })}
+                alt={`Skyline ${todLabel(td)}`}
+                style={{ width: 200, height: 120, objectFit: 'cover', borderRadius: 4, border: '1px solid rgba(0,0,0,0.12)' }}
+              />
+              <Typography variant="caption" display="block" sx={{ mt: 0.5, fontWeight: 600 }}>{todLabel(td)}</Typography>
             </Box>
           ))}
         </Stack>
       )}
 
-      {m.traits && m.traits.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2">{t('traits', 'Traits')}</Typography>
-          {m.traits.map((tr, i) => (
-            <Typography key={i} variant="body2"><strong>{tr.name}.</strong> {tr.text}</Typography>
+      <Divider sx={{ my: 2 }} />
+
+      {/* Associated music */}
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>{t('associated_music', 'Música Asociada')}</Typography>
+      {mapMusicEntries.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">{t('no_associated_music', 'No hay música configurada para este mapa.')}</Typography>
+      ) : (
+        <Stack spacing={0.5}>
+          {mapMusicEntries.map((entry, i) => (
+            <Stack key={i} direction="row" spacing={1} alignItems="center">
+              <Chip label={todLabel(entry.tod)} size="small" variant="outlined" sx={{ minWidth: 80 }} />
+              <Chip label={situationLabel(entry.situation)} size="small" color="info" variant="outlined" sx={{ minWidth: 100 }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>{entry.name}</Typography>
+            </Stack>
           ))}
-        </Box>
-      )}
-      {m.actions && m.actions.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2">{t('actions', 'Actions')}</Typography>
-          {m.actions.map((a, i) => (
-            <Typography key={i} variant="body2"><strong>{a.name}.</strong> {a.text}</Typography>
-          ))}
-        </Box>
-      )}
-      {m.reactions && m.reactions.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2">{t('reactions', 'Reactions')}</Typography>
-          {m.reactions.map((r, i) => (
-            <Typography key={i} variant="body2"><strong>{r.name}.</strong> {r.text}</Typography>
-          ))}
-        </Box>
-      )}
-      {m.legendaryActions && m.legendaryActions.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2">{t('legendary_actions', 'Legendary Actions')}</Typography>
-          {m.legendaryActions.map((la, i) => (
-            <Typography key={i} variant="body2"><strong>{la.name}.</strong> {la.text}</Typography>
-          ))}
-        </Box>
+        </Stack>
       )}
     </Box>
   );
 
-  /* ── Spell ──────────────────────────────────────────────────────── */
-
-  const renderSpell = (sp: CampaignSpellDetail) => (
-    <Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{sp.name}</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        {sp.level === 0 ? t('cantrip', 'Cantrip') : `${t('level', 'Level')} ${sp.level}`}
-        {sp.school ? ` — ${sp.school}` : ''}
-      </Typography>
-
-      <Stack spacing={0.5} sx={{ mt: 1 }}>
-        {sp.castingTime && <Typography variant="body2"><strong>{t('casting_time', 'Casting Time')}:</strong> {sp.castingTime}</Typography>}
-        {sp.range && <Typography variant="body2"><strong>{t('range', 'Range')}:</strong> {sp.range}</Typography>}
-        {sp.components && <Typography variant="body2"><strong>{t('components', 'Components')}:</strong> {sp.components}</Typography>}
-        {sp.materials && <Typography variant="body2" sx={{ pl: 2, fontStyle: 'italic' }}>{sp.materials}</Typography>}
-        {sp.duration && <Typography variant="body2"><strong>{t('duration', 'Duration')}:</strong> {sp.duration}</Typography>}
-      </Stack>
-
-      <Stack direction="row" gap={0.5} sx={{ mt: 1 }}>
-        {sp.isConcentration && <Chip label={t('concentration', 'Concentration')} size="small" color="warning" variant="outlined" />}
-        {sp.isRitual && <Chip label={t('ritual', 'Ritual')} size="small" color="info" variant="outlined" />}
-      </Stack>
-
-      {sp.description && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2">{t('description', 'Description')}</Typography>
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{sp.description}</Typography>
-        </Box>
-      )}
-
-      {sp.classes && sp.classes.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2">{t('classes', 'Classes')}</Typography>
-          <Typography variant="body2">{sp.classes.join(', ')}</Typography>
-        </Box>
-      )}
-    </Box>
-  );
-
-  /* ── Map ────────────────────────────────────────────────────────── */
-
-  const renderMap = (m: MapItemDto) => (
-    <Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{m.name}</Typography>
-      {m.imageAvailable && (
-        <Box
-          component="img"
-          src={getMapImageUrlSized(m.id, 'preview')}
-          alt={m.name}
-          sx={{ width: '100%', maxHeight: 300, objectFit: 'contain', borderRadius: 1, mb: 2 }}
-        />
-      )}
-      {m.description && <Typography variant="body2" sx={{ mb: 1 }}>{m.description}</Typography>}
-      <Stack spacing={0.5}>
-        {m.group && <Typography variant="body2"><strong>{t('group', 'Group')}:</strong> {m.group}</Typography>}
-        {m.timeOfDay && <Typography variant="body2"><strong>{t('time_of_day', 'Time of Day')}:</strong> {m.timeOfDay}</Typography>}
-        {m.isWorldMap && <Chip label={t('world_map', 'World Map')} size="small" color="primary" variant="outlined" sx={{ mt: 0.5 }} />}
-      </Stack>
-    </Box>
-  );
-
-  /* ── Shop ───────────────────────────────────────────────────────── */
+  /* ── Render: Shop ──────────────────────────────────────────────── */
 
   const renderShop = (shop: Shop) => (
     <Box>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{shop.name}</Typography>
       {shop.description && <Typography variant="body2" sx={{ mb: 2 }}>{shop.description}</Typography>}
-
       {shop.sections.map((section) => (
         <Box key={section.id} sx={{ mb: 2 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{section.name}</Typography>
           <Divider sx={{ my: 0.5 }} />
           {section.entries.map((entry) => (
             <Stack key={entry.id} direction="row" spacing={1} sx={{ py: 0.25 }}>
-              {entry.cells
-                .filter((c) => c.column.cellType === 'text')
-                .map((c) => (
-                  <Typography key={c.id} variant="body2">{c.textValue ?? ''}</Typography>
-                ))}
+              {entry.cells.filter((c) => c.column.cellType === 'text').map((c) => (
+                <Typography key={c.id} variant="body2">{c.textValue ?? ''}</Typography>
+              ))}
             </Stack>
           ))}
         </Box>
@@ -326,26 +549,15 @@ export default function WorldpediaEntityViewer({
     </Box>
   );
 
-  /* ── Quest ──────────────────────────────────────────────────────── */
+  /* ── Render: Quest ─────────────────────────────────────────────── */
 
   const renderQuest = (q: QuestPayload) => {
-    const statusColors: Record<string, 'default' | 'warning' | 'success'> = {
-      not_accepted: 'default',
-      accepted: 'warning',
-      completed: 'success',
-    };
+    const statusColors: Record<string, 'default' | 'warning' | 'success'> = { not_accepted: 'default', accepted: 'warning', completed: 'success' };
     return (
       <Box>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{q.title}</Typography>
-        <Chip
-          label={t(`quest_status_${q.status}`, q.status)}
-          size="small"
-          color={statusColors[q.status] ?? 'default'}
-          sx={{ mb: 1 }}
-        />
-        {q.description && (
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mt: 1 }}>{q.description}</Typography>
-        )}
+        <Chip label={t(`quest_status_${q.status}`, q.status)} size="small" color={statusColors[q.status] ?? 'default'} sx={{ mb: 1 }} />
+        {q.description && <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mt: 1 }}>{q.description}</Typography>}
         <Stack spacing={0.5} sx={{ mt: 2 }}>
           {q.createdBy && <Typography variant="body2"><strong>{t('created_by', 'Created by')}:</strong> {q.createdBy.username}</Typography>}
           {q.prerequisiteQuest && <Typography variant="body2"><strong>{t('prerequisite', 'Prerequisite')}:</strong> {q.prerequisiteQuest.title}</Typography>}
@@ -355,7 +567,7 @@ export default function WorldpediaEntityViewer({
     );
   };
 
-  /* ── Encounter ─────────────────────────────────────────────────── */
+  /* ── Render: Encounter ─────────────────────────────────────────── */
 
   const renderEncounter = (enc: EncounterSummary) => (
     <Box>
@@ -363,28 +575,17 @@ export default function WorldpediaEntityViewer({
       <Chip
         label={enc.difficulty}
         size="small"
-        color={
-          enc.difficulty === 'Mortal' ? 'error'
-            : enc.difficulty === 'Difícil' ? 'warning'
-              : enc.difficulty === 'Medio' ? 'info'
-                : 'default'
-        }
+        color={enc.difficulty === 'Mortal' ? 'error' : enc.difficulty === 'Difícil' ? 'warning' : enc.difficulty === 'Medio' ? 'info' : 'default'}
         sx={{ mb: 1 }}
       />
-
       {enc.participants.length > 0 && (
         <Box sx={{ mt: 2 }}>
           <Typography variant="subtitle2">{t('participants', 'Participants')}</Typography>
           <Divider sx={{ mb: 0.5 }} />
           {enc.participants.map((p) => (
             <Stack key={p.id} direction="row" justifyContent="space-between" sx={{ py: 0.25 }}>
-              <Typography variant="body2">
-                {p.name} <Typography component="span" variant="caption" color="text.secondary">({p.kind})</Typography>
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {p.maxHp != null ? `HP ${p.currentHp ?? '?'}/${p.maxHp}` : ''}
-                {p.cr != null ? ` CR ${p.cr}` : ''}
-              </Typography>
+              <Typography variant="body2">{p.name} <Typography component="span" variant="caption" color="text.secondary">({p.kind})</Typography></Typography>
+              <Typography variant="body2" color="text.secondary">{p.maxHp != null ? `HP ${p.currentHp ?? '?'}/${p.maxHp}` : ''}{p.cr != null ? ` CR ${p.cr}` : ''}</Typography>
             </Stack>
           ))}
         </Box>
@@ -392,55 +593,80 @@ export default function WorldpediaEntityViewer({
     </Box>
   );
 
-  /* ── Fallback ───────────────────────────────────────────────────── */
+  /* ── Render: Fallback ──────────────────────────────────────────── */
 
   const renderFallback = () => (
     <Box>
-      <Typography variant="body2" color="text.secondary">
-        {entityType}: {entityId}
-      </Typography>
-      <Typography variant="body2" sx={{ mt: 1 }}>
-        {t('worldpedia_entity_preview_unavailable', 'Preview not available for this entity type yet.')}
-      </Typography>
+      <Typography variant="body2" color="text.secondary">{entityType}: {entityId}</Typography>
+      <Typography variant="body2" sx={{ mt: 1 }}>{t('worldpedia_entity_preview_unavailable', 'Preview not available for this entity type yet.')}</Typography>
     </Box>
   );
 
+  /* ── Resolve dialog title ──────────────────────────────────────── */
+
+  const dialogTitle = (() => {
+    if (entity) {
+      switch (entityType) {
+        case 'character': return (entity as CharacterPayload).name;
+        case 'monster': return (entity as CampaignMonsterDetail).name;
+        case 'spell': return (entity as CampaignSpellDetail).name;
+        case 'map': return (entity as MapItemDto).name;
+        case 'shop': return (entity as Shop).name;
+        case 'quest': return (entity as QuestPayload).title;
+        case 'encounter': return (entity as EncounterSummary).name;
+      }
+    }
+    return entityType ? entityType.charAt(0).toUpperCase() + entityType.slice(1) : 'Entity';
+  })();
+
+  /* ── Determine max dialog width based on entity type ───────────── */
+
+  const maxWidth: 'sm' | 'md' | 'lg' = entityType === 'character' ? 'lg' : entityType === 'monster' ? 'md' : 'md';
+
+  /* ── Render ────────────────────────────────────────────────────── */
+
   return (
-    <Drawer
-      anchor="right"
+    <Dialog
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '90vw', sm: 400 }, p: 2 } }}
+      maxWidth={maxWidth}
+      fullWidth
+      scroll="paper"
+      PaperProps={{ sx: { maxHeight: '90vh' } }}
     >
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          {entityType ? entityType.charAt(0).toUpperCase() + entityType.slice(1) : 'Entity'}
-        </Typography>
-        <IconButton size="small" onClick={onClose}>
+      <DialogTitle sx={{ m: 0, pr: 6, fontWeight: 700 }}>
+        {loading ? t('loading', 'Cargando...') : dialogTitle}
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{ position: 'absolute', right: 8, top: 8, color: 'grey.500' }}
+        >
           <CloseIcon />
         </IconButton>
-      </Stack>
+      </DialogTitle>
 
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
-        </Box>
-      )}
+      <DialogContent dividers>
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+            <CircularProgress />
+          </Box>
+        )}
 
-      {error && <Typography color="error">{error}</Typography>}
+        {error && <Typography color="error">{error}</Typography>}
 
-      {!loading && !error && entity && (
-        <>
-          {entityType === 'character' && renderCharacter(entity)}
-          {entityType === 'monster' && renderMonster(entity)}
-          {entityType === 'spell' && renderSpell(entity)}
-          {entityType === 'map' && renderMap(entity)}
-          {entityType === 'shop' && renderShop(entity)}
-          {entityType === 'quest' && renderQuest(entity)}
-          {entityType === 'encounter' && renderEncounter(entity)}
-          {!['character', 'monster', 'spell', 'map', 'shop', 'quest', 'encounter'].includes(entityType ?? '') && renderFallback()}
-        </>
-      )}
-    </Drawer>
+        {!loading && !error && entity && (
+          <>
+            {entityType === 'character' && renderCharacter(entity)}
+            {entityType === 'monster' && <MonsterStatBlock monster={entity} />}
+            {entityType === 'spell' && <SpellStatBlock spell={entity} />}
+            {entityType === 'map' && renderMap(entity)}
+            {entityType === 'shop' && renderShop(entity)}
+            {entityType === 'quest' && renderQuest(entity)}
+            {entityType === 'encounter' && renderEncounter(entity)}
+            {!['character', 'monster', 'spell', 'map', 'shop', 'quest', 'encounter'].includes(entityType ?? '') && renderFallback()}
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

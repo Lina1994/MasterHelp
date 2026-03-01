@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   CircularProgress,
-  Drawer,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   IconButton,
   Stack,
   Typography,
@@ -65,8 +67,12 @@ export default function WorldpediaNoteViewer({
   /** The ID actually shown (either the prop or the top of the internal stack). */
   const activeNoteId = noteStack.length > 0 ? noteStack[noteStack.length - 1] : noteId;
 
-  /** Ref to the HTML container for click delegation. */
-  const htmlContainerRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * Container node for click delegation.
+   * Stored in state (callback-ref pattern) so the effect re-runs when the
+   * node mounts/unmounts (e.g. after a loading cycle).
+   */
+  const [htmlContainerNode, setHtmlContainerNode] = useState<HTMLDivElement | null>(null);
 
   /* ── Fetch note when activeNoteId changes ──────────────────────── */
 
@@ -106,8 +112,7 @@ export default function WorldpediaNoteViewer({
   /* ── Click delegation on rendered HTML ─────────────────────────── */
 
   useEffect(() => {
-    const container = htmlContainerRef.current;
-    if (!container) return;
+    if (!htmlContainerNode) return;
 
     const handleClick = (e: MouseEvent) => {
       const anchor = (e.target as HTMLElement).closest('a') as HTMLAnchorElement | null;
@@ -144,9 +149,9 @@ export default function WorldpediaNoteViewer({
       }
     };
 
-    container.addEventListener('click', handleClick, true);
-    return () => container.removeEventListener('click', handleClick, true);
-  }, [onOpenEntity]);
+    htmlContainerNode.addEventListener('click', handleClick, true);
+    return () => htmlContainerNode.removeEventListener('click', handleClick, true);
+  }, [htmlContainerNode, onOpenEntity]);
 
   /* ── "Open in editor" navigates away and closes drawer ─────────── */
 
@@ -166,26 +171,26 @@ export default function WorldpediaNoteViewer({
   /* ── Render ────────────────────────────────────────────────────── */
 
   return (
-    <Drawer
-      anchor="right"
+    <Dialog
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '90vw', sm: 480 }, p: 2, overflowY: 'auto' } }}
+      maxWidth="md"
+      fullWidth
+      scroll="paper"
+      PaperProps={{ sx: { maxHeight: '90vh' } }}
     >
-      {/* Header */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+      <DialogTitle sx={{ m: 0, pr: 12, fontWeight: 700 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           {noteStack.length > 0 && (
             <IconButton size="small" onClick={handleBack} title={t('back', 'Back')}>
               ←
             </IconButton>
           )}
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }} noWrap>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1 }} noWrap>
             {note?.title ?? t('worldpedia_note', 'Note')}
           </Typography>
         </Stack>
-
-        <Stack direction="row" spacing={0.5}>
+        <Stack direction="row" spacing={0.5} sx={{ position: 'absolute', right: 8, top: 8 }}>
           <IconButton size="small" onClick={handleOpenInEditor} title={t('worldpedia_open_in_editor', 'Open in editor')}>
             <OpenInNewIcon fontSize="small" />
           </IconButton>
@@ -193,34 +198,36 @@ export default function WorldpediaNoteViewer({
             <CloseIcon />
           </IconButton>
         </Stack>
-      </Stack>
+      </DialogTitle>
 
-      {/* Body */}
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
-        </Box>
-      )}
+      <DialogContent dividers>
+        {/* Body */}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        )}
 
-      {error && (
-        <Typography color="error" sx={{ py: 2 }}>
-          {error}
-        </Typography>
-      )}
+        {error && (
+          <Typography color="error" sx={{ py: 2 }}>
+            {error}
+          </Typography>
+        )}
 
-      {!loading && !error && note && (
-        <Box
-          ref={htmlContainerRef}
-          className="ql-editor"
-          sx={{
-            /* Reuse Quill's .ql-editor styles so the note looks identical to
-               the writer's view (lists, headings, indentation, etc.). */
-            '& a': { color: 'primary.main', cursor: 'pointer', textDecoration: 'underline' },
-            '& img': { maxWidth: '100%', borderRadius: 1 },
-          }}
-          dangerouslySetInnerHTML={{ __html: note.html ?? '' }}
-        />
-      )}
-    </Drawer>
+        {!loading && !error && note && (
+          <Box
+            ref={setHtmlContainerNode}
+            className="ql-editor"
+            sx={{
+              /* Reuse Quill's .ql-editor styles so the note looks identical to
+                 the writer's view (lists, headings, indentation, etc.). */
+              '& a': { color: 'primary.main', cursor: 'pointer', textDecoration: 'underline' },
+              '& img': { maxWidth: '100%', borderRadius: 1 },
+            }}
+            dangerouslySetInnerHTML={{ __html: note.html ?? '' }}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
