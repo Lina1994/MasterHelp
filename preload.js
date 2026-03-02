@@ -53,4 +53,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('window:maximized-changed', listener);
     return () => ipcRenderer.removeListener('window:maximized-changed', listener);
   },
+
+  /** Recarga la página de la app. */
+  appReload: () => ipcRenderer.send('app:reload'),
+  /** Abre/cierra las DevTools. */
+  appToggleDevTools: () => ipcRenderer.send('app:toggle-devtools'),
+  /** Aumenta el zoom. */
+  appZoomIn: () => ipcRenderer.send('app:zoom-in'),
+  /** Reduce el zoom. */
+  appZoomOut: () => ipcRenderer.send('app:zoom-out'),
+  /** Restablece el zoom al 100%. */
+  appZoomReset: () => ipcRenderer.send('app:zoom-reset'),
 });

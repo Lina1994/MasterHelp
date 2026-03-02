@@ -4,6 +4,7 @@ import { RichTextEditor } from '../common/RichTextEditor';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 
@@ -202,19 +203,27 @@ export function DiaryEntryPanel({
                     onChange={(v) => updateItem(it.clientId, { html: v })}
                     placeholder={it.isPublic ? 'Contenido público (visible para jugadores)' : 'Contenido privado (solo master)'}
                   />
+
+                  {/* Save button right below the entry being edited */}
+                  <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<SaveIcon />}
+                      onClick={async () => {
+                        await onSave();
+                        setEditingItemId(null);
+                      }}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? 'Guardando…' : 'Guardar'}
+                    </Button>
+                  </Stack>
                 </Box>
                 );
               })}
             </Stack>
           )}
-
-          {isMaster ? (
-            <Stack direction="row" justifyContent="flex-end" gap={1}>
-              <Button variant="contained" onClick={onSave} disabled={isSaving}>
-                {isSaving ? 'Guardando…' : 'Guardar'}
-              </Button>
-            </Stack>
-          ) : null}
         </Stack>
       </CardContent>
     </Card>

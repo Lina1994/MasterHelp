@@ -269,6 +269,31 @@ app.whenReady().then(async () => {
     return mainWindow && !mainWindow.isDestroyed() ? mainWindow.isMaximized() : false;
   });
 
+  // Controles de app: recargar, devtools, zoom
+  ipcMain.on('app:reload', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.reload();
+  });
+  ipcMain.on('app:toggle-devtools', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.toggleDevTools();
+  });
+  ipcMain.on('app:zoom-in', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const wc = mainWindow.webContents;
+      wc.setZoomLevel(wc.getZoomLevel() + 0.5);
+    }
+  });
+  ipcMain.on('app:zoom-out', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const wc = mainWindow.webContents;
+      wc.setZoomLevel(wc.getZoomLevel() - 0.5);
+    }
+  });
+  ipcMain.on('app:zoom-reset', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.setZoomLevel(0);
+    }
+  });
+
   // Emitir cambio de estado maximizado al renderer
   if (mainWindow) {
     mainWindow.on('maximize', () => {

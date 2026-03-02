@@ -19,5 +19,15 @@ interface Window {
     windowIsMaximized?: () => Promise<boolean>;
     /** Suscripción a cambios de estado maximizado. */
     onMaximizedChanged?: (cb: (isMaximized: boolean) => void) => () => void;
+    /** Recarga la página de la app. */
+    appReload?: () => void;
+    /** Abre/cierra las DevTools. */
+    appToggleDevTools?: () => void;
+    /** Aumenta el zoom. */
+    appZoomIn?: () => void;
+    /** Reduce el zoom. */
+    appZoomOut?: () => void;
+    /** Restablece el zoom al 100 %. */
+    appZoomReset?: () => void;
   };
 }
