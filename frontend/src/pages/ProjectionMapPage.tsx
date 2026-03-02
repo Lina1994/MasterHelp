@@ -152,10 +152,16 @@ const ProjectionMapPage: React.FC = () => {
     return tokenImageResolver(tokenId);
   }, [battleParticipantImageMap, tokenImageResolver]);
 
-  // Si viene campaignId en la URL (?campaignId=...), fijarlo en el contexto para que esta ventana use la misma campaña.
+  // Sync campaignId from URL into the shared context.
+  // In HashRouter, ?campaignId=X is inside the hash (e.g. #/projection/maps?campaignId=abc),
+  // so window.location.search is empty — parse both locations.
   useEffect(() => {
-    const sp = new URLSearchParams(window.location.search);
-    const cid = sp.get('campaignId');
+    let cid = new URLSearchParams(window.location.search).get('campaignId');
+    if (!cid) {
+      const hash = window.location.hash;
+      const qIdx = hash.indexOf('?');
+      if (qIdx !== -1) cid = new URLSearchParams(hash.slice(qIdx)).get('campaignId');
+    }
     // eslint-disable-next-line no-console
     console.log('[Projection] parsed campaignId from URL', { cid, href: window.location.href });
     if (cid) setActiveCampaignId(cid);
