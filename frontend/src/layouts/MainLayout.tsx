@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import {
   Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton, Typography, Stack
 } from '@mui/material';
@@ -19,6 +19,9 @@ import GlobalPlayerDrawerControls from '../components/player/GlobalPlayerDrawerC
 import SfxPlayerDrawerControls from '../components/player/SfxPlayerDrawerControls';
 import MapAudioOrchestrator from '../components/Map/MapAudioOrchestrator';
 import { InvitationsList } from '../pages/InvitationsList';
+import { useSidebarConfig } from '../contexts/SidebarConfigContext';
+import { DEFAULT_SIDEBAR_ITEMS } from '../constants/sidebarItems';
+import SkylinePreviewOverlay from '../overlays/SkylinePreviewOverlay';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MapIcon from '@mui/icons-material/Map';
@@ -30,8 +33,25 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+
+/** Maps iconName strings (from SidebarItemDef) to actual MUI icon elements. */
+const ICON_MAP: Record<string, ReactElement> = {
+  FolderSpecial: <FolderSpecialIcon />,
+  MusicNote: <MusicNoteIcon />,
+  MenuBook: <MenuBookIcon />,
+  Map: <MapIcon />,
+  SportsKabaddi: <SportsKabaddiIcon />,
+  People: <PeopleIcon />,
+  Assignment: <AssignmentIcon />,
+  Storefront: <StorefrontIcon />,
+  AutoStories: <AutoStoriesIcon />,
+  EventNote: <EventNoteIcon />,
+  Pets: <PetsIcon />,
+  AutoFixHigh: <AutoFixHighIcon />,
+};
 
 function isUserMaster(activeCampaign: any, userId: number | undefined): boolean {
   if (!activeCampaign?.id || !userId) return false;
@@ -48,6 +68,7 @@ const MainLayoutInner = () => {
   const [calendarConfig, setCalendarConfig] = useState<DiaryCalendarConfig | null>(null);
   const currentUserId = getCurrentUser()?.id as number | undefined;
   const isMaster = isUserMaster(activeCampaign, currentUserId);
+  const { sidebarItems } = useSidebarConfig();
 
   // Auto-cargar el día actual del calendario si hay campaña activa y no hay día seleccionado
   useEffect(() => {
@@ -203,81 +224,22 @@ const MainLayoutInner = () => {
       </Box>
       <Divider />
       <List sx={{ flex: 1, overflowY: 'auto' }}>
-        <ListItem key="campaigns" disablePadding>
-          <ListItemButton onClick={() => navigate('/campaigns')}>
-            <ListItemIcon />
-            <ListItemText primary={t('campaigns', 'Campañas')} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="soundtrack" disablePadding>
-          <ListItemButton onClick={() => navigate('/soundtrack')}>
-            <ListItemIcon><MusicNoteIcon /></ListItemIcon>
-            <ListItemText primary={t('soundtrack', 'Soundtrack')} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="manuals" disablePadding>
-          <ListItemButton onClick={() => navigate('/manuals')}>
-            <ListItemIcon><MenuBookIcon /></ListItemIcon>
-            <ListItemText primary={t('manuals', 'Manuales')} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="maps" disablePadding>
-          <ListItemButton onClick={() => navigate('/maps')}>
-            <ListItemIcon><MapIcon /></ListItemIcon>
-            <ListItemText primary={t('maps', 'Mapas')} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="combat" disablePadding>
-          <ListItemButton onClick={() => navigate('/combat')} disabled={!activeCampaign?.id}>
-            <ListItemIcon><SportsKabaddiIcon /></ListItemIcon>
-            <ListItemText primary="Combate" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="characters" disablePadding>
-          <ListItemButton onClick={() => navigate('/characters')} disabled={!activeCampaign?.id}>
-            <ListItemIcon><PeopleIcon /></ListItemIcon>
-            <ListItemText primary={t('characters', 'Personajes')} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="quests" disablePadding>
-          <ListItemButton onClick={() => navigate('/quests')} disabled={!activeCampaign?.id}>
-            <ListItemIcon><AssignmentIcon /></ListItemIcon>
-            <ListItemText primary={t('quests', 'Misiones')} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="shops" disablePadding>
-          <ListItemButton onClick={() => navigate('/shops')} disabled={!activeCampaign?.id}>
-            <ListItemIcon><StorefrontIcon /></ListItemIcon>
-            <ListItemText primary={t('shops', 'Tiendas')} />
-          </ListItemButton>
-        </ListItem>
-        {isMaster && (
-          <ListItem key="worldpedia" disablePadding>
-            <ListItemButton onClick={() => navigate('/worldpedia')} disabled={!activeCampaign?.id}>
-              <ListItemIcon><AutoStoriesIcon /></ListItemIcon>
-              <ListItemText primary={t('worldpedia', 'Worldpedia')} />
-            </ListItemButton>
-          </ListItem>
-        )}
-        <ListItem key="diary" disablePadding>
-          <ListItemButton onClick={() => navigate('/diary')} disabled={!activeCampaign?.id}>
-            <ListItemIcon><EventNoteIcon /></ListItemIcon>
-            <ListItemText primary={t('diary', 'Diario')} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="campaign-bestiary" disablePadding>
-          <ListItemButton onClick={() => navigate('/campaign-bestiary')} disabled={!activeCampaign?.id}>
-            <ListItemIcon><PetsIcon /></ListItemIcon>
-            <ListItemText primary={t('bestiary', 'Bestiario')} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem key="campaign-spells" disablePadding>
-          <ListItemButton onClick={() => navigate('/campaign-spells')} disabled={!activeCampaign?.id}>
-            <ListItemIcon><AutoFixHighIcon /></ListItemIcon>
-            <ListItemText primary={t('spells', 'Hechizos')} />
-          </ListItemButton>
-        </ListItem>
-        {/* Más items aquí */}
+        {sidebarItems
+          .filter((si) => si.visible)
+          .map((si) => {
+            const def = DEFAULT_SIDEBAR_ITEMS.find((d) => d.key === si.key);
+            if (!def) return null;
+            if (def.masterOnly && !isMaster) return null;
+            const disabled = !!def.requiresCampaign && !activeCampaign?.id;
+            return (
+              <ListItem key={def.key} disablePadding>
+                <ListItemButton onClick={() => navigate(def.route)} disabled={disabled}>
+                  <ListItemIcon>{ICON_MAP[def.iconName] ?? null}</ListItemIcon>
+                  <ListItemText primary={t(def.labelKey, def.fallback)} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
       </List>
 
       {showSelectedDayInSidebar && activeCampaign?.id && selectedDay?.campaignId === activeCampaign.id ? (
@@ -379,6 +341,7 @@ const MainLayoutInner = () => {
                 <InvitationsList />
               </div>
               <Outlet />
+              <SkylinePreviewOverlay />
             </Box>
           </Box>
         </PlayerDrawerUiProvider>

@@ -19,11 +19,25 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  /**
+   * Updates user preferences (language, theme, sidebar configuration).
+   *
+   * @param req - Authenticated request.
+   * @param body - Partial preferences to update.
+   * @returns The updated user.
+   */
   @Patch('me/preferences')
   @UseGuards(JwtAuthGuard)
-  async updatePreferences(@Request() req, @Body() body: { language?: string; theme?: string }) {
-    // Solo actualiza idioma y tema
-    return this.usersService.updatePreferences(req.user.userId, body.language, body.theme);
+  async updatePreferences(
+    @Request() req,
+    @Body() body: { language?: string; theme?: string; sidebarConfig?: string | null },
+  ) {
+    return this.usersService.updatePreferences(
+      req.user.userId,
+      body.language,
+      body.theme,
+      body.sidebarConfig,
+    );
   }
 
   @Get('me')

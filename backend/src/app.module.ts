@@ -40,6 +40,7 @@ import { WorldpediaModule } from './worldpedia/worldpedia.module';
 import { WorldpediaFolder } from './worldpedia/entities/worldpedia-folder.entity';
 import { WorldpediaNote } from './worldpedia/entities/worldpedia-note.entity';
 import { WorldpediaNoteLink } from './worldpedia/entities/worldpedia-note-link.entity';
+import { NetworkInfoModule } from './network-info/network-info.module';
 
 @Module({
   imports: [
@@ -103,6 +104,7 @@ import { WorldpediaNoteLink } from './worldpedia/entities/worldpedia-note-link.e
     ClassesModule,
     MonstersModule,
     WorldpediaModule,
+    NetworkInfoModule,
   ],
   controllers: [],
   providers: [],

@@ -4,6 +4,8 @@ export interface User {
   email: string;
   language?: string;
   theme?: string;
+  /** JSON-serialised sidebar config, or null for defaults. */
+  sidebarConfig?: string | null;
 }
 
 export interface SpellSummary {

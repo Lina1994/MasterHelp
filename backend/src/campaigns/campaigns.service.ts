@@ -545,11 +545,18 @@ export class CampaignsService {
   async getSkylineItems(campaignId: string, requestingUserId: number) {
     const campaign = await this.campaignsRepository.findOne({
       where: { id: campaignId },
-      relations: ['owner'],
+      relations: ['owner', 'players', 'players.user'],
     });
     if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== requestingUserId) {
-      throw new ForbiddenException('Only campaign owner can manage skyline items');
+
+    // Allow any member of the campaign to read skyline items (owner or active player).
+    // Items are already publicly visible in the projection window.
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = campaign.players?.some(
+      (p: any) => p?.user?.id === requestingUserId && p?.status === 'active',
+    );
+    if (!isOwner && !isPlayer) {
+      throw new ForbiddenException('Only campaign members can read skyline items');
     }
 
     const SkylineItemOverlay = this.campaignsRepository.manager.getRepository('SkylineItemOverlay');

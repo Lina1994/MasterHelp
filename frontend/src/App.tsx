@@ -5,21 +5,24 @@ import { ActiveCampaignProvider } from './components/Campaign/ActiveCampaignCont
 import { TimeOfDayProvider } from './components/player/TimeOfDayContext';
 import { ActiveMapProvider } from './components/Map/ActiveMapContext';
 import { ActiveEncounterProvider } from './components/Encounter/ActiveEncounterContext';
+import { SidebarConfigProvider } from './contexts/SidebarConfigContext';
 
 function App() {
   return (
     <CampaignsProvider>
       <ActiveCampaignProvider>
-        <ActiveMapProvider>
-          <ActiveEncounterProvider>
-            <TimeOfDayProvider>
-              <RouterProvider
-                router={router}
-                future={{ v7_startTransition: true }}
-              />
-            </TimeOfDayProvider>
-          </ActiveEncounterProvider>
-        </ActiveMapProvider>
+        <SidebarConfigProvider>
+          <ActiveMapProvider>
+            <ActiveEncounterProvider>
+              <TimeOfDayProvider>
+                <RouterProvider
+                  router={router}
+                  future={{ v7_startTransition: true }}
+                />
+              </TimeOfDayProvider>
+            </ActiveEncounterProvider>
+          </ActiveMapProvider>
+        </SidebarConfigProvider>
       </ActiveCampaignProvider>
     </CampaignsProvider>
   );

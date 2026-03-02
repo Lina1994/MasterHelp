@@ -14,17 +14,24 @@ const ActiveMapContext = createContext<Ctx | undefined>(undefined);
 
 export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeMapId, setActiveMapIdState] = useState<string | null>(null);
-  const { activeCampaign } = useActiveCampaign();
+  const { activeCampaign, activeCampaignId } = useActiveCampaign();
   const pendingTargetIdRef = useRef<string | null>(null);
   const pendingUntilRef = useRef<number>(0);
   const recentChangeRef = useRef<{ from: string | null; to: string | null; until: number } | null>(null);
 
+  /**
+   * Returns the localStorage key scoped to the active campaign.
+   * Uses activeCampaignId (available immediately from localStorage) as primary source,
+   * falling back to activeCampaign?.id (requires campaigns list to load).
+   */
   const getKey = () => {
-    const cid = activeCampaign?.id;
+    const cid = activeCampaignId || activeCampaign?.id;
     return cid ? `app.activeMapId:${cid}` : LEGACY_KEY;
   };
 
   // Restore persisted selection when campaign changes (scoped key)
+  // Uses activeCampaignId (immediately from localStorage) so projection windows
+  // don't need to wait for the full campaign list to load.
   useEffect(() => {
     try {
       const key = getKey();
@@ -34,7 +41,7 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setActiveMapIdState(raw ? raw : null);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCampaign?.id]);
+  }, [activeCampaignId]);
 
   // Listen to storage events from other windows to sync (scoped to current campaign)
   useEffect(() => {
@@ -54,13 +61,15 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCampaign?.id]);
+  }, [activeCampaignId]);
 
-  // Fetch active map from server when campaign changes
+  // Fetch active map from server when campaign changes.
+  // Uses activeCampaignId (available immediately from localStorage) so projection
+  // windows start fetching without waiting for the full campaign list to resolve.
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const cid = activeCampaign?.id;
+      const cid = activeCampaignId || activeCampaign?.id;
       // eslint-disable-next-line no-console
       console.log('[ActiveMap] campaign changed, fetching from server', { cid });
       if (!cid) return;
@@ -80,10 +89,11 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     })();
     return () => { cancelled = true; };
-  }, [activeCampaign?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCampaignId]);
 
   const refreshFromServer = useCallback(async () => {
-    const cid = activeCampaign?.id;
+    const cid = activeCampaignId || activeCampaign?.id;
     if (!cid) return;
     try {
       const serverId = await apiGetActiveMapId(cid);
@@ -102,11 +112,13 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return prev;
       });
     } catch {}
-  }, [activeCampaign?.id]);
+  }, [activeCampaignId, activeCampaign?.id]);
 
-  // Poll server periodically to reflect remote changes (multi-device control)
+  // Poll server periodically to reflect remote changes (multi-device control).
+  // Uses activeCampaignId (immediately from localStorage) as the dependency so
+  // projection windows start polling without waiting for the campaign list.
   useEffect(() => {
-    const cid = activeCampaign?.id;
+    const cid = activeCampaignId || activeCampaign?.id;
     if (!cid) return;
     let disposed = false;
     const isProjectionRoute = () => {
@@ -150,16 +162,17 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       } catch {}
     }, intervalMs);
     return () => { disposed = true; clearInterval(interval); };
-  }, [activeCampaign?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCampaignId]);
 
   const setActiveMapId = useCallback((id: string | null) => {
+    const cid = activeCampaignId || activeCampaign?.id;
     // eslint-disable-next-line no-console
-    console.log('[ActiveMap] setActiveMapId called', { id, campaignId: activeCampaign?.id });
+    console.log('[ActiveMap] setActiveMapId called', { id, campaignId: cid });
     setActiveMapIdState(prev => {
       recentChangeRef.current = { from: prev, to: id, until: Date.now() + 1500 };
       return id;
     });
-    const cid = activeCampaign?.id;
     const key = cid ? `app.activeMapId:${cid}` : LEGACY_KEY;
     try {
       if (id) localStorage.setItem(key, id); else localStorage.removeItem(key);
@@ -189,11 +202,11 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           refreshFromServer();
         });
     }
-  }, [activeCampaign?.id, refreshFromServer]);
+  }, [activeCampaignId, activeCampaign?.id, refreshFromServer]);
 
   // Listen for fast-sync hints via BroadcastChannel and refresh immediately when matching campaign
   useEffect(() => {
-    const cid = activeCampaign?.id;
+    const cid = activeCampaignId || activeCampaign?.id;
     if (!cid) return;
     let bc: BroadcastChannel | null = null;
     try {
@@ -208,7 +221,8 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     } catch {}
     return () => { try { bc?.close(); } catch {} };
-  }, [activeCampaign?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCampaignId]);
 
   const value = useMemo(() => ({ activeMapId, setActiveMapId, refreshFromServer }), [activeMapId, setActiveMapId, refreshFromServer]);
   return <ActiveMapContext.Provider value={value}>{children}</ActiveMapContext.Provider>;

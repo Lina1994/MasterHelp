@@ -2,8 +2,10 @@ import React, { createContext, useState, useEffect, useContext, ReactNode } from
 import { Campaign } from './types';
 import { useCampaignsContext } from './CampaignContext'; // Asumimos que este hook nos da todas las campañas
 
-interface ActiveCampaignContextType {
+export interface ActiveCampaignContextType {
   activeCampaign: Campaign | null;
+  /** Raw campaign ID from localStorage, available immediately on mount (before campaigns list loads). */
+  activeCampaignId: string | null;
   setActiveCampaignId: (id: string | null) => void;
   isLoading: boolean;
 }
@@ -11,7 +13,12 @@ interface ActiveCampaignContextType {
 export const ActiveCampaignContext = createContext<ActiveCampaignContextType | undefined>(undefined);
 
 export const ActiveCampaignProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [activeCampaignId, setActiveCampaignIdState] = useState<string | null>(null);
+  // Read activeCampaignId from localStorage synchronously in the initializer so it is
+  // available from the very first render (important for projection windows which need
+  // the campaign ID before the campaign list finishes loading from the server).
+  const [activeCampaignId, setActiveCampaignIdState] = useState<string | null>(() => {
+    try { return localStorage.getItem('activeCampaignId'); } catch { return null; }
+  });
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,7 +66,7 @@ export const ActiveCampaignProvider: React.FC<{ children: ReactNode }> = ({ chil
   };
 
   return (
-    <ActiveCampaignContext.Provider value={{ activeCampaign, setActiveCampaignId, isLoading }}>
+    <ActiveCampaignContext.Provider value={{ activeCampaign, activeCampaignId, setActiveCampaignId, isLoading }}>
       {children}
     </ActiveCampaignContext.Provider>
   );

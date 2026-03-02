@@ -43,8 +43,14 @@ export class CampaignsController {
   }
 
   // --- Skyline Item Overlays endpoints ---
+  /**
+   * Any authenticated member of the campaign can read skyline items.
+   * Items are already displayed publicly in the projection window, so
+   * restricting reads to the owner is unnecessary and causes 403 errors
+   * in non-owner clients (e.g. the SkylinePreviewOverlay in the main app).
+   */
   @Get(':id/skyline-items')
-  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  @UseGuards(JwtAuthGuard)
   async getSkylineItems(@Request() req, @Param('id') campaignId: string) {
     return this.campaignsService.getSkylineItems(campaignId, req.user.userId);
   }

@@ -24,6 +24,14 @@ export class User {
   @Column({ default: 'light' })
   theme: string;
 
+  /**
+   * JSON-serialised sidebar preferences.
+   * Schema: `{ items: { key: string; visible: boolean }[] }`
+   * `null` means "use default sidebar".
+   */
+  @Column({ type: 'text', nullable: true, default: null })
+  sidebarConfig: string | null;
+
   @OneToMany(() => Campaign, (campaign) => campaign.owner)
   ownedCampaigns: Campaign[]; // Renamed from 'campaigns' to match the relation
 }

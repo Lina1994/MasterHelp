@@ -49,9 +49,20 @@ function loadSelectedDayPayload(): DiarySelectedDayPayload {
 const ProjectionSkylinePage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
-  const { setActiveCampaignId, activeCampaign } = useActiveCampaign();
+  const { setActiveCampaignId, activeCampaign, activeCampaignId: rawCampaignId } = useActiveCampaign();
   const [hasSkyline, setHasSkyline] = useState<boolean>(true);
-  const [campaignIdFromQuery, setCampaignIdFromQuery] = useState<string | null>(null);
+  // Initialize synchronously from URL so that the first render already has the campaign ID.
+  // In HashRouter, ?campaignId=X is part of the hash (e.g. #/projection/skyline?campaignId=abc),
+  // so window.location.search is empty — we parse both locations.
+  const [campaignIdFromQuery, setCampaignIdFromQuery] = useState<string | null>(() => {
+    let cid = new URLSearchParams(window.location.search).get('campaignId');
+    if (!cid) {
+      const hash = window.location.hash;
+      const qIdx = hash.indexOf('?');
+      if (qIdx !== -1) cid = new URLSearchParams(hash.slice(qIdx)).get('campaignId');
+    }
+    return cid;
+  });
   const [skylineCharacter, setSkylineCharacter] = useState<CharacterPayload | null>(null);
   const [showSongTitle, setShowSongTitle] = useState<boolean>(false);
   const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(false);
@@ -96,9 +107,16 @@ const ProjectionSkylinePage: React.FC = () => {
   // to prevent polling from overwriting with stale server data.
   const lastBroadcastStripUpdateRef = useRef<number>(0);
 
+  // Sync campaignId from URL into the shared context (for other consumers like ActiveMapContext).
+  // Also handles edge cases where the URL might only be available after mount.
   useEffect(() => {
-    const sp = new URLSearchParams(window.location.search);
-    const cid = sp.get('campaignId');
+    let cid = new URLSearchParams(window.location.search).get('campaignId');
+    if (!cid) {
+      // Hash-router path: '#/projection/skyline?campaignId=abc'
+      const hash = window.location.hash;
+      const qIdx = hash.indexOf('?');
+      if (qIdx !== -1) cid = new URLSearchParams(hash.slice(qIdx)).get('campaignId');
+    }
     if (cid) {
       setCampaignIdFromQuery(cid);
       setActiveCampaignId(cid);
@@ -107,7 +125,7 @@ const ProjectionSkylinePage: React.FC = () => {
 
   // Load selected day label (if any) for this campaign.
   useEffect(() => {
-    const cid = activeCampaign?.id || campaignIdFromQuery;
+    const cid = activeCampaign?.id || campaignIdFromQuery || rawCampaignId;
     if (!cid) {
       setSelectedDayLabel(null);
       return;
@@ -115,15 +133,15 @@ const ProjectionSkylinePage: React.FC = () => {
     const payload = loadSelectedDayPayload();
     if (payload?.campaignId === cid) setSelectedDayLabel(payload.label);
     else setSelectedDayLabel(null);
-  }, [activeCampaign?.id, campaignIdFromQuery]);
+  }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
 
   useEffect(() => { try { const d = (window as any).electronAPI?.onProjectionPoke?.(async () => { await refreshFromServer(); }); return () => { if (typeof d === 'function') d(); }; } catch {} }, [refreshFromServer]);
 
   const loadSkylineCharacter = useCallback(async () => {
     let charId: string | null | undefined = activeCampaign?.activeSkylineCharacter?.id;
-    if (!charId && (campaignIdFromQuery || activeCampaign?.id)) {
+    if (!charId && (campaignIdFromQuery || rawCampaignId || activeCampaign?.id)) {
       try {
-        const fetched = await getActiveSkylineCharacterId(campaignIdFromQuery || activeCampaign?.id || '');
+        const fetched = await getActiveSkylineCharacterId(campaignIdFromQuery || rawCampaignId || activeCampaign?.id || '');
         charId = fetched ?? undefined;
         setConnectionError(false); // Clear error on successful request
       } catch (err: any) {
@@ -148,20 +166,20 @@ const ProjectionSkylinePage: React.FC = () => {
         setLastConnectionAttempt(Date.now());
       }
     }
-  }, [activeCampaign?.activeSkylineCharacter?.id, activeCampaign?.id, campaignIdFromQuery]);
+  }, [activeCampaign?.activeSkylineCharacter?.id, activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
 
   const loadSkylineSettings = useCallback(async () => {
-    const cid = campaignIdFromQuery || activeCampaign?.id;
+    const cid = campaignIdFromQuery || rawCampaignId || activeCampaign?.id;
     if (!cid) return;
     try {
       const settings = await getSkylineOverlaySettingsPublic(cid);
       setShowSongTitle(!!settings.showSongTitle);
       setShowInitiativeStrip(!!settings.showInitiativeStrip);
     } catch {}
-  }, [activeCampaign?.id, campaignIdFromQuery]);
+  }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
 
   const loadSkylineItems = useCallback(async () => {
-    const cid = campaignIdFromQuery || activeCampaign?.id;
+    const cid = campaignIdFromQuery || rawCampaignId || activeCampaign?.id;
     if (!cid) {
       setSkylineItems([]);
       return;
@@ -179,7 +197,7 @@ const ProjectionSkylinePage: React.FC = () => {
         setLastConnectionAttempt(Date.now());
       }
     }
-  }, [activeCampaign?.id, campaignIdFromQuery]);
+  }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
 
   // Auto-retry connection when there's a connection error
   useEffect(() => {
@@ -229,7 +247,7 @@ const ProjectionSkylinePage: React.FC = () => {
         const cid = payload.campaignId as string | undefined;
         if (!cid) return;
         // Only reload if same campaign as this window
-        if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
+        if (cid === (activeCampaign?.id || campaignIdFromQuery || rawCampaignId)) {
           loadSkylineCharacter();
         }
       } catch {
@@ -238,7 +256,7 @@ const ProjectionSkylinePage: React.FC = () => {
     };
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);
-  }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter]);
+  }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId, loadSkylineCharacter]);
 
   // Listen to storage events for skyline items updates
   useEffect(() => {
@@ -249,14 +267,14 @@ const ProjectionSkylinePage: React.FC = () => {
         if (!payload) return;
         const cid = payload.campaignId as string | undefined;
         if (!cid) return;
-        if (cid === (activeCampaign?.id || campaignIdFromQuery)) {
+        if (cid === (activeCampaign?.id || campaignIdFromQuery || rawCampaignId)) {
           loadSkylineItems();
         }
       } catch {}
     };
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);
-  }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineItems]);
+  }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId, loadSkylineItems]);
 
   // Fast-sync via BroadcastChannel
   useEffect(() => {
@@ -336,7 +354,7 @@ const ProjectionSkylinePage: React.FC = () => {
   // and a guard flag to prevent concurrent poll runs.
   const pollFnRef = useRef<() => Promise<void>>();
   useEffect(() => {
-    const cid = activeCampaign?.id || campaignIdFromQuery;
+    const cid = activeCampaign?.id || campaignIdFromQuery || rawCampaignId;
     pollFnRef.current = async () => {
       if (!cid) return;
       await loadSkylineCharacter();
@@ -413,7 +431,7 @@ const ProjectionSkylinePage: React.FC = () => {
   });
 
   useEffect(() => {
-    const cid = activeCampaign?.id || campaignIdFromQuery;
+    const cid = activeCampaign?.id || campaignIdFromQuery || rawCampaignId;
     if (!cid) return;
     let disposed = false;
     let polling = false;
@@ -435,7 +453,7 @@ const ProjectionSkylinePage: React.FC = () => {
     doPoll();
     const interval = setInterval(doPoll, intervalMs);
     return () => { disposed = true; clearInterval(interval); };
-  }, [activeCampaign?.id, campaignIdFromQuery]);
+  }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
 
   // Recover when the page becomes visible again (e.g. after sleep/hibernate/tab switch)
   useEffect(() => {

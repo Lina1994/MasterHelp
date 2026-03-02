@@ -1,16 +1,88 @@
-import { Button, Paper, Typography, Box, Stack, FormControl, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import {
+  Button, Paper, Typography, Box, Stack, FormControl, InputLabel, Select, MenuItem,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+  Accordion, AccordionSummary, AccordionDetails,
+  InputAdornment, OutlinedInput, Tooltip, Snackbar, Alert,
+  Switch, FormControlLabel,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import ThemeContext from '../ThemeContext';
+import SidebarSettings from '../components/SidebarSettings';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import React from 'react';
 import axios from 'axios';
 import API_BASE_URL from '../apiBase';
 import { useNavigate } from 'react-router-dom';
+import { SKYLINE_PREVIEW_KEY } from '../overlays/SkylinePreviewOverlay';
+
+/** Response shape from GET /network-info */
+interface NetworkInfo {
+  localIps: string[];
+  backendPort: number;
+  frontendPort: number;
+}
 const SettingsSection = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [openLogout, setOpenLogout] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);
+  const [skylinePreview, setSkylinePreview] = useState<boolean>(
+    () => localStorage.getItem(SKYLINE_PREVIEW_KEY) === 'true',
+  );
+
+  /**
+   * Toggles the skyline preview overlay on/off, persists to localStorage and
+   * dispatches a custom event so the overlay reacts within the same tab.
+   *
+   * @param enabled - New desired state.
+   */
+  const handleSkylinePreviewToggle = (_: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    setSkylinePreview(checked);
+    localStorage.setItem(SKYLINE_PREVIEW_KEY, String(checked));
+    window.dispatchEvent(new Event('skylinePreviewToggled'));
+  };
+
+  /** Construye las URLs de acceso LAN a partir de las IPs obtenidas del backend. */
+  const webUrls: string[] = networkInfo
+    ? networkInfo.localIps.map((ip) => `http://${ip}:${networkInfo.frontendPort}`)
+    : [];
+
+  /**
+   * Llama al endpoint /network-info para obtener las IPs de red del host.
+   * Se ejecuta una sola vez al montar el componente.
+   */
+  useEffect(() => {
+    axios
+      .get<NetworkInfo>(`${API_BASE_URL}/network-info`)
+      .then((res) => setNetworkInfo(res.data))
+      .catch(() => { /* sin red o backend caído: silencio */ });
+  }, []);
+
+  /**
+   * Copia la URL indicada al portapapeles y muestra confirmación.
+   *
+   * @param url - URL a copiar.
+   */
+  const handleCopyUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopySuccess(true);
+    } catch {
+      const el = document.createElement('textarea');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopySuccess(true);
+    }
+  };
   const { mode, setMode, primary, setPrimary, secondary, setSecondary, background, setBackground } = useContext(ThemeContext);
   const handleChangeTheme = async (event: any) => {
     const newTheme = event.target.value;
@@ -53,13 +125,9 @@ const SettingsSection = () => {
       <Typography variant="h6" gutterBottom>
         {t('settings_title')}
       </Typography>
+
       <Stack spacing={2}>
-        <Button variant="outlined" color="primary" onClick={() => navigate('/change-password')}>
-          {t('change_password')}
-        </Button>
-        <Button variant="outlined" color="error" onClick={() => navigate('/delete-account')}>
-          {t('delete_account')}
-        </Button>
+        {/* ── Language & Theme (always visible) ──────────────── */}
         <FormControl fullWidth>
           <InputLabel id="language-select-label">{t('language')}</InputLabel>
           <Select
@@ -95,10 +163,138 @@ const SettingsSection = () => {
             <input type="color" value={background} onChange={e => setBackground(e.target.value)} style={{ width: 40, height: 40, border: 'none', background: 'none' }} />
           </Box>
         )}
-        <Button variant="outlined" color="secondary" onClick={handleLogout}>
-          {t('logout')}
-        </Button>
+
+        {/* ── Acceso Web ─────────────────────────────────────── */}
+        <Accordion disableGutters elevation={0} sx={{ '&::before': { display: 'none' } }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              {t('web_access_title', 'Acceso web')}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              {t('web_access_description', 'Usa esta URL en cualquier navegador de tu red local para acceder a la app:')}
+            </Typography>
+            {webUrls.length === 0 && (
+              <Typography variant="body2" color="text.disabled">
+                {t('web_access_loading', 'Obteniendo IP de red...')}
+              </Typography>
+            )}
+            <Stack spacing={1}>
+              {webUrls.map((url) => (
+                <OutlinedInput
+                  key={url}
+                  fullWidth
+                  readOnly
+                  value={url}
+                  size="small"
+                  sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <Tooltip title={t('open_in_browser', 'Abrir en navegador')}>
+                        <span>
+                          <Button
+                            size="small"
+                            component="a"
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ minWidth: 0, p: 0.5 }}
+                          >
+                            <OpenInNewIcon fontSize="small" />
+                          </Button>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('copy_url', 'Copiar URL')}>
+                        <Button
+                          size="small"
+                          onClick={() => handleCopyUrl(url)}
+                          sx={{ minWidth: 0, p: 0.5 }}
+                        >
+                          <ContentCopyIcon fontSize="small" />
+                        </Button>
+                      </Tooltip>
+                    </InputAdornment>
+                  }
+                />
+              ))}
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* ── Skyline preview ────────────────────────────────── */}
+        <Accordion disableGutters elevation={0} sx={{ '&::before': { display: 'none' } }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              {t('skyline_preview_title', 'Previsualización Skyline')}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              {t(
+                'skyline_preview_description',
+                'Muestra en la esquina inferior derecha una miniatura de las imágenes que se están proyectando en la ventana Skyline (personaje activo e ítems de tienda).',
+              )}
+            </Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={skylinePreview}
+                  onChange={handleSkylinePreviewToggle}
+                  color="primary"
+                />
+              }
+              label={t('skyline_preview_enable', 'Activar previsualización Skyline')}
+            />
+          </AccordionDetails>
+        </Accordion>
+
+        {/* ── Sidebar shortcuts (collapsible) ────────────────── */}
+        <Accordion disableGutters elevation={0} sx={{ '&::before': { display: 'none' } }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              {t('sidebar_settings_title', 'Accesos directos del sidebar')}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <SidebarSettings />
+          </AccordionDetails>
+        </Accordion>
+
+        {/* ── Account settings (collapsible) ──────────────────── */}
+        <Accordion disableGutters elevation={0} sx={{ '&::before': { display: 'none' } }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              {t('account_settings', 'Ajustes de la cuenta')}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={2}>
+              <Button variant="outlined" color="primary" onClick={() => navigate('/change-password')}>
+                {t('change_password')}
+              </Button>
+              <Button variant="outlined" color="error" onClick={() => navigate('/delete-account')}>
+                {t('delete_account')}
+              </Button>
+              <Button variant="outlined" color="secondary" onClick={handleLogout}>
+                {t('logout')}
+              </Button>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
       </Stack>
+
+      <Snackbar
+        open={copySuccess}
+        autoHideDuration={2000}
+        onClose={() => setCopySuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" variant="filled" sx={{ width: '100%' }}>
+          {t('url_copied', 'URL copiada al portapapeles')}
+        </Alert>
+      </Snackbar>
+
       <Dialog open={openLogout} onClose={handleCancelLogout}>
         <DialogTitle>{t('logout')}</DialogTitle>
         <DialogContent>

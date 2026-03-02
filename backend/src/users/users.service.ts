@@ -30,11 +30,26 @@ export class UsersService {
     }
   }
 
-  async updatePreferences(id: number, language?: string, theme?: string): Promise<User> {
+  /**
+   * Updates user preferences (language, theme, sidebarConfig).
+   *
+   * @param id - User ID.
+   * @param language - Optional new UI language.
+   * @param theme - Optional new UI theme.
+   * @param sidebarConfig - Optional sidebar configuration (JSON string or null to reset).
+   * @returns The updated user.
+   */
+  async updatePreferences(
+    id: number,
+    language?: string,
+    theme?: string,
+    sidebarConfig?: string | null,
+  ): Promise<User> {
     const user = await this.usersRepository.findOneBy({ id });
     if (!user) throw new NotFoundException(`User with ID "${id}" not found`);
     if (language) user.language = language;
     if (theme) user.theme = theme;
+    if (sidebarConfig !== undefined) user.sidebarConfig = sidebarConfig;
     await this.usersRepository.save(user);
     return user;
   }
