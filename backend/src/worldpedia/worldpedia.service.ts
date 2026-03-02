@@ -12,6 +12,7 @@ import { CreateNoteDto, NoteLinkDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { MoveNoteDto } from './dto/move-note.dto';
 import { ImportWorldpediaDto } from './dto/import-worldpedia.dto';
+import { ReorderWorldpediaDto } from './dto/reorder-worldpedia.dto';
 
 /* ───────────────────────── HTML sanitisation ─────────────────────────── */
 
@@ -248,7 +249,7 @@ export class WorldpediaService {
   }
 
   /**
-   * Move a note to another folder (or to root).
+   * Move a note to another folder (or to root), optionally setting position.
    */
   async moveNote(campaignId: string, noteId: string, userId: number, dto: MoveNoteDto) {
     await this.assertMaster({ campaignId, userId });
@@ -257,6 +258,7 @@ export class WorldpediaService {
     if (!note || note.campaignId !== campaignId) throw new NotFoundException('Note not found');
 
     note.folderId = dto.folderId ?? null;
+    if (dto.position !== undefined) note.position = dto.position;
     return this.noteRepo.save(note);
   }
 
@@ -287,6 +289,41 @@ export class WorldpediaService {
     ]);
 
     return { links, backlinks };
+  }
+
+  /* ═══════════════════════════ REORDER ═════════════════════════════ */
+
+  /**
+   * Batch-update positions (and optionally folder assignments for notes)
+   * after a drag-and-drop operation.
+   */
+  async reorder(campaignId: string, userId: number, dto: ReorderWorldpediaDto) {
+    await this.assertMaster({ campaignId, userId });
+
+    // Update folder positions
+    if (dto.folders?.length) {
+      for (const item of dto.folders) {
+        const folder = await this.folderRepo.findById(item.id);
+        if (folder && folder.campaignId === campaignId) {
+          folder.position = item.position;
+          await this.folderRepo.save(folder);
+        }
+      }
+    }
+
+    // Update note positions (+ optional folder move)
+    if (dto.notes?.length) {
+      for (const item of dto.notes) {
+        const note = await this.noteRepo.findById(item.id);
+        if (note && note.campaignId === campaignId) {
+          note.position = item.position;
+          if (item.folderId !== undefined) note.folderId = item.folderId ?? null;
+          await this.noteRepo.save(note);
+        }
+      }
+    }
+
+    return { ok: true };
   }
 
   /* ═══════════════════════════ EXPORT ════════════════════════════════ */

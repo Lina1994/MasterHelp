@@ -6,6 +6,7 @@ import { useState, useMemo } from 'react';
 import CssBaseline from '@mui/material/CssBaseline'; // CssBaseline resetea estilos CSS para consistencia
 
 import App from './App';
+import TitleBar from './components/TitleBar';
 import './i18n';
 import { getCurrentUser } from './utils/getCurrentUser';
 import { fetchUserFromApi } from './utils/fetchUserFromApi';
@@ -100,6 +101,7 @@ function Main() {
       }}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
+          <TitleBar />
           <App />
         </ThemeProvider>
       </ThemeContext.Provider>

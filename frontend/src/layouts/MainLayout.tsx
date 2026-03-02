@@ -9,6 +9,7 @@ import logo from '../assets/logo.png';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { TITLEBAR_HEIGHT } from '../components/TitleBar';
 import { GlobalPlayerProvider } from '../components/player/GlobalPlayerContext';
 import { SfxPlayerProvider } from '../components/player/SfxPlayerContext';
 import { PlayerDrawerUiProvider } from '../components/player/PlayerDrawerUiContext';
@@ -324,7 +325,7 @@ const MainLayoutInner = () => {
     <GlobalPlayerProvider>
       <SfxPlayerProvider>
         <PlayerDrawerUiProvider>
-          <Box sx={{ display: 'flex', height: '100vh' }}>
+          <Box sx={{ display: 'flex', height: `calc(100vh - ${TITLEBAR_HEIGHT}px)` }}>
             {/* Headless orchestrator to auto-play map audio based on active map and time-of-day */}
             <MapAudioOrchestrator />
             <Box
@@ -353,7 +354,12 @@ const MainLayoutInner = () => {
                 variant="permanent"
                 sx={{
                   display: { xs: 'none', sm: 'block' },
-                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+                  '& .MuiDrawer-paper': {
+                    boxSizing: 'border-box',
+                    width: 240,
+                    top: `${TITLEBAR_HEIGHT}px`,
+                    height: `calc(100% - ${TITLEBAR_HEIGHT}px)`,
+                  },
                 }}
                 open
               >
@@ -367,7 +373,7 @@ const MainLayoutInner = () => {
             </Box>
             <Box
               component="main"
-              sx={{ flexGrow: 1, width: { sm: `calc(100% - 240px)` }, height: '100vh', overflow: 'auto', p: 3 }}
+              sx={{ flexGrow: 1, width: { sm: `calc(100% - 240px)` }, height: `calc(100vh - ${TITLEBAR_HEIGHT}px)`, overflow: 'auto', p: 3 }}
             >
               <div style={{ marginBottom: 24 }}>
                 <InvitationsList />

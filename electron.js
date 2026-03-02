@@ -1,5 +1,5 @@
 
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
@@ -9,6 +9,7 @@ const { spawn } = require('child_process');
 // app.isPackaged es true cuando la app se ejecuta desde un build de electron-builder.
 const isDev = !app.isPackaged;
 
+let mainWindow = null;
 let projectionWindow = null;
 let skylineWindow = null;
 /** @type {import('child_process').ChildProcess | null} */
@@ -189,10 +190,16 @@ function startBackend() {
 }
 
 function createWindow() {
-  // Crear la ventana del navegador.
-  const mainWindow = new BrowserWindow({
+  // Ocultar el menú por defecto (File, Edit, View, etc.)
+  Menu.setApplicationMenu(null);
+
+  // Crear la ventana del navegador (frameless para barra de título custom).
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    title: 'MasterHelp',
+    icon: path.join(__dirname, 'frontend', 'src', 'assets', 'Logo-app.ico'),
+    frame: false,
     webPreferences: {
       // Enlazar el script de preload para una comunicación segura
       preload: path.join(__dirname, 'preload.js'),
@@ -244,6 +251,33 @@ app.whenReady().then(async () => {
   });
 
   createWindow();
+
+  // Controles de ventana personalizados (minimizar, maximizar, cerrar)
+  ipcMain.on('window:minimize', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.minimize();
+  });
+  ipcMain.on('window:maximize', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMaximized()) mainWindow.unmaximize();
+      else mainWindow.maximize();
+    }
+  });
+  ipcMain.on('window:close', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
+  });
+  ipcMain.handle('window:is-maximized', () => {
+    return mainWindow && !mainWindow.isDestroyed() ? mainWindow.isMaximized() : false;
+  });
+
+  // Emitir cambio de estado maximizado al renderer
+  if (mainWindow) {
+    mainWindow.on('maximize', () => {
+      mainWindow.webContents.send('window:maximized-changed', true);
+    });
+    mainWindow.on('unmaximize', () => {
+      mainWindow.webContents.send('window:maximized-changed', false);
+    });
+  }
 
   // Crear/mostrar la ventana de proyección bajo demanda
   ipcMain.handle('maps:open-projection', async (_evt, arg) => {

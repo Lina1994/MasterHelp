@@ -38,4 +38,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('skyline:projection-size', listener);
     return () => ipcRenderer.removeListener('skyline:projection-size', listener);
   },
+
+  /** Minimiza la ventana principal. */
+  windowMinimize: () => ipcRenderer.send('window:minimize'),
+  /** Alterna maximizar/restaurar la ventana principal. */
+  windowMaximize: () => ipcRenderer.send('window:maximize'),
+  /** Cierra la ventana principal. */
+  windowClose: () => ipcRenderer.send('window:close'),
+  /** Consulta si la ventana está maximizada. */
+  windowIsMaximized: () => ipcRenderer.invoke('window:is-maximized'),
+  /** Suscripción a cambios de estado maximizado. */
+  onMaximizedChanged: (callback) => {
+    const listener = (_event, isMaximized) => callback(isMaximized);
+    ipcRenderer.on('window:maximized-changed', listener);
+    return () => ipcRenderer.removeListener('window:maximized-changed', listener);
+  },
 });

@@ -12,10 +12,12 @@ import {
   updateFolder,
   deleteFolder,
   moveNote,
+  reorderWorldpedia,
   type WorldpediaTree,
   type WorldpediaNoteFull,
   type WorldpediaNoteLight,
   type NoteLinkPayload,
+  type ReorderItem,
 } from '../api/worldpedia/worldpediaApi';
 import WorldpediaSidebar from '../components/Worldpedia/WorldpediaSidebar';
 import WorldpediaNoteEditor from '../components/Worldpedia/WorldpediaNoteEditor';
@@ -156,6 +158,18 @@ export default function WorldpediaPage() {
     [campaignId, selectedNoteId, loadTree, loadNote],
   );
 
+  /**
+   * Batch reorder callback invoked after drag-and-drop in the sidebar.
+   */
+  const handleReorder = useCallback(
+    async (data: { folders?: ReorderItem[]; notes?: ReorderItem[] }) => {
+      if (!campaignId) return;
+      await reorderWorldpedia(campaignId, data);
+      await loadTree();
+    },
+    [campaignId, loadTree],
+  );
+
   /* ── Render ────────────────────────────────────────────────────── */
 
   return (
@@ -173,6 +187,7 @@ export default function WorldpediaPage() {
         onCreateNote={handleCreateNote}
         onDeleteNote={handleDeleteNote}
         onMoveNote={handleMoveNote}
+        onReorder={handleReorder}
         onRefresh={loadTree}
       />
 
@@ -180,6 +195,7 @@ export default function WorldpediaPage() {
       <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 1, md: 3 } }}>
         {activeNote ? (
           <WorldpediaNoteEditor
+            key={activeNote.id}
             note={activeNote}
             loading={loading}
             campaignId={campaignId}

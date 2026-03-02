@@ -74,7 +74,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": null
+      "icon": "frontend/src/assets/Logo-app.ico"
     },
     "nsis": {
       "oneClick": false,
@@ -90,7 +90,7 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": null,
+      "icon": "frontend/src/assets/Logo-app.ico",
       "category": "public.app-category.games",
       "hardenedRuntime": true,
       "gatekeeperAssess": false

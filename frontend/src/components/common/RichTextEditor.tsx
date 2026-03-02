@@ -32,7 +32,21 @@ if (Array.isArray(Link.PROTOCOL_WHITELIST) && !Link.PROTOCOL_WHITELIST.includes(
 QuillStatic.register(Link, true);
 
 export interface RichTextEditorProps {
-  value: string;
+  /**
+   * Controlled value. When provided, ReactQuill re-syncs its content on
+   * every render – suitable for small documents.
+   *
+   * For large documents use {@link defaultValue} instead to avoid the
+   * expensive diff/update cycle.
+   */
+  value?: string;
+  /**
+   * Uncontrolled initial value. ReactQuill uses it only on mount and
+   * never re-syncs, significantly improving performance for large content.
+   *
+   * When set, `value` is ignored.
+   */
+  defaultValue?: string;
   onChange: (value: string) => void;
   readOnly?: boolean;
   placeholder?: string;
@@ -56,12 +70,14 @@ export interface RichTextEditorProps {
  */
 export function RichTextEditor({
   value,
+  defaultValue,
   onChange,
   readOnly = false,
   placeholder,
   minHeight = 160,
   editorRef,
 }: RichTextEditorProps) {
+  const isUncontrolled = defaultValue !== undefined;
   const quillRef = useRef<ReactQuill | null>(null);
 
   const handleInsertImage = useCallback(async () => {
@@ -143,7 +159,7 @@ export function RichTextEditor({
           if (editorRef) editorRef.current = r;
         }}
         theme="snow"
-        value={value}
+        {...(isUncontrolled ? { defaultValue } : { value })}
         onChange={onChange}
         modules={modules}
         formats={formats}

@@ -142,9 +142,29 @@ export async function deleteNote(campaignId: string, noteId: string): Promise<vo
   await api.delete(`/worldpedia/campaigns/${campaignId}/notes/${noteId}`);
 }
 
-export async function moveNote(campaignId: string, noteId: string, folderId: string | null): Promise<WorldpediaNoteLight> {
-  const res = await api.patch<WorldpediaNoteLight>(`/worldpedia/campaigns/${campaignId}/notes/${noteId}/move`, { folderId });
+export async function moveNote(campaignId: string, noteId: string, folderId: string | null, position?: number): Promise<WorldpediaNoteLight> {
+  const body: { folderId: string | null; position?: number } = { folderId };
+  if (position !== undefined) body.position = position;
+  const res = await api.patch<WorldpediaNoteLight>(`/worldpedia/campaigns/${campaignId}/notes/${noteId}/move`, body);
   return res.data;
+}
+
+/* ── Reorder (batch) ──────────────────────────────────────────────── */
+
+export interface ReorderItem {
+  id: string;
+  position: number;
+  folderId?: string | null;
+}
+
+/**
+ * Batch-update positions of folders and/or notes after drag-and-drop.
+ */
+export async function reorderWorldpedia(
+  campaignId: string,
+  data: { folders?: ReorderItem[]; notes?: ReorderItem[] },
+): Promise<void> {
+  await api.patch(`/worldpedia/campaigns/${campaignId}/reorder`, data);
 }
 
 /* ── Search ───────────────────────────────────────────────────────── */

@@ -20,6 +20,7 @@ import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { MoveNoteDto } from './dto/move-note.dto';
 import { ImportWorldpediaDto } from './dto/import-worldpedia.dto';
+import { ReorderWorldpediaDto } from './dto/reorder-worldpedia.dto';
 
 /**
  * REST controller for the Worldpedia module.
@@ -145,6 +146,20 @@ export class WorldpediaController {
     @Req() req: any,
   ) {
     return this.worldpediaService.moveNote(campaignId, noteId, req.user.userId, dto);
+  }
+
+  /* ═══════════════════════════ REORDER ════════════════════════════════ */
+
+  /**
+   * Batch-update positions of folders and/or notes after drag-and-drop.
+   */
+  @Patch('campaigns/:campaignId/reorder')
+  async reorder(
+    @Param('campaignId') campaignId: string,
+    @Body() dto: ReorderWorldpediaDto,
+    @Req() req: any,
+  ) {
+    return this.worldpediaService.reorder(campaignId, req.user.userId, dto);
   }
 
   /* ═══════════════════════════ SEARCH ════════════════════════════════ */

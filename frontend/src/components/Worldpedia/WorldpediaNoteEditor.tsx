@@ -42,7 +42,15 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
   const { t } = useTranslation();
 
   const [title, setTitle] = useState(note.title);
-  const [html, setHtml] = useState(note.html ?? '');
+
+  /**
+   * HTML content stored in a ref (not state) to avoid re-rendering
+   * ReactQuill on every keystroke.  The editor runs in uncontrolled
+   * mode (`defaultValue`) so Quill manages its own DOM – we only
+   * read this ref when saving.
+   */
+  const htmlRef = useRef(note.html ?? '');
+
   const [links, setLinks] = useState<NoteLinkPayload[]>(
     (note.links ?? []).map((l) => ({
       type: l.type,
@@ -56,6 +64,16 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+
+  /**
+   * Defer mounting the heavy Quill editor by one animation‑frame so the
+   * lightweight parts (title, buttons, metadata) render instantly.
+   */
+  const [editorMounted, setEditorMounted] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setEditorMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   // Entity viewer drawer state
   const [entityViewerOpen, setEntityViewerOpen] = useState(false);
@@ -85,22 +103,11 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
   /** Text currently selected in the editor (used as `initialLabel` for the dialog). */
   const [selectedText, setSelectedText] = useState('');
 
-  // Sync when note prop changes (navigating to a different note)
-  useEffect(() => {
-    setTitle(note.title);
-    setHtml(note.html ?? '');
-    setLinks(
-      (note.links ?? []).map((l) => ({
-        type: l.type,
-        label: l.label,
-        targetUrl: l.targetUrl,
-        targetNoteId: l.targetNoteId,
-        targetEntityType: l.targetEntityType,
-        targetEntityId: l.targetEntityId,
-      })),
-    );
-    setDirty(false);
-  }, [note.id, note.title, note.html, note.links]);
+  /*
+   * Note: state sync via useEffect is no longer needed because the parent
+   * renders this component with `key={note.id}`, guaranteeing a fresh
+   * mount whenever the active note changes.
+   */
 
   /**
    * Opens the entity viewer drawer for a given entity type & id.
@@ -193,19 +200,19 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
   }, []);
 
   const handleHtmlChange = useCallback((value: string) => {
-    setHtml(value);
+    htmlRef.current = value;
     setDirty(true);
   }, []);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      await onSave(note.id, { title, html, links });
+      await onSave(note.id, { title, html: htmlRef.current, links });
       setDirty(false);
     } finally {
       setSaving(false);
     }
-  }, [note.id, title, html, links, onSave]);
+  }, [note.id, title, links, onSave]);
 
   const handleDelete = useCallback(async () => {
     if (!window.confirm(t('worldpedia_delete_note_confirm', 'Delete this note? This action cannot be undone.'))) return;
@@ -330,12 +337,18 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
 
       {/* Rich text editor – wrapped for click delegation on inline links */}
       <Box ref={setEditorContainerNode}>
-        <RichTextEditor
-          value={html}
-          onChange={handleHtmlChange}
-          placeholder={t('worldpedia_notes', 'Notes')}
-          editorRef={quillEditorRef}
-        />
+        {editorMounted ? (
+          <RichTextEditor
+            defaultValue={note.html ?? ''}
+            onChange={handleHtmlChange}
+            placeholder={t('worldpedia_notes', 'Notes')}
+            editorRef={quillEditorRef}
+          />
+        ) : (
+          <Box sx={{ minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
       </Box>
 
       {/* Links list */}
