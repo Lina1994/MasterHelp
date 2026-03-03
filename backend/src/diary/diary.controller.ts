@@ -81,6 +81,22 @@ export class DiaryController {
     });
   }
 
+  /** Lists all diary entries for a campaign (lightweight summary for pickers). */
+  @Get('campaigns/:campaignId/entries')
+  async listEntries(@Param('campaignId') campaignId: string, @Req() req: any) {
+    return this.diaryService.listDiaryEntries(campaignId, req.user.userId);
+  }
+
+  /** Fetches a single diary entry by its UUID. */
+  @Get('campaigns/:campaignId/entries/by-id/:id')
+  async getEntryById(
+    @Param('campaignId') campaignId: string,
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    return this.diaryService.getDiaryEntryById(id, campaignId, req.user.userId);
+  }
+
   @Get('campaigns/:campaignId/entries/:year/:monthIndex/:dayIndex')
   async getEntry(
     @Param('campaignId') campaignId: string,

@@ -28,6 +28,7 @@ import { listEncounters, EncounterSummary } from '../../api/encounters';
 import AuthImage from '../common/AuthImage';
 import MapMarkerDialog from './MapMarkerDialog';
 import MapMarkerDetail from './MapMarkerDetail';
+import { TITLEBAR_HEIGHT } from '../TitleBar';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -71,6 +72,7 @@ interface PinProps {
 function MarkerPin({ marker, zoom, onClick }: PinProps) {
   return (
     <Box
+      onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => { e.stopPropagation(); onClick(marker); }}
       sx={{
         position: 'absolute',
@@ -171,7 +173,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
     Promise.allSettled([
       listMaps({ campaignId }),
       listCharacters(campaignId),
-      listCampaignMonsters(campaignId, {}, 'en'),
+      listCampaignMonsters(campaignId, { pageSize: 9999 }, 'en'),
       listEncounters(campaignId),
     ]).then(([mRes, cRes, eRes, enRes]) => {
       if (!alive) return;
@@ -432,7 +434,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
           elevation={4}
           sx={{
             position: 'absolute',
-            top: 12,
+            top: TITLEBAR_HEIGHT + 12,
             left: 12,
             px: 1,
             py: 0.5,
@@ -460,7 +462,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
           elevation={4}
           sx={{
             position: 'absolute',
-            top: 12,
+            top: TITLEBAR_HEIGHT + 12,
             right: 12,
             px: 1,
             py: 0.5,
@@ -530,6 +532,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
       {detailMarker && (
         <MapMarkerDetail
           marker={detailMarker}
+          mapId={map.id}
           campaignId={campaignId}
           open={!!detailMarker}
           onClose={() => setDetailMarker(null)}
@@ -537,6 +540,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
             setEditingMarker(detailMarker);
             setDetailMarker(null);
           }}
+          onDelete={handleMarkerDeleted}
           allMaps={allMaps}
           allCharacters={allCharacters}
           allEnemies={allEnemies}

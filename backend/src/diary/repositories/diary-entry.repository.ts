@@ -40,6 +40,36 @@ export class DiaryEntryRepository {
       .getOne();
   }
 
+  /**
+   * Returns all diary entries for a campaign, ordered by date ascending.
+   * Items are included (needed for summary labels).
+   */
+  async findAllForCampaignWithItems(campaignId: string): Promise<DiaryEntry[]> {
+    return this.repo
+      .createQueryBuilder('entry')
+      .leftJoinAndSelect('entry.items', 'item')
+      .where('entry.campaignId = :campaignId', { campaignId })
+      .orderBy('entry.year', 'ASC')
+      .addOrderBy('entry.monthIndex', 'ASC')
+      .addOrderBy('entry.dayIndex', 'ASC')
+      .addOrderBy('item.order', 'ASC')
+      .getMany();
+  }
+
+  /**
+   * Fetches a single diary entry by its UUID, including items.
+   */
+  async findOneByIdWithItems(id: string, campaignId: string): Promise<DiaryEntry | null> {
+    return this.repo
+      .createQueryBuilder('entry')
+      .leftJoinAndSelect('entry.items', 'item')
+      .where('entry.id = :id', { id })
+      .andWhere('entry.campaignId = :campaignId', { campaignId })
+      .orderBy('item.order', 'ASC')
+      .addOrderBy('item.createdAt', 'ASC')
+      .getOne();
+  }
+
   async upsertByDate(params: {
     campaignId: string;
     year: number;

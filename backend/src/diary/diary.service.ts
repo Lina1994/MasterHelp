@@ -286,6 +286,55 @@ export class DiaryService {
     };
   }
 
+  /**
+   * Returns a lightweight summary of all diary entries for a campaign.
+   * Used by the world-map marker picker to let the DM associate calendar entries.
+   */
+  async listDiaryEntries(campaignId: string, userId: number) {
+    await this.assertCampaignMember({ campaignId, userId });
+    const entries = await this.entryRepo.findAllForCampaignWithItems(campaignId);
+    return entries.map((e) => ({
+      id: e.id,
+      year: e.year,
+      monthIndex: e.monthIndex,
+      dayIndex: e.dayIndex,
+      itemCount: (e.items ?? []).length,
+      firstTitle: (e.items ?? []).find((i) => i.title)?.title ?? null,
+      updatedAt: e.updatedAt,
+    }));
+  }
+
+  /**
+   * Returns a single diary entry by UUID (for the marker detail subview).
+   */
+  async getDiaryEntryById(id: string, campaignId: string, userId: number) {
+    const { isMaster } = await this.assertCampaignMember({ campaignId, userId });
+    const existing = await this.entryRepo.findOneByIdWithItems(id, campaignId);
+    if (!existing) return null;
+
+    const itemsFromDb = (existing.items || [])
+      .filter((it) => isMaster || it.isPublic)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((it) => ({
+        id: it.id,
+        title: it.title,
+        html: it.html,
+        isPublic: !!it.isPublic,
+        order: it.order ?? 0,
+        updatedAt: it.updatedAt,
+      }));
+
+    return {
+      id: existing.id,
+      campaignId: existing.campaignId,
+      year: existing.year,
+      monthIndex: existing.monthIndex,
+      dayIndex: existing.dayIndex,
+      items: itemsFromDb,
+      updatedAt: existing.updatedAt,
+    };
+  }
+
   async upsertDiaryEntry(params: {
     campaignId: string;
     userId: number;

@@ -71,6 +71,7 @@ export class CreateMapMarkerDto {
     enemyIds?: string[];
     encounterIds?: string[];
     diarySessionIds?: string[];
+    diaryEntryIds?: string[];
     worldpediaIds?: string[];
   };
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -10,20 +10,24 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   FormControlLabel,
+  InputAdornment,
   Skeleton,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { MapMarkerDto, MarkerAssociated, listMaps, MapItemDto, createMapMarker, updateMapMarker, deleteMapMarker } from '../../api/maps';
+import SearchIcon from '@mui/icons-material/Search';
+import { MapMarkerDto, MarkerAssociated, listMaps, MapItemDto, createMapMarker, updateMapMarker, deleteMapMarker, getMapImageUrlSized } from '../../api/maps';
 import { listCharacters, CharacterPayload } from '../../api/characters';
 import { listCampaignMonsters, CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
 import { listEncounters, EncounterSummary } from '../../api/encounters';
-import { listDiarySessions, DiarySessionResponse } from '../../api/diary/diaryApi';
-import { getWorldpediaTree, WorldpediaTree } from '../../api/worldpedia/worldpediaApi';
+import { listAllDiaryEntries, DiaryEntrySummary } from '../../api/diary/diaryApi';
+import { getWorldpediaTree, WorldpediaTree, WorldpediaNoteLight } from '../../api/worldpedia/worldpediaApi';
+import AuthImage from '../common/AuthImage';
 
 /** Preset icon emojis shown as quick-pick chips below the icon field. */
 const ICON_PRESETS = [
@@ -50,12 +54,84 @@ interface Props {
   onDelete?: (markerId: string) => void;
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── AuthThumb ───────────────────────────────────────────────────────────────
+
+/**
+ * AuthThumb
+ *
+ * Renders a 28×28 authenticated thumbnail using AuthImage.
+ * Falls back to a neutral Box with the first letter of `fallback`.
+ */
+function AuthThumb({ src, fallback }: { src: string; fallback: string }) {
+  return (
+    <Box
+      sx={{
+        width: 28,
+        height: 28,
+        borderRadius: 0.75,
+        overflow: 'hidden',
+        flexShrink: 0,
+        bgcolor: 'action.hover',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <AuthImage
+        src={src}
+        alt={fallback}
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        onErrorIcon={
+          <Typography variant="caption" sx={{ fontSize: '0.6rem', lineHeight: 1 }}>
+            {fallback.slice(0, 1).toUpperCase()}
+          </Typography>
+        }
+      />
+    </Box>
+  );
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Toggles `id` in/out of the provided string array. Returns a new array. */
 function toggleId(ids: string[], id: string): string[] {
   return ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
 }
+
+// ─── Stable per-type extractor helpers (module-level, never recreated) ────────
+// Defining these outside the component ensures their references are stable,
+// which allows React.memo on AssocSection to bail out on re-renders caused
+// solely by parent text-field state changes (name / notes).
+
+const getMapId    = (m: MapItemDto) => m.id;
+const getMapLabel = (m: MapItemDto) => m.name;
+const getMapImageUrl = (m: MapItemDto): string | null =>
+  m.imageAvailable ? getMapImageUrlSized(m.id, 'thumb') : null;
+
+const getCharId       = (c: CharacterPayload) => c.id!;
+const getCharLabel    = (c: CharacterPayload) => c.name;
+const getCharImageUrl = (c: CharacterPayload): string | null =>
+  c.characterImageUrl ?? c.tokenImageUrl ?? null;
+
+const getEnemyId       = (e: CampaignMonsterListItem) => e.id;
+const getEnemyLabel    = (e: CampaignMonsterListItem) => e.name;
+const getEnemySubLabel = (e: CampaignMonsterListItem): string | null =>
+  [e.type, e.size, e.challengeRating ? `FP ${e.challengeRating}` : null]
+    .filter(Boolean).join(' · ') || null;
+const getEnemyImageUrl = (e: CampaignMonsterListItem): string | null =>
+  e.tokenImageUrl ?? null;
+
+const getEncounterId    = (e: EncounterSummary) => e.id;
+const getEncounterLabel = (e: EncounterSummary) => e.name;
+
+const getDiaryId       = (d: DiaryEntrySummary) => d.id;
+const getDiaryLabel    = (d: DiaryEntrySummary) =>
+  `Año ${d.year} / Mes ${d.monthIndex + 1} / Día ${d.dayIndex}`;
+const getDiarySubLabel = (d: DiaryEntrySummary): string | null =>
+  d.firstTitle ?? (d.itemCount > 0 ? `${d.itemCount} nota${d.itemCount !== 1 ? 's' : ''}` : null);
+
+const getWpNoteId    = (n: WorldpediaNoteLight) => n.id;
+const getWpNoteLabel = (n: WorldpediaNoteLight) => n.title;
 
 // ─── Association picker sub-component ───────────────────────────────────────
 
@@ -66,11 +142,26 @@ interface AssocSectionProps<T> {
   selected: string[];
   getId: (item: T) => string;
   getLabel: (item: T) => string;
+  /** Optional secondary text shown below the label. */
+  getSubLabel?: (item: T) => string | null | undefined;
+  /** Optional: returns an authenticated API URL for a thumbnail. */
+  getImageUrl?: (item: T) => string | null | undefined;
   onToggle: (id: string) => void;
 }
 
-function AssocSection<T>({ label, loading, items, selected, getId, getLabel, onToggle }: AssocSectionProps<T>) {
+function AssocSection<T>({
+  label, loading, items, selected, getId, getLabel, getSubLabel, getImageUrl, onToggle,
+}: AssocSectionProps<T>) {
+  const [search, setSearch] = useState('');
+
+  // Memoised so 300+ item lists are not re-filtered on every parent render.
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? items.filter((item) => getLabel(item).toLowerCase().includes(q)) : items;
+  }, [items, search, getLabel]);
+
   if (!loading && items.length === 0) return null;
+
   return (
     <Accordion disableGutters elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -81,30 +172,72 @@ function AssocSection<T>({ label, loading, items, selected, getId, getLabel, onT
           )}
         </Typography>
       </AccordionSummary>
-      <AccordionDetails sx={{ maxHeight: 200, overflowY: 'auto', pt: 0 }}>
-        {loading ? (
-          <Stack spacing={0.5}>
-            {[0, 1, 2].map((i) => <Skeleton key={i} variant="text" />)}
-          </Stack>
-        ) : (
-          items.map((item) => {
-            const id = getId(item);
-            return (
-              <FormControlLabel
-                key={id}
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={selected.includes(id)}
-                    onChange={() => onToggle(id)}
-                  />
-                }
-                label={<Typography variant="body2">{getLabel(item)}</Typography>}
-                sx={{ display: 'flex', m: 0 }}
-              />
-            );
-          })
-        )}
+      <AccordionDetails sx={{ pt: 0, pb: 1 }}>
+        {/* Search bar */}
+        <TextField
+          size="small"
+          placeholder="Buscar…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          fullWidth
+          sx={{ mb: 1, mt: 0.5 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+          onKeyDown={(e) => e.stopPropagation()} // prevent accordion from capturing keys
+          onClick={(e) => e.stopPropagation()}
+        />
+
+        {/* Item list */}
+        <Box sx={{ maxHeight: 220, overflowY: 'auto' }}>
+          {loading ? (
+            <Stack spacing={0.5}>
+              {[0, 1, 2].map((i) => <Skeleton key={i} variant="text" />)}
+            </Stack>
+          ) : filtered.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" sx={{ py: 1, textAlign: 'center' }}>
+              Sin resultados
+            </Typography>
+          ) : (
+            filtered.map((item) => {
+              const id = getId(item);
+              const imgUrl = getImageUrl?.(item);
+              const subLabel = getSubLabel?.(item);
+              return (
+                <FormControlLabel
+                  key={id}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={selected.includes(id)}
+                      onChange={() => onToggle(id)}
+                    />
+                  }
+                  label={
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      {imgUrl ? (
+                        <AuthThumb src={imgUrl} fallback={getLabel(item)} />
+                      ) : null}
+                      <Box>
+                        <Typography variant="body2" sx={{ lineHeight: 1.2 }}>{getLabel(item)}</Typography>
+                        {subLabel && (
+                          <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>
+                            {subLabel}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Stack>
+                  }
+                  sx={{ display: 'flex', m: 0, py: 0.35, alignItems: 'center' }}
+                />
+              );
+            })
+          )}
+        </Box>
       </AccordionDetails>
     </Accordion>
   );
@@ -139,6 +272,7 @@ export default function MapMarkerDialog({
   const [associated, setAssociated] = useState<MarkerAssociated>(marker?.associated ?? {});
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // If opened in create mode with a position, x/y are set at submit time (passed as prop).
   const x = marker?.x ?? initialX;
@@ -149,7 +283,7 @@ export default function MapMarkerDialog({
   const [characters, setCharacters] = useState<CharacterPayload[]>([]);
   const [enemies, setEnemies] = useState<CampaignMonsterListItem[]>([]);
   const [encounters, setEncounters] = useState<EncounterSummary[]>([]);
-  const [diarySessions, setDiarySessions] = useState<DiarySessionResponse[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<DiaryEntrySummary[]>([]);
   const [wpTree, setWpTree] = useState<WorldpediaTree | null>(null);
   const [listsLoading, setListsLoading] = useState(true);
 
@@ -166,9 +300,9 @@ export default function MapMarkerDialog({
     Promise.allSettled([
       listMaps({ campaignId }),
       listCharacters(campaignId),
-      listCampaignMonsters(campaignId),
+      listCampaignMonsters(campaignId, { pageSize: 9999 }),
       listEncounters(campaignId),
-      listDiarySessions(campaignId),
+      listAllDiaryEntries(campaignId),
       getWorldpediaTree(campaignId),
     ]).then(([mRes, cRes, eRes, enRes, dRes, wRes]) => {
       if (!alive) return;
@@ -176,7 +310,7 @@ export default function MapMarkerDialog({
       if (cRes.status === 'fulfilled') setCharacters(cRes.value as CharacterPayload[]);
       if (eRes.status === 'fulfilled') setEnemies((eRes.value as any).items ?? []);
       if (enRes.status === 'fulfilled') setEncounters(enRes.value);
-      if (dRes.status === 'fulfilled') setDiarySessions(dRes.value);
+      if (dRes.status === 'fulfilled') setDiaryEntries(dRes.value);
       if (wRes.status === 'fulfilled') setWpTree(wRes.value);
       setListsLoading(false);
     });
@@ -185,11 +319,21 @@ export default function MapMarkerDialog({
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
-  const toggle = (key: keyof MarkerAssociated, id: string) =>
+  // Stable reference — does not depend on any component state, uses functional
+  // setState so it is safe to memoize with an empty dependency array.
+  const toggle = useCallback((key: keyof MarkerAssociated, id: string) =>
     setAssociated((prev) => ({
       ...prev,
-      [key]: toggleId(prev[key] ?? [], id),
-    }));
+      [key]: toggleId((prev[key] as string[] | undefined) ?? [], id),
+    })), []);
+
+  // Per-section stable handlers (required for React.memo on AssocSection to work).
+  const toggleMaps       = useCallback((id: string) => toggle('mapIds', id), [toggle]);
+  const toggleCharacters = useCallback((id: string) => toggle('characterIds', id), [toggle]);
+  const toggleEnemies    = useCallback((id: string) => toggle('enemyIds', id), [toggle]);
+  const toggleEncounters = useCallback((id: string) => toggle('encounterIds', id), [toggle]);
+  const toggleDiary      = useCallback((id: string) => toggle('diaryEntryIds', id), [toggle]);
+  const toggleWorldpedia = useCallback((id: string) => toggle('worldpediaIds', id), [toggle]);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -214,6 +358,7 @@ export default function MapMarkerDialog({
       onClose();
     } finally {
       setDeleting(false);
+      setConfirmDeleteOpen(false);
     }
   };
 
@@ -273,9 +418,10 @@ export default function MapMarkerDialog({
             loading={listsLoading}
             items={maps}
             selected={associated.mapIds ?? []}
-            getId={(m) => m.id}
-            getLabel={(m) => m.name}
-            onToggle={(id) => toggle('mapIds', id)}
+            getId={getMapId}
+            getLabel={getMapLabel}
+            getImageUrl={getMapImageUrl}
+            onToggle={toggleMaps}
           />
 
           <AssocSection
@@ -283,9 +429,10 @@ export default function MapMarkerDialog({
             loading={listsLoading}
             items={characters}
             selected={associated.characterIds ?? []}
-            getId={(c) => c.id!}
-            getLabel={(c) => c.name}
-            onToggle={(id) => toggle('characterIds', id)}
+            getId={getCharId}
+            getLabel={getCharLabel}
+            getImageUrl={getCharImageUrl}
+            onToggle={toggleCharacters}
           />
 
           <AssocSection
@@ -293,9 +440,11 @@ export default function MapMarkerDialog({
             loading={listsLoading}
             items={enemies}
             selected={associated.enemyIds ?? []}
-            getId={(e) => e.id}
-            getLabel={(e) => e.name}
-            onToggle={(id) => toggle('enemyIds', id)}
+            getId={getEnemyId}
+            getLabel={getEnemyLabel}
+            getSubLabel={getEnemySubLabel}
+            getImageUrl={getEnemyImageUrl}
+            onToggle={toggleEnemies}
           />
 
           <AssocSection
@@ -303,19 +452,20 @@ export default function MapMarkerDialog({
             loading={listsLoading}
             items={encounters}
             selected={associated.encounterIds ?? []}
-            getId={(e) => e.id}
-            getLabel={(e) => e.name}
-            onToggle={(id) => toggle('encounterIds', id)}
+            getId={getEncounterId}
+            getLabel={getEncounterLabel}
+            onToggle={toggleEncounters}
           />
 
           <AssocSection
-            label="Sesiones de diario"
+            label="Entradas de diario"
             loading={listsLoading}
-            items={diarySessions}
-            selected={associated.diarySessionIds ?? []}
-            getId={(d) => d.id}
-            getLabel={(d) => d.title ?? `Sesión ${d.id.slice(0, 6)}`}
-            onToggle={(id) => toggle('diarySessionIds', id)}
+            items={diaryEntries}
+            selected={associated.diaryEntryIds ?? []}
+            getId={getDiaryId}
+            getLabel={getDiaryLabel}
+            getSubLabel={getDiarySubLabel}
+            onToggle={toggleDiary}
           />
 
           <AssocSection
@@ -323,9 +473,9 @@ export default function MapMarkerDialog({
             loading={listsLoading}
             items={wpNotes}
             selected={associated.worldpediaIds ?? []}
-            getId={(n) => n.id}
-            getLabel={(n) => n.title}
-            onToggle={(id) => toggle('worldpediaIds', id)}
+            getId={getWpNoteId}
+            getLabel={getWpNoteLabel}
+            onToggle={toggleWorldpedia}
           />
         </Stack>
       </DialogContent>
@@ -334,11 +484,11 @@ export default function MapMarkerDialog({
         {isEdit && onDelete && (
           <Button
             color="error"
-            onClick={handleDelete}
+            onClick={() => setConfirmDeleteOpen(true)}
             disabled={saving || deleting}
             sx={{ mr: 'auto' }}
           >
-            {deleting ? 'Eliminando…' : 'Eliminar'}
+            Eliminar
           </Button>
         )}
         <Button onClick={onClose} disabled={saving || deleting}>Cancelar</Button>
@@ -350,6 +500,34 @@ export default function MapMarkerDialog({
           {saving ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
         </Button>
       </DialogActions>
+
+      {/* ─── Delete confirmation ────────────────────────────────────── */}
+      <Dialog
+        open={confirmDeleteOpen}
+        onClose={() => !deleting && setConfirmDeleteOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>¿Eliminar marcador?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro de que quieres eliminar <strong>{marker?.name}</strong>? Esta acción no se puede deshacer.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)} disabled={deleting}>
+            Cancelar
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? 'Eliminando…' : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }

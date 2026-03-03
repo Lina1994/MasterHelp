@@ -22,6 +22,8 @@ export interface MarkerAssociated {
   enemyIds?: string[];
   encounterIds?: string[];
   diarySessionIds?: string[];
+  /** UUIDs of DiaryEntry records (calendar entries). */
+  diaryEntryIds?: string[];
   worldpediaIds?: string[];
 }
 

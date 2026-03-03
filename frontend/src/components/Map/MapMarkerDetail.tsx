@@ -5,8 +5,12 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
-  Drawer,
   IconButton,
   List,
   ListItemButton,
@@ -17,17 +21,17 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MapIcon from '@mui/icons-material/Map';
-import PersonIcon from '@mui/icons-material/Person';
 import PresentToAllIcon from '@mui/icons-material/PresentToAll';
 import SkylineIcon from '@mui/icons-material/Layers';
 
-import { MapMarkerDto, MapItemDto, getMapImageUrlSized, listMaps } from '../../api/maps';
+import { MapMarkerDto, MapItemDto, getMapImageUrlSized, listMaps, deleteMapMarker } from '../../api/maps';
 import { listCharacters, CharacterPayload } from '../../api/characters';
-import { listCampaignMonsters, CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
+import { getCampaignMonster, CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
 import { listEncounters, EncounterSummary } from '../../api/encounters';
-import { listDiarySessions, DiarySessionResponse } from '../../api/diary/diaryApi';
+import { getDiaryEntryById, DiaryEntryResponse } from '../../api/diary/diaryApi';
 import { getNote, WorldpediaNoteFull } from '../../api/worldpedia/worldpediaApi';
 import AuthImage from '../common/AuthImage';
 import { useActiveMap } from './ActiveMapContext';
@@ -47,11 +51,15 @@ type NavItem =
 
 interface Props {
   marker: MapMarkerDto;
+  /** The map that owns this marker — needed to call deleteMapMarker. */
+  mapId: string;
   campaignId: string;
   open: boolean;
   /** Invoked when the user clicks "Edit marker" — parent opens the edit dialog. */
   onEdit: () => void;
   onClose: () => void;
+  /** Called after the marker has been deleted successfully. */
+  onDelete?: (markerId: string) => void;
   /** All campaign maps — passed down so we don't re-fetch them each time. */
   allMaps?: MapItemDto[];
   allCharacters?: CharacterPayload[];
@@ -197,9 +205,8 @@ function EnemySubview({ enemyId, campaignId }: { enemyId: string; campaignId: st
 
   useEffect(() => {
     let alive = true;
-    listCampaignMonsters(campaignId, {}, 'en').then((res: any) => {
-      const items: CampaignMonsterListItem[] = res.items ?? res;
-      if (alive) { setEnemy(items.find((e) => e.id === enemyId) ?? null); setLoading(false); }
+    getCampaignMonster(campaignId, enemyId, 'en').then((item) => {
+      if (alive) { setEnemy(item); setLoading(false); }
     }).catch(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [enemyId, campaignId]);
@@ -273,26 +280,45 @@ function EncounterSubview({ encounterId, campaignId }: { encounterId: string; ca
 
 // ─── Subview: Diary session ───────────────────────────────────────────────────
 
-function DiarySubview({ sessionId, campaignId }: { sessionId: string; campaignId: string }) {
-  const [session, setSession] = useState<DiarySessionResponse | null>(null);
+/**
+ * DiarySubview
+ *
+ * Shows a calendar diary entry (year/month/day + annotated items).
+ * Fetches the entry by its UUID directly from the backend.
+ */
+function DiarySubview({ entryId, campaignId }: { entryId: string; campaignId: string }) {
+  const [entry, setEntry] = useState<DiaryEntryResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
-    listDiarySessions(campaignId).then((all) => {
-      if (alive) { setSession(all.find((s) => s.id === sessionId) ?? null); setLoading(false); }
-    }).catch(() => { if (alive) setLoading(false); });
+    getDiaryEntryById(campaignId, entryId)
+      .then((e) => { if (alive) { setEntry(e); setLoading(false); } })
+      .catch(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, [sessionId, campaignId]);
+  }, [entryId, campaignId]);
 
   if (loading) return <CircularProgress size={24} sx={{ m: 2 }} />;
-  if (!session) return <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>Sesión no encontrada</Typography>;
+  if (!entry) return <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>Entrada no encontrada</Typography>;
 
   return (
     <Stack spacing={1.5} sx={{ p: 2 }}>
-      <Typography variant="h6">{session.title ?? `Sesión ${sessionId.slice(0, 6)}`}</Typography>
-      {session.items.map((item) => item.title && (
-        <Typography key={item.id} variant="body2" sx={{ pl: 1 }}>• {item.title}</Typography>
+      <Typography variant="h6">
+        Año {entry.year} / Mes {entry.monthIndex + 1} / Día {entry.dayIndex + 1}
+      </Typography>
+      {entry.items.length === 0 && (
+        <Typography variant="body2" color="text.secondary">Sin anotaciones en este día.</Typography>
+      )}
+      {entry.items.map((item, i) => (
+        <Box key={item.id ?? i}>
+          {item.title && <Typography variant="subtitle2">{item.title}</Typography>}
+          {item.html && (
+            <Box
+              sx={{ fontSize: '0.875rem', lineHeight: 1.6, color: 'text.secondary', '& p': { m: 0 } }}
+              dangerouslySetInnerHTML={{ __html: item.html }}
+            />
+          )}
+        </Box>
       ))}
     </Stack>
   );
@@ -341,9 +367,10 @@ interface MarkerViewProps {
   allEncounters?: EncounterSummary[];
   onNavigate: (item: NavItem) => void;
   onEdit: () => void;
+  onDeleteRequest: () => void;
 }
 
-function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies, allEncounters, onNavigate, onEdit }: MarkerViewProps) {
+function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies, allEncounters, onNavigate, onEdit, onDeleteRequest }: MarkerViewProps) {
   const assoc = marker.associated ?? {};
 
   const mapItems = allMaps?.filter((m) => assoc.mapIds?.includes(m.id)) ?? [];
@@ -356,7 +383,7 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
     (assoc.characterIds?.length ?? 0) +
     (assoc.enemyIds?.length ?? 0) +
     (assoc.encounterIds?.length ?? 0) +
-    (assoc.diarySessionIds?.length ?? 0) +
+    (assoc.diaryEntryIds?.length ?? 0) +
     (assoc.worldpediaIds?.length ?? 0);
 
   return (
@@ -370,6 +397,11 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
           </Box>
           <Tooltip title="Editar marcador">
             <IconButton onClick={onEdit} size="small"><EditIcon fontSize="small" /></IconButton>
+          </Tooltip>
+          <Tooltip title="Eliminar marcador">
+            <IconButton onClick={onDeleteRequest} size="small" color="error">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
           </Tooltip>
         </Stack>
         {marker.notes && (
@@ -386,22 +418,74 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
             {/* Maps */}
             {mapItems.map((m) => (
               <ListItemButton key={m.id} onClick={() => onNavigate({ type: 'map', id: m.id })}>
-                <MapIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
+                {m.imageAvailable ? (
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      mr: 1.5,
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <AuthImage
+                      src={getMapImageUrlSized(m.id, 'thumb')}
+                      alt={m.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </Box>
+                ) : (
+                  <MapIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
+                )}
                 <ListItemText primary={m.name} secondary="Mapa" />
               </ListItemButton>
             ))}
             {/* Characters */}
-            {charItems.map((c) => (
-              <ListItemButton key={c.id} onClick={() => onNavigate({ type: 'character', id: c.id! })}>
-                <PersonIcon fontSize="small" sx={{ mr: 1.5, color: 'text.secondary' }} />
-                <ListItemText primary={c.name} secondary={c.kind === 'pc' ? 'Jugador' : 'NPC'} />
-              </ListItemButton>
-            ))}
+            {charItems.map((c) => {
+              const imgUrl = c.characterImageUrl ?? c.tokenImageUrl;
+              return (
+                <ListItemButton key={c.id} onClick={() => onNavigate({ type: 'character', id: c.id! })}>
+                  {imgUrl ? (
+                    <Box sx={{ width: 32, height: 32, mr: 1.5, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+                      <AuthImage
+                        src={imgUrl}
+                        alt={c.name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </Box>
+                  ) : (
+                    <Avatar sx={{ width: 32, height: 32, mr: 1.5, fontSize: '0.75rem' }}>
+                      {c.name.slice(0, 2).toUpperCase()}
+                    </Avatar>
+                  )}
+                  <ListItemText primary={c.name} secondary={c.kind === 'pc' ? 'Jugador' : 'NPC'} />
+                </ListItemButton>
+              );
+            })}
             {/* Enemies */}
             {enemyItems.map((e) => (
               <ListItemButton key={e.id} onClick={() => onNavigate({ type: 'enemy', id: e.id })}>
-                <Typography sx={{ mr: 1.5 }}>👹</Typography>
-                <ListItemText primary={e.name} secondary={`${e.type} · FP ${e.challengeRating ?? '?'}`} />
+                {e.tokenImageUrl ? (
+                  <Box sx={{ width: 32, height: 32, mr: 1.5, borderRadius: 1, overflow: 'hidden', flexShrink: 0 }}>
+                    <AuthImage
+                      src={e.tokenImageUrl}
+                      alt={e.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </Box>
+                ) : (
+                  <Avatar
+                    variant="rounded"
+                    sx={{ width: 32, height: 32, mr: 1.5, fontSize: '0.75rem', bgcolor: 'error.main' }}
+                  >
+                    {e.name.slice(0, 2).toUpperCase()}
+                  </Avatar>
+                )}
+                <ListItemText
+                  primary={e.name}
+                  secondary={[e.type, e.size, e.challengeRating ? `FP ${e.challengeRating}` : null].filter(Boolean).join(' · ') || undefined}
+                />
               </ListItemButton>
             ))}
             {/* Encounters */}
@@ -411,11 +495,11 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
                 <ListItemText primary={e.name} secondary={`Encuentro · ${e.difficulty}`} />
               </ListItemButton>
             ))}
-            {/* Diary sessions (IDs only — names fetched in subview) */}
-            {(assoc.diarySessionIds ?? []).map((id) => (
+            {/* Diary entries (IDs only — detail fetched in subview) */}
+            {(assoc.diaryEntryIds ?? []).map((id) => (
               <ListItemButton key={id} onClick={() => onNavigate({ type: 'diary', id })}>
-                <Typography sx={{ mr: 1.5 }}>📖</Typography>
-                <ListItemText primary="Sesión de diario" secondary={id.slice(0, 8)} />
+                <Typography sx={{ mr: 1.5 }}>📅</Typography>
+                <ListItemText primary="Entrada de diario" secondary={id.slice(0, 8)} />
               </ListItemButton>
             ))}
             {/* Worldpedia notes (IDs only — names fetched in subview) */}
@@ -443,7 +527,7 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
 /**
  * MapMarkerDetail
  *
- * Sliding Drawer (right side) that shows full marker information with
+ * Centered modal dialog that shows full marker information with
  * drill-down navigation into associated entities. Supports:
  * - Back/breadcrumb navigation
  * - Map subview with "Send to player window" + "Open Skyline"
@@ -453,21 +537,41 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
  */
 export default function MapMarkerDetail({
   marker,
+  mapId,
   campaignId,
   open,
   onEdit,
   onClose,
+  onDelete,
   allMaps,
   allCharacters,
   allEnemies,
   allEncounters,
 }: Props) {
   const [stack, setStack] = useState<NavItem[]>([{ type: 'marker' }]);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   /** Reset stack when the marker changes. */
   useEffect(() => {
     setStack([{ type: 'marker' }]);
   }, [marker.id]);
+
+  /**
+   * Performs the actual deletion after the user confirms.
+   * Calls the API, notifies the parent and closes the drawer.
+   */
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteMapMarker(mapId, marker.id);
+      onDelete?.(marker.id);
+      onClose();
+    } finally {
+      setDeleting(false);
+      setConfirmDeleteOpen(false);
+    }
+  };
 
   const current = stack[stack.length - 1];
   const canGoBack = stack.length > 1;
@@ -476,14 +580,20 @@ export default function MapMarkerDetail({
   const goBack = () => setStack((s) => s.slice(0, -1));
 
   return (
-    <Drawer
-      anchor="right"
+    <Dialog
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '100%', sm: 420 }, display: 'flex', flexDirection: 'column' } }}
+      maxWidth="sm"
+      fullWidth
+      sx={{ zIndex: 1400 }}
+      PaperProps={{ sx: { height: '75vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}
     >
-      {/* Toolbar */}
-      <Stack direction="row" alignItems="center" sx={{ px: 1, py: 0.5, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
+      {/* Header */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        sx={{ px: 1, py: 0.75, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}
+      >
         {canGoBack ? (
           <IconButton onClick={goBack} size="small"><ArrowBackIcon /></IconButton>
         ) : (
@@ -495,7 +605,7 @@ export default function MapMarkerDetail({
             : current.type === 'character' ? 'Personaje'
             : current.type === 'enemy' ? 'Enemigo'
             : current.type === 'encounter' ? 'Encuentro'
-            : current.type === 'diary' ? 'Sesión de diario'
+            : current.type === 'diary' ? 'Entrada de diario'
             : 'Worldpedia'}
         </Typography>
         <IconButton onClick={onClose} size="small"><CloseIcon /></IconButton>
@@ -513,6 +623,7 @@ export default function MapMarkerDetail({
             allEncounters={allEncounters}
             onNavigate={navigate}
             onEdit={onEdit}
+            onDeleteRequest={() => setConfirmDeleteOpen(true)}
           />
         )}
         {current.type === 'map' && (
@@ -528,12 +639,41 @@ export default function MapMarkerDetail({
           <EncounterSubview encounterId={current.id} campaignId={campaignId} />
         )}
         {current.type === 'diary' && (
-          <DiarySubview sessionId={current.id} campaignId={campaignId} />
+          <DiarySubview entryId={current.id} campaignId={campaignId} />
         )}
         {current.type === 'worldpedia' && (
           <WorldpediaSubview noteId={current.id} campaignId={campaignId} />
         )}
       </Box>
-    </Drawer>
+
+      {/* ─── Delete confirmation dialog ─────────────────────────────────── */}
+      <Dialog
+        open={confirmDeleteOpen}
+        onClose={() => !deleting && setConfirmDeleteOpen(false)}
+        sx={{ zIndex: 1501 }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>¿Eliminar marcador?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro de que quieres eliminar el marcador <strong>{marker.name}</strong>? Esta acción no se puede deshacer.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)} disabled={deleting}>
+            Cancelar
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmDelete}
+            disabled={deleting}
+          >
+            {deleting ? 'Eliminando…' : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Dialog>
   );
 }

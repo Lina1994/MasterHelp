@@ -67,6 +67,7 @@ export class UpdateMapMarkerDto {
     enemyIds?: string[];
     encounterIds?: string[];
     diarySessionIds?: string[];
+    diaryEntryIds?: string[];
     worldpediaIds?: string[];
   };
 }

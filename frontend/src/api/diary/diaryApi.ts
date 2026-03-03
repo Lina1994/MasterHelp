@@ -105,6 +105,40 @@ export async function listDiarySessions(campaignId: string) {
   return res.data;
 }
 
+// ─── Diary Entries (calendar notes) ─────────────────────────────────────────
+
+/**
+ * Lightweight summary returned by the list-all-entries endpoint.
+ * Used in the world-map marker picker.
+ */
+export type DiaryEntrySummary = {
+  id: string;
+  year: number;
+  monthIndex: number;
+  dayIndex: number;
+  itemCount: number;
+  firstTitle: string | null;
+  updatedAt: string;
+};
+
+/**
+ * Lists all diary entries (calendar day notes) for a campaign.
+ * Returns a lightweight summary suitable for pickers.
+ */
+export async function listAllDiaryEntries(campaignId: string) {
+  const res = await api.get<DiaryEntrySummary[]>(`/diary/campaigns/${campaignId}/entries`);
+  return res.data;
+}
+
+/**
+ * Fetches a single diary entry by its UUID.
+ * Used in the marker detail subview.
+ */
+export async function getDiaryEntryById(campaignId: string, entryId: string) {
+  const res = await api.get<DiaryEntryResponse>(`/diary/campaigns/${campaignId}/entries/by-id/${entryId}`);
+  return res.data;
+}
+
 export async function getActiveDiarySession(campaignId: string) {
   const res = await api.get<DiarySessionResponse | null>(`/diary/campaigns/${campaignId}/sessions/active`);
   return res.data;
