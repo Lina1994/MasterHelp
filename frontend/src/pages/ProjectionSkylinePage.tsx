@@ -394,20 +394,29 @@ const ProjectionSkylinePage: React.FC = () => {
             setBattleStateStarted(!!bs.started);
           }
           if (serverHasActiveData) {
-            const newStrip = { 
-              battleStarted: !!bs.started, 
-              enabled: fetchedShowInitiativeStrip, 
-              currentTurnId: bs.currentTurnId || null, 
-              items: bs.items.map((x) => ({ 
-                id: x.id, 
-                name: x.name, 
-                imageUrl: x.imageUrl ?? null, 
-                fullImageUrl: (x as any).fullImageUrl ?? null,
-                size: (x as any).size ?? null,
-                role: (x as any).role 
-              })) 
-            };
             setInitiativeStrip(prev => {
+              // Build the new items merging server data with in-memory rich data.
+              // Server intentionally omits fullImageUrl/size (stripped to avoid
+              // 10 MB+ payloads with base64 images). Preserve them from the
+              // previous strip, which was populated via BroadcastChannel.
+              const newItems = bs.items.map((x) => {
+                const prevItem = prev.items.find(p => p.id === x.id);
+                return {
+                  id: x.id,
+                  name: x.name,
+                  imageUrl: x.imageUrl ?? null,
+                  fullImageUrl: (x as any).fullImageUrl ?? prevItem?.fullImageUrl ?? null,
+                  size: (x as any).size ?? prevItem?.size ?? null,
+                  role: (x as any).role ?? prevItem?.role,
+                };
+              });
+              const newStrip = {
+                battleStarted: !!bs.started,
+                enabled: fetchedShowInitiativeStrip,
+                currentTurnId: bs.currentTurnId || null,
+                items: newItems,
+              };
+              // Deep comparison — only update reference if something actually changed
               if (prev.items.length !== newStrip.items.length) return newStrip;
               if (prev.enabled !== newStrip.enabled) return newStrip;
               if (prev.battleStarted !== newStrip.battleStarted) return newStrip;

@@ -365,12 +365,45 @@ const SkylinePreviewOverlay: React.FC = () => {
         setCharacter(null);
       }
 
-      // Update current turn participant from battle state
+      // Update current turn participant from battle state.
+      // NOTE: server-persisted items intentionally omit fullImageUrl (images are
+      // only sent via BroadcastChannel to avoid 10 MB+ payloads with base64 data).
+      // When the server tells us a new turn started we resolve fullImageUrl from
+      // the last BroadcastChannel snapshot stored in localStorage.
       if (battleState.status === 'fulfilled') {
         const bs = battleState.value;
         if (bs.started && bs.currentTurnId) {
-          const participant = bs.items.find(it => it.id === bs.currentTurnId) ?? null;
-          setCurrentTurnParticipant(participant?.fullImageUrl ? participant : null);
+          // Capture as const so TypeScript knows it's non-null inside the callback.
+          const turnId: string = bs.currentTurnId;
+          setCurrentTurnParticipant((prev) => {
+            // Same turn and we already have a valid image — don't disturb it.
+            if (prev?.id === turnId && prev?.fullImageUrl) return prev;
+
+            // Try to resolve fullImageUrl from the latest localStorage BC snapshot.
+            let fullImageUrl: string | null = null;
+            let name = bs.items.find(it => it.id === turnId)?.name ?? null;
+            let role: 'ally' | 'foe' | undefined = (bs.items.find(it => it.id === turnId) as any)?.role;
+            try {
+              const raw = localStorage.getItem('app.skyline.initiativeStrip');
+              if (raw) {
+                const stored = JSON.parse(raw);
+                if (stored?.campaignId === campaignId) {
+                  const match = (stored.items as any[])?.find((x: any) => x.id === turnId);
+                  if (match?.fullImageUrl) {
+                    fullImageUrl = match.fullImageUrl;
+                    if (match.name) name = match.name;
+                    if (match.role) role = match.role;
+                  }
+                }
+              }
+            } catch {}
+
+            if (!fullImageUrl) {
+              // Battle state changed but no BC data yet; clear so we don't show stale image.
+              return null;
+            }
+            return { id: turnId, name: name || '', imageUrl: null, fullImageUrl, size: null, role };
+          });
         } else {
           setCurrentTurnParticipant(null);
         }
@@ -452,7 +485,21 @@ const SkylinePreviewOverlay: React.FC = () => {
 
             if (battleStarted && currentTurnId) {
               const participant = bcItems.find(it => it.id === currentTurnId) ?? null;
-              setCurrentTurnParticipant(participant?.fullImageUrl ? participant : null);
+              if (participant?.fullImageUrl) {
+                // BC has rich image data (initiative strip enabled) — use it directly.
+                setCurrentTurnParticipant(participant);
+              } else {
+                // BC has no image data: initiative strip is disabled (showInitiativeStrip=false)
+                // or the participant wasn't found in the empty items list.
+                // Preserve the existing participant if it's the same turn so the image
+                // doesn't flicker off. Poll the server to restore the image if the turn
+                // actually changed or we have no valid participant yet.
+                setCurrentTurnParticipant((prev) => {
+                  if (prev?.id === currentTurnId && prev?.fullImageUrl) return prev;
+                  return null;
+                });
+                poll(); // fetch fullImageUrl from server-persisted battle state
+              }
             } else {
               setCurrentTurnParticipant(null);
             }
@@ -494,7 +541,13 @@ const SkylinePreviewOverlay: React.FC = () => {
           }))
         : [];
       const participant = bcItems.find(it => it.id === currentTurnId) ?? null;
-      setCurrentTurnParticipant(participant?.fullImageUrl ? participant : null);
+      // Only pre-populate when localStorage has the full image data.
+      // If items is empty (e.g. showInitiativeStrip was false) don't call
+      // setCurrentTurnParticipant at all — the initial poll() in the polling
+      // effect will fetch the richer server-persisted state with fullImageUrl.
+      if (participant?.fullImageUrl) {
+        setCurrentTurnParticipant(participant);
+      }
     } catch {}
   }, [enabled, campaignId]);
 

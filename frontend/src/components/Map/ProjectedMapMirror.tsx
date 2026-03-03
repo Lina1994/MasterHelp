@@ -19,6 +19,7 @@ import type { TokenCandidate } from './ProjectedMapMirrorTools';
 import { useMapFogPreviewStyle } from '../../hooks/useMapFogPreviewStyle';
 import { useCharacterTokenImageResolver } from '../../hooks/useCharacterTokenImageResolver';
 import { TokenQuickInfoPopover } from './TokenQuickInfoPopover';
+import SkylineViewportContent from '../Skyline/SkylineViewportContent';
 // removed duplicate import
 
 const ProjectedMapMirror: React.FC<{
@@ -468,11 +469,22 @@ const ProjectedMapMirror: React.FC<{
                         </Box>
                       </Box>
                     ) : (
-                      <AuthImage
-                        src={getMapSkylineUrlSized(mapId, 'full', { timeOfDay, cacheBust: timeOfDay })}
-                        alt="Skyline proyectado"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
+                      // Full-fidelity Skyline preview: mirrors everything shown in the
+                      // real Skyline projection window (character, song, day, turn image,
+                      // initiative strip, shop items) inside the scaled container.
+                      activeCampaign?.id ? (
+                        <SkylineViewportContent
+                          campaignId={activeCampaign.id}
+                          mapId={mapId}
+                          timeOfDay={timeOfDay}
+                        />
+                      ) : (
+                        <AuthImage
+                          src={getMapSkylineUrlSized(mapId, 'full', { timeOfDay, cacheBust: timeOfDay })}
+                          alt="Skyline proyectado"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      )
                     )}
                   </Box>
                 ) : (

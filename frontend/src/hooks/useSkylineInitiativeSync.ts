@@ -95,13 +95,17 @@ export function useSkylineInitiativeSync(params: SkylineSyncParams) {
           role: p.role,
         };
       });
+      // Strip fullImageUrl (base64 data URIs, can be >1 MB each) before
+      // sending to the server – images only travel via BroadcastChannel.
+      // The server only needs lightweight fields for reconnection.
+      const serverItems = items.map(({ id, name, imageUrl, role }) => ({ id, name, imageUrl, role }));
       const payload: any = {
         started: !!battleStarted,
         encounterId: encounterId || null,
         round,
         turnIndex,
         currentTurnId: currentTurnId || null,
-        items,
+        items: serverItems,
       };
       setCampaignBattleState(cid, payload).catch(() => {});
     }, 250);
