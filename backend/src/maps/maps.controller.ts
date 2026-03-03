@@ -3,6 +3,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MapsService } from './maps.service';
 import { CreateMapDto } from './dto/create-map.dto';
 import { UpdateMapDto } from './dto/update-map.dto';
+import { CreateMapMarkerDto } from './dto/create-map-marker.dto';
+import { UpdateMapMarkerDto } from './dto/update-map-marker.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { UpdateFogDto } from './dto/update-fog.dto';
@@ -235,5 +237,58 @@ export class MapsController {
     @Body() dto: UpdateTokensDto,
   ) {
     return this.service.setTokens(req.user, id, dto.campaignId, dto.tokens as any);
+  }
+
+  // ─── World-Map Markers ────────────────────────────────────────────────────
+
+  /**
+   * Lists all markers for a map scoped to a campaign.
+   * Requires `campaignId` query param.
+   */
+  @Get(':id/markers')
+  async listMarkers(
+    @Req() req,
+    @Param('id') id: string,
+    @Query('campaignId') campaignId: string,
+  ) {
+    return this.service.listMarkers(req.user, id, campaignId);
+  }
+
+  /**
+   * Creates a new world-map marker.
+   * Body must include `campaignId`, `name`, `x`, `y`.
+   */
+  @Post(':id/markers')
+  async createMarker(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: CreateMapMarkerDto,
+  ) {
+    return this.service.createMarker(req.user, id, dto);
+  }
+
+  /**
+   * Partially updates a marker (PATCH semantics — only provided fields updated).
+   */
+  @Patch(':id/markers/:markerId')
+  async updateMarker(
+    @Req() req,
+    @Param('id') id: string,
+    @Param('markerId') markerId: string,
+    @Body() dto: UpdateMapMarkerDto,
+  ) {
+    return this.service.updateMarker(req.user, id, markerId, dto);
+  }
+
+  /**
+   * Deletes a marker. Returns `{ ok: true }` on success.
+   */
+  @Delete(':id/markers/:markerId')
+  async deleteMarker(
+    @Req() req,
+    @Param('id') id: string,
+    @Param('markerId') markerId: string,
+  ) {
+    return this.service.deleteMarker(req.user, id, markerId);
   }
 }

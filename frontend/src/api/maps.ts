@@ -241,3 +241,95 @@ export async function setMapTokens(mapId: string, campaignId: string, tokens: Ma
   const res = await api.patch<{ ok: true }>(`/maps/${mapId}/tokens`, { campaignId, tokens });
   return res.data;
 }
+
+// ─── World-Map Markers API ───────────────────────────────────────────────────
+
+/**
+ * Represents a set of associated entity IDs linked to a world-map marker.
+ * All values are UUIDs; display data must be resolved client-side.
+ */
+export interface MarkerAssociated {
+  mapIds?: string[];
+  characterIds?: string[];
+  enemyIds?: string[];
+  encounterIds?: string[];
+  diarySessionIds?: string[];
+  worldpediaIds?: string[];
+}
+
+/** Full DTO for a world-map marker as returned by the API. */
+export interface MapMarkerDto {
+  id: string;
+  mapId: string;
+  campaignId: string;
+  name: string;
+  icon: string;
+  notes: string | null;
+  /** Horizontal position as percentage of map image width (0–100). */
+  x: number;
+  /** Vertical position as percentage of map image height (0–100). */
+  y: number;
+  associated: MarkerAssociated | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Lists all markers for a given map in a campaign.
+ *
+ * @param mapId      - UUID of the MapEntity.
+ * @param campaignId - Campaign scope for the markers.
+ */
+export async function listMapMarkers(mapId: string, campaignId: string): Promise<MapMarkerDto[]> {
+  const res = await api.get<MapMarkerDto[]>(`/maps/${mapId}/markers`, { params: { campaignId } });
+  return res.data;
+}
+
+/**
+ * Creates a new marker on a world-map.
+ *
+ * @param mapId   - UUID of the MapEntity.
+ * @param payload - Marker creation data.
+ */
+export async function createMapMarker(
+  mapId: string,
+  payload: {
+    name: string;
+    icon?: string;
+    notes?: string;
+    x: number;
+    y: number;
+    campaignId: string;
+    associated?: MarkerAssociated;
+  },
+): Promise<MapMarkerDto> {
+  const res = await api.post<MapMarkerDto>(`/maps/${mapId}/markers`, payload);
+  return res.data;
+}
+
+/**
+ * Applies a partial update to an existing marker (PATCH semantics).
+ *
+ * @param mapId    - UUID of the MapEntity.
+ * @param markerId - UUID of the marker to update.
+ * @param patch    - Partial marker data to update.
+ */
+export async function updateMapMarker(
+  mapId: string,
+  markerId: string,
+  patch: Partial<Omit<MapMarkerDto, 'id' | 'mapId' | 'campaignId' | 'createdAt' | 'updatedAt'>>,
+): Promise<MapMarkerDto> {
+  const res = await api.patch<MapMarkerDto>(`/maps/${mapId}/markers/${markerId}`, patch);
+  return res.data;
+}
+
+/**
+ * Deletes a marker permanently.
+ *
+ * @param mapId    - UUID of the MapEntity.
+ * @param markerId - UUID of the marker to delete.
+ */
+export async function deleteMapMarker(mapId: string, markerId: string): Promise<{ ok: true }> {
+  const res = await api.delete<{ ok: true }>(`/maps/${mapId}/markers/${markerId}`);
+  return res.data;
+}

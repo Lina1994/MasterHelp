@@ -6,6 +6,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import PresentToAllIcon from '@mui/icons-material/PresentToAll';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PublicIcon from '@mui/icons-material/Public';
 import { useActiveMap } from '../components/Map/ActiveMapContext';
 import ProjectedMapMirror from '../components/Map/ProjectedMapMirror';
 import AuthImage from '../components/common/AuthImage';
@@ -15,6 +16,7 @@ import { createMap, createMapsBulk, deleteMap, getMapImageUrl, getMapImageUrlSiz
 import AudioConfigEditor, { MusicConfig as MusicCfg, SfxConfig as SfxCfg } from '../components/soundtrack/AudioConfigEditor';
 import MapTodImagesEditor from '../components/Map/MapTodImagesEditor';
 import MapSkylineTodImagesEditor from '../components/Map/MapSkylineTodImagesEditor';
+import WorldMapView from '../components/Map/WorldMapView';
 
 type FormState = {
   id?: string;
@@ -43,6 +45,8 @@ export default function MapsPage() {
   const [localPreview, setLocalPreview] = useState<string | null>(null); // kept for future image previews (currently not used)
   const [projectionReady, setProjectionReady] = useState<boolean>(false);
   const { activeMapId, setActiveMapId } = useActiveMap();
+  /** Mapa actualmente visualizado en modo Mapa Mundial (fullscreen, DM only). */
+  const [worldMapItem, setWorldMapItem] = useState<MapItemDto | null>(null);
 
   const filtered = useMemo(() => items, [items]);
 
@@ -283,6 +287,13 @@ export default function MapsPage() {
                   </IconButton>
                 </span>
               </Tooltip>
+              <Tooltip title="Abrir modo Mapa Mundial">
+                <span>
+                  <IconButton onClick={() => setWorldMapItem(it)}>
+                    <PublicIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
             </Stack>
           </Paper>
         ))}
@@ -455,6 +466,15 @@ export default function MapsPage() {
         onClose={() => (deleting ? null : setDeleteConfirmOpen(false))}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* Modo Mapa Mundial — visualizador fullscreen con zoom/pan y marcadores */}
+      {worldMapItem && campaignId && (
+        <WorldMapView
+          map={worldMapItem}
+          campaignId={campaignId}
+          onClose={() => setWorldMapItem(null)}
+        />
+      )}
     </Box>
   );
 }

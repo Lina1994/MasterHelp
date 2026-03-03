@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { MapEntity } from './entities/map.entity';
 import { CreateMapDto } from './dto/create-map.dto';
 import { UpdateMapDto } from './dto/update-map.dto';
+import { MapMarker } from './entities/map-marker.entity';
+import { CreateMapMarkerDto } from './dto/create-map-marker.dto';
+import { UpdateMapMarkerDto } from './dto/update-map-marker.dto';
 import { User } from '../users/entities/user.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { MapImage } from './entities/map-image.entity';
@@ -21,6 +24,7 @@ export class MapsService {
     @InjectRepository(MapFogState) private readonly fogRepo: Repository<MapFogState>,
     @InjectRepository(MapTokensState) private readonly tokensRepo: Repository<MapTokensState>,
     @InjectRepository(Campaign) private readonly campaignsRepo: Repository<Campaign>,
+    @InjectRepository(MapMarker) private readonly markersRepo: Repository<MapMarker>,
   ) {}
 
   /**
@@ -554,5 +558,110 @@ export class MapsService {
 
     const totalSize = (totalImages || 0) + (totalSkylines || 0) + (totalLegacy || 0);
     return { totalSize, count };
+  }
+
+  // ─── World-Map Markers ──────────────────────────────────────────────────────
+
+  /**
+   * Returns all markers placed on a map within a campaign, scoped to the
+   * authenticated owner.
+   *
+   * @param user  - Authenticated JWT payload.
+   * @param mapId - UUID of the parent MapEntity.
+   * @param campaignId - Campaign scope.
+   * @returns Ordered list of MapMarker records (oldest first).
+   */
+  async listMarkers(user: any, mapId: string, campaignId: string): Promise<MapMarker[]> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+
+    return this.markersRepo.find({
+      where: { mapId, campaignId, ownerId: authUserId as any },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
+  /**
+   * Creates a new marker on a world-map for the given campaign.
+   *
+   * @param user  - Authenticated JWT payload.
+   * @param mapId - UUID of the parent MapEntity.
+   * @param dto   - Marker creation payload.
+   * @returns The newly persisted MapMarker.
+   */
+  async createMarker(user: any, mapId: string, dto: CreateMapMarkerDto): Promise<MapMarker> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+
+    const campaign = await this.campaignsRepo.findOne({ where: { id: dto.campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+
+    const marker = this.markersRepo.create({
+      mapId,
+      campaignId: dto.campaignId,
+      ownerId: authUserId as any,
+      name: dto.name,
+      icon: dto.icon ?? '📍',
+      notes: dto.notes ?? null,
+      x: dto.x,
+      y: dto.y,
+      associated: dto.associated ?? null,
+    });
+
+    return this.markersRepo.save(marker);
+  }
+
+  /**
+   * Applies a partial update to an existing marker, validating ownership.
+   *
+   * @param user     - Authenticated JWT payload.
+   * @param mapId    - UUID of the parent MapEntity.
+   * @param markerId - UUID of the marker to update.
+   * @param dto      - Partial marker update payload.
+   * @returns The updated MapMarker.
+   */
+  async updateMarker(user: any, mapId: string, markerId: string, dto: UpdateMapMarkerDto): Promise<MapMarker> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const marker = await this.markersRepo.findOne({ where: { id: markerId, mapId } });
+    if (!marker) throw new NotFoundException('Marker not found');
+    if (marker.ownerId !== authUserId) throw new ForbiddenException('Not owner');
+
+    if (dto.name !== undefined) marker.name = dto.name;
+    if (dto.icon !== undefined) marker.icon = dto.icon;
+    if (dto.notes !== undefined) marker.notes = dto.notes ?? null;
+    if (dto.x !== undefined) marker.x = dto.x;
+    if (dto.y !== undefined) marker.y = dto.y;
+    if (dto.associated !== undefined) marker.associated = dto.associated ?? null;
+
+    return this.markersRepo.save(marker);
+  }
+
+  /**
+   * Deletes a marker after verifying ownership.
+   *
+   * @param user     - Authenticated JWT payload.
+   * @param mapId    - UUID of the parent MapEntity.
+   * @param markerId - UUID of the marker to delete.
+   */
+  async deleteMarker(user: any, mapId: string, markerId: string): Promise<{ ok: true }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const marker = await this.markersRepo.findOne({ where: { id: markerId, mapId } });
+    if (!marker) throw new NotFoundException('Marker not found');
+    if (marker.ownerId !== authUserId) throw new ForbiddenException('Not owner');
+
+    await this.markersRepo.remove(marker);
+    return { ok: true };
   }
 }
