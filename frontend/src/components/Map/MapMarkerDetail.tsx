@@ -27,6 +27,8 @@ import MapIcon from '@mui/icons-material/Map';
 import PresentToAllIcon from '@mui/icons-material/PresentToAll';
 import SkylineIcon from '@mui/icons-material/Layers';
 
+import WorldpediaEntityViewer from '../Worldpedia/WorldpediaEntityViewer';
+
 import { MapMarkerDto, MapItemDto, getMapImageUrlSized, listMaps, deleteMapMarker } from '../../api/maps';
 import { listCharacters, CharacterPayload } from '../../api/characters';
 import { getCampaignMonster, CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
@@ -142,57 +144,6 @@ function MapSubview({ mapId, campaignId }: { mapId: string; campaignId: string }
           Abrir ventana Skyline
         </Button>
       </Stack>
-    </Stack>
-  );
-}
-
-// ─── Subview: Character ───────────────────────────────────────────────────────
-
-function CharacterSubview({ charId, campaignId }: { charId: string; campaignId: string }) {
-  const [char, setChar] = useState<CharacterPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let alive = true;
-    listCharacters(campaignId).then((all) => {
-      if (alive) { setChar(all.find((c) => c.id === charId) ?? null); setLoading(false); }
-    }).catch(() => { if (alive) setLoading(false); });
-    return () => { alive = false; };
-  }, [charId, campaignId]);
-
-  if (loading) return <CircularProgress size={24} sx={{ m: 2 }} />;
-  if (!char) return <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>Personaje no encontrado</Typography>;
-
-  const abbr = char.name.slice(0, 2).toUpperCase();
-
-  return (
-    <Stack spacing={2} sx={{ p: 2 }}>
-      <Stack direction="row" spacing={2} alignItems="center">
-        {char.characterImageUrl ? (
-          <AuthImage src={char.characterImageUrl} alt={char.name} style={{ width: 72, height: 72, borderRadius: 8, objectFit: 'cover' }} />
-        ) : (
-          <Avatar sx={{ width: 72, height: 72 }}>{abbr}</Avatar>
-        )}
-        <Box>
-          <Typography variant="h6">{char.name}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {[char.race, char.className, char.level ? `Nv ${char.level}` : null].filter(Boolean).join(' · ')}
-          </Typography>
-          <Chip label={char.kind === 'pc' ? 'Jugador' : 'NPC'} size="small" sx={{ mt: 0.5 }} />
-        </Box>
-      </Stack>
-      {char.background && (
-        <Typography variant="body2"><strong>Trasfondo:</strong> {char.background}</Typography>
-      )}
-      <Divider />
-      <Button
-        variant="outlined"
-        startIcon={<SkylineIcon />}
-        onClick={() => openSkylineWindow(campaignId)}
-        fullWidth
-      >
-        Abrir ventana Skyline
-      </Button>
     </Stack>
   );
 }
@@ -366,11 +317,15 @@ interface MarkerViewProps {
   allEnemies?: CampaignMonsterListItem[];
   allEncounters?: EncounterSummary[];
   onNavigate: (item: NavItem) => void;
+  /** Called when the user clicks a character — opens the entity viewer directly. */
+  onOpenCharacterSheet: (charId: string) => void;
+  /** Called when the user clicks an enemy — opens the entity viewer directly. */
+  onOpenEnemySheet: (enemyId: string) => void;
   onEdit: () => void;
   onDeleteRequest: () => void;
 }
 
-function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies, allEncounters, onNavigate, onEdit, onDeleteRequest }: MarkerViewProps) {
+function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies, allEncounters, onNavigate, onOpenCharacterSheet, onOpenEnemySheet, onEdit, onDeleteRequest }: MarkerViewProps) {
   const assoc = marker.associated ?? {};
 
   const mapItems = allMaps?.filter((m) => assoc.mapIds?.includes(m.id)) ?? [];
@@ -441,11 +396,11 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
                 <ListItemText primary={m.name} secondary="Mapa" />
               </ListItemButton>
             ))}
-            {/* Characters */}
+            {/* Characters — open entity viewer directly (worldpedia-style) */}
             {charItems.map((c) => {
               const imgUrl = c.characterImageUrl ?? c.tokenImageUrl;
               return (
-                <ListItemButton key={c.id} onClick={() => onNavigate({ type: 'character', id: c.id! })}>
+                <ListItemButton key={c.id} onClick={() => onOpenCharacterSheet(c.id!)}>
                   {imgUrl ? (
                     <Box sx={{ width: 32, height: 32, mr: 1.5, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
                       <AuthImage
@@ -465,7 +420,7 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
             })}
             {/* Enemies */}
             {enemyItems.map((e) => (
-              <ListItemButton key={e.id} onClick={() => onNavigate({ type: 'enemy', id: e.id })}>
+              <ListItemButton key={e.id} onClick={() => onOpenEnemySheet(e.id)}>
                 {e.tokenImageUrl ? (
                   <Box sx={{ width: 32, height: 32, mr: 1.5, borderRadius: 1, overflow: 'hidden', flexShrink: 0 }}>
                     <AuthImage
@@ -551,6 +506,8 @@ export default function MapMarkerDetail({
   const [stack, setStack] = useState<NavItem[]>([{ type: 'marker' }]);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sheetCharId, setSheetCharId] = useState<string | null>(null);
+  const [sheetEnemyId, setSheetEnemyId] = useState<string | null>(null);
 
   /** Reset stack when the marker changes. */
   useEffect(() => {
@@ -624,16 +581,12 @@ export default function MapMarkerDetail({
             onNavigate={navigate}
             onEdit={onEdit}
             onDeleteRequest={() => setConfirmDeleteOpen(true)}
+            onOpenCharacterSheet={(charId) => setSheetCharId(charId)}
+            onOpenEnemySheet={(enemyId) => setSheetEnemyId(enemyId)}
           />
         )}
         {current.type === 'map' && (
           <MapSubview mapId={current.id} campaignId={campaignId} />
-        )}
-        {current.type === 'character' && (
-          <CharacterSubview charId={current.id} campaignId={campaignId} />
-        )}
-        {current.type === 'enemy' && (
-          <EnemySubview enemyId={current.id} campaignId={campaignId} />
         )}
         {current.type === 'encounter' && (
           <EncounterSubview encounterId={current.id} campaignId={campaignId} />
@@ -674,6 +627,24 @@ export default function MapMarkerDetail({
           </Button>
         </DialogActions>
       </Dialog>
-    </Dialog>
+
+      {/* ─── Character sheet viewer (Worldpedia-style) ────────────────── */}
+      <WorldpediaEntityViewer
+        open={!!sheetCharId}
+        entityType="character"
+        entityId={sheetCharId ?? ''}
+        campaignId={campaignId}
+        onClose={() => setSheetCharId(null)}
+        dialogSx={{ zIndex: 1500 }}
+      />
+      {/* ─── Enemy stat block viewer (Worldpedia-style) ──────────────────── */}
+      <WorldpediaEntityViewer
+        open={!!sheetEnemyId}
+        entityType="monster"
+        entityId={sheetEnemyId ?? ''}
+        campaignId={campaignId}
+        onClose={() => setSheetEnemyId(null)}
+        dialogSx={{ zIndex: 1500 }}
+      />    </Dialog>
   );
 }

@@ -30,6 +30,7 @@ import { getQuest, type QuestPayload } from '../../api/quests';
 import { listEncounters, type EncounterSummary } from '../../api/encounters';
 import { setActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
+import { useCampaignsContext } from '../Campaign/CampaignContext';
 import { MonsterStatBlock } from '../bestiary/MonsterStatBlock';
 import { SpellStatBlock } from '../spells/SpellStatBlock';
 import AuthImage from '../common/AuthImage';
@@ -40,6 +41,8 @@ interface Props {
   entityId: string | null;
   campaignId: string;
   onClose: () => void;
+  /** Optional sx forwarded to the root Dialog — e.g. to raise z-index when nested inside another dialog. */
+  dialogSx?: object;
 }
 
 /* ───────────────────────── helpers ───────────────────────── */
@@ -167,9 +170,11 @@ export default function WorldpediaEntityViewer({
   entityId,
   campaignId,
   onClose,
+  dialogSx,
 }: Props) {
   const { t, i18n } = useTranslation();
   const { activeCampaign } = useActiveCampaign();
+  const { fetchCampaigns } = useCampaignsContext();
 
   /** Resolved UI language narrowed to the two supported API locales. */
   const lang: 'en' | 'es' = (i18n.language?.startsWith('es') ? 'es' : 'en');
@@ -270,15 +275,30 @@ export default function WorldpediaEntityViewer({
     return () => { cancelled = true; };
   }, [open, entityType, entityId, campaignId, lang, t]);
 
-  /* ── Send character to skyline ─────────────────────────────────── */
+  /* ── Send / remove character from Skyline ───────────────────────── */
 
-  const handleSendToSkyline = useCallback(async () => {
+  const [settingSkyline, setSettingSkyline] = useState(false);
+
+  /** True when this character is the one currently projected on Skyline. */
+  const isActiveInSkyline =
+    entityType === 'character' &&
+    !!activeCampaign?.activeSkylineCharacter?.id &&
+    activeCampaign.activeSkylineCharacter.id === entityId;
+
+  /**
+   * Toggles the active Skyline character.
+   * If this character is already active, clears it (null). Otherwise sets it.
+   */
+  const handleSkylineToggle = useCallback(async () => {
     if (!activeCampaign?.id || !entityId) return;
+    setSettingSkyline(true);
     try {
-      await setActiveSkylineCharacterId(activeCampaign.id, entityId);
+      const nextValue = isActiveInSkyline ? null : entityId;
+      await setActiveSkylineCharacterId(activeCampaign.id, nextValue);
+      await fetchCampaigns();
       localStorage.setItem(
         'app.skyline.activeCharacterUpdated',
-        JSON.stringify({ campaignId: activeCampaign.id, characterId: entityId, ts: Date.now() }),
+        JSON.stringify({ campaignId: activeCampaign.id, characterId: nextValue, ts: Date.now() }),
       );
       try {
         new BroadcastChannel('campaign-sync').postMessage({ type: 'activeSkylineChanged', campaignId: activeCampaign.id });
@@ -286,8 +306,10 @@ export default function WorldpediaEntityViewer({
       try {
         (window as any).electronAPI?.projectionPoke?.({ kind: 'activeSkylineChanged', campaignId: activeCampaign.id });
       } catch { /* electron not present */ }
-    } catch { /* silent */ }
-  }, [activeCampaign?.id, entityId]);
+    } catch { /* silent */ } finally {
+      setSettingSkyline(false);
+    }
+  }, [activeCampaign?.id, entityId, isActiveInSkyline]);
 
   /* ── Ability labels (translated) ───────────────────────────────── */
 
@@ -447,8 +469,18 @@ export default function WorldpediaEntityViewer({
 
         {/* Skyline button */}
         <Box sx={{ mt: 2, textAlign: 'right' }}>
-          <Button variant="contained" size="small" onClick={handleSendToSkyline}>
-            {t('send_to_skyline', 'Enviar a Skyline')}
+          <Button
+            variant={isActiveInSkyline ? 'outlined' : 'contained'}
+            color={isActiveInSkyline ? 'warning' : 'primary'}
+            size="small"
+            disabled={settingSkyline}
+            onClick={handleSkylineToggle}
+          >
+            {settingSkyline
+              ? '…'
+              : isActiveInSkyline
+                ? t('remove_from_skyline', 'Quitar de Skyline')
+                : t('send_to_skyline', 'Enviar a Skyline')}
           </Button>
         </Box>
       </Box>
@@ -633,6 +665,7 @@ export default function WorldpediaEntityViewer({
       fullWidth
       scroll="paper"
       PaperProps={{ sx: { maxHeight: '90vh' } }}
+      sx={dialogSx}
     >
       <DialogTitle sx={{ m: 0, pr: 6, fontWeight: 700 }}>
         {loading ? t('loading', 'Cargando...') : dialogTitle}

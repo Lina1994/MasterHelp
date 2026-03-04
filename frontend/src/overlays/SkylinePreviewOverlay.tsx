@@ -18,9 +18,21 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Avatar, Box, Tooltip } from '@mui/material';
+import {
+  Avatar, Box, Divider, ListItemIcon, ListItemText,
+  Menu, MenuItem, Tooltip,
+} from '@mui/material';
+import PersonIcon from '@mui/icons-material/Person';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
+import InfoIcon from '@mui/icons-material/Info';
+import LayersClearIcon from '@mui/icons-material/LayersClear';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
+import WorldpediaEntityViewer from '../components/Worldpedia/WorldpediaEntityViewer';
 import API_BASE_URL from '../apiBase';
 
 /** localStorage key that persists the user preference. */
@@ -91,6 +103,8 @@ interface BattleStateItem {
   fullImageUrl: string | null;
   size: string | null;
   role: 'ally' | 'foe' | undefined;
+  /** 'character' for player characters, 'enemy' for monsters. */
+  kind?: 'character' | 'enemy';
 }
 
 /** Projection battle-state shape (richer than the auth endpoint). */
@@ -158,6 +172,26 @@ async function silentGetBattleState(campaignId: string): Promise<BattleStatePubl
         }))
       : [],
   };
+}
+
+/**
+ * Returns the mapping of encounter participant IDs → campaign monster IDs
+ * via the public no-auth projection endpoint.
+ *
+ * This is needed to open WorldpediaEntityViewer for bestiary enemies:
+ * the participant ID (used internally in combat) differs from the campaign
+ * monster ID expected by getCampaignMonster().
+ *
+ * @param campaignId - Campaign identifier.
+ * @returns Record where key = participantId, value = campaignMonsterId.
+ */
+async function silentGetParticipantMonsterMap(
+  campaignId: string,
+): Promise<Record<string, string>> {
+  const res = await silentApi.get<Record<string, string>>(
+    `/campaigns/projection/${campaignId}/participant-monster-map`,
+  );
+  return res.data ?? {};
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -268,9 +302,192 @@ const SkylinePreviewOverlay: React.FC = () => {
     return () => window.removeEventListener('skylinePreviewToggled', handler);
   }, []);
 
+  const navigate = useNavigate();
+
   // ── data state ────────────────────────────────────────────────────────
   const [character, setCharacter] = useState<CharThumb | null>(null);
+  /** ID of the currently active skyline character (kept in sync with poll). */
+  const [activeCharId, setActiveCharId] = useState<string | null>(null);
   const [items, setItems] = useState<SkylineItem[]>([]);
+
+  // ── menu / entity-viewer state ────────────────────────────────────────
+  const [charMenuAnchor, setCharMenuAnchor] = useState<HTMLElement | null>(null);
+  const [itemMenuAnchor, setItemMenuAnchor] = useState<HTMLElement | null>(null);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<SkylineItem | null>(null);
+  const [turnMenuAnchor, setTurnMenuAnchor] = useState<HTMLElement | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerType, setViewerType] = useState<string | null>(null);
+  const [viewerId, setViewerId] = useState<string | null>(null);
+  /**
+   * Maps encounter participant IDs → campaign monster IDs.
+   * Populated by poll(). Used to resolve the correct entityId for bestiary
+   * enemies when opening WorldpediaEntityViewer (participant IDs ≠ monster IDs).
+   */
+  const [monsterMapByParticipantId, setMonsterMapByParticipantId] = useState<Record<string, string>>({});
+
+  /** Opens the Worldpedia-style entity viewer dialog. */
+  const openViewer = (type: string, id: string) => {
+    setViewerType(type);
+    setViewerId(id);
+    setViewerOpen(true);
+  };
+
+  /** Removes the active skyline character (sets it to null) via silentApi. */
+  const handleRemoveCharFromSkyline = async () => {
+    setCharMenuAnchor(null);
+    if (!campaignId) return;
+    try {
+      await silentApi.patch(`/campaigns/${campaignId}/active-skyline-character`, { characterId: null });
+      setCharacter(null);
+      setActiveCharId(null);
+      try { localStorage.setItem('app.skyline.activeCharacterUpdated', JSON.stringify({ campaignId, at: Date.now() })); } catch {}
+      try { new BroadcastChannel('campaign-sync').postMessage({ type: 'activeSkylineChanged', campaignId }); } catch {}
+    } catch {}
+  };
+
+  /** Removes a skyline shop item by ID via silentApi. */
+  const handleRemoveSkylineItem = async (itemId: string) => {
+    setItemMenuAnchor(null);
+    setSelectedMenuItem(null);
+    if (!campaignId) return;
+    try {
+      await silentApi.delete(`/campaigns/skyline-items/${itemId}`);
+      setItems((prev) => prev.filter((i) => i.id !== itemId));
+      try { localStorage.setItem('app.skyline.itemsUpdated', JSON.stringify({ campaignId, at: Date.now() })); } catch {}
+      try { new BroadcastChannel('campaign-sync').postMessage({ type: 'skylineItemsChanged', campaignId }); } catch {}
+    } catch {}
+  };
+
+  /**
+   * Applies a turn navigation action directly, without relying on CombatView
+   * being mounted. Reads the current state from localStorage,
+   * computes the next/previous participant, updates both localStorage and the
+   * server, and signals CombatView via BroadcastChannel so it can sync its
+   * own useTurnOrder state if it happens to be open.
+   *
+   * @param action - 'next' to advance a turn, 'previous' to go back.
+   */
+  const applyTurnNav = useCallback((action: 'next' | 'previous') => {
+    setTurnMenuAnchor(null);
+    if (!campaignId) return;
+    try {
+      const raw = localStorage.getItem('app.skyline.initiativeStrip');
+      if (!raw) return;
+      const stored = JSON.parse(raw);
+      if (stored?.campaignId !== campaignId) return;
+
+      const items: any[] = Array.isArray(stored.items) ? stored.items : [];
+      if (items.length === 0) return;
+
+      const totalParticipants = items.length;
+      // stored.turnIndex is the ABSOLUTE index (0..N-1) of the current
+      // participant in the original (sorted-by-initiative) order.
+      const currentAbsIdx: number = typeof stored.turnIndex === 'number' ? stored.turnIndex : 0;
+      const currentRound: number  = typeof stored.round === 'number'     ? stored.round     : 1;
+      const encounterId: string | null = stored.encounterId ?? null;
+
+      let newAbsIdx: number;
+      let newRound: number;
+      if (action === 'next') {
+        if (currentAbsIdx + 1 >= totalParticipants) {
+          newAbsIdx = 0;
+          newRound  = currentRound + 1;
+        } else {
+          newAbsIdx = currentAbsIdx + 1;
+          newRound  = currentRound;
+        }
+      } else {
+        if (currentAbsIdx - 1 < 0) {
+          newAbsIdx = totalParticipants - 1;
+          newRound  = Math.max(1, currentRound - 1);
+        } else {
+          newAbsIdx = currentAbsIdx - 1;
+          newRound  = currentRound;
+        }
+      }
+
+      // Items are already rotated so items[0] = absolute index currentAbsIdx.
+      // items[k] = absolute index (currentAbsIdx + k) % totalParticipants.
+      const k = (newAbsIdx - currentAbsIdx + totalParticipants) % totalParticipants;
+      const newCurrentItem = items[k];
+      if (!newCurrentItem) return;
+      const newCurrentTurnId: string = newCurrentItem.id;
+
+      // Rotate the full items array so the new current participant is first.
+      const newItems: any[] = [...items.slice(k), ...items.slice(0, k)];
+
+      // ── 1. Immediately update the overlay thumbnail ───────────────────────
+      setCurrentTurnParticipant({
+        id:           newCurrentTurnId,
+        name:         newCurrentItem.name         || '',
+        imageUrl:     newCurrentItem.imageUrl      ?? null,
+        fullImageUrl: newCurrentItem.fullImageUrl  ?? null,
+        size:         newCurrentItem.size          ?? null,
+        role:         newCurrentItem.role,
+        kind:         newCurrentItem.kind,
+      });
+
+      // ── 2. Update localStorage ─────────────────────────────────────────────
+      const newStrip = {
+        ...stored,
+        currentTurnId: newCurrentTurnId,
+        turnIndex:     newAbsIdx,
+        round:         newRound,
+        items:         newItems,
+        at:            Date.now(),
+      };
+      try { localStorage.setItem('app.skyline.initiativeStrip', JSON.stringify(newStrip)); } catch {}
+
+      // Also update turn.state so useTurnOrder re-hydrates correctly when
+      // CombatView mounts (or remounts) later.
+      if (encounterId) {
+        try {
+          const turnKey   = `turn.state:${campaignId}:${encounterId}`;
+          const turnState = { round: newRound, index: newAbsIdx, currentId: newCurrentTurnId };
+          localStorage.setItem(turnKey, JSON.stringify(turnState));
+        } catch {}
+      }
+
+      // ── 3. Persist to server ───────────────────────────────────────────────
+      const serverItems = newItems
+        .slice(0, 10)
+        .map(({ id, name, imageUrl, role, kind }: any) => ({ id, name, imageUrl, role, kind }));
+      silentApi.patch(`/campaigns/${campaignId}/battle-state`, {
+        started:      true,
+        encounterId,
+        round:        newRound,
+        turnIndex:    newAbsIdx,
+        currentTurnId: newCurrentTurnId,
+        items:        serverItems,
+      }).catch(() => {});
+
+      // ── 4. Broadcast to Skyline projection window ──────────────────────────
+      try {
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('campaign-sync');
+          bc.postMessage({ ...newStrip, type: 'initiativeStripUpdated' });
+          bc.close();
+        }
+      } catch {}
+
+      // ── 5. Signal CombatView to sync its useTurnOrder state ───────────────
+      // CombatView listens for 'skylineTurnNavApplied' and calls setIndex +
+      // setRound from useTurnOrder so its own state stays in sync when mounted.
+      try {
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('campaign-sync');
+          bc.postMessage({
+            type:            'skylineTurnNavApplied',
+            campaignId,
+            newTurnIndex:    newAbsIdx,
+            newRound,
+            newCurrentTurnId,
+          });
+          bc.close();
+        }
+      } catch {}
+    } catch {}
+  }, [campaignId]);
   const [currentTurnParticipant, setCurrentTurnParticipant] = useState<BattleStateItem | null>(null);
   /** Object URL created from a blob fetch of the turn image (auth-safe, revoked on change). */
   const [turnImageObjectUrl, setTurnImageObjectUrl] = useState<string | null>(null);
@@ -341,12 +558,18 @@ const SkylinePreviewOverlay: React.FC = () => {
     if (!campaignId || isFetching.current) return;
     isFetching.current = true;
     try {
-      // Run all three calls in parallel; each is independently protected
-      const [charId, skyItems, battleState] = await Promise.allSettled([
+      // Run all four calls in parallel; each is independently protected
+      const [charId, skyItems, battleState, monsterMap] = await Promise.allSettled([
         silentGetActiveCharId(campaignId),
         silentGetSkylineItems(campaignId),
         silentGetBattleState(campaignId),
+        silentGetParticipantMonsterMap(campaignId),
       ]);
+
+      // Update participant→monster ID map (needed for "Ver ficha" of bestiary enemies)
+      if (monsterMap.status === 'fulfilled') {
+        setMonsterMapByParticipantId(monsterMap.value);
+      }
 
       // Update items only on success
       if (skyItems.status === 'fulfilled') {
@@ -355,6 +578,7 @@ const SkylinePreviewOverlay: React.FC = () => {
 
       // Update character only on success
       if (charId.status === 'fulfilled' && charId.value) {
+        setActiveCharId(charId.value);
         try {
           const ch = await silentGetCharacter(charId.value);
           setCharacter(ch);
@@ -362,6 +586,7 @@ const SkylinePreviewOverlay: React.FC = () => {
           setCharacter(null);
         }
       } else if (charId.status === 'fulfilled' && !charId.value) {
+        setActiveCharId(null);
         setCharacter(null);
       }
 
@@ -379,30 +604,56 @@ const SkylinePreviewOverlay: React.FC = () => {
             // Same turn and we already have a valid image — don't disturb it.
             if (prev?.id === turnId && prev?.fullImageUrl) return prev;
 
-            // Try to resolve fullImageUrl from the latest localStorage BC snapshot.
+            // Before trusting the server's turnId, check whether localStorage
+            // knows of a DIFFERENT (more recent) current turn.
+            // useSkylineInitiativeSync writes to localStorage with the same 250 ms
+            // debounce it uses to persist to the server, but localStorage is local
+            // and always ahead of the server round-trip. If they disagree, the
+            // server is stale — keep whatever BC already set (prev) and wait for
+            // the next poll when the server has caught up.
+            try {
+              const raw = localStorage.getItem('app.skyline.initiativeStrip');
+              if (raw) {
+                const stored = JSON.parse(raw);
+                if (
+                  stored?.campaignId === campaignId &&
+                  stored?.currentTurnId &&
+                  stored.currentTurnId !== turnId
+                ) {
+                  // localStorage is ahead of the server — don't let the stale
+                  // server response overwrite the BC-set state.
+                  return prev;
+                }
+              }
+            } catch {}
+
+            // Server and localStorage agree on the turn. Resolve the image.
             let fullImageUrl: string | null = null;
             let name = bs.items.find(it => it.id === turnId)?.name ?? null;
             let role: 'ally' | 'foe' | undefined = (bs.items.find(it => it.id === turnId) as any)?.role;
+            let kind: 'character' | 'enemy' | undefined = (bs.items.find(it => it.id === turnId) as any)?.kind;
             try {
               const raw = localStorage.getItem('app.skyline.initiativeStrip');
               if (raw) {
                 const stored = JSON.parse(raw);
                 if (stored?.campaignId === campaignId) {
-                  const match = (stored.items as any[])?.find((x: any) => x.id === turnId);
-                  if (match?.fullImageUrl) {
-                    fullImageUrl = match.fullImageUrl;
-                    if (match.name) name = match.name;
-                    if (match.role) role = match.role;
+                  // Only use the FIRST item (the current-turn participant) to avoid
+                  // accidentally matching a non-current participant with the same id.
+                  const firstItem = (stored.items as any[])?.[0];
+                  if (firstItem?.id === turnId && firstItem?.fullImageUrl) {
+                    fullImageUrl = firstItem.fullImageUrl;
+                    if (firstItem.name) name = firstItem.name;
+                    if (firstItem.role) role = firstItem.role;
+                    if (firstItem.kind) kind = firstItem.kind;
                   }
                 }
               }
             } catch {}
 
             if (!fullImageUrl) {
-              // Battle state changed but no BC data yet; clear so we don't show stale image.
-              return null;
+              return prev?.fullImageUrl ? prev : null;
             }
-            return { id: turnId, name: name || '', imageUrl: null, fullImageUrl, size: null, role };
+            return { id: turnId, name: name || '', imageUrl: null, fullImageUrl, size: null, role, kind };
           });
         } else {
           setCurrentTurnParticipant(null);
@@ -480,6 +731,7 @@ const SkylinePreviewOverlay: React.FC = () => {
                   fullImageUrl: x.fullImageUrl ?? null,
                   size: x.size ?? null,
                   role: x.role,
+                  kind: x.kind ?? undefined,
                 }))
               : [];
 
@@ -489,16 +741,16 @@ const SkylinePreviewOverlay: React.FC = () => {
                 // BC has rich image data (initiative strip enabled) — use it directly.
                 setCurrentTurnParticipant(participant);
               } else {
-                // BC has no image data: initiative strip is disabled (showInitiativeStrip=false)
-                // or the participant wasn't found in the empty items list.
-                // Preserve the existing participant if it's the same turn so the image
-                // doesn't flicker off. Poll the server to restore the image if the turn
-                // actually changed or we have no valid participant yet.
+                // BC has no image data: initiative strip is disabled or
+                // the participant wasn't found in the empty items list.
+                // Preserve the existing participant if it's the same turn;
+                // the 3-second poll interval will hydrate it otherwise.
                 setCurrentTurnParticipant((prev) => {
                   if (prev?.id === currentTurnId && prev?.fullImageUrl) return prev;
                   return null;
                 });
-                poll(); // fetch fullImageUrl from server-persisted battle state
+                // ⚠ Do NOT call poll() here — it races with the 250 ms server-persist
+                // debounce in useSkylineInitiativeSync and can restore the OLD turn.
               }
             } else {
               setCurrentTurnParticipant(null);
@@ -538,6 +790,7 @@ const SkylinePreviewOverlay: React.FC = () => {
             fullImageUrl: x.fullImageUrl ?? null,
             size: x.size ?? null,
             role: x.role,
+            kind: x.kind ?? undefined,
           }))
         : [];
       const participant = bcItems.find(it => it.id === currentTurnId) ?? null;
@@ -567,143 +820,235 @@ const SkylinePreviewOverlay: React.FC = () => {
 
   if (!hasCharacter && !hasItems && !hasTurnImage) return null;
 
+  /** WorldpediaEntityViewer type for the current turn participant. */
+  const turnEntityType: string =
+    currentTurnParticipant?.kind === 'character' ? 'character' : 'monster';
+
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        bottom: 16,
-        right: 16,
-        zIndex: 1400,
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        gap: 1,
-        pointerEvents: 'none',
-      }}
-    >
-      {/* ── Active skyline character ─────────────────────────────────── */}
-      {hasCharacter && (
-        <Tooltip title={character!.name || 'Personaje activo'} placement="top">
-          <Box
-            sx={{
-              width: THUMB,
-              height: THUMB,
-              borderRadius: 2,
-              overflow: 'hidden',
-              border: '2px solid',
-              borderColor: 'primary.main',
-              bgcolor: 'background.paper',
-              boxShadow: 4,
-              pointerEvents: 'all',
-              flexShrink: 0,
-            }}
-          >
-            {charImageSrc ? (
-              // Plain <img> with token embedded in URL – bypasses the global
-              // api interceptor entirely so no risk of triggering logout
+    <>
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          zIndex: 1400,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          gap: 1,
+          pointerEvents: 'none',
+        }}
+      >
+        {/* ── Active skyline character ───────────────────────────────── */}
+        {hasCharacter && (
+          <Tooltip title={character!.name || 'Personaje activo'} placement="top">
+            <Box
+              onClick={(e) => setCharMenuAnchor(e.currentTarget)}
+              sx={{
+                width: THUMB,
+                height: THUMB,
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: '2px solid',
+                borderColor: 'primary.main',
+                bgcolor: 'background.paper',
+                boxShadow: 4,
+                pointerEvents: 'all',
+                flexShrink: 0,
+                cursor: 'pointer',
+              }}
+            >
+              {charImageSrc ? (
+                <img
+                  src={buildCharImageUrl(charImageSrc)}
+                  alt={character!.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              ) : (
+                <Avatar sx={{ width: '100%', height: '100%', borderRadius: 0, bgcolor: charBg, fontSize: 22 }}>
+                  {charInitials}
+                </Avatar>
+              )}
+            </Box>
+          </Tooltip>
+        )}
+
+        {/* ── Skyline shop-item overlays ─────────────────────────────── */}
+        {items.map((item) => (
+          <Tooltip key={item.id} title={item.label || 'Ítem de tienda'} placement="top">
+            <Box
+              onClick={(e) => { setSelectedMenuItem(item); setItemMenuAnchor(e.currentTarget); }}
+              sx={{
+                width: THUMB,
+                height: THUMB,
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: '2px solid',
+                borderColor: 'secondary.main',
+                bgcolor: 'background.paper',
+                boxShadow: 4,
+                pointerEvents: 'all',
+                flexShrink: 0,
+                cursor: 'pointer',
+              }}
+            >
               <img
-                src={buildCharImageUrl(charImageSrc)}
-                alt={character!.name}
+                src={buildCellImageUrl(item.cellId)}
+                alt={item.label || 'Ítem'}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
-            ) : (
-              <Avatar
-                sx={{ width: '100%', height: '100%', borderRadius: 0, bgcolor: charBg, fontSize: 22 }}
-              >
-                {charInitials}
-              </Avatar>
-            )}
-          </Box>
-        </Tooltip>
-      )}
+            </Box>
+          </Tooltip>
+        ))}
 
-      {/* ── Skyline shop-item overlays ───────────────────────────────── */}
-      {items.map((item) => (
-        <Tooltip key={item.id} title={item.label || 'Ítem de tienda'} placement="top">
-          <Box
-            sx={{
-              width: THUMB,
-              height: THUMB,
-              borderRadius: 2,
-              overflow: 'hidden',
-              border: '2px solid',
-              borderColor: 'secondary.main',
-              bgcolor: 'background.paper',
-              boxShadow: 4,
-              pointerEvents: 'all',
-              flexShrink: 0,
-            }}
-          >
-            {/* Plain <img> with token embedded – same isolation strategy */}
-            <img
-              src={buildCellImageUrl(item.cellId)}
-              alt={item.label || 'Ítem'}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-          </Box>
-        </Tooltip>
-      ))}
-
-      {/* ── Current combat turn image ────────────────────────────────── */}
-      {hasTurnImage && currentTurnParticipant && (
-        <Tooltip
-          title={`Turno: ${currentTurnParticipant.name || 'Combatiente'}`}
-          placement="top"
-        >
-          <Box
-            sx={{
-              width: THUMB,
-              height: THUMB,
-              borderRadius: 2,
-              overflow: 'hidden',
-              border: '2px solid',
-              // Amber for allies, red for foes, orange when role unknown
-              borderColor:
-                currentTurnParticipant.role === 'ally'
-                  ? 'success.main'
-                  : currentTurnParticipant.role === 'foe'
-                    ? 'error.main'
-                    : 'warning.main',
-              bgcolor: 'background.paper',
-              boxShadow: 4,
-              pointerEvents: 'all',
-              flexShrink: 0,
-              position: 'relative',
-            }}
-          >
-            {/* turnImageObjectUrl is already auth-resolved (blob or data URI) */}
-            <img
-              src={turnImageObjectUrl!}
-              alt={currentTurnParticipant.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-            {/* Small ⚔ badge to distinguish from character/item thumbnails */}
+        {/* ── Current combat turn image ──────────────────────────────── */}
+        {hasTurnImage && currentTurnParticipant && (
+          <Tooltip title={`Turno: ${currentTurnParticipant.name || 'Combatiente'}`} placement="top">
             <Box
+              onClick={(e) => setTurnMenuAnchor(e.currentTarget)}
               sx={{
-                position: 'absolute',
-                bottom: 2,
-                right: 2,
-                fontSize: 10,
-                lineHeight: 1,
-                bgcolor: 'rgba(0,0,0,0.55)',
-                borderRadius: '3px',
-                px: '3px',
-                py: '1px',
-                color: 'white',
-                userSelect: 'none',
+                width: THUMB,
+                height: THUMB,
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: '2px solid',
+                borderColor:
+                  currentTurnParticipant.role === 'ally'
+                    ? 'success.main'
+                    : currentTurnParticipant.role === 'foe'
+                      ? 'error.main'
+                      : 'warning.main',
+                bgcolor: 'background.paper',
+                boxShadow: 4,
+                pointerEvents: 'all',
+                flexShrink: 0,
+                cursor: 'pointer',
+                position: 'relative',
               }}
             >
-              ⚔
+              <img
+                src={turnImageObjectUrl!}
+                alt={currentTurnParticipant.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 2,
+                  right: 2,
+                  fontSize: 10,
+                  lineHeight: 1,
+                  bgcolor: 'rgba(0,0,0,0.55)',
+                  borderRadius: '3px',
+                  px: '3px',
+                  py: '1px',
+                  color: 'white',
+                  userSelect: 'none',
+                }}
+              >
+                ⚔
+              </Box>
             </Box>
-          </Box>
-        </Tooltip>
-      )}
-    </Box>
-  );
+          </Tooltip>
+        )}
+      </Box>
+
+      {/* ── Character context menu ─────────────────────────────────────── */}
+      <Menu
+        anchorEl={charMenuAnchor}
+        open={!!charMenuAnchor}
+        onClose={() => setCharMenuAnchor(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <MenuItem onClick={() => { setCharMenuAnchor(null); navigate('/characters/' + activeCharId); }}>
+          <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Ir al personaje</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => { setCharMenuAnchor(null); openViewer('character', activeCharId!); }}>
+          <ListItemIcon><InfoIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Ver ficha completa</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleRemoveCharFromSkyline} sx={{ color: 'warning.main' }}>
+          <ListItemIcon><LayersClearIcon fontSize="small" color="warning" /></ListItemIcon>
+          <ListItemText>Quitar de Skyline</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* ── Shop-item context menu ─────────────────────────────────────── */}
+      <Menu
+        anchorEl={itemMenuAnchor}
+        open={!!itemMenuAnchor}
+        onClose={() => setItemMenuAnchor(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <MenuItem onClick={() => { setItemMenuAnchor(null); navigate('/shops'); }}>
+          <ListItemIcon><StorefrontIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Ir a tiendas</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem
+          onClick={() => selectedMenuItem && handleRemoveSkylineItem(selectedMenuItem.id)}
+          sx={{ color: 'warning.main' }}
+        >
+          <ListItemIcon><LayersClearIcon fontSize="small" color="warning" /></ListItemIcon>
+          <ListItemText>Quitar de Skyline</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* ── Combat turn context menu ───────────────────────────────────── */}
+      <Menu
+        anchorEl={turnMenuAnchor}
+        open={!!turnMenuAnchor}
+        onClose={() => setTurnMenuAnchor(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <MenuItem onClick={() => { setTurnMenuAnchor(null); navigate('/combat'); }}>
+          <ListItemIcon><SportsKabaddiIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Ir a combate</ListItemText>
+        </MenuItem>
+        {currentTurnParticipant && (
+          <MenuItem onClick={() => {
+            setTurnMenuAnchor(null);
+            // For bestiary enemies the participant ID ≠ campaign monster ID.
+            // Resolve the correct ID from the map fetched during poll().
+            const resolvedId =
+              turnEntityType === 'monster'
+                ? (monsterMapByParticipantId[currentTurnParticipant.id] || currentTurnParticipant.id)
+                : currentTurnParticipant.id;
+            openViewer(turnEntityType, resolvedId);
+          }}>
+            <ListItemIcon><InfoIcon fontSize="small" /></ListItemIcon>
+            <ListItemText>Ver ficha del turno</ListItemText>
+          </MenuItem>
+        )}
+        <Divider />
+        <MenuItem onClick={() => applyTurnNav('previous')}>
+          <ListItemIcon><SkipPreviousIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Turno anterior</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => applyTurnNav('next')}>
+          <ListItemIcon><SkipNextIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Turno siguiente</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* ── Worldpedia-style entity viewer ─────────────────────────────── */}
+      <WorldpediaEntityViewer
+        open={viewerOpen}
+        entityType={viewerType}
+        entityId={viewerId}
+        campaignId={campaignId}
+        onClose={() => setViewerOpen(false)}
+        dialogSx={{ zIndex: 1500 }}
+      />
+    </>  );
 };
 
 export default SkylinePreviewOverlay;
-

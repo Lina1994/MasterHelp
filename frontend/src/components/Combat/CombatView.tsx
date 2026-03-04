@@ -140,7 +140,7 @@ export default function CombatView({
     const cid = campaign?.id;
     return cid && activeEncounterId ? `${cid}:${activeEncounterId}` : null;
   }, [campaign?.id, activeEncounterId]);
-  const { round, index: turnIndex, currentId: currentTurnId, hydrated: turnHydrated, nextTurn: nextTurnHook, previousTurn: previousTurnHook, resetToStart } = useTurnOrder(sessionKey, orderedParticipants);
+  const { round, index: turnIndex, currentId: currentTurnId, hydrated: turnHydrated, nextTurn: nextTurnHook, previousTurn: previousTurnHook, resetToStart, setIndex: setTurnIndex, setRound: setTurnRound } = useTurnOrder(sessionKey, orderedParticipants);
 
   // Notas de combate por participante
   const { getNote, upsertNoteForParticipant, updateNoteForParticipant, removeNoteForParticipant, clearAllNotes, incrementForParticipant, advanceTurnForParticipant } = useCombatNotes(campaign?.id, activeEncounterId);
@@ -892,6 +892,45 @@ export default function CombatView({
   }, [battleStarted, currentTurnId, advanceTurnForParticipant]);
 
   
+
+  // ── Remote turn navigation (from SkylinePreviewOverlay) ────────────────────
+  // Listens for 'turnNavRequest' BC messages posted by the overlay's prev/next
+  // turn buttons, so the DM can advance turns without opening CombatPage.
+  // We keep the hook functions in refs so the BC effect never needs to
+  // re-subscribe when the (non-memoised) useTurnOrder functions change reference.
+  const nextTurnRef = React.useRef(nextTurnHook);
+  const prevTurnRef = React.useRef(previousTurnHook);
+  useEffect(() => { nextTurnRef.current = nextTurnHook; });
+  useEffect(() => { prevTurnRef.current = previousTurnHook; });
+
+  useEffect(() => {
+    const cid = campaign?.id;
+    if (!cid) return;
+    let bc: BroadcastChannel | null = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        bc = new BroadcastChannel('campaign-sync');
+        bc.onmessage = (e: MessageEvent) => {
+          const data = e?.data;
+          if (data?.type === 'turnNavRequest' && data?.campaignId === cid) {
+            if (data.action === 'next') nextTurnRef.current();
+            else if (data.action === 'previous') prevTurnRef.current();
+          }
+          // Sent by SkylinePreviewOverlay when the DM uses prev/next from any page.
+          // We sync useTurnOrder state so CombatView stays in step if it is open.
+          // setTurnIndex / setTurnRound are React useState setters — always stable.
+          if (data?.type === 'skylineTurnNavApplied' && data?.campaignId === cid) {
+            const { newTurnIndex, newRound } = data;
+            if (typeof newTurnIndex === 'number' && typeof newRound === 'number') {
+              setTurnIndex(newTurnIndex);
+              setTurnRound(newRound);
+            }
+          }
+        };
+      }
+    } catch {}
+    return () => { try { bc?.close(); } catch {} };
+  }, [campaign?.id]); // stable: only re-subscribe when campaign changes
 
   // Skyline sync (server persist + initiative strip broadcast)
   useSkylineInitiativeSync({

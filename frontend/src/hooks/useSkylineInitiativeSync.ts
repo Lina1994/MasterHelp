@@ -93,12 +93,13 @@ export function useSkylineInitiativeSync(params: SkylineSyncParams) {
           fullImageUrl,
           size,
           role: p.role,
+          kind: p.kind,
         };
       });
       // Strip fullImageUrl (base64 data URIs, can be >1 MB each) before
       // sending to the server – images only travel via BroadcastChannel.
       // The server only needs lightweight fields for reconnection.
-      const serverItems = items.map(({ id, name, imageUrl, role }) => ({ id, name, imageUrl, role }));
+      const serverItems = items.map(({ id, name, imageUrl, role, kind }) => ({ id, name, imageUrl, role, kind }));
       const payload: any = {
         started: !!battleStarted,
         encounterId: encounterId || null,
@@ -120,7 +121,6 @@ export function useSkylineInitiativeSync(params: SkylineSyncParams) {
     const cid = campaignId ?? undefined;
     if (!cid) return;
     const enabled = showInitiativeStrip && battleStarted;
-    const maxItems = 10;
     const turnIdx = Math.max(0, Math.min(orderedParticipants.length - 1, turnIndex));
     const orderedByTurn = enabled ? [...orderedParticipants.slice(turnIdx), ...orderedParticipants.slice(0, turnIdx)] : [];
     const payload = {
@@ -129,7 +129,14 @@ export function useSkylineInitiativeSync(params: SkylineSyncParams) {
       battleStarted,
       enabled: showInitiativeStrip,
       currentTurnId: currentTurnId || null,
-      items: orderedByTurn.slice(0, maxItems).map((p) => {
+      // Navigation metadata — stored in localStorage so SkylinePreviewOverlay can
+      // compute next/previous turn without CombatView being mounted.
+      round,
+      turnIndex: turnIdx,
+      encounterId: encounterId || null,
+      // ALL participants (no cap) so the overlay can do full circular navigation.
+      // fullImageUrl values (base64) only go to localStorage, NOT to the server.
+      items: orderedByTurn.map((p) => {
         let imageUrl: string | null = null;
         let fullImageUrl: string | null = null;
         let size: string | null = null;
@@ -168,6 +175,7 @@ export function useSkylineInitiativeSync(params: SkylineSyncParams) {
           fullImageUrl,
           size,
           role: p.role,
+          kind: p.kind,
         };
       }),
       at: Date.now(),
