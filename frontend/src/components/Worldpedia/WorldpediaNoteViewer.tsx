@@ -13,6 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useTranslation } from 'react-i18next';
 import { getNote, type WorldpediaNoteFull } from '../../api/worldpedia/worldpediaApi';
+import { loadAutoLinkRules, applyAutoLinks } from '../../utils/worldpediaAutoLinks';
 
 interface Props {
   /** Whether the drawer is open. */
@@ -224,7 +225,7 @@ export default function WorldpediaNoteViewer({
               '& a': { color: 'primary.main', cursor: 'pointer', textDecoration: 'underline' },
               '& img': { maxWidth: '100%', borderRadius: 1 },
             }}
-            dangerouslySetInnerHTML={{ __html: note.html ?? '' }}
+            dangerouslySetInnerHTML={{ __html: applyAutoLinks(note.html ?? '', loadAutoLinkRules(campaignId)) }}
           />
         )}
       </DialogContent>

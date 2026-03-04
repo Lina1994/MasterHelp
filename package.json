@@ -51,7 +51,7 @@
       {
         "from": "backend/data",
         "to": "backend/data",
-        "filter": ["**/*"]
+        "filter": ["**/*", "!**/*.db", "!**/*.db-shm", "!**/*.db-wal"]
       },
       {
         "from": "backend/node_modules",

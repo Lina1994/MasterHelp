@@ -22,7 +22,8 @@ import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import { useTranslation } from 'react-i18next';
 import { getCharacter, type CharacterPayload } from '../../api/characters';
 import { getCampaignMonster, type CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
-import { getCampaignSpell, type CampaignSpellDetail } from '../../api/spells/spellsApi';
+import { listCampaignSpells, getCampaignSpell, type CampaignSpellDetail } from '../../api/spells/spellsApi';
+import { SpellInfoRow } from '../characters/charSheetShared';
 import { listMaps, getMapImageUrlSized, getMapSkylineUrlSized, hasMapSkylineForTod, type MapItemDto } from '../../api/maps';
 import { getShop, type Shop } from '../../api/shops';
 import { listSongsForCampaign, listPlaylists, type SongLite, type PlaylistLite } from '../../api/soundtrack';
@@ -279,6 +280,38 @@ export default function WorldpediaEntityViewer({
 
   const [settingSkyline, setSettingSkyline] = useState(false);
 
+  /* ── Spell detail dialog ──────────────────────────────────────── */
+
+  const [spellDialogOpen, setSpellDialogOpen] = useState(false);
+  const [spellDialogLoading, setSpellDialogLoading] = useState(false);
+  const [spellDialogData, setSpellDialogData] = useState<CampaignSpellDetail | null>(null);
+  const [spellDialogName, setSpellDialogName] = useState('');
+
+  /**
+   * Opens the spell detail sub-dialog. Searches the campaign catalogue by
+   * exact name match; shows a "not in catalogue" message if not found.
+   *
+   * @param spellName - The display name of the spell to look up.
+   */
+  const handleSpellClick = useCallback(async (spellName: string) => {
+    setSpellDialogName(spellName);
+    setSpellDialogData(null);
+    setSpellDialogOpen(true);
+    setSpellDialogLoading(true);
+    try {
+      const searchLang: 'en' | 'es' = lang;
+      const res = await listCampaignSpells(campaignId, { q: spellName, pageSize: 50 }, searchLang);
+      const match = (res.items ?? []).find((s: { name: string }) => s.name.toLowerCase() === spellName.toLowerCase());
+      if (!match) return;
+      const detail = await getCampaignSpell(campaignId, match.id, searchLang);
+      setSpellDialogData(detail);
+    } catch {
+      setSpellDialogData(null);
+    } finally {
+      setSpellDialogLoading(false);
+    }
+  }, [campaignId, lang]);
+
   /** True when this character is the one currently projected on Skyline. */
   const isActiveInSkyline =
     entityType === 'character' &&
@@ -415,13 +448,21 @@ export default function WorldpediaEntityViewer({
                 {ch.cantrips && ch.cantrips.length > 0 && (
                   <Box sx={{ mb: 0.5 }}>
                     <Typography variant="caption" sx={{ fontWeight: 700 }}>{t('cantrips', 'Trucos')}</Typography>
-                    <Typography variant="body2">{ch.cantrips.join(', ')}</Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={0.5} sx={{ mt: 0.25 }}>
+                      {ch.cantrips.map((c: string) => (
+                        <Chip key={c} size="small" label={c} onClick={() => handleSpellClick(c)} sx={{ cursor: 'pointer' }} />
+                      ))}
+                    </Stack>
                   </Box>
                 )}
                 {Object.entries(ch.spellsByLevel).sort(([a], [b]) => Number(a) - Number(b)).map(([lvl, spells]) => (
                   <Box key={lvl} sx={{ mb: 0.5 }}>
                     <Typography variant="caption" sx={{ fontWeight: 700 }}>{t('level', 'Nivel')} {lvl}</Typography>
-                    <Typography variant="body2">{spells.join(', ')}</Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={0.5} sx={{ mt: 0.25 }}>
+                      {(spells as string[]).map((s: string) => (
+                        <Chip key={`${lvl}-${s}`} size="small" label={s} onClick={() => handleSpellClick(s)} sx={{ cursor: 'pointer' }} />
+                      ))}
+                    </Stack>
                   </Box>
                 ))}
               </SheetSection>
@@ -658,6 +699,7 @@ export default function WorldpediaEntityViewer({
   /* ── Render ────────────────────────────────────────────────────── */
 
   return (
+    <>
     <Dialog
       open={open}
       onClose={onClose}
@@ -701,5 +743,60 @@ export default function WorldpediaEntityViewer({
         )}
       </DialogContent>
     </Dialog>
+
+    {/* ── Spell detail sub-dialog ──────────────────────────────────── */}
+    <Dialog
+      open={spellDialogOpen}
+      onClose={() => setSpellDialogOpen(false)}
+      maxWidth="sm"
+      fullWidth
+      sx={{ zIndex: 1700 }}
+    >
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>{spellDialogName}</Typography>
+        <IconButton onClick={() => setSpellDialogOpen(false)} size="small"><CloseIcon /></IconButton>
+      </DialogTitle>
+      <DialogContent dividers>
+        {spellDialogLoading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}><CircularProgress /></Box>
+        )}
+        {!spellDialogLoading && !spellDialogData && (
+          <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+            {t('spell_not_in_catalogue', 'Este conjuro no se encuentra en el catálogo de la campaña.')}
+          </Typography>
+        )}
+        {!spellDialogLoading && spellDialogData && (() => {
+          const sp = spellDialogData;
+          return (
+            <Stack spacing={0.5}>
+              <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1 }}>
+                <Chip size="small" label={`${t('spells_level', 'Nivel')} ${sp.level}`} />
+                {sp.school && <Chip size="small" variant="outlined" label={sp.school} />}
+                {sp.isConcentration && <Chip size="small" color="warning" label={t('concentration', 'Concentración')} />}
+                {sp.isRitual && <Chip size="small" color="info" label={t('ritual', 'Ritual')} />}
+              </Stack>
+              <Divider />
+              <SpellInfoRow label={t('casting_time', 'Tiempo de lanzamiento')} value={sp.castingTime} />
+              <SpellInfoRow label={t('range', 'Alcance')} value={sp.range} />
+              <SpellInfoRow label={t('components', 'Componentes')} value={sp.components} />
+              {sp.materials && <SpellInfoRow label={t('materials', 'Materiales')} value={sp.materials} />}
+              <SpellInfoRow label={t('duration', 'Duración')} value={sp.duration} />
+              {sp.areaOfEffect && <SpellInfoRow label={t('area_of_effect', 'Área de efecto')} value={sp.areaOfEffect} />}
+              {sp.savingThrow && <SpellInfoRow label={t('saving_throw', 'Tirada de salvación')} value={sp.savingThrow} />}
+              {sp.classes && sp.classes.length > 0 && (
+                <SpellInfoRow label={t('classes', 'Clases')} value={sp.classes.join(', ')} />
+              )}
+              {sp.description && (
+                <>
+                  <Divider sx={{ my: 1 }} />
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{sp.description}</Typography>
+                </>
+              )}
+            </Stack>
+          );
+        })()}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

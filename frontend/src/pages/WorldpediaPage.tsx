@@ -176,6 +176,7 @@ export default function WorldpediaPage() {
     <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
       {/* Left panel: folder/note tree */}
       <WorldpediaSidebar
+        campaignId={campaignId}
         tree={tree}
         loading={treeLoading}
         selectedNoteId={selectedNoteId}

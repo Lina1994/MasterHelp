@@ -24,15 +24,15 @@ import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useTranslation } from 'react-i18next';
 import type { WorldpediaTree, WorldpediaNoteLight, WorldpediaFolderWithNotes } from '../../api/worldpedia/worldpediaApi';
 import type { ReorderItem } from '../../api/worldpedia/worldpediaApi';
 import WorldpediaFolderDialog from './WorldpediaFolderDialog';
 import WorldpediaMoveDialog from './WorldpediaMoveDialog';
-import WorldpediaImportExport from './WorldpediaImportExport';
 import WorldpediaSearchBar from './WorldpediaSearchBar';
+import WorldpediaAutoLinksDialog from './WorldpediaAutoLinksDialog';
 
 import {
   DndContext,
@@ -59,6 +59,8 @@ import { CSS } from '@dnd-kit/utilities';
 /* ═══════════════════════════ Types ═══════════════════════════════════ */
 
 interface Props {
+  /** Campaign ID used to scope the auto-links settings. */
+  campaignId: string;
   tree: WorldpediaTree | null;
   loading: boolean;
   selectedNoteId: string | null;
@@ -260,6 +262,7 @@ function FolderDropZone({ folderId }: { folderId: string }) {
  * and move notes between folders (or to root).
  */
 export default function WorldpediaSidebar({
+  campaignId,
   tree,
   loading,
   selectedNoteId,
@@ -294,6 +297,9 @@ export default function WorldpediaSidebar({
 
   // Local tree copy for optimistic reordering
   const [localTree, setLocalTree] = useState<WorldpediaTree | null>(null);
+
+  // Settings dialog
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Use the local tree (if set during drag) or the prop tree
   const effectiveTree = localTree ?? tree;
@@ -717,26 +723,28 @@ export default function WorldpediaSidebar({
   const sidebarContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: SIDEBAR_WIDTH }}>
       {/* Header actions */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, p: 1 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, flex: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {t('worldpedia', 'Worldpedia')}
         </Typography>
-        <Tooltip title={t('worldpedia_new_folder', 'New folder')}>
-          <IconButton size="small" onClick={() => { setEditingFolder(null); setFolderDialogOpen(true); }}>
-            <CreateNewFolderIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title={t('worldpedia_new_note', 'New note')}>
-          <IconButton size="small" onClick={() => setNewNoteFolderId(null)}>
-            <NoteAddIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        <WorldpediaImportExport onRefresh={onRefresh} />
-        <Tooltip title={t('loading', 'Refresh')}>
-          <IconButton size="small" onClick={() => void onRefresh()}>
-            <RefreshIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {/* All action icons grouped so they never get clipped by the sidebar boundary */}
+        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          <Tooltip title={t('worldpedia_new_folder', 'New folder')}>
+            <IconButton size="small" onClick={() => { setEditingFolder(null); setFolderDialogOpen(true); }}>
+              <CreateNewFolderIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('worldpedia_new_note', 'New note')}>
+            <IconButton size="small" onClick={() => setNewNoteFolderId(null)}>
+              <NoteAddIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('worldpedia_settings', 'Ajustes')}>
+            <IconButton size="small" onClick={() => setSettingsOpen(true)}>
+              <SettingsIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Search */}
@@ -830,6 +838,14 @@ export default function WorldpediaSidebar({
           }}
         />
       )}
+
+      {/* Settings dialog (gear icon) */}
+      <WorldpediaAutoLinksDialog
+        open={settingsOpen}
+        campaignId={campaignId}
+        onRefresh={onRefresh}
+        onClose={() => setSettingsOpen(false)}
+      />
     </Box>
   );
 

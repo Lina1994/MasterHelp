@@ -16,6 +16,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LinkIcon from '@mui/icons-material/Link';
 import { useTranslation } from 'react-i18next';
+import { loadAutoLinkRules, buildAutoLinkHref } from '../../utils/worldpediaAutoLinks';
 import { RichTextEditor } from '../common/RichTextEditor';
 import type { WorldpediaNoteFull, NoteLinkPayload } from '../../api/worldpedia/worldpediaApi';
 import WorldpediaLinkInserter from './WorldpediaLinkInserter';
@@ -64,6 +65,11 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+
+  /** Guard that prevents re-entrant auto-link passes when Quill fires onChange during formatText. */
+  const isApplyingAutoLinks = useRef(false);
+  /** Debounce timer for the auto-link pass. */
+  const autoLinkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
    * Defer mounting the heavy Quill editor by one animation‑frame so the
@@ -201,8 +207,85 @@ export default function WorldpediaNoteEditor({ note, loading, campaignId, onSave
 
   const handleHtmlChange = useCallback((value: string) => {
     htmlRef.current = value;
+    // If this change was triggered by our own formatText call, skip rescheduling
+    if (isApplyingAutoLinks.current) return;
     setDirty(true);
-  }, []);
+    if (autoLinkTimerRef.current) clearTimeout(autoLinkTimerRef.current);
+    autoLinkTimerRef.current = setTimeout(() => applyAutoLinksToEditor(), 600);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- applyAutoLinksToEditor is stable (closure over refs)
+
+  /**
+   * Scans the Quill document for auto-link keywords that are not yet linked
+   * and applies the `link` format inline. Also adds the corresponding rule
+   * payload to the footer links chip list (same as a manually inserted link).
+   *
+   * Called on a 600 ms debounce after every user keystroke so typing feels
+   * instant.
+   */
+  const applyAutoLinksToEditor = useCallback(() => {
+    if (isApplyingAutoLinks.current) return;
+    const editor = quillEditorRef.current?.getEditor();
+    if (!editor) return;
+
+    const rules = loadAutoLinkRules(campaignId);
+    if (rules.length === 0) return;
+
+    // Longest keyword first to avoid partial-match collisions
+    const sorted = [...rules].sort((a, b) => b.keyword.length - a.keyword.length);
+    const fullText = editor.getText();
+    const fullTextLower = fullText.toLowerCase();
+
+    // Save cursor so the user's caret stays in place
+    const savedSel = editor.getSelection();
+
+    const newLinks: NoteLinkPayload[] = [];
+    let anyFormatted = false;
+
+    isApplyingAutoLinks.current = true;
+    try {
+      for (const rule of sorted) {
+        const kwLower = rule.keyword.toLowerCase();
+        let searchFrom = 0;
+        while (true) {
+          const idx = fullTextLower.indexOf(kwLower, searchFrom);
+          if (idx === -1) break;
+          // Only apply if this range has no link format yet
+          const fmt = editor.getFormat(idx, rule.keyword.length);
+          if (!fmt.link) {
+            const href = buildAutoLinkHref(rule.link);
+            editor.formatText(idx, rule.keyword.length, 'link', href, 'api');
+            anyFormatted = true;
+            newLinks.push({ ...rule.link, label: rule.label || rule.keyword });
+          }
+          searchFrom = idx + rule.keyword.length;
+        }
+      }
+    } finally {
+      isApplyingAutoLinks.current = false;
+    }
+
+    // Restore caret
+    if (savedSel) editor.setSelection(savedSel.index, savedSel.length, 'silent');
+
+    if (anyFormatted) setDirty(true);
+
+    if (newLinks.length > 0) {
+      setLinks((prev) => {
+        const combined = [...prev];
+        for (const nl of newLinks) {
+          const exists = combined.some(
+            (l) =>
+              l.type === nl.type &&
+              l.targetEntityId === nl.targetEntityId &&
+              l.targetNoteId === nl.targetNoteId &&
+              l.targetUrl === nl.targetUrl,
+          );
+          if (!exists) combined.push(nl);
+        }
+        return combined;
+      });
+    }
+  }, [campaignId]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
