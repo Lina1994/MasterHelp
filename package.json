@@ -1,6 +1,6 @@
 {
   "name": "masterhelp-desktop",
-  "version": "1.0.0",
+  "version": "0.26.0305",
   "description": "Desktop application for MasterHelp",
   "main": "electron.js",
   "scripts": {
@@ -14,7 +14,8 @@
     "dist": "npm run build:all && electron-builder --win",
     "dist:mac": "npm run build:all && electron-builder --mac",
     "dist:all": "npm run build:all && electron-builder --win --mac",
-    "dist:dir": "npm run build:all && electron-builder --win --dir"
+    "dist:dir": "npm run build:all && electron-builder --win --dir",
+    "dist:publish": "npm run build:all && electron-builder --win --publish always"
   },
   "repository": {
     "type": "git",
