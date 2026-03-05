@@ -29,5 +29,18 @@ interface Window {
     appZoomOut?: () => void;
     /** Restablece el zoom al 100 %. */
     appZoomReset?: () => void;
+    // ── Auto-updater ───────────────────────────────────────────────────────
+    /** Comprueba si hay una nueva versión disponible. */
+    updaterCheck?: () => Promise<{ ok: boolean; error?: string }>;
+    /** Inicia la descarga de la actualización disponible. */
+    updaterDownload?: () => Promise<{ ok: boolean; error?: string }>;
+    /** Cierra e instala la actualización descargada. */
+    updaterInstall?: () => void;
+    onUpdaterChecking?: (cb: () => void) => () => void;
+    onUpdaterAvailable?: (cb: (info: { version: string; releaseDate?: string }) => void) => () => void;
+    onUpdaterNotAvailable?: (cb: (info: { version: string }) => void) => () => void;
+    onUpdaterProgress?: (cb: (progress: { percent: number; transferred: number; total: number; bytesPerSecond: number }) => void) => () => void;
+    onUpdaterDownloaded?: (cb: (info: { version: string }) => void) => () => void;
+    onUpdaterError?: (cb: (err: { message: string }) => void) => () => void;
   };
 }

@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import ThemeContext from '../ThemeContext';
 import SidebarSettings from '../components/SidebarSettings';
+import UpdateChecker from '../components/UpdateChecker';
 
 import { useState, useEffect } from 'react';
 import React from 'react';
@@ -258,6 +259,18 @@ const SettingsSection = () => {
           </AccordionSummary>
           <AccordionDetails>
             <SidebarSettings />
+          </AccordionDetails>
+        </Accordion>
+
+        {/* ── Actualizaciones ─────────────────────────────────── */}
+        <Accordion disableGutters elevation={0} sx={{ '&::before': { display: 'none' } }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              {t('updater_section_title', 'Actualizaciones')}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <UpdateChecker />
           </AccordionDetails>
         </Accordion>
 

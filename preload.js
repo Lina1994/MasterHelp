@@ -64,4 +64,48 @@ contextBridge.exposeInMainWorld('electronAPI', {
   appZoomOut: () => ipcRenderer.send('app:zoom-out'),
   /** Restablece el zoom al 100%. */
   appZoomReset: () => ipcRenderer.send('app:zoom-reset'),
+
+  // ── Auto-updater ─────────────────────────────────────────────────────────
+  /** Comprueba si hay una nueva versión disponible en GitHub Releases. */
+  updaterCheck: () => ipcRenderer.invoke('updater:check'),
+  /** Inicia la descarga de la actualización disponible. */
+  updaterDownload: () => ipcRenderer.invoke('updater:download'),
+  /** Cierra la app e instala la actualización descargada inmediatamente. */
+  updaterInstall: () => ipcRenderer.send('updater:install'),
+  /** Suscripción al evento "comprobando actualizaciones". */
+  onUpdaterChecking: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on('updater:checking', listener);
+    return () => ipcRenderer.removeListener('updater:checking', listener);
+  },
+  /** Suscripción al evento "actualización disponible". */
+  onUpdaterAvailable: (callback) => {
+    const listener = (_event, info) => callback(info);
+    ipcRenderer.on('updater:available', listener);
+    return () => ipcRenderer.removeListener('updater:available', listener);
+  },
+  /** Suscripción al evento "sin actualizaciones". */
+  onUpdaterNotAvailable: (callback) => {
+    const listener = (_event, info) => callback(info);
+    ipcRenderer.on('updater:not-available', listener);
+    return () => ipcRenderer.removeListener('updater:not-available', listener);
+  },
+  /** Suscripción al progreso de descarga. */
+  onUpdaterProgress: (callback) => {
+    const listener = (_event, progress) => callback(progress);
+    ipcRenderer.on('updater:progress', listener);
+    return () => ipcRenderer.removeListener('updater:progress', listener);
+  },
+  /** Suscripción al evento "descarga completada". */
+  onUpdaterDownloaded: (callback) => {
+    const listener = (_event, info) => callback(info);
+    ipcRenderer.on('updater:downloaded', listener);
+    return () => ipcRenderer.removeListener('updater:downloaded', listener);
+  },
+  /** Suscripción a errores del updater. */
+  onUpdaterError: (callback) => {
+    const listener = (_event, err) => callback(err);
+    ipcRenderer.on('updater:error', listener);
+    return () => ipcRenderer.removeListener('updater:error', listener);
+  },
 });

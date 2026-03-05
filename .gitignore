@@ -104,4 +104,9 @@ dist
 
 # Project-specific ignores
 /backend/data/dm_app.db
-/release/
+# Ignorar el contenido de release (binarios grandes) pero trackear los manifiestos
+# de actualización que electron-updater necesita leer de GitHub Releases.
+/release/**
+!/release/latest.yml
+!/release/latest-mac.yml
+!/release/latest-linux.yml

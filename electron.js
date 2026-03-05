@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const { spawn } = require('child_process');
+const { autoUpdater } = require('electron-updater');
 
 // Detectar si estamos empaquetados (producción) o en desarrollo.
 // app.isPackaged es true cuando la app se ejecuta desde un build de electron-builder.
@@ -388,6 +389,92 @@ app.whenReady().then(async () => {
       try { win.webContents.send('maps:projection-poke', payload); } catch {}
     }
   });
+
+  // ── Auto-updater ──────────────────────────────────────────────────────────
+  // Solo activo en builds empaquetados (producción). En dev se ignora para
+  // evitar llamadas a GitHub sin artefactos publicados.
+  if (!isDev) {
+    /**
+     * Reenvía un evento de actualización a la ventana principal.
+     * @param {string} channel - Canal IPC del renderer.
+     * @param {any} payload - Datos del evento.
+     */
+    const sendUpdate = (channel, payload) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(channel, payload);
+      }
+    };
+
+    // No descargar automáticamente: el usuario decide cuándo hacerlo.
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = true;
+
+    autoUpdater.on('checking-for-update', () => {
+      log('[updater] Comprobando actualizaciones...');
+      sendUpdate('updater:checking', null);
+    });
+
+    autoUpdater.on('update-available', (info) => {
+      log('[updater] Actualización disponible:', info.version);
+      sendUpdate('updater:available', { version: info.version, releaseDate: info.releaseDate });
+    });
+
+    autoUpdater.on('update-not-available', (info) => {
+      log('[updater] Sin actualizaciones. Versión actual:', info.version);
+      sendUpdate('updater:not-available', { version: info.version });
+    });
+
+    autoUpdater.on('download-progress', (progress) => {
+      log(`[updater] Descargando... ${Math.round(progress.percent)}%`);
+      sendUpdate('updater:progress', {
+        percent: progress.percent,
+        transferred: progress.transferred,
+        total: progress.total,
+        bytesPerSecond: progress.bytesPerSecond,
+      });
+    });
+
+    autoUpdater.on('update-downloaded', (info) => {
+      log('[updater] Descarga completada:', info.version);
+      sendUpdate('updater:downloaded', { version: info.version });
+    });
+
+    autoUpdater.on('error', (err) => {
+      log('[updater] Error:', err?.message ?? err);
+      sendUpdate('updater:error', { message: err?.message ?? String(err) });
+    });
+
+    /** Comproba si hay una nueva versión disponible en GitHub Releases. */
+    ipcMain.handle('updater:check', async () => {
+      try {
+        await autoUpdater.checkForUpdates();
+        return { ok: true };
+      } catch (err) {
+        return { ok: false, error: err?.message ?? String(err) };
+      }
+    });
+
+    /** Inicia la descarga de la actualización disponible. */
+    ipcMain.handle('updater:download', async () => {
+      try {
+        await autoUpdater.downloadUpdate();
+        return { ok: true };
+      } catch (err) {
+        return { ok: false, error: err?.message ?? String(err) };
+      }
+    });
+
+    /** Cierra la app e instala la actualización descargada. */
+    ipcMain.on('updater:install', () => {
+      autoUpdater.quitAndInstall(false, true);
+    });
+  } else {
+    // En desarrollo: devolver respuestas stub para no romper la UI.
+    ipcMain.handle('updater:check', async () => ({ ok: false, error: 'dev-mode' }));
+    ipcMain.handle('updater:download', async () => ({ ok: false, error: 'dev-mode' }));
+    ipcMain.on('updater:install', () => {});
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
