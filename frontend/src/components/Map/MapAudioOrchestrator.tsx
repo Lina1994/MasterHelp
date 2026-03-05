@@ -5,6 +5,7 @@ import { useTimeOfDay } from '../player/TimeOfDayContext';
 import { useGlobalPlayer } from '../player/GlobalPlayerContext';
 import { useSfxPlayer } from '../player/SfxPlayerContext';
 import { useSoundtrackMode } from '../../hooks/useSoundtrackMode';
+import { useStopSfxOnMapChange } from '../../hooks/useStopSfxOnMapChange';
 import { listMaps, MapItemDto } from '../../api/maps';
 import { listPlaylists, listSongsForCampaign, PlaylistLite, SongLite } from '../../api/soundtrack';
 import { api } from '../../apiBase';
@@ -29,17 +30,35 @@ const MapAudioOrchestrator: React.FC = () => {
   const { play, playQueue, current, isQueue } = useGlobalPlayer();
   const { stopAllSfx, playSfx } = useSfxPlayer() as any;
   const { mode: soundtrackMode } = useSoundtrackMode(campaignId);
+  const { stopSfxOnMapChange } = useStopSfxOnMapChange();
 
   const [maps, setMaps] = useState<MapItemDto[] | null>(null);
   const [playlists, setPlaylists] = useState<PlaylistLite[] | null>(null);
   const [songsIndex, setSongsIndex] = useState<Map<string, SongLite> | null>(null);
   const [presets, setPresets] = useState<Array<{ id: string; name: string; items: any[] }> | null>(null);
+  // Incrementing counter to force a maps re-fetch when a map is edited externally.
+  const [mapsFetchVersion, setMapsFetchVersion] = useState(0);
 
   const lastMusicRef = useRef<string | null>(null); // e.g., song:abc or playlist:def
   const lastPresetRef = useRef<string | null>(null);
   const applyingPresetRef = useRef<string | null>(null);
+  const prevMapIdRef = useRef<string | null>(null);
 
-  // Fetch maps for active campaign
+  // Listen for map edits broadcast by MapsPage so we can re-fetch with fresh musicConfig/sfxConfig.
+  useEffect(() => {
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel('campaign-sync');
+      bc.onmessage = (ev) => {
+        if (ev.data?.type === 'map-transform-updated') {
+          setMapsFetchVersion((v) => v + 1);
+        }
+      };
+    } catch { /* BroadcastChannel not available */ }
+    return () => { bc?.close(); };
+  }, []);
+
+  // Fetch maps for active campaign (re-fetches whenever a map is edited via mapsFetchVersion)
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -53,7 +72,7 @@ const MapAudioOrchestrator: React.FC = () => {
     }
     load();
     return () => { cancelled = true; };
-  }, [campaignId]);
+  }, [campaignId, mapsFetchVersion]);
 
   // Fetch playlists for campaign (for playlist playback)
   useEffect(() => {
@@ -182,40 +201,67 @@ const MapAudioOrchestrator: React.FC = () => {
         if (p && Array.isArray(p.items) && p.items.length) {
           applyingPresetRef.current = preset.presetId;
           stopAllSfx();
-          for (const item of p.items) {
-            const eff = item.soundEffect;
-            if (!eff) continue;
-            await playSfx(
-              { effectId: eff.id, name: eff.name },
-              async () => {
-                const url = campaignId
-                  ? `${api.defaults.baseURL}/soundtrack/effects/${eff.id}/stream?campaignId=${campaignId}`
-                  : `${api.defaults.baseURL}/soundtrack/effects/${eff.id}/stream`;
-                const res = await api.get(url, { headers: getAuthHeaders(), responseType: 'blob' });
-                return URL.createObjectURL(res.data as Blob);
-              },
-              {
-                volume: clamp01(item.volume ?? 1),
-                loopMode: item.loopMode || 'continuous',
-                waitMs: item.waitMs ?? undefined,
-                randomMinMs: item.randomMinMs ?? undefined,
-                randomMaxMs: item.randomMaxMs ?? undefined,
-                echoEnabled: !!item.echoEnabled,
-                echoDelayMs: item.echoEnabled ? (item.echoDelayMs ?? 300) : undefined,
-                echoFeedback: item.echoEnabled ? clamp01(item.echoFeedback ?? 0.3) : undefined,
-                pitchSemitones: typeof item.pitchSemitones === 'number' ? item.pitchSemitones : 0,
-                uniquePerEffect: true,
-              }
-            );
+          try {
+            for (const item of p.items) {
+              const eff = item.soundEffect;
+              if (!eff) continue;
+              await playSfx(
+                { effectId: eff.id, name: eff.name },
+                async () => {
+                  const url = campaignId
+                    ? `${api.defaults.baseURL}/soundtrack/effects/${eff.id}/stream?campaignId=${campaignId}`
+                    : `${api.defaults.baseURL}/soundtrack/effects/${eff.id}/stream`;
+                  const res = await api.get(url, { headers: getAuthHeaders(), responseType: 'blob' });
+                  return URL.createObjectURL(res.data as Blob);
+                },
+                {
+                  volume: clamp01(item.volume ?? 1),
+                  loopMode: item.loopMode || 'continuous',
+                  waitMs: item.waitMs ?? undefined,
+                  randomMinMs: item.randomMinMs ?? undefined,
+                  randomMaxMs: item.randomMaxMs ?? undefined,
+                  echoEnabled: !!item.echoEnabled,
+                  echoDelayMs: item.echoEnabled ? (item.echoDelayMs ?? 300) : undefined,
+                  echoFeedback: item.echoEnabled ? clamp01(item.echoFeedback ?? 0.3) : undefined,
+                  pitchSemitones: typeof item.pitchSemitones === 'number' ? item.pitchSemitones : 0,
+                  uniquePerEffect: true,
+                }
+              );
+            }
+            lastPresetRef.current = preset.presetId;
+          } finally {
+            applyingPresetRef.current = null;
           }
-          lastPresetRef.current = preset.presetId;
-          applyingPresetRef.current = null;
         }
       }
     };
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId, activeMap, timeOfDay, playlists, presets, play, playQueue, stopAllSfx, playSfx, soundtrackMode]);
+
+  // Separate effect: stop SFX when switching to a map that has no SFX preset
+  // for the current time-of-day (only when the user has enabled this setting).
+  // Isolated from the main orchestration effect so it cannot interfere with SFX playback.
+  useEffect(() => {
+    const currentMapId = activeMapId ?? null;
+    const prevId = prevMapIdRef.current;
+    prevMapIdRef.current = currentMapId;
+
+    // Only act on an actual map change, not on ToD or other dep changes
+    if (currentMapId === prevId || currentMapId === null) return;
+    if (!stopSfxOnMapChange) return;
+    if (!activeMap) return;
+
+    const sfxConfig: any = activeMap.sfxConfig || {};
+    const tod = timeOfDay as Tod;
+    const preset = sfxConfig?.[tod]?.['base'] as { presetId: string } | undefined;
+
+    if (!preset?.presetId) {
+      stopAllSfx();
+      lastPresetRef.current = null;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMapId, activeMap, timeOfDay, stopSfxOnMapChange, stopAllSfx]);
 
   return null;
 };

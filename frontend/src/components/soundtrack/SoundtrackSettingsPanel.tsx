@@ -14,11 +14,13 @@ import {
   Radio,
   RadioGroup,
   Stack,
+  Switch,
   Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSoundtrackMode } from '../../hooks/useSoundtrackMode';
+import { useStopSfxOnMapChange } from '../../hooks/useStopSfxOnMapChange';
 import { SongHistoryCard } from './SongHistoryCard';
 import { SkylineSongTitleSetting } from './SkylineSongTitleSetting';
 
@@ -42,6 +44,7 @@ export const SoundtrackSettingsPanel: React.FC<SoundtrackSettingsPanelProps> = (
   onClose,
 }) => {
   const { mode, isLoading, error, setMode } = useSoundtrackMode(campaignId);
+  const { stopSfxOnMapChange, setStopSfxOnMapChange } = useStopSfxOnMapChange();
 
   return (
     <Card variant="outlined" sx={{ mb: 2 }}>
@@ -87,6 +90,25 @@ export const SoundtrackSettingsPanel: React.FC<SoundtrackSettingsPanelProps> = (
           <Box>
             <SkylineSongTitleSetting campaignId={campaignId} />
           </Box>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={stopSfxOnMapChange}
+                onChange={(_, checked) => setStopSfxOnMapChange(checked)}
+                size="small"
+              />
+            }
+            label={
+              <Box>
+                <Typography variant="body2">Detener SFX al cambiar a mapa sin efectos</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Cuando cambies a un mapa sin presets SFX configurados, los efectos del mapa anterior se detendrán. La música no se ve afectada.
+                </Typography>
+              </Box>
+            }
+            sx={{ alignItems: 'flex-start', mt: 0.5 }}
+          />
 
           <Accordion defaultExpanded={false} disableGutters elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>

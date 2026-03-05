@@ -3,10 +3,10 @@ import { useInvitations } from '../hooks/useInvitations';
 import { Button, Card, CardContent, Typography, Box, CircularProgress, Alert, Stack, Avatar } from '@mui/material';
 
 export const InvitationsList: React.FC = () => {
-  const { invitations, loading, error, accept, decline } = useInvitations();
+  const { invitations, loading, error, clearError, accept, decline } = useInvitations();
 
   if (loading) return <Box display="flex" justifyContent="center"><CircularProgress /></Box>;
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (error) return <Alert severity="error" onClose={clearError}>{error}</Alert>;
   if (!invitations.length) return null;
 
   return (

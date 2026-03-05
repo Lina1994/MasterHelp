@@ -403,6 +403,16 @@ export class MapsService {
     const authUserId = this.extractAuthUserId(user);
     if (!authUserId) throw new ForbiddenException('Invalid auth context');
     if (entity.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+
+    // Clear FK references from campaigns pointing to this map (activeMap),
+    // to avoid SQLITE_CONSTRAINT FOREIGN KEY errors on delete.
+    await this.campaignsRepo
+      .createQueryBuilder()
+      .update(Campaign)
+      .set({ activeMap: null } as any)
+      .where('activeMapId = :id', { id })
+      .execute();
+
     await this.repo.remove(entity);
     return { ok: true };
   }

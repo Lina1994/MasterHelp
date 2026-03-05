@@ -56,6 +56,7 @@ export function useInvitations() {
     invitations,
     loading,
     error,
+    clearError: () => setError(null),
     accept: (id: string) => respond(id, 'accept'),
     decline: (id: string) => respond(id, 'decline'),
     refresh: fetchInvitations,
