@@ -45,6 +45,8 @@ const MapAudioOrchestrator: React.FC = () => {
   const prevMapIdRef = useRef<string | null>(null);
 
   // Listen for map edits broadcast by MapsPage so we can re-fetch with fresh musicConfig/sfxConfig.
+  // Only re-fetches the maps list; does NOT reset audio refs so that a transform-only save
+  // (zoom/pan) does not inadvertently restart the currently playing music.
   useEffect(() => {
     let bc: BroadcastChannel | null = null;
     try {

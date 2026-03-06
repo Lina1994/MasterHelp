@@ -128,7 +128,8 @@
     "publish": {
       "provider": "github",
       "owner": "Lina1994",
-      "repo": "MasterHelp"
+      "repo": "MasterHelp",
+      "releaseType": "release"
     }
   },
   "devDependencies": {

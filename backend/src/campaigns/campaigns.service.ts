@@ -63,17 +63,23 @@ export class CampaignsService {
     
     // Validate manual IDs if provided
     let validatedManualIds: string[] | undefined;
-    if (createCampaignDto.manualIds && createCampaignDto.manualIds.length > 0) {
-      const ids = createCampaignDto.manualIds.map((x) => (x || '').trim()).filter(Boolean);
+    if (createCampaignDto.selectedManualIds && createCampaignDto.selectedManualIds.length > 0) {
+      const ids = createCampaignDto.selectedManualIds.map((x) => (x || '').trim()).filter(Boolean);
       const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
+      let registryLoaded = false;
       let validIds: string[] = [];
       try {
         const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
         validIds = (raw?.manuals || []).map((m: any) => String(m.id));
-      } catch {}
-      const unknown = ids.filter((id) => !validIds.includes(id));
-      if (unknown.length) {
-        throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
+        registryLoaded = true;
+      } catch (e) {
+        console.warn('[CampaignsService] Could not read manuals registry, skipping manual ID validation:', e?.message);
+      }
+      if (registryLoaded) {
+        const unknown = ids.filter((id) => !validIds.includes(id));
+        if (unknown.length) {
+          throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
+        }
       }
       validatedManualIds = ids;
     }
@@ -93,14 +99,20 @@ export class CampaignsService {
       const ids = (updateCampaignDto.selectedManualIds || []).map((x) => (x || '').trim()).filter(Boolean);
       if (ids.length > 0) {
         const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
+        let registryLoaded = false;
         let validIds: string[] = [];
         try {
           const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
           validIds = (raw?.manuals || []).map((m: any) => String(m.id));
-        } catch {}
-        const unknown = ids.filter((id) => !validIds.includes(id));
-        if (unknown.length) {
-          throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
+          registryLoaded = true;
+        } catch (e) {
+          console.warn('[CampaignsService] Could not read manuals registry, skipping manual ID validation:', e?.message);
+        }
+        if (registryLoaded) {
+          const unknown = ids.filter((id) => !validIds.includes(id));
+          if (unknown.length) {
+            throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
+          }
         }
       }
     }

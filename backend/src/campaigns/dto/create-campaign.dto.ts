@@ -12,6 +12,7 @@ export class CreateCampaignDto {
   description?: string;
 
   @IsOptional()
+  @Transform(({ value }) => (value === '' || value === null) ? undefined : value)
   @IsUrlOrDataUri()
   imageUrl?: string;
 
@@ -19,5 +20,5 @@ export class CreateCampaignDto {
   @IsArray()
   @Transform(({ value }) => Array.isArray(value) ? value.map((v) => String(v)) : [])
   @IsString({ each: true })
-  manualIds?: string[];
+  selectedManualIds?: string[];
 }

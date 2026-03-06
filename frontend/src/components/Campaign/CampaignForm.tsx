@@ -57,7 +57,7 @@ const CampaignForm: FC<CampaignFormProps> = ({ initial, onSave, onCancel }) => {
       selectedManualIds: selectedManualIds.length > 0 ? selectedManualIds : undefined,
     };
 
-    if (imageUrl) {
+    if (imageUrl && /^(https?:\/\/|data:image\/)/.test(imageUrl)) {
       saveData.imageUrl = imageUrl;
     }
 

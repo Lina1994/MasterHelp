@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Typography, Button, Dialog } from '@mui/material';
+import { Box, Typography, Button, Dialog, Alert } from '@mui/material';
 import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 import { Campaign } from '../components/Campaign/types';
 import CampaignList from '../components/Campaign/CampaignList';
@@ -63,6 +63,11 @@ const CampaignPage = () => {
 
   return (
     <Box>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {Array.isArray(error) ? error.join(', ') : error}
+        </Alert>
+      )}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="h4">{t('campaigns', 'Campañas')}</Typography>
         <Button variant="contained" color="primary" onClick={handleOpenCreateForm}>

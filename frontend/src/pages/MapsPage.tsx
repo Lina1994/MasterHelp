@@ -132,16 +132,17 @@ export default function MapsPage() {
     try {
       if (form.id) {
         await updateMap(form.id, common);
-        // Notify other tabs/windows (projection) that map transform or config may have changed
-        try {
-          const bc = new BroadcastChannel('campaign-sync');
-          bc.postMessage({ type: 'map-transform-updated', mapId: form.id, at: Date.now() });
-          bc.close();
-        } catch {}
         try { (window as any).electronAPI?.projectionPoke?.({ reason: 'map-transform-updated' }); } catch {}
       } else {
         await createMap(common as any);
       }
+      // Notify orchestrator and other tabs/windows that a map's config (including audio) may have changed.
+      // Sent for both create and update so the MapAudioOrchestrator always re-fetches its maps list.
+      try {
+        const bc = new BroadcastChannel('campaign-sync');
+        bc.postMessage({ type: 'map-transform-updated', mapId: form.id, at: Date.now() });
+        bc.close();
+      } catch {}
       setOpen(false);
       await refresh();
       await refreshUsage();

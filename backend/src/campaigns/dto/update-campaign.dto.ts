@@ -12,6 +12,7 @@ export class UpdateCampaignDto {
   description?: string;
 
   @IsOptional()
+  @Transform(({ value }) => (value === '' || value === null) ? undefined : value)
   @IsUrlOrDataUri()
   imageUrl?: string;
 
