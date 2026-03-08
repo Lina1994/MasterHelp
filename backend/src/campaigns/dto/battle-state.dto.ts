@@ -56,4 +56,7 @@ export class BattleStripItemDto {
   @IsString()
   @IsOptional()
   role?: 'ally' | 'foe';
+  @IsString()
+  @IsOptional()
+  kind?: 'character' | 'enemy';
 }

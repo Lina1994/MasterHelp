@@ -105,7 +105,7 @@ export class Campaign {
     round?: number;
     turnIndex?: number;
     currentTurnId?: string | null;
-    items?: Array<{ id: string; name: string; imageUrl?: string | null }>;
+    items?: Array<{ id: string; name: string; imageUrl?: string | null; role?: string; kind?: string }>;
   } | null;
 
   /**

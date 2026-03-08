@@ -34,6 +34,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
+import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 import WorldpediaEntityViewer from '../components/Worldpedia/WorldpediaEntityViewer';
 import API_BASE_URL from '../apiBase';
 
@@ -279,6 +280,7 @@ function buildCharImageUrl(src: string): string {
  * the user session or the separate projection windows.
  */
 const SkylinePreviewOverlay: React.FC = () => {
+  const { fetchCampaigns } = useCampaignsContext();
   const { activeCampaign } = useActiveCampaign();
   const campaignId = activeCampaign?.id;
 
@@ -342,6 +344,9 @@ const SkylinePreviewOverlay: React.FC = () => {
       await silentApi.patch(`/campaigns/${campaignId}/active-skyline-character`, { characterId: null });
       setCharacter(null);
       setActiveCharId(null);
+      // Refresh the shared campaign context so CharacterList / CharacterSheetModal
+      // see activeSkylineCharacter as null without requiring a manual re-fetch.
+      fetchCampaigns().catch(() => {});
       try { localStorage.setItem('app.skyline.activeCharacterUpdated', JSON.stringify({ campaignId, at: Date.now() })); } catch {}
       try { new BroadcastChannel('campaign-sync').postMessage({ type: 'activeSkylineChanged', campaignId }); } catch {}
     } catch {}
