@@ -19,6 +19,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Box, Typography } from '@mui/material';
+import { QRCodeSVG } from 'qrcode.react';
 import AuthImage from '../common/AuthImage';
 import { getMapSkylineUrlSized } from '../../api/maps';
 import { getCellStreamUrl } from '../../api/shops';
@@ -55,6 +56,10 @@ interface SkylineSettings {
   showCurrentTurnImage: boolean;
   currentTurnImagePosition: string;
   currentTurnImageSizes: Record<string, number>;
+  /** Whether to show the QR code overlay in the Skyline window. */
+  showQr: boolean;
+  /** The URL encoded in the QR overlay. */
+  qrUrl: string;
 }
 
 const DEFAULT_STRIP: InitiativeStrip = { battleStarted: false, enabled: false, currentTurnId: null, items: [] };
@@ -65,6 +70,8 @@ const DEFAULT_SETTINGS: SkylineSettings = {
   showCurrentTurnImage: true,
   currentTurnImagePosition: 'center-right',
   currentTurnImageSizes: { Tiny: 15, Small: 20, Medium: 30, Large: 40, Huge: 50, Gargantuan: 60 },
+  showQr: false,
+  qrUrl: '',
 };
 
 // ─── localStorage helpers ───────────────────────────────────────────────────
@@ -153,19 +160,22 @@ function mergeStripItems(
  * `60vh × 60vh` box used in the real Skyline window.
  */
 const CharacterOverlay: React.FC<{ src?: string | null; initials: string; bg: string }> = ({ src, initials, bg }) => {
-  const commonSx = {
+  const imgSx = {
     position: 'absolute' as const,
     bottom: 32,
     left: '50%',
     transform: 'translateX(-50%)',
     height: '60%',
     aspectRatio: '1 / 1',
-    borderRadius: 2,
     overflow: 'hidden',
+  };
+  const avatarSx = {
+    ...imgSx,
+    borderRadius: 2,
     boxShadow: 4,
   };
   return src ? (
-    <Box sx={{ ...commonSx, bgcolor: 'transparent' }}>
+    <Box sx={{ ...imgSx, bgcolor: 'transparent' }}>
       <AuthImage
         src={src}
         alt={initials}
@@ -175,7 +185,7 @@ const CharacterOverlay: React.FC<{ src?: string | null; initials: string; bg: st
   ) : (
     <Avatar
       alt={initials}
-      sx={{ ...commonSx, border: '2px solid rgba(255,255,255,0.4)', bgcolor: bg, fontSize: '4vw' }}
+      sx={{ ...avatarSx, border: '2px solid rgba(255,255,255,0.4)', bgcolor: bg, fontSize: '4vw' }}
     >
       {initials}
     </Avatar>
@@ -211,7 +221,14 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
   const [nowPlayingTitle, setNowPlayingTitle] = useState<string | null>(null);
   const [selectedDayLabel, setSelectedDayLabel] = useState<string | null>(() => readSelectedDay(campaignId));
   const [showDayInSkyline, setShowDayInSkyline] = useState<boolean>(readShowDayInSkyline);
-  // Timestamp of last BroadcastChannel / local update — blocks stale server overwrite
+  /** Tracks which overlay source was last activated; the last entry is the visible one. */
+  const [overlayStack, setOverlayStack] = useState<Array<'character' | 'turnImage' | 'shopItem'>>([]);  /** Manual override written by SkylinePreviewOverlay. */
+  const [forcedOverlay, setForcedOverlay] = useState<'character' | 'shopItem' | 'turnImage' | null>(() => {
+    try {
+      const val = localStorage.getItem('app.skyline.forcedOverlay');
+      return (val as 'character' | 'shopItem' | 'turnImage') || null;
+    } catch { return null; }
+  });  // Timestamp of last BroadcastChannel / local update — blocks stale server overwrite
   const lastLocalUpdateRef = useRef<number>(0);
   const isFetchingRef = useRef(false);
 
@@ -331,6 +348,10 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
           if (st) setSettings(prev => ({ ...prev, ...st }));
           return;
         }
+        if (data.type === 'skylineOverlayForced') {
+          setForcedOverlay((data.forcedOverlay as any) || null);
+          return;
+        }
         if (data.type === 'initiativeStripUpdated') {
           lastLocalUpdateRef.current = Date.now();
           const bcItems: InitiativeItem[] = Array.isArray(data.items)
@@ -370,6 +391,9 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
   // ── storage events (cross-tab) ──────────────────────────────────────────
   useEffect(() => {
     const handler = (e: StorageEvent) => {
+      if (e.key === 'app.skyline.forcedOverlay') {
+        setForcedOverlay((e.newValue as any) || null);
+      }
       if (e.key === 'app.skyline.initiativeStrip') {
         const stored = readInitiativeStrip(campaignId);
         if (stored) {
@@ -437,6 +461,45 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
   const showStrip = settings.showInitiativeStrip && battleActive && strip.enabled && strip.items.length > 0;
   const showTurnImage = settings.showCurrentTurnImage && !!currentTurnParticipant?.fullImageUrl && battleActive;
 
+  // ── Overlay priority stack ──────────────────────────────────────────────
+  // Mirrors the logic in ProjectionSkylinePage: last activated source is shown.
+  const isCharacterActive = !!character;
+  const isTurnImageActive = showTurnImage;
+  const isShopItemActive = skylineItems.length > 0;
+
+  useEffect(() => {
+    setOverlayStack(prev => {
+      const without = prev.filter(s => s !== 'shopItem');
+      return isShopItemActive ? [...without, 'shopItem'] : without;
+    });
+  }, [isShopItemActive]);
+
+  useEffect(() => {
+    setOverlayStack(prev => {
+      const without = prev.filter(s => s !== 'character');
+      return isCharacterActive ? [...without, 'character'] : without;
+    });
+  }, [isCharacterActive]);
+
+  useEffect(() => {
+    setOverlayStack(prev => {
+      const without = prev.filter(s => s !== 'turnImage');
+      return isTurnImageActive ? [...without, 'turnImage'] : without;
+    });
+  }, [isTurnImageActive]);
+
+  const activeOverlay = (() => {
+    if (forcedOverlay) {
+      const dataActive: Record<string, boolean> = {
+        character: isCharacterActive,
+        shopItem: isShopItemActive,
+        turnImage: isTurnImageActive,
+      };
+      if (dataActive[forcedOverlay]) return forcedOverlay;
+    }
+    return overlayStack[overlayStack.length - 1] ?? null;
+  })();
+
   return (
     <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
 
@@ -460,7 +523,7 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
       )}
 
       {/* ── Active skyline character ─────────────────────────────────── */}
-      {character && (
+      {activeOverlay === 'character' && character && (
         <CharacterOverlay src={charSrc} initials={charInitials} bg={charBg} />
       )}
 
@@ -483,14 +546,14 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
       )}
 
       {/* ── Current turn image ───────────────────────────────────────── */}
-      {showTurnImage && currentTurnParticipant && (
+      {activeOverlay === 'turnImage' && showTurnImage && currentTurnParticipant && (
         <Box
           sx={{
             ...turnImagePositionSx,
-            // sizeVw% of container width (= sizeVw vw in the real Skyline window)
-            width: `${settings.currentTurnImageSizes[currentTurnParticipant.size || 'Medium'] ?? 30}%`,
-            maxWidth: 800,
-            minWidth: 150,
+            // sizeVw% of container width mirrors the real Skyline window's vw constraint
+            maxWidth: `${settings.currentTurnImageSizes[currentTurnParticipant.size || 'Medium'] ?? 30}%`,
+            maxHeight: '90%',
+            overflow: 'hidden',
           }}
         >
           <AuthImage
@@ -544,8 +607,32 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
         </Box>
       )}
 
+      {/* ── QR code overlay ─────────────────────────────────────────── */}
+      {settings.showQr && settings.qrUrl && (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 24,
+            right: 24,
+            bgcolor: 'white',
+            p: 1,
+            borderRadius: 1,
+            boxShadow: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          <QRCodeSVG value={settings.qrUrl} size={120} />
+          <Typography variant="caption" sx={{ color: 'black', fontSize: '0.6rem', maxWidth: 120, textAlign: 'center', wordBreak: 'break-all' }}>
+            {settings.qrUrl}
+          </Typography>
+        </Box>
+      )}
+
       {/* ── Shop item overlays ────────────────────────────────────────── */}
-      {skylineItems.map((item) => {
+      {activeOverlay === 'shopItem' && skylineItems.map((item) => {
         const token = localStorage.getItem('access_token') ?? '';
         const streamUrl = getCellStreamUrl(item.cellId);
         const fullUrl = `${streamUrl}?token=${encodeURIComponent(token)}`;

@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import {
-  Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton, Typography, Stack
+  AppBar, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider, IconButton, Toolbar, Typography, Stack
 } from '@mui/material';
 import { getDiaryCalendar, type DiaryCalendarConfig } from '../api/diary/diaryApi';
 import { formatDayLabel, formatDayLabelCompact } from '../components/diary/diaryUtils';
@@ -8,8 +8,13 @@ import { getCurrentUser } from '../utils/getCurrentUser';
 import logo from '../assets/logo.png';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { TITLEBAR_HEIGHT } from '../components/TitleBar';
+
+/** True cuando la app corre dentro de Electron; false en navegador web. */
+const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
+/** Altura efectiva de la barra de título: 0 en el navegador, normal en Electron. */
+const TB = IS_ELECTRON ? TITLEBAR_HEIGHT : 0;
 import { GlobalPlayerProvider } from '../components/player/GlobalPlayerContext';
 import { SfxPlayerProvider } from '../components/player/SfxPlayerContext';
 import { PlayerDrawerUiProvider } from '../components/player/PlayerDrawerUiContext';
@@ -61,6 +66,7 @@ function isUserMaster(activeCampaign: any, userId: number | undefined): boolean 
 
 const MainLayoutInner = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { activeCampaign } = useActiveCampaign();
@@ -202,6 +208,16 @@ const MainLayoutInner = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  /** Label shown in the mobile top bar matching the current route. */
+  const currentPageLabel = useMemo(() => {
+    const matched = DEFAULT_SIDEBAR_ITEMS.find(
+      (item) => location.pathname === item.route || location.pathname.startsWith(item.route + '/'),
+    );
+    if (matched) return t(matched.labelKey, matched.fallback);
+    if (location.pathname === '/' || location.pathname === '') return t('home', 'Inicio');
+    return t('settings', 'Ajustes');
+  }, [location.pathname, t]);
+
   // Contenido base del drawer SIN el reproductor (para evitar montarlo duplicado).
   const drawerContent = (
     <>
@@ -287,7 +303,42 @@ const MainLayoutInner = () => {
     <GlobalPlayerProvider>
       <SfxPlayerProvider>
         <PlayerDrawerUiProvider>
-          <Box sx={{ display: 'flex', height: `calc(100vh - ${TITLEBAR_HEIGHT}px)` }}>
+          <Box sx={{ display: 'flex', height: `calc(100vh - ${TB}px)` }}>
+            {/* ── Barra superior responsive (sólo en móvil / ventana estrecha) ── */}
+            <AppBar
+              position="fixed"
+              elevation={1}
+              sx={{
+                display: { xs: 'flex', sm: 'none' },
+                top: TB,
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                zIndex: (theme) => theme.zIndex.appBar,
+              }}
+            >
+              <Toolbar sx={{ minHeight: 56 }}>
+                <IconButton
+                  edge="start"
+                  onClick={handleDrawerToggle}
+                  aria-label={t('openMenu', 'Abrir menú')}
+                  sx={{ p: 0.5, mr: 1 }}
+                >
+                  {activeCampaign?.imageUrl ? (
+                    <img
+                      src={activeCampaign.imageUrl}
+                      alt={activeCampaign.name}
+                      style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <img src={logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 6 }} />
+                  )}
+                </IconButton>
+                <Box sx={{ flexGrow: 1 }} />
+                <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ maxWidth: 220 }}>
+                  {currentPageLabel}
+                </Typography>
+              </Toolbar>
+            </AppBar>
             {/* Headless orchestrator to auto-play map audio based on active map and time-of-day */}
             <MapAudioOrchestrator />
             <Box
@@ -319,8 +370,8 @@ const MainLayoutInner = () => {
                   '& .MuiDrawer-paper': {
                     boxSizing: 'border-box',
                     width: 240,
-                    top: `${TITLEBAR_HEIGHT}px`,
-                    height: `calc(100% - ${TITLEBAR_HEIGHT}px)`,
+                    top: `${TB}px`,
+                    height: `calc(100% - ${TB}px)`,
                   },
                 }}
                 open
@@ -335,7 +386,16 @@ const MainLayoutInner = () => {
             </Box>
             <Box
               component="main"
-              sx={{ flexGrow: 1, width: { sm: `calc(100% - 240px)` }, height: `calc(100vh - ${TITLEBAR_HEIGHT}px)`, overflow: 'auto', p: 3 }}
+              sx={{
+                flexGrow: 1,
+                width: { sm: `calc(100% - 240px)` },
+                height: `calc(100vh - ${TB}px)`,
+                overflow: 'auto',
+                p: 3,
+                // On xs the fixed mobile AppBar (56px) sits above the content;
+                // extra top padding prevents content from hiding behind it.
+                pt: { xs: `calc(56px + ${TB}px + 24px)`, sm: 3 },
+              }}
             >
               <div style={{ marginBottom: 24 }}>
                 <InvitationsList />

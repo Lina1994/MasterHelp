@@ -91,6 +91,11 @@ const TitleBar: React.FC = () => {
     return null;
   }
 
+  // No renderizar cuando la app se abre en un navegador web (sin Electron)
+  if (typeof window !== 'undefined' && !window.electronAPI) {
+    return null;
+  }
+
   return (
     <Box
       sx={{

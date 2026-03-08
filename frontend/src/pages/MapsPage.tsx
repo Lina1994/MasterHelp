@@ -7,6 +7,7 @@ import PresentToAllIcon from '@mui/icons-material/PresentToAll';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PublicIcon from '@mui/icons-material/Public';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useActiveMap } from '../components/Map/ActiveMapContext';
 import ProjectedMapMirror from '../components/Map/ProjectedMapMirror';
 import AuthImage from '../components/common/AuthImage';
@@ -17,6 +18,8 @@ import AudioConfigEditor, { MusicConfig as MusicCfg, SfxConfig as SfxCfg } from 
 import MapTodImagesEditor from '../components/Map/MapTodImagesEditor';
 import MapSkylineTodImagesEditor from '../components/Map/MapSkylineTodImagesEditor';
 import WorldMapView from '../components/Map/WorldMapView';
+import SecondaryWindowSizesSettings from '../components/common/SecondaryWindowSizesSettings';
+import { useSecondaryWindowSizes } from '../hooks/useSecondaryWindowSizes';
 
 type FormState = {
   id?: string;
@@ -42,11 +45,12 @@ export default function MapsPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [bulkHover, setBulkHover] = useState(false);
-  const [localPreview, setLocalPreview] = useState<string | null>(null); // kept for future image previews (currently not used)
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [projectionReady, setProjectionReady] = useState<boolean>(false);
   const { activeMapId, setActiveMapId } = useActiveMap();
-  /** Mapa actualmente visualizado en modo Mapa Mundial (fullscreen, DM only). */
   const [worldMapItem, setWorldMapItem] = useState<MapItemDto | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { mode: windowSizeMode, customSizes, setMode: setWindowSizeMode, setCustomSize } = useSecondaryWindowSizes();
 
   const filtered = useMemo(() => items, [items]);
 
@@ -204,7 +208,11 @@ export default function MapsPage() {
 
   return (
     <Box>
-      <ProjectedMapMirror />
+      <ProjectedMapMirror
+        useCustomSizes={windowSizeMode === 'custom'}
+        customPlayersSize={customSizes.players}
+        customSkylineSize={customSizes.skyline}
+      />
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
         <TextField size="small" label="Buscar" value={q} onChange={(e) => setQ(e.target.value)} />
         <Typography variant="body2" color="text.secondary" sx={{ minWidth: 200 }}>
@@ -244,6 +252,15 @@ export default function MapsPage() {
         >
           Abrir ventana Skyline
         </Button>
+        <Tooltip title="Ajustes de mapas">
+          <Button
+            variant="outlined"
+            startIcon={<SettingsIcon />}
+            onClick={() => setSettingsOpen(true)}
+          >
+            Ajustes
+          </Button>
+        </Tooltip>
       </Stack>
       <Box sx={{
         display: 'grid',
@@ -476,6 +493,24 @@ export default function MapsPage() {
           onClose={() => setWorldMapItem(null)}
         />
       )}
+
+      {/* Ajustes de mapas */}
+      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Ajustes de Mapas</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <SecondaryWindowSizesSettings
+              mode={windowSizeMode}
+              customSizes={customSizes}
+              setMode={setWindowSizeMode}
+              setCustomSize={setCustomSize}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSettingsOpen(false)}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -3,6 +3,10 @@ import { api } from '../../apiBase';
 export type SkylineOverlaySettings = {
   showSongTitle: boolean;
   showInitiativeStrip: boolean;
+  /** When true, a QR code overlay is displayed in the Skyline projection window. */
+  showQr: boolean;
+  /** The URL encoded in the QR code. */
+  qrUrl: string;
 };
 
 /**

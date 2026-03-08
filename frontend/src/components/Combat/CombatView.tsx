@@ -28,6 +28,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AuthImage from '../../components/common/AuthImage';
 import ProjectedMapMirror from '../../components/Map/ProjectedMapMirror';
 import type { TokenCandidate } from '../../components/Map/ProjectedMapMirrorTools';
+import { useSecondaryWindowSizes } from '../../hooks/useSecondaryWindowSizes';
 import { useMapTokens } from '../../hooks/useMapTokens';
 import { useActiveEncounter } from '../../components/Encounter/ActiveEncounterContext';
 import { useActiveMap } from '../../components/Map/ActiveMapContext';
@@ -110,6 +111,7 @@ export default function CombatView({
   const { activeMapId, setActiveMapId } = useActiveMap();
   const [maps, setMaps] = useState<MapItemDto[]>([]);
   const { battleStarted, setBattleStarted, hydrated } = useBattleState(campaign?.id, activeEncounterId);
+  const { mode: windowSizeMode, customSizes } = useSecondaryWindowSizes();
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [monsterDetailByPid, setMonsterDetailByPid] = useState<Record<string, CampaignMonsterDetail | null>>({});
   const [viewMode, setViewMode] = useState<'participants' | 'initiative'>('participants');
@@ -996,6 +998,9 @@ export default function CombatView({
             tokenCandidates={tokenCandidates}
             existingTokenIds={existingTokenIds}
             onCreateTokenForCandidate={onCreateTokenForCandidate}
+            useCustomSizes={windowSizeMode === 'custom'}
+            customPlayersSize={customSizes.players}
+            customSkylineSize={customSizes.skyline}
             tokenImageResolver={(id: string) => {
               // Try to find ally character first
               const c = charMap.get(id);

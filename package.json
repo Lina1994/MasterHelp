@@ -1,6 +1,6 @@
 {
   "name": "masterhelp-desktop",
-  "version": "0.26.306",
+  "version": "0.26.307",
   "description": "Desktop application for MasterHelp",
   "main": "electron.js",
   "scripts": {
@@ -128,8 +128,7 @@
     "publish": {
       "provider": "github",
       "owner": "Lina1994",
-      "repo": "MasterHelp",
-      "releaseType": "release"
+      "repo": "MasterHelp"
     }
   },
   "devDependencies": {

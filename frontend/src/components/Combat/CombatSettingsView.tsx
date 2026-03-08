@@ -15,6 +15,8 @@ import {
   Typography 
 } from '@mui/material';
 import type { Campaign } from '../Campaign/types';
+import SecondaryWindowSizesSettings from '../common/SecondaryWindowSizesSettings';
+import { useSecondaryWindowSizes } from '../../hooks/useSecondaryWindowSizes';
 
 /**
  * CombatSettingsView
@@ -41,6 +43,8 @@ const CombatSettingsView: React.FC<{
   showInitiativeStrip,
   onToggleInitiativeStrip,
 }) => {
+  const { mode: windowSizeMode, customSizes, setMode: setWindowSizeMode, setCustomSize } = useSecondaryWindowSizes();
+
   // Nuevos ajustes para visualización de tokens
   const [showTokenAnchors, setShowTokenAnchors] = useState<boolean>(() => {
     try {
@@ -375,6 +379,15 @@ const CombatSettingsView: React.FC<{
             </Typography>
           </Stack>
         </Paper>
+
+        {/* Dimensiones de ventanas secundarias */}
+        <SecondaryWindowSizesSettings
+          mode={windowSizeMode}
+          customSizes={customSizes}
+          setMode={setWindowSizeMode}
+          setCustomSize={setCustomSize}
+          disabled={!isMaster}
+        />
 
         <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover' }}>
           <Typography variant="body2" color="text.secondary">

@@ -29,6 +29,8 @@ import InfoIcon from '@mui/icons-material/Info';
 import LayersClearIcon from '@mui/icons-material/LayersClear';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
@@ -493,8 +495,39 @@ const SkylinePreviewOverlay: React.FC = () => {
   const [turnImageObjectUrl, setTurnImageObjectUrl] = useState<string | null>(null);
   const turnImageLoadRef = useRef<AbortController | null>(null);
   const [showCurrentTurnImage] = useState<boolean>(readShowCurrentTurnImage);
+  /** Manual overlay source pinned by the user (null = use auto-stack priority). */
+  const [forcedOverlay, setForcedOverlayState] = useState<'character' | 'shopItem' | 'turnImage' | null>(() => {
+    try {
+      const val = localStorage.getItem('app.skyline.forcedOverlay');
+      return (val as 'character' | 'shopItem' | 'turnImage') || null;
+    } catch { return null; }
+  });
+
+  /** Writes the forced overlay to localStorage and broadcasts to all Skyline windows. */
+  const handleForceOverlay = (source: 'character' | 'shopItem' | 'turnImage' | null) => {
+    setForcedOverlayState(source);
+    try { localStorage.setItem('app.skyline.forcedOverlay', source ?? ''); } catch {}
+    try {
+      if ('BroadcastChannel' in window && campaignId) {
+        const bc = new BroadcastChannel('campaign-sync');
+        bc.postMessage({ type: 'skylineOverlayForced', campaignId, forcedOverlay: source ?? null });
+        bc.close();
+      }
+    } catch {}
+  };
 
   const isFetching = useRef(false);
+
+  // ── React to forcedOverlay changes from other tabs / Skyline windows ──
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key === 'app.skyline.forcedOverlay') {
+        setForcedOverlayState((e.newValue as any) || null);
+      }
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
 
   // ── turn image blob loader ────────────────────────────────────────────
   /**
@@ -820,6 +853,26 @@ const SkylinePreviewOverlay: React.FC = () => {
 
   if (!hasCharacter && !hasItems && !hasTurnImage) return null;
 
+  // ── Determine which overlay is currently active in the Skyline window ──
+  // Mirrors the priority-stack logic in ProjectionSkylinePage / SkylineViewportContent.
+  // The forced overlay takes precedence when its data is available.
+  const effectiveActiveOverlay: 'character' | 'shopItem' | 'turnImage' | null = (() => {
+    if (forcedOverlay) {
+      const dataActive: Record<string, boolean> = {
+        character: hasCharacter,
+        shopItem: hasItems,
+        turnImage: hasTurnImage,
+      };
+      if (dataActive[forcedOverlay]) return forcedOverlay;
+    }
+    // Auto-stack: last one to become active wins.
+    const stack: Array<'character' | 'shopItem' | 'turnImage'> = [];
+    if (hasCharacter) stack.push('character');
+    if (hasItems) stack.push('shopItem');
+    if (hasTurnImage) stack.push('turnImage');
+    return stack[stack.length - 1] ?? null;
+  })();
+
   /** WorldpediaEntityViewer type for the current turn participant. */
   const turnEntityType: string =
     currentTurnParticipant?.kind === 'character' ? 'character' : 'monster';
@@ -856,6 +909,8 @@ const SkylinePreviewOverlay: React.FC = () => {
                 pointerEvents: 'all',
                 flexShrink: 0,
                 cursor: 'pointer',
+                opacity: effectiveActiveOverlay === 'character' ? 1 : 0.3,
+                transition: 'opacity 0.3s',
               }}
             >
               {charImageSrc ? (
@@ -891,6 +946,8 @@ const SkylinePreviewOverlay: React.FC = () => {
                 pointerEvents: 'all',
                 flexShrink: 0,
                 cursor: 'pointer',
+                opacity: effectiveActiveOverlay === 'shopItem' ? 1 : 0.3,
+                transition: 'opacity 0.3s',
               }}
             >
               <img
@@ -926,6 +983,8 @@ const SkylinePreviewOverlay: React.FC = () => {
                 flexShrink: 0,
                 cursor: 'pointer',
                 position: 'relative',
+                opacity: effectiveActiveOverlay === 'turnImage' ? 1 : 0.3,
+                transition: 'opacity 0.3s',
               }}
             >
               <img
@@ -973,6 +1032,18 @@ const SkylinePreviewOverlay: React.FC = () => {
           <ListItemText>Ver ficha completa</ListItemText>
         </MenuItem>
         <Divider />
+        {effectiveActiveOverlay === 'character' ? (
+          <MenuItem onClick={() => { setCharMenuAnchor(null); handleForceOverlay(null); }}>
+            <ListItemIcon><VisibilityOffIcon fontSize="small" color="action" /></ListItemIcon>
+            <ListItemText>Ocultar en Skyline</ListItemText>
+          </MenuItem>
+        ) : (
+          <MenuItem onClick={() => { setCharMenuAnchor(null); handleForceOverlay('character'); }}>
+            <ListItemIcon><VisibilityIcon fontSize="small" color="primary" /></ListItemIcon>
+            <ListItemText>Mostrar en Skyline</ListItemText>
+          </MenuItem>
+        )}
+        <Divider />
         <MenuItem onClick={handleRemoveCharFromSkyline} sx={{ color: 'warning.main' }}>
           <ListItemIcon><LayersClearIcon fontSize="small" color="warning" /></ListItemIcon>
           <ListItemText>Quitar de Skyline</ListItemText>
@@ -991,6 +1062,18 @@ const SkylinePreviewOverlay: React.FC = () => {
           <ListItemIcon><StorefrontIcon fontSize="small" /></ListItemIcon>
           <ListItemText>Ir a tiendas</ListItemText>
         </MenuItem>
+        <Divider />
+        {effectiveActiveOverlay === 'shopItem' ? (
+          <MenuItem onClick={() => { setItemMenuAnchor(null); handleForceOverlay(null); }}>
+            <ListItemIcon><VisibilityOffIcon fontSize="small" color="action" /></ListItemIcon>
+            <ListItemText>Ocultar en Skyline</ListItemText>
+          </MenuItem>
+        ) : (
+          <MenuItem onClick={() => { setItemMenuAnchor(null); handleForceOverlay('shopItem'); }}>
+            <ListItemIcon><VisibilityIcon fontSize="small" color="primary" /></ListItemIcon>
+            <ListItemText>Mostrar en Skyline</ListItemText>
+          </MenuItem>
+        )}
         <Divider />
         <MenuItem
           onClick={() => selectedMenuItem && handleRemoveSkylineItem(selectedMenuItem.id)}
@@ -1026,6 +1109,18 @@ const SkylinePreviewOverlay: React.FC = () => {
           }}>
             <ListItemIcon><InfoIcon fontSize="small" /></ListItemIcon>
             <ListItemText>Ver ficha del turno</ListItemText>
+          </MenuItem>
+        )}
+        <Divider />
+        {effectiveActiveOverlay === 'turnImage' ? (
+          <MenuItem onClick={() => { setTurnMenuAnchor(null); handleForceOverlay(null); }}>
+            <ListItemIcon><VisibilityOffIcon fontSize="small" color="action" /></ListItemIcon>
+            <ListItemText>Ocultar en Skyline</ListItemText>
+          </MenuItem>
+        ) : (
+          <MenuItem onClick={() => { setTurnMenuAnchor(null); handleForceOverlay('turnImage'); }}>
+            <ListItemIcon><VisibilityIcon fontSize="small" color="primary" /></ListItemIcon>
+            <ListItemText>Mostrar en Skyline</ListItemText>
           </MenuItem>
         )}
         <Divider />

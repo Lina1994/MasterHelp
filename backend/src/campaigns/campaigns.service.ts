@@ -411,10 +411,15 @@ export class CampaignsService {
     const isOwner = campaign.owner?.id === requestingUserId;
     const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
     if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
-    const fallback = { showSongTitle: false, showInitiativeStrip: false } as const;
+    const fallback = { showSongTitle: false, showInitiativeStrip: false, showQr: false, qrUrl: '' } as const;
     const s = campaign.skylineOverlaySettings ?? (fallback as any);
-    // Ensure both keys exist
-    const settings = { showSongTitle: !!s.showSongTitle, showInitiativeStrip: !!s.showInitiativeStrip };
+    // Ensure all expected keys exist
+    const settings = {
+      showSongTitle: !!s.showSongTitle,
+      showInitiativeStrip: !!s.showInitiativeStrip,
+      showQr: !!s.showQr,
+      qrUrl: typeof s.qrUrl === 'string' ? s.qrUrl : '',
+    };
     return { settings };
   }
 
@@ -424,15 +429,17 @@ export class CampaignsService {
    */
   async getSkylineOverlaySettingsPublic(campaignId: string) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    const fallback = { showSongTitle: false, showInitiativeStrip: false } as const;
+    const fallback = { showSongTitle: false, showInitiativeStrip: false, showQr: false, qrUrl: '' } as const;
     const s: any = (campaign && campaign.skylineOverlaySettings) ?? fallback;
     return {
       showSongTitle: !!s.showSongTitle,
       showInitiativeStrip: !!s.showInitiativeStrip,
+      showQr: !!s.showQr,
+      qrUrl: typeof s.qrUrl === 'string' ? s.qrUrl : '',
     };
   }
 
-  async setSkylineOverlaySettings(campaignId: string, dto: { showSongTitle?: boolean; showInitiativeStrip?: boolean }) {
+  async setSkylineOverlaySettings(campaignId: string, dto: { showSongTitle?: boolean; showInitiativeStrip?: boolean; showQr?: boolean; qrUrl?: string }) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
     const prev = (campaign.skylineOverlaySettings || { showSongTitle: false, showInitiativeStrip: false }) as any;

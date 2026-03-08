@@ -37,6 +37,14 @@ const ProjectedMapMirror: React.FC<{
   onCreateTokenForCandidate?: (candidate: TokenCandidate) => void;
   /** Optional: ids already present on the map (to disable duplicates in UI). */
   existingTokenIds?: Set<string>;
+  /**
+   * When provided and the user selects "custom" mode in settings, these values
+   * override the real secondary-window sizes reported via Electron/localStorage.
+   */
+  customPlayersSize?: { width: number; height: number } | null;
+  customSkylineSize?: { width: number; height: number } | null;
+  /** When true, customPlayersSize / customSkylineSize are used instead of dynamic sizes. */
+  useCustomSizes?: boolean;
 }> = ({
   fogEnabled = false,
   highlightTokenId = null,
@@ -45,6 +53,9 @@ const ProjectedMapMirror: React.FC<{
   tokenCandidates,
   onCreateTokenForCandidate,
   existingTokenIds,
+  customPlayersSize = null,
+  customSkylineSize = null,
+  useCustomSizes = false,
 }) => {
   const { activeMapId } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
@@ -279,7 +290,9 @@ const ProjectedMapMirror: React.FC<{
     return () => { window.removeEventListener('storage', onStorage); };
   }, []);
 
-  const baseSize = previewMode === 'players' ? projectionSize : skylineSize;
+  const baseSize = previewMode === 'players'
+    ? (useCustomSizes && customPlayersSize ? customPlayersSize : projectionSize)
+    : (useCustomSizes && customSkylineSize ? customSkylineSize : skylineSize);
   const scale = useMemo(() => {
     if (!baseSize) return 1;
     const s = previewZoom;
@@ -296,7 +309,7 @@ const ProjectedMapMirror: React.FC<{
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="subtitle2">
             Vista previa ({previewMode === 'players' ? 'Ventana de jugadores' : 'Skyline'})
-            {baseSize ? ` — ${baseSize.width}×${baseSize.height}${baseSize.dpr ? ` @${baseSize.dpr}x` : ''}` : ''}
+            {baseSize ? ` — ${baseSize.width}×${baseSize.height}${'dpr' in baseSize && (baseSize as any).dpr ? ` @${(baseSize as any).dpr}x` : ''}` : ''}
           </Typography>
           <ToggleButtonGroup size="small" exclusive value={previewMode} onChange={(_e, val) => { if (val) setPreviewMode(val); }}>
             <ToggleButton value="players">Jugadores</ToggleButton>

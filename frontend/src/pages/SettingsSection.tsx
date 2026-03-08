@@ -3,11 +3,13 @@ import {
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
   Accordion, AccordionSummary, AccordionDetails,
   InputAdornment, OutlinedInput, Tooltip, Snackbar, Alert,
-  Switch, FormControlLabel,
+  Switch, FormControlLabel, IconButton,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import TvIcon from '@mui/icons-material/Tv';
+import TvOffIcon from '@mui/icons-material/TvOff';
 import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import ThemeContext from '../ThemeContext';
@@ -17,9 +19,12 @@ import UpdateChecker from '../components/UpdateChecker';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import axios from 'axios';
+import { QRCodeSVG } from 'qrcode.react';
 import API_BASE_URL from '../apiBase';
 import { useNavigate } from 'react-router-dom';
 import { SKYLINE_PREVIEW_KEY } from '../overlays/SkylinePreviewOverlay';
+import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
+import { getSkylineOverlaySettings, setSkylineOverlaySettings } from '../api/campaigns/skylineOverlay';
 
 /** Response shape from GET /network-info */
 interface NetworkInfo {
@@ -30,9 +35,12 @@ interface NetworkInfo {
 const SettingsSection = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { activeCampaign } = useActiveCampaign();
   const [openLogout, setOpenLogout] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);
+  /** URL currently beamed to the Skyline overlay (empty string = none). */
+  const [skylineQrUrl, setSkylineQrUrl] = useState<string>('');
   const [skylinePreview, setSkylinePreview] = useState<boolean>(
     () => localStorage.getItem(SKYLINE_PREVIEW_KEY) === 'true',
   );
@@ -64,6 +72,60 @@ const SettingsSection = () => {
       .then((res) => setNetworkInfo(res.data))
       .catch(() => { /* sin red o backend caído: silencio */ });
   }, []);
+
+  /**
+   * Carga el estado actual del QR en Skyline (qué URL está proyectada).
+   * Se vuelve a cargar al cambiar de campaña.
+   */
+  useEffect(() => {
+    const campaignId = activeCampaign?.id;
+    if (!campaignId) { setSkylineQrUrl(''); return; }
+    getSkylineOverlaySettings(campaignId)
+      .then((s) => setSkylineQrUrl(s.showQr ? (s.qrUrl ?? '') : ''))
+      .catch(() => setSkylineQrUrl(''));
+  }, [activeCampaign?.id]);
+
+  /**
+   * Envía (o quita) el QR de una URL a la ventana Skyline.
+   * Persiste en backend y notifica mediante BroadcastChannel + localStorage.
+   *
+   * @param url - La URL que codifica el QR. Pasar cadena vacía para quitarlo.
+   */
+  const handleSkylineQrToggle = async (url: string) => {
+    const campaignId = activeCampaign?.id;
+    if (!campaignId) return;
+
+    const sending = skylineQrUrl !== url; // Si ya está activa esa URL, la quitamos
+    const nextShowQr = sending;
+    const nextQrUrl = sending ? url : '';
+
+    setSkylineQrUrl(nextQrUrl);
+    try {
+      await setSkylineOverlaySettings(campaignId, { showQr: nextShowQr, qrUrl: nextQrUrl });
+      // Notify projection windows via BroadcastChannel
+      try {
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('campaign-sync');
+          bc.postMessage({
+            type: 'skylineSettingsChanged',
+            campaignId,
+            settings: { showQr: nextShowQr, qrUrl: nextQrUrl },
+          });
+          bc.close();
+        }
+      } catch {}
+      // Notify cross-tab via localStorage
+      try {
+        localStorage.setItem(
+          'app.skyline.settingsUpdated',
+          JSON.stringify({ campaignId, showQr: nextShowQr, qrUrl: nextQrUrl, at: Date.now() }),
+        );
+      } catch {}
+    } catch {
+      // Revert optimistic update on error
+      setSkylineQrUrl(skylineQrUrl);
+    }
+  };
 
   /**
    * Copia la URL indicada al portapapeles y muestra confirmación.
@@ -183,41 +245,86 @@ const SettingsSection = () => {
             )}
             <Stack spacing={1}>
               {webUrls.map((url) => (
-                <OutlinedInput
-                  key={url}
-                  fullWidth
-                  readOnly
-                  value={url}
-                  size="small"
-                  sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <Tooltip title={t('open_in_browser', 'Abrir en navegador')}>
-                        <span>
+                <Box key={url}>
+                  <OutlinedInput
+                    fullWidth
+                    readOnly
+                    value={url}
+                    size="small"
+                    sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <Tooltip title={t('open_in_browser', 'Abrir en navegador')}>
+                          <span>
+                            <Button
+                              size="small"
+                              component="a"
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ minWidth: 0, p: 0.5 }}
+                            >
+                              <OpenInNewIcon fontSize="small" />
+                            </Button>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title={t('copy_url', 'Copiar URL')}>
                           <Button
                             size="small"
-                            component="a"
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            onClick={() => handleCopyUrl(url)}
                             sx={{ minWidth: 0, p: 0.5 }}
                           >
-                            <OpenInNewIcon fontSize="small" />
+                            <ContentCopyIcon fontSize="small" />
                           </Button>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title={t('copy_url', 'Copiar URL')}>
-                        <Button
-                          size="small"
-                          onClick={() => handleCopyUrl(url)}
-                          sx={{ minWidth: 0, p: 0.5 }}
-                        >
-                          <ContentCopyIcon fontSize="small" />
-                        </Button>
-                      </Tooltip>
-                    </InputAdornment>
-                  }
-                />
+                        </Tooltip>
+                        {activeCampaign && (
+                          <Tooltip
+                            title={
+                              skylineQrUrl === url
+                                ? t('qr_remove_from_skyline', 'Quitar QR de Skyline')
+                                : t('qr_send_to_skyline', 'Mostrar QR en Skyline')
+                            }
+                          >
+                            <IconButton
+                              size="small"
+                              color={skylineQrUrl === url ? 'warning' : 'default'}
+                              onClick={() => handleSkylineQrToggle(url)}
+                            >
+                              {skylineQrUrl === url ? (
+                                <TvOffIcon fontSize="small" />
+                              ) : (
+                                <TvIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </InputAdornment>
+                    }
+                  />
+                  {/* QR code preview below the active URL */}
+                  {skylineQrUrl === url && (
+                    <Box
+                      sx={{
+                        mt: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        p: 1.5,
+                        bgcolor: 'white',
+                        borderRadius: 1,
+                        width: 'fit-content',
+                        border: '1px solid',
+                        borderColor: 'warning.main',
+                      }}
+                    >
+                      <QRCodeSVG value={url} size={140} />
+                      <Typography variant="caption" color="text.secondary" sx={{ color: 'black' }}>
+                        {t('qr_on_skyline', 'Proyectando en Skyline')}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
               ))}
             </Stack>
           </AccordionDetails>

@@ -156,10 +156,17 @@ export default function EditMonsterDialog({ open, monster, onClose, onSave }: Ed
       setDamageVulnerabilities((monster.damageVulnerabilities || []).join(', '));
       setConditionImmunities((monster.conditionImmunities || []).join(', '));
       
-      setTraits((monster.traits || []).map(t => `**${t.name || ''}**\n${(t as any).text || ''}`).join('\n\n'));
-      setActions((monster.actions || []).map(a => `**${a.name || ''}**\n${(a as any).text || ''}`).join('\n\n'));
-      setReactions((monster.reactions || []).map(r => `**${r.name || ''}**\n${(r as any).text || ''}`).join('\n\n'));
-      setLegendaryActions((monster.legendaryActions || []).map(l => `**${l.name || ''}**\n${(l as any).text || ''}`).join('\n\n'));
+      // Only add **name** prefix when there is actually a name; omitting it prevented
+      // accumulation of empty '****\n' markers on each edit-save cycle.
+      const blockLine = (b: any) => {
+        const name = b.name || '';
+        const text = b.text || b.desc || '';
+        return name ? `**${name}**\n${text}` : text;
+      };
+      setTraits((monster.traits || []).map(blockLine).join('\n\n'));
+      setActions((monster.actions || []).map(blockLine).join('\n\n'));
+      setReactions((monster.reactions || []).map(blockLine).join('\n\n'));
+      setLegendaryActions((monster.legendaryActions || []).map(blockLine).join('\n\n'));
       setDescription(monster.description || '');
       
       // Load image data
@@ -179,7 +186,9 @@ export default function EditMonsterDialog({ open, monster, onClose, onSave }: Ed
           const lines = block.trim().split('\n');
           const nameMatch = lines[0]?.match(/\*\*(.+?)\*\*/);
           const name = nameMatch ? nameMatch[1] : '';
-          const text = nameMatch ? lines.slice(1).join('\n').trim() : block.trim();
+          const raw = nameMatch ? lines.slice(1).join('\n') : block;
+          // Strip any accumulated leading '****' artifact lines from previous corrupted saves
+          const text = raw.replace(/^(\*{2,4}\n)+/, '').trim();
           return { name, text };
         }).filter(b => b.text);
       };

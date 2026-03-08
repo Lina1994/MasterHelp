@@ -17,10 +17,23 @@ import MapTokensOverlay from '../components/Map/MapTokensOverlay';
 import { computeClearedFogByAllies, subtractClearedFog } from '../utils/fogHelpers';
 import { useTokenImageResolver } from '../hooks/useTokenImageResolver';
 
+/** Parses campaignId from any URL form (search string or hash-router query). */
+function parseCampaignIdFromUrl(): string | null {
+  let cid = new URLSearchParams(window.location.search).get('campaignId');
+  if (!cid) {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf('?');
+    if (qIdx !== -1) cid = new URLSearchParams(hash.slice(qIdx)).get('campaignId');
+  }
+  return cid;
+}
+
 const ProjectionMapPage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
   const { setActiveCampaignId, activeCampaign } = useActiveCampaign();
+  // Parsed synchronously so it's available before activeCampaign loads from the API.
+  const rawCampaignId = React.useRef<string | null>(parseCampaignIdFromUrl()).current;
   const KEY_SIZE = 'app.projection.size';
   const [activeTransform, setActiveTransform] = useState<{ zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number } | null>(null);
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
@@ -28,11 +41,42 @@ const ProjectionMapPage: React.FC = () => {
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
   const { resolver: tokenImageResolver } = useTokenImageResolver(activeCampaign?.id, { pollMs: 5000 });
-  const [currentTurnId, setCurrentTurnId] = useState<string | null>(null);
+  // Initialize synchronously from localStorage so the correct turn is highlighted from frame 1.
+  // useSkylineInitiativeSync writes 'app.skyline.initiativeStrip' synchronously on every turn change,
+  // so this is always fresher than anything the server could return.
+  const [currentTurnId, setCurrentTurnId] = useState<string | null>(() => {
+    try {
+      const raw = localStorage.getItem('app.skyline.initiativeStrip');
+      if (!raw) return null;
+      const strip = JSON.parse(raw);
+      if (strip?.campaignId !== parseCampaignIdFromUrl()) return null;
+      if (!strip?.battleStarted) return null;
+      return typeof strip.currentTurnId === 'string' ? strip.currentTurnId : null;
+    } catch { return null; }
+  });
   const [battleStateItems, setBattleStateItems] = useState<Array<{ id: string; name: string; imageUrl: string | null }>>([]);
   const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
+
+  // Keep a ref to the effective campaign ID for use inside stable BC handler closures.
+  // Initialized from the URL immediately (before activeCampaign loads from API) so that
+  // BroadcastChannel messages are never dropped due to a late-loading context.
+  const campaignIdRef = React.useRef<string | null | undefined>(rawCampaignId);
+  useEffect(() => { campaignIdRef.current = activeCampaign?.id ?? rawCampaignId; }, [activeCampaign?.id]);
+  // Set to non-zero if we already have live data from localStorage or BC.
+  // The server poll will NEVER override currentTurnId once this is set.
+  const lastBcTurnUpdateRef = React.useRef<number>((() => {
+    // If we initialized from localStorage above, consider it as having received live data.
+    try {
+      const raw = localStorage.getItem('app.skyline.initiativeStrip');
+      if (raw) {
+        const strip = JSON.parse(raw);
+        if (strip?.campaignId === parseCampaignIdFromUrl() && strip?.battleStarted) return 1;
+      }
+    } catch {}
+    return 0;
+  })());
 
   // Load FoW settings from server so this web window matches Electron even across origins.
   useEffect(() => {
@@ -54,7 +98,7 @@ const ProjectionMapPage: React.FC = () => {
     return () => { cancelled = true; window.clearInterval(id); };
   }, [activeCampaign?.id]);
 
-  // React to radius updates from preview or other tabs
+  // React to radius updates from preview or other tabs; also react to initiative strip changes
   useEffect(() => {
     const KEY = 'app.map.allyClearRadius';
     try {
@@ -69,15 +113,45 @@ const ProjectionMapPage: React.FC = () => {
         const n = parseInt(ev.newValue, 10);
         if (Number.isFinite(n)) setAllyClearRadius(Math.max(0, Math.min(10, n)));
       }
+      // React to initiative strip written by useSkylineInitiativeSync (cross-window via storage event)
+      if (ev.key === 'app.skyline.initiativeStrip' && ev.newValue) {
+        try {
+          const strip = JSON.parse(ev.newValue);
+          if (strip?.campaignId && strip.campaignId === campaignIdRef.current) {
+            lastBcTurnUpdateRef.current = Date.now();
+            if (!strip.battleStarted) {
+              setCurrentTurnId(null);
+            } else if (typeof strip.currentTurnId === 'string' || strip.currentTurnId === null) {
+              setCurrentTurnId(strip.currentTurnId ?? null);
+            }
+            if (Array.isArray(strip.items)) {
+              setBattleStateItems(strip.items.map((x: any) => ({ id: x.id, name: x.name || '', imageUrl: x.imageUrl ?? null })));
+            }
+          }
+        } catch {}
+      }
     };
     window.addEventListener('storage', onStorage);
     let bc: BroadcastChannel | null = null;
     try {
       bc = new BroadcastChannel('campaign-sync');
       bc.addEventListener('message', (e: MessageEvent) => {
-        if (e.data?.type === 'ally-clear-radius-updated') {
-          const v = e.data?.value;
+        const data = e?.data;
+        if (data?.type === 'ally-clear-radius-updated') {
+          const v = data?.value;
           if (Number.isFinite(v)) setAllyClearRadius(Math.max(0, Math.min(10, Number(v))));
+        }
+        // React to turn changes broadcast by useSkylineInitiativeSync / applyTurnNav
+        if (data?.type === 'initiativeStripUpdated' && data?.campaignId === campaignIdRef.current) {
+          lastBcTurnUpdateRef.current = Date.now();
+          if (!data.battleStarted) {
+            setCurrentTurnId(null);
+          } else if (typeof data.currentTurnId === 'string' || data.currentTurnId === null) {
+            setCurrentTurnId(data.currentTurnId ?? null);
+          }
+          if (Array.isArray(data.items)) {
+            setBattleStateItems(data.items.map((x: any) => ({ id: x.id, name: x.name || '', imageUrl: x.imageUrl ?? null })));
+          }
         }
       });
     } catch {}
@@ -103,16 +177,23 @@ const ProjectionMapPage: React.FC = () => {
     let disposed = false;
     const tick = async () => {
       if (disposed) return;
+      const cid = activeCampaign?.id ?? rawCampaignId;
       try {
-        if (!activeCampaign?.id) {
+        if (!cid) {
           setCurrentTurnId(null);
           setBattleStateItems([]);
           return;
         }
-        const s = await getCampaignBattleStatePublic(activeCampaign.id);
+        const s = await getCampaignBattleStatePublic(cid);
         if (disposed) return;
-        setCurrentTurnId(typeof s?.currentTurnId === 'string' ? s.currentTurnId : null);
-        setBattleStateItems(Array.isArray(s?.items) ? s.items : []);
+        // Only trust the server poll for the initial state (when no BC/localStorage data
+        // has been received yet). Once live data arrives via BC or localStorage,
+        // the server is permanently bypassed for currentTurnId — it is always stale
+        // relative to the synchronous localStorage writes from useSkylineInitiativeSync.
+        if (lastBcTurnUpdateRef.current === 0) {
+          setCurrentTurnId(typeof s?.currentTurnId === 'string' ? s.currentTurnId : null);
+          setBattleStateItems(Array.isArray(s?.items) ? s.items : []);
+        }
       } catch {
         // ignore
       }
@@ -152,19 +233,13 @@ const ProjectionMapPage: React.FC = () => {
     return tokenImageResolver(tokenId);
   }, [battleParticipantImageMap, tokenImageResolver]);
 
-  // Sync campaignId from URL into the shared context.
-  // In HashRouter, ?campaignId=X is inside the hash (e.g. #/projection/maps?campaignId=abc),
-  // so window.location.search is empty — parse both locations.
+  // Sync the parsed campaign ID into the shared context so other hooks (FoW, tokens, etc.) can use it.
   useEffect(() => {
-    let cid = new URLSearchParams(window.location.search).get('campaignId');
-    if (!cid) {
-      const hash = window.location.hash;
-      const qIdx = hash.indexOf('?');
-      if (qIdx !== -1) cid = new URLSearchParams(hash.slice(qIdx)).get('campaignId');
+    if (rawCampaignId) {
+      // eslint-disable-next-line no-console
+      console.log('[Projection] parsed campaignId from URL', { cid: rawCampaignId, href: window.location.href });
+      setActiveCampaignId(rawCampaignId);
     }
-    // eslint-disable-next-line no-console
-    console.log('[Projection] parsed campaignId from URL', { cid, href: window.location.href });
-    if (cid) setActiveCampaignId(cid);
   }, [setActiveCampaignId]);
 
   // Nota: dejamos de usar override por IPC. La proyección sigue el activeMapId sincronizado con servidor.

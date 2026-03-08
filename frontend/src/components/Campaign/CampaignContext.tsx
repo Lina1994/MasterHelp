@@ -29,7 +29,10 @@ const CampaignsContext = createContext<CampaignsContextType | undefined>(undefin
 export const CampaignsProvider = ({ children }: { children: ReactNode }) => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Start as true: campaigns have not been fetched yet. This prevents components that
+  // rely on the campaign list (e.g. useCampaignId) from treating an empty campaigns array
+  // as "no campaigns exist" on the very first render, before the initial API call fires.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchCampaigns = useCallback(async () => {
@@ -120,6 +123,9 @@ export const CampaignsProvider = ({ children }: { children: ReactNode }) => {
     const token = localStorage.getItem('access_token');
     if (token) {
       fetchCampaigns();
+    } else {
+      // No token: we won't fetch campaigns, so clear the loading flag immediately.
+      setLoading(false);
     }
   }, [fetchCampaigns]);
 

@@ -15,6 +15,8 @@ let projectionWindow = null;
 let skylineWindow = null;
 /** @type {import('child_process').ChildProcess | null} */
 let backendProcess = null;
+/** @type {import('http').Server | null} */
+let staticServer = null;
 
 /* ---------- Logging a archivo (solo producción) ---------- */
 
@@ -46,6 +48,104 @@ function log(...args) {
   const line = args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ');
   console.log(line);
   if (logStream) logStream.write(line + '\n');
+}
+
+/* ---------- Frontend static server (producción) ---------- */
+
+/**
+ * Tipos MIME básicos para el servidor estático del frontend.
+ * @type {Record<string, string>}
+ */
+const STATIC_MIME_TYPES = {
+  '.html':  'text/html; charset=utf-8',
+  '.js':    'application/javascript; charset=utf-8',
+  '.mjs':   'application/javascript; charset=utf-8',
+  '.css':   'text/css; charset=utf-8',
+  '.json':  'application/json; charset=utf-8',
+  '.png':   'image/png',
+  '.jpg':   'image/jpeg',
+  '.jpeg':  'image/jpeg',
+  '.gif':   'image/gif',
+  '.svg':   'image/svg+xml',
+  '.ico':   'image/x-icon',
+  '.webp':  'image/webp',
+  '.woff':  'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf':   'font/ttf',
+  '.otf':   'font/otf',
+  '.mp3':   'audio/mpeg',
+  '.ogg':   'audio/ogg',
+  '.wav':   'audio/wav',
+};
+
+/** Puerto en el que el servidor estático escuchará en producción. */
+const STATIC_FRONTEND_PORT = 5173;
+
+/**
+ * Arranca un servidor HTTP estático que sirve `frontend/dist` en el puerto
+ * {@link STATIC_FRONTEND_PORT}, escuchando en todas las interfaces (0.0.0.0).
+ *
+ * Esto permite que otros equipos de la misma red LAN accedan a la app
+ * mediante un navegador usando la URL mostrada en los ajustes (Acceso Web).
+ *
+ * Solo se ejecuta cuando la app está empaquetada (producción).
+ * Electron parchea `fs.readFile` para leer dentro del archivo .asar,
+ * por lo que el servidor funciona aunque `frontend/dist` esté empaquetado.
+ *
+ * @returns {import('http').Server | null} El servidor creado, o null en dev.
+ */
+function startStaticServer() {
+  if (isDev) return null;
+
+  const staticDir = path.join(__dirname, 'frontend', 'dist');
+  const indexPath = path.join(staticDir, 'index.html');
+
+  const server = http.createServer((req, res) => {
+    // Extraer el path sin query string ni fragmento
+    const rawPath = decodeURIComponent((req.url || '/').split('?')[0].split('#')[0]);
+
+    // Seguridad: rechazar path traversal
+    const normalized = path.normalize(rawPath);
+    if (normalized.includes('..')) {
+      res.writeHead(403);
+      res.end('Forbidden');
+      return;
+    }
+
+    // Resolver la ruta al fichero estático
+    const filePath = path.join(staticDir, normalized);
+
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        // Fallback SPA: servir index.html para cualquier ruta no encontrada
+        fs.readFile(indexPath, (err2, indexData) => {
+          if (err2) {
+            res.writeHead(404);
+            res.end('Not Found');
+            return;
+          }
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(indexData);
+        });
+        return;
+      }
+
+      const ext = path.extname(filePath).toLowerCase();
+      const contentType = STATIC_MIME_TYPES[ext] || 'application/octet-stream';
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(data);
+    });
+  });
+
+  server.listen(STATIC_FRONTEND_PORT, '0.0.0.0', () => {
+    log(`[static] Frontend accesible en http://0.0.0.0:${STATIC_FRONTEND_PORT}`);
+  });
+
+  server.on('error', (err) => {
+    log('[static] Error en el servidor estático:', err.message);
+  });
+
+  return server;
 }
 
 /* ---------- Backend lifecycle ---------- */
@@ -225,6 +325,9 @@ function createWindow() {
 // Este método se llamará cuando Electron haya terminado la inicialización.
 app.whenReady().then(async () => {
   initLogFile();
+
+  // Arrancar el servidor estático del frontend (Acceso Web por LAN)
+  staticServer = startStaticServer();
 
   // Arrancar el backend en producción antes de mostrar la ventana
   try {
@@ -486,8 +589,12 @@ app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// Limpiar proceso backend al salir
+// Limpiar proceso backend y servidor estático al salir
 app.on('before-quit', () => {
+  if (staticServer) {
+    staticServer.close();
+    staticServer = null;
+  }
   if (backendProcess && !backendProcess.killed) {
     backendProcess.kill();
     backendProcess = null;

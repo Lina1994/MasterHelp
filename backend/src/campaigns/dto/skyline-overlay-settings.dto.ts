@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
 /**
  * Skyline overlay settings DTO.
@@ -18,4 +18,20 @@ export class SkylineOverlaySettingsDto {
   @IsBoolean()
   @IsOptional()
   showInitiativeStrip?: boolean;
+
+  /**
+   * When true, display the QR code in the Skyline projection overlay.
+   */
+  @IsBoolean()
+  @IsOptional()
+  showQr?: boolean;
+
+  /**
+   * The URL encoded in the QR code shown on the Skyline overlay.
+   * Should be a LAN-accessible http:// URL.
+   */
+  @IsString()
+  @MaxLength(512)
+  @IsOptional()
+  qrUrl?: string;
 }
