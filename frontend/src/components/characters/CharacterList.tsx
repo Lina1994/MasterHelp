@@ -17,13 +17,18 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   Grid,
   IconButton,
+  InputAdornment,
+  InputLabel,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
+  Select,
   Stack,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -32,6 +37,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import SearchIcon from '@mui/icons-material/Search';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useCampaignsContext } from '../Campaign/CampaignContext';
 import { getCurrentUser } from '../../utils/getCurrentUser';
@@ -84,6 +90,30 @@ export const CharacterList: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [settingSkylineId, setSettingSkylineId] = useState<string | null>(null);
   const { fetchCampaigns } = useCampaignsContext();
+  const [search, setSearch] = useState('');
+  const [kindFilter, setKindFilter] = useState<'all' | 'pc' | 'npc'>('all');
+
+  const filtered = useMemo(() => {
+    let result = [...items];
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter(c =>
+        c.name?.toLowerCase().includes(q) ||
+        c.className?.toLowerCase().includes(q) ||
+        c.race?.toLowerCase().includes(q)
+      );
+    }
+    if (kindFilter !== 'all') {
+      result = result.filter(c => c.kind === kindFilter);
+    }
+    result.sort((a, b) => {
+      const kindOrder = (k: string) => k === 'pc' ? 0 : 1;
+      const diff = kindOrder(a.kind) - kindOrder(b.kind);
+      if (diff !== 0) return diff;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+    return result;
+  }, [items, search, kindFilter]);
 
   const load = async () => {
     setLoading(true);
@@ -174,11 +204,41 @@ export const CharacterList: React.FC = () => {
         <Typography variant="h5">{t('characters', 'Personajes')}</Typography>
         <Button startIcon={<AddIcon />} variant="contained" onClick={onCreate}>{t('new', 'Nuevo')}</Button>
       </Stack>
-      {items.length === 0 ? (
+
+      <Stack direction="row" spacing={2} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
+        <TextField
+          size="small"
+          placeholder={t('search_characters', 'Buscar por nombre, clase o raza...')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ minWidth: 260, flex: 1 }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>
+              ),
+            },
+          }}
+        />
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>{t('type', 'Tipo')}</InputLabel>
+          <Select
+            value={kindFilter}
+            label={t('type', 'Tipo')}
+            onChange={(e) => setKindFilter(e.target.value as any)}
+          >
+            <MenuItem value="all">{t('all', 'Todos')}</MenuItem>
+            <MenuItem value="pc">{t('pc', 'PJ')}</MenuItem>
+            <MenuItem value="npc">{t('npc', 'PNJ')}</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
+
+      {filtered.length === 0 ? (
         <Typography color="text.secondary">{loading ? t('loading', 'Cargando...') : t('no_characters', 'No hay personajes')}</Typography>
       ) : (
         <Grid container spacing={2}>
-          {items.map((c) => {
+          {filtered.map((c) => {
             const initials = (c.name || '?').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
             const title = `${c.name}`;
             const subheader = [c.kind?.toUpperCase(), c.className, c.race].filter(Boolean).join(' • ');

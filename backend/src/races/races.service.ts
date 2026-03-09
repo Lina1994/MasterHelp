@@ -25,7 +25,8 @@ export type TraitEffect =
 export interface RaceTrait {
   id: string;
   name: string;
-  effects: TraitEffect[];
+  description?: string;
+  effects?: TraitEffect[];
 }
 
 export interface Subrace {

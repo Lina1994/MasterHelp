@@ -41,6 +41,14 @@ import { WorldpediaFolder } from './worldpedia/entities/worldpedia-folder.entity
 import { WorldpediaNote } from './worldpedia/entities/worldpedia-note.entity';
 import { WorldpediaNoteLink } from './worldpedia/entities/worldpedia-note-link.entity';
 import { NetworkInfoModule } from './network-info/network-info.module';
+import { SkillsModule } from './skills/skills.module';
+import { FeatsModule } from './feats/feats.module';
+import { CampaignSkill } from './skills/entities/campaign-skill.entity';
+import { CampaignFeat } from './feats/entities/campaign-feat.entity';
+import { CampaignClass } from './classes/entities/campaign-class.entity';
+import { CampaignRace } from './races/entities/campaign-race.entity';
+import { TraitsModule } from './traits/traits.module';
+import { CampaignTrait } from './traits/entities/campaign-trait.entity';
 
 @Module({
   imports: [
@@ -80,6 +88,11 @@ import { NetworkInfoModule } from './network-info/network-info.module';
           WorldpediaFolder,
           WorldpediaNote,
           WorldpediaNoteLink,
+          CampaignSkill,
+          CampaignFeat,
+          CampaignClass,
+          CampaignRace,
+          CampaignTrait,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -105,6 +118,9 @@ import { NetworkInfoModule } from './network-info/network-info.module';
     MonstersModule,
     WorldpediaModule,
     NetworkInfoModule,
+    SkillsModule,
+    FeatsModule,
+    TraitsModule,
   ],
   controllers: [],
   providers: [],
