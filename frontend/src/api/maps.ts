@@ -4,7 +4,7 @@ export interface MapItemDto {
   id: string;
   name: string;
   description?: string;
-  group?: string;
+  group?: string[];
   timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
   isWorldMap?: boolean;
   musicConfig?: Record<string, any>;
@@ -27,7 +27,7 @@ export async function createMap(payload: {
   description?: string;
   campaignId?: string;
   file?: File | null;
-  group?: string;
+  group?: string[];
   timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
   isWorldMap?: boolean;
   musicConfig?: Record<string, any>;
@@ -39,7 +39,7 @@ export async function createMap(payload: {
   if (payload.description) form.append('description', payload.description);
   if (payload.campaignId) form.append('campaignId', payload.campaignId);
   if (payload.file) form.append('file', payload.file);
-  if (payload.group) form.append('group', payload.group);
+  if (payload.group && payload.group.length) form.append('group', JSON.stringify(payload.group));
   if (payload.timeOfDay !== undefined) {
     const allowed = ['', 'dawn', 'morning', 'afternoon', 'night'] as const;
     const val = (payload.timeOfDay as any) ?? '';
@@ -63,7 +63,7 @@ export async function updateMap(id: string, payload: {
   description?: string;
   campaignId?: string;
   file?: File | null;
-  group?: string;
+  group?: string[];
   timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
   isWorldMap?: boolean;
   musicConfig?: Record<string, any>;
@@ -76,7 +76,7 @@ export async function updateMap(id: string, payload: {
   if (payload.description !== undefined) form.append('description', payload.description);
   if (payload.campaignId !== undefined) form.append('campaignId', payload.campaignId);
   if (payload.file) form.append('file', payload.file);
-  if (payload.group !== undefined) form.append('group', payload.group);
+  if (payload.group !== undefined) form.append('group', JSON.stringify(payload.group));
   if (payload.timeOfDay !== undefined) {
     const allowed = ['', 'dawn', 'morning', 'afternoon', 'night'] as const;
     const val = (payload.timeOfDay as any) ?? '';

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip, Paper, Typography, MenuItem, Divider } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip, Paper, Typography, MenuItem, Divider, Autocomplete, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
@@ -25,7 +25,7 @@ type FormState = {
   id?: string;
   name: string;
   description?: string;
-  group?: string;
+  group?: string[];
   isWorldMap?: boolean;
   musicConfig?: MusicCfg;
   sfxConfig?: SfxCfg;
@@ -38,6 +38,14 @@ export default function MapsPage() {
   const campaignId = activeCampaign?.id;
   const [items, setItems] = useState<MapItemDto[]>([]);
   const [q, setQ] = useState('');
+  const [groupFilter, setGroupFilter] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('mapsPage.groupFilter');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [usage, setUsage] = useState<{ totalSize: number; count: number } | null>(null);
   const [open, setOpen] = useState(false);
@@ -52,7 +60,38 @@ export default function MapsPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { mode: windowSizeMode, customSizes, setMode: setWindowSizeMode, setCustomSize } = useSecondaryWindowSizes();
 
-  const filtered = useMemo(() => items, [items]);
+  // Persist group filter to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('mapsPage.groupFilter', JSON.stringify(groupFilter));
+    } catch { /* noop */ }
+  }, [groupFilter]);
+
+  const filtered = useMemo(() => {
+    let result = [...items];
+    
+    // Apply group filter
+    if (groupFilter.length > 0) {
+      result = result.filter((map) => {
+        const mapGroups = map.group || [];
+        // Map is included if it has at least one of the selected groups
+        return groupFilter.some(g => mapGroups.includes(g));
+      });
+    }
+    
+    return result;
+  }, [items, groupFilter]);
+
+  /** All distinct groups across loaded maps, for autocomplete suggestions. */
+  const allGroups = useMemo(() => {
+    const set = new Set<string>();
+    for (const m of items) {
+      if (Array.isArray(m.group)) {
+        for (const g of m.group) if (g) set.add(g);
+      }
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [items]);
 
   const refresh = async () => {
     // Si no hay campaña activa, no intentes cargar: esta vista depende del contexto de campaña.
@@ -98,7 +137,7 @@ export default function MapsPage() {
 
   const onOpenCreate = () => {
     if (localPreview) { URL.revokeObjectURL(localPreview); setLocalPreview(null); }
-    setForm({ name: '', isWorldMap: false, group: undefined, musicConfig: undefined, sfxConfig: undefined, file: null });
+    setForm({ name: '', isWorldMap: false, group: [], musicConfig: undefined, sfxConfig: undefined, file: null });
     setOpen(true);
   };
   const onOpenEdit = (it: MapItemDto) => {
@@ -107,7 +146,7 @@ export default function MapsPage() {
       id: it.id,
       name: it.name,
       description: it.description,
-      group: it.group,
+      group: it.group ?? [],
       isWorldMap: it.isWorldMap ?? false,
       musicConfig: (it as any).musicConfig as any,
       sfxConfig: (it as any).sfxConfig as any,
@@ -213,8 +252,22 @@ export default function MapsPage() {
         customPlayersSize={customSizes.players}
         customSkylineSize={customSizes.skyline}
       />
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-        <TextField size="small" label="Buscar" value={q} onChange={(e) => setQ(e.target.value)} />
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
+        <TextField size="small" label="Buscar" value={q} onChange={(e) => setQ(e.target.value)} sx={{ minWidth: 200 }} />
+        <Autocomplete
+          multiple
+          size="small"
+          options={allGroups}
+          value={groupFilter}
+          onChange={(_e, newValue) => setGroupFilter(newValue)}
+          renderTags={(value, getTagProps) =>
+            value.map((option, index) => (
+              <Chip variant="outlined" label={option} size="small" {...getTagProps({ index })} key={option} />
+            ))
+          }
+          renderInput={(params) => <TextField {...params} label="Filtrar por grupos" placeholder="Selecciona grupos" />}
+          sx={{ minWidth: 280 }}
+        />
         <Typography variant="body2" color="text.secondary" sx={{ minWidth: 200 }}>
           {usage ? `${(usage.totalSize/1024/1024).toFixed(2)} MB / ${usage.count} mapas` : 'Calculando uso...'}
         </Typography>
@@ -362,7 +415,19 @@ export default function MapsPage() {
             <TextField label="Nombre" value={form.name} onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))} />
             <TextField label="Descripción" value={form.description || ''} onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))} multiline rows={3} />
 
-            <TextField label="Grupo" value={form.group || ''} onChange={(e) => setForm((s) => ({ ...s, group: e.target.value }))} />
+            <Autocomplete
+              multiple
+              freeSolo
+              options={allGroups}
+              value={form.group ?? []}
+              onChange={(_e, newValue) => setForm((s) => ({ ...s, group: newValue as string[] }))}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip variant="outlined" label={option} size="small" {...getTagProps({ index })} key={option} />
+                ))
+              }
+              renderInput={(params) => <TextField {...params} label="Grupos" placeholder="Escribe o selecciona grupos" />}
+            />
             {/* Selector de archivo removido por petición: la actualización por franja se hace en el bloque inferior */}
 
             {form.id && (

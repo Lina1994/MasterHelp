@@ -9,10 +9,10 @@ import { UpdateCharacterDto } from './dto/update-character.dto';
 export class CharactersController {
   constructor(private readonly service: CharactersService) {}
 
-  /** List characters for a campaign, filtered by viewer permissions. */
+  /** List characters for a campaign, filtered by viewer permissions and optionally by map. */
   @Get()
-  async list(@Request() req, @Query('campaignId') campaignId: string) {
-    return this.service.listForUserInCampaign(req.user.userId, campaignId);
+  async list(@Request() req, @Query('campaignId') campaignId: string, @Query('mapId') mapId?: string) {
+    return this.service.listForUserInCampaign(req.user.userId, campaignId, mapId);
   }
 
   @Post()

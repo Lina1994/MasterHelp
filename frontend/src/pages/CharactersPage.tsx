@@ -7,6 +7,7 @@ import CampaignRacesPage from './CampaignRacesPage';
 import CampaignSkillsPage from './CampaignSkillsPage';
 import CampaignFeatsPage from './CampaignFeatsPage';
 import CampaignTraitsPage from './CampaignTraitsPage';
+import CampaignBackgroundsPage from './CampaignBackgroundsPage';
 
 const CharactersPage: React.FC = () => {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ const CharactersPage: React.FC = () => {
           <Tab label={t('skills', 'Habilidades')} />
           <Tab label={t('feats', 'Dotes')} />
           <Tab label={t('traits', 'Rasgos')} />
+          <Tab label={t('backgrounds', 'Trasfondos')} />
         </Tabs>
       </Box>
       {tab === 0 && <CharacterList />}
@@ -30,6 +32,7 @@ const CharactersPage: React.FC = () => {
       {tab === 3 && <CampaignSkillsPage />}
       {tab === 4 && <CampaignFeatsPage />}
       {tab === 5 && <CampaignTraitsPage />}
+      {tab === 6 && <CampaignBackgroundsPage />}
     </Container>
   );
 };

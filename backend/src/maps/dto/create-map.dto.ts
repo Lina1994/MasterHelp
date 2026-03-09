@@ -19,10 +19,24 @@ export class CreateMapDto {
   @IsUUID()
   campaignId?: string;
 
+  /**
+   * Map groups. Accepts a JSON-encoded string array (e.g. '["City","Dungeon"]') or a plain string.
+   */
   @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  group?: string;
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (Array.isArray(value)) return value.map(String);
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
+      } catch {
+        return [value];
+      }
+    }
+    return undefined;
+  })
+  group?: string[];
 
   @IsOptional()
   @IsIn(['', 'dawn', 'morning', 'afternoon', 'night'])

@@ -242,7 +242,7 @@ export class MapsService {
       id: r.id,
       name: r.name,
       description: r.description,
-      group: (r as any).group,
+      group: (r as any).group ?? [],
       timeOfDay: (r as any).timeOfDay,
       isWorldMap: (r as any).isWorldMap ?? false,
       musicConfig: (r as any).musicConfig,
@@ -282,7 +282,7 @@ export class MapsService {
     }
     entity.name = (incomingName || 'Untitled').slice(0, 200);
     entity.description = dto.description;
-    entity.group = dto.group ?? null;
+    entity.group = dto.group ?? [];
     entity.timeOfDay = (dto.timeOfDay === '' ? null : dto.timeOfDay) ?? null;
     entity.isWorldMap = dto.isWorldMap ?? false;
     entity.musicConfig = dto.musicConfig ?? null;
@@ -337,7 +337,7 @@ export class MapsService {
     if (entity.owner.id !== authUserId) throw new ForbiddenException('Not owner');
     if (dto.name !== undefined) entity.name = dto.name;
     if (dto.description !== undefined) entity.description = dto.description;
-    if (dto.group !== undefined) (entity as any).group = dto.group ?? null;
+    if (dto.group !== undefined) (entity as any).group = dto.group ?? [];
     if (dto.timeOfDay !== undefined) (entity as any).timeOfDay = (dto.timeOfDay === '' ? null : dto.timeOfDay) ?? null;
     if (dto.isWorldMap !== undefined) (entity as any).isWorldMap = dto.isWorldMap;
     if (dto.musicConfig !== undefined) (entity as any).musicConfig = dto.musicConfig ?? null;

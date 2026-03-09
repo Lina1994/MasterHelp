@@ -1,8 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { CharacterPayload, updateCharacter, createCharacter } from '../../api/characters';
+import { listMaps, MapItemDto } from '../../api/maps';
+import { listCampaignClasses } from '../../api/classes/classesApi';
+import { listCampaignRaces } from '../../api/races/racesApi';
+import { listCampaignBackgrounds } from '../../api/backgrounds/backgroundsApi';
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
+  Autocomplete,
   Box,
   Button,
   Checkbox,
@@ -275,11 +280,47 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   const [tab, setTab] = useState(0);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
+  const [maps, setMaps] = useState<MapItemDto[]>([]);
+  const [classOptions, setClassOptions] = useState<string[]>([]);
+  const [raceOptions, setRaceOptions] = useState<string[]>([]);
+  const [backgroundOptions, setBackgroundOptions] = useState<string[]>([]);
 
   React.useEffect(() => {
     setDraft(initialDraft);
     setTab(0);
     setErrorText(null);
+    // Load maps + class/race/background options when opening the editor
+    if (open && initialDraft?.campaignId) {
+      const cId = initialDraft.campaignId;
+      console.log('[CharacterEditorModal] Opening editor for campaign:', cId);
+      (async () => {
+        try {
+          const data = await listMaps({ campaignId: cId });
+          console.log('[CharacterEditorModal] Loaded maps:', data.length, data);
+          setMaps(data);
+        } catch (err) {
+          console.error('[CharacterEditorModal] loadMaps failed:', err);
+          setMaps([]);
+        }
+      })();
+      // Load class names
+      listCampaignClasses(cId, { pageSize: 500 })
+        .then(res => setClassOptions((res.items || []).map((c: any) => c.name).filter(Boolean)))
+        .catch(() => setClassOptions([]));
+      // Load race names
+      listCampaignRaces(cId, { pageSize: 500 })
+        .then(res => setRaceOptions((res.items || []).map((r: any) => r.name).filter(Boolean)))
+        .catch(() => setRaceOptions([]));
+      // Load background names
+      listCampaignBackgrounds(cId, { pageSize: 500 })
+        .then(res => setBackgroundOptions((res.items || []).map((b: any) => b.name).filter(Boolean)))
+        .catch(() => setBackgroundOptions([]));
+    } else {
+      setMaps([]);
+      setClassOptions([]);
+      setRaceOptions([]);
+      setBackgroundOptions([]);
+    }
   }, [initialDraft, open]);
 
   /**
@@ -397,10 +438,34 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
 
           {/* Row: Meta fields */}
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <TextField size="small" label={t('class', 'Clase')} value={draft.className || ''} onChange={(e) => setDraft({ ...draft, className: e.target.value })} sx={{ width: 120 }} />
+            <Autocomplete
+              freeSolo
+              size="small"
+              options={classOptions}
+              value={draft.className || ''}
+              onInputChange={(_e, val) => setDraft({ ...draft, className: val })}
+              renderInput={(params) => <TextField {...params} label={t('class', 'Clase')} />}
+              sx={{ width: 180 }}
+            />
             <TextField size="small" type="number" label={t('level', 'Nivel')} value={draft.level ?? 1} onChange={(e) => setDraft({ ...draft, level: Number(e.target.value) })} sx={{ width: 70 }} />
-            <TextField size="small" label={t('race', 'Raza')} value={draft.race || ''} onChange={(e) => setDraft({ ...draft, race: e.target.value })} sx={{ width: 120 }} />
-            <TextField size="small" label={t('background', 'Trasfondo')} value={draft.background || ''} onChange={(e) => setDraft({ ...draft, background: e.target.value })} sx={{ width: 120 }} />
+            <Autocomplete
+              freeSolo
+              size="small"
+              options={raceOptions}
+              value={draft.race || ''}
+              onInputChange={(_e, val) => setDraft({ ...draft, race: val })}
+              renderInput={(params) => <TextField {...params} label={t('race', 'Raza')} />}
+              sx={{ width: 180 }}
+            />
+            <Autocomplete
+              freeSolo
+              size="small"
+              options={backgroundOptions}
+              value={draft.background || ''}
+              onInputChange={(_e, val) => setDraft({ ...draft, background: val })}
+              renderInput={(params) => <TextField {...params} label={t('background', 'Trasfondo')} />}
+              sx={{ width: 200 }}
+            />
             <TextField size="small" label={t('alignment', 'Alineamiento')} value={draft.alignment || ''} onChange={(e) => setDraft({ ...draft, alignment: e.target.value })} sx={{ width: 130 }} />
             {draft.kind === 'pc' && (
               <TextField size="small" label={t('player_name', 'Jugador')} value={draft.playerName || ''} onChange={(e) => setDraft({ ...draft, playerName: e.target.value })} sx={{ width: 130 }} />
@@ -423,6 +488,36 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                 </Select>
               </FormControl>
             )}
+          </Stack>
+
+          {/* Map associations */}
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }} flexWrap="wrap" useFlexGap>
+            <Autocomplete
+              multiple
+              size="small"
+              options={['__ALL__', ...maps.map(m => m.id)]}
+              getOptionLabel={(opt) => {
+                if (opt === '__ALL__') return t('all_maps', 'Todos los mapas');
+                return maps.find(m => m.id === opt)?.name || opt;
+              }}
+              value={draft.associatedMapIds || []}
+              onChange={(_e, newValue) => {
+                // If "__ALL__" is selected, clear others and keep only "__ALL__"
+                if (newValue.includes('__ALL__')) {
+                  setDraft({ ...draft, associatedMapIds: ['__ALL__'] });
+                } else {
+                  setDraft({ ...draft, associatedMapIds: newValue });
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t('associated_maps', 'Mapas asociados')}
+                  placeholder={t('select_maps', 'Selecciona mapas')}
+                />
+              )}
+              sx={{ minWidth: 320, flex: 1 }}
+            />
           </Stack>
 
           {/* Experience Points inline */}

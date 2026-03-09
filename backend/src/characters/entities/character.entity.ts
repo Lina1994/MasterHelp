@@ -186,4 +186,30 @@ export class Character {
   /** visible to players when true; master always sees all. */
   @Column({ type: 'boolean', default: false })
   visibleToPlayers: boolean;
+
+  /**
+   * Optional map associations for filtering/categorization.
+   * Empty array or includes "__ALL__" = character appears in all maps.
+   * Stored as JSON array string.
+   */
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: {
+      to(value: string[] | null | undefined): string | null {
+        if (!value || (Array.isArray(value) && value.length === 0)) return null;
+        return JSON.stringify(value);
+      },
+      from(value: string | null | undefined): string[] {
+        if (!value) return [];
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      },
+    },
+  })
+  associatedMapIds: string[];
 }

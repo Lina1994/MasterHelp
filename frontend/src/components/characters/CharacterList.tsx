@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { listCharacters, deleteCharacter, CharacterPayload } from '../../api/characters';
+import { listMaps, MapItemDto } from '../../api/maps';
 import { setActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
 import { useCampaignId } from '../../hooks/useCampaignId';
+import { useActiveMap } from '../Map/ActiveMapContext';
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
@@ -66,6 +68,7 @@ export const CharacterList: React.FC = () => {
   const campaignId = useCampaignId();
   const { t } = useTranslation();
   const { activeCampaign } = useActiveCampaign();
+  const { activeMapId } = useActiveMap();
   const currentUser = getCurrentUser();
   const isMaster = !!(activeCampaign && currentUser && activeCampaign.owner?.id === currentUser.id);
   const navigate = useNavigate();
@@ -90,8 +93,50 @@ export const CharacterList: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [settingSkylineId, setSettingSkylineId] = useState<string | null>(null);
   const { fetchCampaigns } = useCampaignsContext();
-  const [search, setSearch] = useState('');
-  const [kindFilter, setKindFilter] = useState<'all' | 'pc' | 'npc'>('all');
+  
+  // Load filters from localStorage on mount
+  const [search, setSearch] = useState(() => {
+    try {
+      return localStorage.getItem('characterList.search') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [kindFilter, setKindFilter] = useState<'all' | 'pc' | 'npc'>(() => {
+    try {
+      const saved = localStorage.getItem('characterList.kindFilter');
+      return (saved === 'pc' || saved === 'npc') ? saved : 'all';
+    } catch {
+      return 'all';
+    }
+  });
+  const [mapFilter, setMapFilter] = useState<string>(() => {
+    try {
+      return localStorage.getItem('characterList.mapFilter') || '__ALL__';
+    } catch {
+      return '__ALL__';
+    }
+  });
+  const [maps, setMaps] = useState<MapItemDto[]>([]);
+
+  // Persist filters to localStorage when they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('characterList.search', search);
+    } catch { /* noop */ }
+  }, [search]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('characterList.kindFilter', kindFilter);
+    } catch { /* noop */ }
+  }, [kindFilter]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('characterList.mapFilter', mapFilter);
+    } catch { /* noop */ }
+  }, [mapFilter]);
 
   const filtered = useMemo(() => {
     let result = [...items];
@@ -118,12 +163,43 @@ export const CharacterList: React.FC = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await listCharacters(campaignId);
+      let mapIdFilter: string | undefined;
+      if (mapFilter === '__ALL__') {
+        mapIdFilter = undefined;
+      } else if (mapFilter === '__ACTIVE__') {
+        mapIdFilter = activeMapId || undefined;
+      } else {
+        mapIdFilter = mapFilter;
+      }
+      const data = await listCharacters(campaignId, mapIdFilter);
       setItems(data);
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, [campaignId]);
+  const loadMaps = async () => {
+    if (!campaignId) {
+      setMaps([]);
+      return;
+    }
+    try {
+      const data = await listMaps({ campaignId });
+      console.log('[CharacterList] Loaded maps:', data.length, data);
+      setMaps(data);
+    } catch (err) {
+      console.error('[CharacterList] loadMaps failed:', err);
+      setMaps([]);
+    }
+  };
+
+  useEffect(() => { load(); }, [campaignId, mapFilter, activeMapId]);
+  useEffect(() => { loadMaps(); }, [campaignId]);
+
+  // Reset filter to __ALL__ if active map is cleared while filter is __ACTIVE__
+  useEffect(() => {
+    if (mapFilter === '__ACTIVE__' && !activeMapId) {
+      setMapFilter('__ALL__');
+    }
+  }, [mapFilter, activeMapId]);
 
   const onCreate = () => {
     setDraft(emptyCharacter(campaignId));
@@ -131,7 +207,11 @@ export const CharacterList: React.FC = () => {
   };
 
   const onEdit = (c: CharacterPayload) => {
-    setDraft({ ...c, ownerPlayerId: typeof c.ownerPlayerId !== 'undefined' ? c.ownerPlayerId : (c as any).ownerPlayer?.id ?? null });
+    setDraft({ 
+      ...c,
+      campaignId: c.campaignId || campaignId, // Ensure campaignId is present
+      ownerPlayerId: typeof c.ownerPlayerId !== 'undefined' ? c.ownerPlayerId : (c as any).ownerPlayer?.id ?? null 
+    });
     setOpenEditor(true);
   };
 
@@ -230,6 +310,26 @@ export const CharacterList: React.FC = () => {
             <MenuItem value="all">{t('all', 'Todos')}</MenuItem>
             <MenuItem value="pc">{t('pc', 'PJ')}</MenuItem>
             <MenuItem value="npc">{t('npc', 'PNJ')}</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel>{t('map', 'Mapa')}</InputLabel>
+          <Select
+            value={mapFilter}
+            label={t('map', 'Mapa')}
+            onChange={(e) => setMapFilter(e.target.value)}
+          >
+            <MenuItem value="__ALL__">{t('all_maps', 'Todos los mapas')}</MenuItem>
+            <MenuItem value="__ACTIVE__" disabled={!activeMapId}>
+              {activeMapId ? t('active_map', 'Mapa actual') : t('active_map_none', 'Mapa actual (ninguno)')}
+            </MenuItem>
+            {maps.length > 0 ? (
+              maps.map((m) => (
+                <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled value="">Sin mapas disponibles</MenuItem>
+            )}
           </Select>
         </FormControl>
       </Stack>

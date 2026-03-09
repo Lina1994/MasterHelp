@@ -30,10 +30,13 @@ export interface CharacterPayload {
   savingThrowProficiencies?: Record<string, boolean> | null;
   skillProficiencies?: Record<string, boolean> | null;
   visibleToPlayers?: boolean;
+  associatedMapIds?: string[];
 }
 
-export async function listCharacters(campaignId: string) {
-  const res = await api.get('/characters', { params: { campaignId } });
+export async function listCharacters(campaignId: string, mapId?: string) {
+  const params: Record<string, string> = { campaignId };
+  if (mapId) params.mapId = mapId;
+  const res = await api.get('/characters', { params });
   return res.data as CharacterPayload[];
 }
 

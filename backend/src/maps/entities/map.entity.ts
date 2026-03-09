@@ -22,10 +22,30 @@ export class MapEntity {
   description?: string | null;
 
   /**
-   * Optional grouping label to categorize maps (e.g., city, dungeon, region).
+   * Optional grouping labels to categorize maps (e.g., city, dungeon, region).
+   * Stored as JSON array string for multi-group support.
+   * Backward-compatible: old plain-string values are wrapped in an array on read.
    */
-  @Column({ type: 'varchar', length: 200, nullable: true })
-  group?: string | null;
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: {
+      to(value: string[] | null | undefined): string | null {
+        if (!value || (Array.isArray(value) && value.length === 0)) return null;
+        return JSON.stringify(value);
+      },
+      from(value: string | null | undefined): string[] {
+        if (!value) return [];
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed) ? parsed : [String(parsed)];
+        } catch {
+          return value ? [value] : [];
+        }
+      },
+    },
+  })
+  group: string[];
 
   /**
    * Optional current time-of-day for this map view.

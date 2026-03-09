@@ -90,4 +90,24 @@ export class CreateCharacterDto {
   @IsOptional() @IsObject() skillProficiencies?: Record<string, boolean>;
 
   @IsOptional() @IsBoolean() visibleToPlayers?: boolean;
+
+  /**
+   * Map associations. Special value "__ALL__" = character visible in all maps.
+   * Can be sent as JSON string or array.
+   */
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (Array.isArray(value)) return value.map(String);
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.map(String) : [];
+      } catch {
+        return [];
+      }
+    }
+    return undefined;
+  })
+  associatedMapIds?: string[];
 }

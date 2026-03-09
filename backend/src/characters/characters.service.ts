@@ -15,26 +15,39 @@ export class CharactersService {
     @InjectRepository(Campaign) private campaignsRepo: Repository<Campaign>,
   ) {}
 
-  /** List characters visible to requesting user in the given campaign. */
-  async listForUserInCampaign(requestingUserId: number, campaignId: string) {
+  /** List characters visible to requesting user in the given campaign, optionally filtered by map. */
+  async listForUserInCampaign(requestingUserId: number, campaignId: string, mapId?: string) {
     const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
     const isOwner = campaign.owner?.id === requestingUserId;
     const isPlayer = (campaign.players || []).some((p) => p.user?.id === requestingUserId);
     if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
 
+    let characters: Character[];
     if (isOwner) {
-      return this.charactersRepo.find({ where: { campaign: { id: campaignId } }, order: { name: 'ASC' } });
+      characters = await this.charactersRepo.find({ where: { campaign: { id: campaignId } }, order: { name: 'ASC' } });
+    } else {
+      // Player: can see own PCs and any visible ones
+      characters = await this.charactersRepo
+        .createQueryBuilder('ch')
+        .leftJoin('ch.ownerPlayer', 'ownerPlayer')
+        .leftJoin('ch.campaign', 'campaign')
+        .where('campaign.id = :campaignId', { campaignId })
+        .andWhere('(ownerPlayer.id = :uid OR ch.visibleToPlayers = 1)', { uid: requestingUserId })
+        .orderBy('ch.name', 'ASC')
+        .getMany();
     }
-    // Player: can see own PCs and any visible ones
-    return this.charactersRepo
-      .createQueryBuilder('ch')
-      .leftJoin('ch.ownerPlayer', 'ownerPlayer')
-      .leftJoin('ch.campaign', 'campaign')
-      .where('campaign.id = :campaignId', { campaignId })
-      .andWhere('(ownerPlayer.id = :uid OR ch.visibleToPlayers = 1)', { uid: requestingUserId })
-      .orderBy('ch.name', 'ASC')
-      .getMany();
+
+    // Apply map filter if provided
+    if (mapId) {
+      characters = characters.filter(ch => {
+        const maps = ch.associatedMapIds || [];
+        // Include if: contains "__ALL__" (shows in all map filters), or contains the specific mapId
+        return maps.includes('__ALL__') || maps.includes(mapId);
+      });
+    }
+
+    return characters;
   }
 
   /** Create character; owner can create any; player can create only PC owned by themselves. */

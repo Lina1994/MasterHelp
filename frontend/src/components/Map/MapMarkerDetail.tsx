@@ -124,7 +124,7 @@ function MapSubview({ mapId, campaignId }: { mapId: string; campaignId: string }
       </Box>
       <Typography variant="h6">{map.name}</Typography>
       {map.description && <Typography variant="body2" color="text.secondary">{map.description}</Typography>}
-      {map.group && <Chip label={map.group} size="small" />}
+      {Array.isArray(map.group) && map.group.map((g: string) => <Chip key={g} label={g} size="small" />)}
       <Divider />
       <Stack spacing={1}>
         <Button

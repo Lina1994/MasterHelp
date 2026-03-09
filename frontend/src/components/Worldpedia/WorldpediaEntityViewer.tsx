@@ -554,7 +554,7 @@ export default function WorldpediaEntityViewer({
       {/* Description and meta */}
       {m.description && <Typography variant="body2" sx={{ mb: 2 }}>{m.description}</Typography>}
       <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mb: 2 }}>
-        {m.group && <Chip label={m.group} size="small" variant="outlined" />}
+        {Array.isArray(m.group) && m.group.map((g: string) => <Chip key={g} label={g} size="small" variant="outlined" />)}
         {m.timeOfDay && <Chip label={todLabel(m.timeOfDay)} size="small" color="info" variant="outlined" />}
         {m.isWorldMap && <Chip label={t('world_map', 'Mapa del Mundo')} size="small" color="primary" variant="outlined" />}
       </Stack>

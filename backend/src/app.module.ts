@@ -49,6 +49,8 @@ import { CampaignClass } from './classes/entities/campaign-class.entity';
 import { CampaignRace } from './races/entities/campaign-race.entity';
 import { TraitsModule } from './traits/traits.module';
 import { CampaignTrait } from './traits/entities/campaign-trait.entity';
+import { BackgroundsModule } from './backgrounds/backgrounds.module';
+import { CampaignBackground } from './backgrounds/entities/campaign-background.entity';
 
 @Module({
   imports: [
@@ -93,6 +95,7 @@ import { CampaignTrait } from './traits/entities/campaign-trait.entity';
           CampaignClass,
           CampaignRace,
           CampaignTrait,
+          CampaignBackground,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -121,6 +124,7 @@ import { CampaignTrait } from './traits/entities/campaign-trait.entity';
     SkillsModule,
     FeatsModule,
     TraitsModule,
+    BackgroundsModule,
   ],
   controllers: [],
   providers: [],
