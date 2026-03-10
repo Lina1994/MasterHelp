@@ -44,6 +44,7 @@ import { ImageUploader } from '../Campaign/ImageUploader';
 import { TokenImageCropDialog } from './TokenImageCropDialog';
 import { SpellAutocomplete } from './SpellAutocomplete';
 import { TraitAutocomplete } from './TraitAutocomplete';
+import { FeatAutocomplete } from './FeatAutocomplete';
 import { CharacterAutoFillPanel, OptionItem } from './CharacterAutoFillPanel';
 
 /* ──────────────────── helpers ──────────────────── */
@@ -477,6 +478,7 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                     classItems={classItems}
                     raceItems={raceItems}
                     onApply={(patch) => setDraft({ ...draft, ...patch })}
+                    savedLevel={initialDraft?.id ? (initialDraft.level ?? 0) : undefined}
                   />
                 </Box>
               </Paper>
@@ -485,7 +487,7 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
         </Box>
       )}
 
-    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth disableEnforceFocus>
       <DialogContent sx={{ p: 0 }}>
         <Stack direction="row" sx={{ minHeight: 0 }}>
 
@@ -927,6 +929,12 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                     value={draft.selectedTraits || []}
                     onChange={(traits) => setDraft({ ...draft, selectedTraits: traits })}
                     label={t('traits_select', 'Seleccionar rasgos')}
+                  />
+                  <FeatAutocomplete
+                    campaignId={draft.campaignId}
+                    value={draft.selectedFeats || []}
+                    onChange={(feats) => setDraft({ ...draft, selectedFeats: feats })}
+                    label={t('feats_select', 'Seleccionar dotes')}
                   />
                   <TextField
                     value={draft.traitsAndFeatures || ''}

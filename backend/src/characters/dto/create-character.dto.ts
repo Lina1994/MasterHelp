@@ -47,6 +47,7 @@ export class CreateCharacterDto {
   @IsOptional() @IsString() equipment?: string;
   @IsOptional() @IsString() traitsAndFeatures?: string;
   @IsOptional() @IsArray() @Transform(({ value }) => Array.isArray(value) ? value.map(String) : []) selectedTraits?: string[];
+  @IsOptional() @IsArray() @Transform(({ value }) => Array.isArray(value) ? value.map(String) : []) selectedFeats?: string[];
 
   @IsOptional() @IsString() age?: string;
   @IsOptional() @IsString() height?: string;

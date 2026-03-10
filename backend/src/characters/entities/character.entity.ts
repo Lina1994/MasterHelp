@@ -101,6 +101,10 @@ export class Character {
   @Column({ type: 'simple-json', nullable: true })
   selectedTraits?: string[] | null;
 
+  /** Structured feat names selected from the campaign catalogue or typed manually. */
+  @Column({ type: 'simple-json', nullable: true })
+  selectedFeats?: string[] | null;
+
   // --- Description ---
   @Column({ type: 'text', nullable: true })
   age?: string | null;

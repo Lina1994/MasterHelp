@@ -233,6 +233,11 @@ export interface CharacterAutoFillPanelProps {
   raceItems: OptionItem[];
   /** Callback to apply suggestions to the draft. */
   onApply: (patch: Partial<CharacterPayload>) => void;
+  /**
+   * The character's level as persisted in the database when the editor was opened.
+   * `undefined` means the character has not been saved yet (new character).
+   */
+  savedLevel?: number;
 }
 
 /**
@@ -246,6 +251,7 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
   classItems,
   raceItems,
   onApply,
+  savedLevel,
 }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -311,12 +317,8 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
   }, [classDetail, raceDetail, draft.level, draft.con, draft.str, draft.dex, draft.int, draft.wis, draft.cha, draft.proficiencyBonus]);
 
   /* ── HP interactive calculator state ── */
-  const [hpMode, setHpMode] = useState<'full' | 'levelup'>(() =>
-    (draft.maxHp ?? 0) > 0 ? 'levelup' : 'full',
-  );
   const [hpRollMethod, setHpRollMethod] = useState<'fixed' | 'random' | 'manual'>('fixed');
-  const [hpManualDiceTotal, setHpManualDiceTotal] = useState<number>(0);
-  const [hpLevelUpCount, setHpLevelUpCount] = useState<number>(1);
+  const [hpManualInputStr, setHpManualInputStr] = useState<string>('');
   const [hpRandomRolls, setHpRandomRolls] = useState<number[]>([]);
 
   /* HP derived values */
@@ -325,13 +327,23 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
   const hpLevel = draft.level ?? 1;
   const hpAtLevel1 = hitDie ? hitDie + conMod : 0;
   const avgRollPerLevel = hitDie ? Math.floor(hitDie / 2) + 1 : 0;
-  const levelsToRoll = hpMode === 'full' ? Math.max(0, hpLevel - 1) : hpLevelUpCount;
-  const hasExistingHp = (draft.maxHp ?? 0) > 0;
+
+  /**
+   * Auto-detect whether this is a new character or an existing one gaining levels.
+   * - isNewCharacter: no id yet, or no savedLevel recorded → full calculation from L1
+   * - levelsGained: difference between draft level and DB level (0 if unchanged/lowered)
+   * - hpMode: 'levelup' only when existing character gains at least one level
+   */
+  const isNewCharacter = !draft.id || savedLevel === undefined || savedLevel <= 0;
+  const levelsGained = isNewCharacter ? 0 : Math.max(0, hpLevel - (savedLevel ?? 0));
+  const hpMode: 'full' | 'levelup' = (!isNewCharacter && levelsGained > 0) ? 'levelup' : 'full';
+  const levelsToRoll = hpMode === 'full' ? Math.max(0, hpLevel - 1) : levelsGained;
 
   /** Reset random rolls when relevant parameters change. */
   useEffect(() => {
     setHpRandomRolls([]);
-  }, [hitDie, hpLevel, hpLevelUpCount, hpMode]);
+    setHpManualInputStr('');
+  }, [hitDie, hpLevel, levelsGained, hpMode]);
 
   /**
    * Computes the resulting HP based on current mode, method, and inputs.
@@ -351,30 +363,32 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
         if (hpRandomRolls.length < rolls) return null;
         hpFromLevels = hpRandomRolls.slice(0, rolls).reduce((sum, r) => sum + r + conMod, 0);
       } else {
-        if (hpManualDiceTotal <= 0 && rolls > 0) return null;
-        hpFromLevels = hpManualDiceTotal + rolls * conMod;
+        const parsedManual = parseInt(hpManualInputStr, 10);
+        if (!parsedManual || parsedManual <= 0) return null;
+        hpFromLevels = parsedManual + rolls * conMod;
       }
 
       return Math.max(1, hpAtLevel1 + hpFromLevels);
     }
 
-    /* Level-up mode */
+    /* Level-up mode: add HP for the automatically detected new levels */
     const existingHp = draft.maxHp ?? 0;
     let delta = 0;
 
     if (hpRollMethod === 'fixed') {
-      delta = hpLevelUpCount * (avgRollPerLevel + conMod);
+      delta = levelsGained * (avgRollPerLevel + conMod);
     } else if (hpRollMethod === 'random') {
-      if (hpRandomRolls.length < hpLevelUpCount) return null;
-      delta = hpRandomRolls.slice(0, hpLevelUpCount).reduce((sum, r) => sum + r + conMod, 0);
+      if (hpRandomRolls.length < levelsGained) return null;
+      delta = hpRandomRolls.slice(0, levelsGained).reduce((sum, r) => sum + r + conMod, 0);
     } else {
-      if (hpManualDiceTotal <= 0) return null;
-      delta = hpManualDiceTotal + hpLevelUpCount * conMod;
+      const parsedManual = parseInt(hpManualInputStr, 10);
+      if (!parsedManual || parsedManual <= 0) return null;
+      delta = parsedManual + levelsGained * conMod;
     }
 
     return Math.max(1, existingHp + delta);
-  }, [hitDie, hpMode, hpRollMethod, hpRandomRolls, hpManualDiceTotal,
-      hpLevelUpCount, hpLevel, conMod, hpAtLevel1, avgRollPerLevel, draft.maxHp]);
+  }, [hitDie, hpMode, hpRollMethod, hpRandomRolls, hpManualInputStr,
+      levelsGained, hpLevel, conMod, hpAtLevel1, avgRollPerLevel, draft.maxHp]);
 
   /** Roll random dice for HP calculation. */
   const handleRollHp = () => {
@@ -444,9 +458,15 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
       patch.selectedTraits = merged;
     }
     if (traitLines.length) {
-      const existing = draft.traitsAndFeatures?.trim();
-      patch.traitsAndFeatures = existing
-        ? existing + '\n\n' + traitLines.join('\n')
+      const existing = draft.traitsAndFeatures?.trim() ?? '';
+      // Strip any previous assistant-generated block (everything from the first '──' marker
+      // onwards), keeping only user-typed content that appears before it.
+      const markerIdx = existing.indexOf('──');
+      const userContent = markerIdx > 0
+        ? existing.slice(0, markerIdx).trim()
+        : markerIdx === 0 ? '' : existing;
+      patch.traitsAndFeatures = userContent
+        ? userContent + '\n\n' + traitLines.join('\n')
         : traitLines.join('\n');
     }
 
@@ -550,38 +570,24 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
                   {t('hit_die', 'Dado de golpe')}: d{hitDie} &nbsp;|&nbsp; Mod CON: {conMod >= 0 ? '+' : ''}{conMod}
                 </Typography>
 
-                {/* Mode toggle: show only when character already has HP */}
-                {hasExistingHp && (
-                  <ToggleButtonGroup
-                    value={hpMode}
-                    exclusive
-                    onChange={(_, v) => { if (v) setHpMode(v); }}
-                    size="small"
-                    fullWidth
-                    sx={{ mb: 0.5, '& .MuiToggleButton-root': { fontSize: '0.65rem', py: 0.25, textTransform: 'none' } }}
-                  >
-                    <ToggleButton value="full">{t('recalculate_all', 'Recalcular todo')}</ToggleButton>
-                    <ToggleButton value="levelup">{t('level_up', 'Subir nivel')}</ToggleButton>
-                  </ToggleButtonGroup>
-                )}
-
-                {/* Level-up details */}
-                {hpMode === 'levelup' && (
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap' }}>
-                      HP: <b>{draft.maxHp}</b>
+                {/* Auto-detected level context — replaces the old manual mode toggle */}
+                <Box sx={{ mb: 0.5, px: 0.5, py: 0.25, bgcolor: 'action.selected', borderRadius: 1 }}>
+                  {isNewCharacter ? (
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                      {t('new_character_hp_info', 'Personaje nuevo — calculando desde nivel 1 hasta nivel')} <b>{hpLevel}</b>
                     </Typography>
-                    <TextField
-                      type="number"
-                      size="small"
-                      label={t('levels_to_add', 'Niveles a subir')}
-                      value={hpLevelUpCount}
-                      onChange={(e) => setHpLevelUpCount(Math.max(1, Number(e.target.value) || 1))}
-                      inputProps={{ min: 1, max: 19 }}
-                      sx={{ flex: 1, '& input': { py: 0.4, fontSize: '0.75rem' } }}
-                    />
-                  </Stack>
-                )}
+                  ) : hpMode === 'levelup' ? (
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'success.main' }}>
+                      {t('levelup_hp_info', 'Subiendo de nivel')} <b>{savedLevel}</b> → <b>{hpLevel}</b>{' '}
+                      (+{levelsGained} {levelsGained === 1 ? t('level', 'nivel') : t('levels', 'niveles')})
+                      &nbsp;· HP actual: <b>{draft.maxHp ?? 0}</b>
+                    </Typography>
+                  ) : (
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                      {t('recalc_hp_info', 'Nivel sin cambios (BD: {saved} → Draft: {draft}) — recalculando HP completo').replace('{saved}', String(savedLevel ?? '?')).replace('{draft}', String(hpLevel))}
+                    </Typography>
+                  )}
+                </Box>
 
                 {/* Level 1 base (only in full calc mode) */}
                 {hpMode === 'full' && (
@@ -596,7 +602,7 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.3, fontSize: '0.65rem' }}>
                       {hpMode === 'full'
                         ? `${t('levels', 'Niveles')} 2\u2013${hpLevel}:`
-                        : `${hpLevelUpCount} ${hpLevelUpCount === 1 ? 'nivel' : 'niveles'}:`
+                        : `${levelsGained} ${levelsGained === 1 ? 'nivel' : 'niveles'}:`
                       }{' '}
                       {levelsToRoll}d{hitDie}
                     </Typography>
@@ -607,7 +613,7 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
                         if (!v) return;
                         setHpRollMethod(v);
                         setHpRandomRolls([]);
-                        setHpManualDiceTotal(0);
+                        setHpManualInputStr('');
                       }}
                       size="small"
                       fullWidth
@@ -627,7 +633,7 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
                     {/* Fixed breakdown */}
                     {hpRollMethod === 'fixed' && (
                       <Typography variant="caption" sx={{ display: 'block', fontSize: '0.65rem', color: 'text.secondary' }}>
-                        {levelsToRoll} \u00d7 ({avgRollPerLevel} + {conMod}) = <b>{levelsToRoll * (avgRollPerLevel + conMod)}</b>
+                        {levelsToRoll} x ({avgRollPerLevel} + {conMod}) = <b>{levelsToRoll * (avgRollPerLevel + conMod)}</b>
                       </Typography>
                     )}
 
@@ -645,8 +651,8 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
                         </Button>
                         {hpRandomRolls.length > 0 && (
                           <Typography variant="caption" sx={{ display: 'block', fontSize: '0.65rem' }}>
-                            \uD83C\uDFB2 {hpRandomRolls.join(' + ')} = {hpRandomRolls.reduce((a, b) => a + b, 0)}
-                            {conMod !== 0 && ` (+ CON \u00d7${levelsToRoll})`}
+                            {hpRandomRolls.join(' + ')} = {hpRandomRolls.reduce((a, b) => a + b, 0)}
+                            {conMod !== 0 && ` (+ CON x${levelsToRoll})`}
                           </Typography>
                         )}
                       </Box>
@@ -655,21 +661,21 @@ export const CharacterAutoFillPanel: React.FC<CharacterAutoFillPanelProps> = ({
                     {/* Manual input */}
                     {hpRollMethod === 'manual' && (
                       <TextField
-                        type="number"
+                        type="text"
                         size="small"
                         label={
                           levelsToRoll === 1
                             ? `${t('your_roll', 'Tu tirada')} (d${hitDie})`
                             : `${t('dice_total', 'Suma de tus tiradas')} (${levelsToRoll}d${hitDie})`
                         }
-                        value={hpManualDiceTotal || ''}
-                        onChange={(e) => setHpManualDiceTotal(Math.max(0, Number(e.target.value) || 0))}
-                        inputProps={{ min: 1, max: levelsToRoll * hitDie }}
+                        value={hpManualInputStr}
+                        onChange={(e) => setHpManualInputStr(e.target.value.replace(/[^0-9]/g, ''))}
+                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                         fullWidth
                         sx={{ '& input': { py: 0.5, fontSize: '0.8rem' } }}
                         helperText={
                           conMod !== 0
-                            ? `+ CON (${conMod >= 0 ? '+' : ''}${conMod})${levelsToRoll > 1 ? ` \u00d7 ${levelsToRoll}` : ''}`
+                            ? `+ CON (${conMod >= 0 ? '+' : ''}${conMod})${levelsToRoll > 1 ? ` x${levelsToRoll}` : ''}`
                             : undefined
                         }
                         FormHelperTextProps={{ sx: { fontSize: '0.6rem', mx: 0 } }}

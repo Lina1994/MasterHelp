@@ -33,6 +33,7 @@ import { setActiveSkylineCharacterId } from '../api/campaigns/activeSkylineChara
 import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 import { listCampaignSpells, getCampaignSpell, CampaignSpellDetail } from '../api/spells/spellsApi';
 import { listCampaignTraits, getCampaignTrait, CampaignTraitDetail } from '../api/traits/traitsApi';
+import { listCampaignFeats, getCampaignFeat, CampaignFeatDetail } from '../api/feats/featsApi';
 import i18n from '../i18n';
 import {
   ABILITY_KEYS, SKILL_DEFS,
@@ -67,6 +68,12 @@ const CharacterDetailPage: React.FC = () => {
   const [traitDialogLoading, setTraitDialogLoading] = useState(false);
   const [traitDialogData, setTraitDialogData] = useState<CampaignTraitDetail | null>(null);
   const [traitDialogName, setTraitDialogName] = useState('');
+
+  /* Feat detail dialog state */
+  const [featDialogOpen, setFeatDialogOpen] = useState(false);
+  const [featDialogLoading, setFeatDialogLoading] = useState(false);
+  const [featDialogData, setFeatDialogData] = useState<CampaignFeatDetail | null>(null);
+  const [featDialogName, setFeatDialogName] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -194,6 +201,32 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
       setTraitDialogData(null);
     } finally {
       setTraitDialogLoading(false);
+    }
+  };
+
+  /**
+   * Opens the feat detail dialog. Searches the campaign catalogue by exact
+   * name match; if not found the dialog shows a "not in catalogue" message.
+   */
+  const handleFeatClick = async (featName: string) => {
+    setFeatDialogName(featName);
+    setFeatDialogData(null);
+    setFeatDialogOpen(true);
+    setFeatDialogLoading(true);
+    try {
+      const cId = activeCampaign?.id;
+      if (!cId) { setFeatDialogLoading(false); return; }
+      const lang = (i18n.language?.slice(0, 2) || 'en') as 'en' | 'es';
+      const res = await listCampaignFeats(cId, { q: featName, pageSize: 50 }, lang);
+      const items = res.items ?? [];
+      const match = items.find((f: { name: string }) => f.name.toLowerCase() === featName.toLowerCase());
+      if (!match) { setFeatDialogData(null); return; }
+      const detail = await getCampaignFeat(cId, match.id, lang);
+      setFeatDialogData(detail);
+    } catch {
+      setFeatDialogData(null);
+    } finally {
+      setFeatDialogLoading(false);
     }
   };
 
@@ -523,10 +556,25 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
                     ))}
                   </Stack>
                 ) : null}
+                {data.selectedFeats?.length ? (
+                  <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: data.traitsAndFeatures ? 1 : 0 }}>
+                    {data.selectedFeats.map((feat, i) => (
+                      <Chip
+                        key={i}
+                        size="small"
+                        label={feat}
+                        color="secondary"
+                        variant="outlined"
+                        onClick={() => handleFeatClick(feat)}
+                        sx={{ cursor: 'pointer' }}
+                      />
+                    ))}
+                  </Stack>
+                ) : null}
                 {data.traitsAndFeatures ? (
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{data.traitsAndFeatures}</Typography>
                 ) : (
-                  !data.selectedTraits?.length && <Typography variant="body2" color="text.secondary">—</Typography>
+                  !data.selectedTraits?.length && !data.selectedFeats?.length && <Typography variant="body2" color="text.secondary">—</Typography>
                 )}
               </SheetSection>
 
@@ -656,6 +704,46 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
         </Box>
         )}
       </Paper>
+
+      {/* ── Feat detail dialog ── */}
+      <Dialog open={featDialogOpen} onClose={() => setFeatDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>{featDialogName}</Typography>
+          <IconButton onClick={() => setFeatDialogOpen(false)} size="small"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {featDialogLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}><CircularProgress /></Box>
+          )}
+          {!featDialogLoading && !featDialogData && (
+            <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+              {t('feat_not_in_catalogue', 'Esta dote no se encuentra en el catálogo de la campaña.')}
+            </Typography>
+          )}
+          {!featDialogLoading && featDialogData && (() => {
+            const ft = featDialogData;
+            return (
+              <Stack spacing={1}>
+                {ft.prerequisite && (
+                  <Typography variant="caption" color="text.secondary">
+                    <b>{t('prerequisite', 'Requisito')}:</b> {ft.prerequisite}
+                  </Typography>
+                )}
+                {ft.origin && (
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={ft.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
+                  />
+                )}
+                {ft.description && (
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ft.description}</Typography>
+                )}
+              </Stack>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Trait detail dialog ── */}
       <Dialog open={traitDialogOpen} onClose={() => setTraitDialogOpen(false)} maxWidth="sm" fullWidth>

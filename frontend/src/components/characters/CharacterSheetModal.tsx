@@ -42,6 +42,7 @@ import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useCampaignsContext } from '../Campaign/CampaignContext';
 import { setActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
 import { listCampaignSpells, getCampaignSpell, CampaignSpellDetail } from '../../api/spells/spellsApi';
+import { listCampaignFeats, getCampaignFeat, CampaignFeatDetail } from '../../api/feats/featsApi';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 
@@ -99,6 +100,12 @@ const CharacterSheetModal: React.FC<Props> = ({ charId, campaignId, open, onClos
   const [spellDialogLoading, setSpellDialogLoading] = useState(false);
   const [spellDialogData, setSpellDialogData] = useState<CampaignSpellDetail | null>(null);
   const [spellDialogName, setSpellDialogName] = useState('');
+
+  /* Feat detail dialog state */
+  const [featDialogOpen, setFeatDialogOpen] = useState(false);
+  const [featDialogLoading, setFeatDialogLoading] = useState(false);
+  const [featDialogData, setFeatDialogData] = useState<CampaignFeatDetail | null>(null);
+  const [featDialogName, setFeatDialogName] = useState('');
 
   /* Fetch character whenever the dialog opens or charId changes */
   useEffect(() => {
@@ -176,6 +183,29 @@ const CharacterSheetModal: React.FC<Props> = ({ charId, campaignId, open, onClos
       setSpellDialogData(null);
     } finally {
       setSpellDialogLoading(false);
+    }
+  };
+
+  /**
+   * Opens the feat detail inline dialog. Searches the campaign catalogue by
+   * exact name match; shows "not in catalogue" if not found.
+   */
+  const handleFeatClick = async (featName: string) => {
+    setFeatDialogName(featName);
+    setFeatDialogData(null);
+    setFeatDialogOpen(true);
+    setFeatDialogLoading(true);
+    try {
+      const lang = (i18n.language?.slice(0, 2) || 'en') as 'en' | 'es';
+      const res = await listCampaignFeats(campaignId, { q: featName, pageSize: 50 }, lang);
+      const match = (res.items ?? []).find((f: { name: string }) => f.name.toLowerCase() === featName.toLowerCase());
+      if (!match) return;
+      const detail = await getCampaignFeat(campaignId, match.id, lang);
+      setFeatDialogData(detail);
+    } catch {
+      setFeatDialogData(null);
+    } finally {
+      setFeatDialogLoading(false);
     }
   };
 
@@ -498,10 +528,24 @@ const CharacterSheetModal: React.FC<Props> = ({ charId, campaignId, open, onClos
                         )}
 
                         <SheetSection title={t('traits_and_features', 'Rasgos y Características')}>
+                          {data.selectedTraits?.length ? (
+                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: data.traitsAndFeatures ? 1 : 0 }}>
+                              {data.selectedTraits.map((trait, i) => (
+                                <Chip key={i} size="small" label={trait} variant="outlined" />
+                              ))}
+                            </Stack>
+                          ) : null}
+                          {data.selectedFeats?.length ? (
+                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: data.traitsAndFeatures ? 1 : 0 }}>
+                              {data.selectedFeats.map((feat, i) => (
+                                <Chip key={i} size="small" label={feat} color="secondary" variant="outlined" onClick={() => handleFeatClick(feat)} sx={{ cursor: 'pointer' }} />
+                              ))}
+                            </Stack>
+                          ) : null}
                           {data.traitsAndFeatures ? (
                             <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{data.traitsAndFeatures}</Typography>
                           ) : (
-                            <Typography variant="body2" color="text.secondary">—</Typography>
+                            !data.selectedTraits?.length && !data.selectedFeats?.length && <Typography variant="body2" color="text.secondary">—</Typography>
                           )}
                         </SheetSection>
 
@@ -634,6 +678,46 @@ const CharacterSheetModal: React.FC<Props> = ({ charId, campaignId, open, onClos
           isMaster={isMaster}
         />
       )}
+
+      {/* ── Feat detail dialog ── */}
+      <Dialog open={featDialogOpen} onClose={() => setFeatDialogOpen(false)} maxWidth="sm" fullWidth sx={{ zIndex: 1600 }}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>{featDialogName}</Typography>
+          <IconButton onClick={() => setFeatDialogOpen(false)} size="small"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {featDialogLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}><CircularProgress /></Box>
+          )}
+          {!featDialogLoading && !featDialogData && (
+            <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+              {t('feat_not_in_catalogue', 'Esta dote no se encuentra en el catálogo de la campaña.')}
+            </Typography>
+          )}
+          {!featDialogLoading && featDialogData && (() => {
+            const ft = featDialogData;
+            return (
+              <Stack spacing={1}>
+                {ft.prerequisite && (
+                  <Typography variant="caption" color="text.secondary">
+                    <b>{t('prerequisite', 'Requisito')}:</b> {ft.prerequisite}
+                  </Typography>
+                )}
+                {ft.origin && (
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={ft.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
+                  />
+                )}
+                {ft.description && (
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ft.description}</Typography>
+                )}
+              </Stack>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Spell detail dialog ── */}
       <Dialog open={spellDialogOpen} onClose={() => setSpellDialogOpen(false)} maxWidth="sm" fullWidth sx={{ zIndex: 1600 }}>

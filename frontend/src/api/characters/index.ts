@@ -20,6 +20,7 @@ export interface CharacterPayload {
   maxHp?: number; currentHp?: number; tempHp?: number; hitDice?: string;
   otherProficienciesAndLanguages?: string; equipment?: string; traitsAndFeatures?: string;
   selectedTraits?: string[];
+  selectedFeats?: string[];
   age?: string; height?: string; weight?: string; eyes?: string; skin?: string; hair?: string;
   tokenKind?: 'color'|'image'; tokenColor?: string; tokenImageUrl?: string; characterImageUrl?: string;
   spellcastingAbility?: 'int'|'wis'|'cha' | null; spellSaveDC?: number | null; spellAttackBonus?: number | null; cantrips?: string[]; spellsByLevel?: Record<string,string[]>;
