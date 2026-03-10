@@ -32,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { setActiveSkylineCharacterId } from '../api/campaigns/activeSkylineCharacter';
 import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 import { listCampaignSpells, getCampaignSpell, CampaignSpellDetail } from '../api/spells/spellsApi';
+import { listCampaignTraits, getCampaignTrait, CampaignTraitDetail } from '../api/traits/traitsApi';
 import i18n from '../i18n';
 import {
   ABILITY_KEYS, SKILL_DEFS,
@@ -60,6 +61,12 @@ const CharacterDetailPage: React.FC = () => {
   const [spellDialogLoading, setSpellDialogLoading] = useState(false);
   const [spellDialogData, setSpellDialogData] = useState<CampaignSpellDetail | null>(null);
   const [spellDialogName, setSpellDialogName] = useState('');
+
+  /* Trait detail dialog state */
+  const [traitDialogOpen, setTraitDialogOpen] = useState(false);
+  const [traitDialogLoading, setTraitDialogLoading] = useState(false);
+  const [traitDialogData, setTraitDialogData] = useState<CampaignTraitDetail | null>(null);
+  const [traitDialogName, setTraitDialogName] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -164,6 +171,32 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
     }
   };
 
+  /**
+   * Opens the trait detail dialog. Searches the campaign catalogue by exact
+   * name match; if not found the dialog shows a "not in catalogue" message.
+   */
+  const handleTraitClick = async (traitName: string) => {
+    setTraitDialogName(traitName);
+    setTraitDialogData(null);
+    setTraitDialogOpen(true);
+    setTraitDialogLoading(true);
+    try {
+      const cId = activeCampaign?.id;
+      if (!cId) { setTraitDialogLoading(false); return; }
+      const lang = (i18n.language?.slice(0, 2) || 'en') as 'en' | 'es';
+      const res = await listCampaignTraits(cId, { q: traitName, pageSize: 50 }, lang);
+      const items = res.items ?? [];
+      const match = items.find((tr: { name: string }) => tr.name.toLowerCase() === traitName.toLowerCase());
+      if (!match) { setTraitDialogData(null); return; }
+      const detail = await getCampaignTrait(cId, match.id, lang);
+      setTraitDialogData(detail);
+    } catch {
+      setTraitDialogData(null);
+    } finally {
+      setTraitDialogLoading(false);
+    }
+  };
+
   /** Ability labels localised. */
   const abilityLabels: Record<string, string> = {
     str: t('str', 'FUE'),
@@ -202,7 +235,7 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
 
       <CharacterEditorModal
         open={editorOpen}
-        initialDraft={data}
+        initialDraft={data ? { ...data, campaignId: data.campaignId || (data as any).campaign?.id || activeCampaign?.id } : null}
         onClose={() => setEditorOpen(false)}
         onSaved={() => { setEditorOpen(false); setLoading(true); getCharacter(id!).then(setData).finally(() => setLoading(false)); }}
         campaignPlayers={campaignPlayers}
@@ -476,10 +509,24 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
 
               {/* Traits & Features */}
               <SheetSection title={t('traits_and_features', 'Rasgos y Características')}>
+                {data.selectedTraits?.length ? (
+                  <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: data.traitsAndFeatures ? 1 : 0 }}>
+                    {data.selectedTraits.map((trait, i) => (
+                      <Chip
+                        key={i}
+                        size="small"
+                        label={trait}
+                        variant="outlined"
+                        onClick={() => handleTraitClick(trait)}
+                        sx={{ cursor: 'pointer' }}
+                      />
+                    ))}
+                  </Stack>
+                ) : null}
                 {data.traitsAndFeatures ? (
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{data.traitsAndFeatures}</Typography>
                 ) : (
-                  <Typography variant="body2" color="text.secondary">—</Typography>
+                  !data.selectedTraits?.length && <Typography variant="body2" color="text.secondary">—</Typography>
                 )}
               </SheetSection>
 
@@ -609,6 +656,41 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
         </Box>
         )}
       </Paper>
+
+      {/* ── Trait detail dialog ── */}
+      <Dialog open={traitDialogOpen} onClose={() => setTraitDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>{traitDialogName}</Typography>
+          <IconButton onClick={() => setTraitDialogOpen(false)} size="small"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {traitDialogLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}><CircularProgress /></Box>
+          )}
+          {!traitDialogLoading && !traitDialogData && (
+            <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+              {t('trait_not_in_catalogue', 'Este rasgo no se encuentra en el catálogo de la campaña.')}
+            </Typography>
+          )}
+          {!traitDialogLoading && traitDialogData && (() => {
+            const tr = traitDialogData;
+            return (
+              <Stack spacing={1}>
+                {tr.origin && (
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={tr.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
+                  />
+                )}
+                {tr.description && (
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{tr.description}</Typography>
+                )}
+              </Stack>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Spell detail dialog ── */}
       <Dialog open={spellDialogOpen} onClose={() => setSpellDialogOpen(false)} maxWidth="sm" fullWidth>

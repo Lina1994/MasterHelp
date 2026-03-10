@@ -5,6 +5,7 @@ import { listCampaignClasses } from '../../api/classes/classesApi';
 import { listCampaignRaces } from '../../api/races/racesApi';
 import { listCampaignBackgrounds } from '../../api/backgrounds/backgroundsApi';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 import {
   Avatar,
   Autocomplete,
@@ -14,6 +15,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  Fab,
   FormControl,
   FormControlLabel,
   FormHelperText,
@@ -22,6 +24,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Slide,
   Stack,
   Tab,
   Tabs,
@@ -36,9 +39,12 @@ import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { ImageUploader } from '../Campaign/ImageUploader';
 import { TokenImageCropDialog } from './TokenImageCropDialog';
 import { SpellAutocomplete } from './SpellAutocomplete';
+import { TraitAutocomplete } from './TraitAutocomplete';
+import { CharacterAutoFillPanel, OptionItem } from './CharacterAutoFillPanel';
 
 /* ──────────────────── helpers ──────────────────── */
 
@@ -278,11 +284,14 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   const { t } = useTranslation();
   const [draft, setDraft] = useState<CharacterPayload | null>(initialDraft);
   const [tab, setTab] = useState(0);
+  const [assistantOpen, setAssistantOpen] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
   const [maps, setMaps] = useState<MapItemDto[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
+  const [classItems, setClassItems] = useState<OptionItem[]>([]);
   const [raceOptions, setRaceOptions] = useState<string[]>([]);
+  const [raceItems, setRaceItems] = useState<OptionItem[]>([]);
   const [backgroundOptions, setBackgroundOptions] = useState<string[]>([]);
 
   React.useEffect(() => {
@@ -303,22 +312,33 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
           setMaps([]);
         }
       })();
+      const lang = (i18n.language?.slice(0, 2) || 'en') as 'en' | 'es';
       // Load class names
-      listCampaignClasses(cId, { pageSize: 500 })
-        .then(res => setClassOptions((res.items || []).map((c: any) => c.name).filter(Boolean)))
-        .catch(() => setClassOptions([]));
+      listCampaignClasses(cId, { pageSize: 500 }, lang)
+        .then(res => {
+          const items = res.items || [];
+          setClassOptions(items.map((c: any) => c.name).filter(Boolean));
+          setClassItems(items.map((c: any) => ({ id: c.id, name: c.name })).filter((c: OptionItem) => c.id && c.name));
+        })
+        .catch(() => { setClassOptions([]); setClassItems([]); });
       // Load race names
-      listCampaignRaces(cId, { pageSize: 500 })
-        .then(res => setRaceOptions((res.items || []).map((r: any) => r.name).filter(Boolean)))
-        .catch(() => setRaceOptions([]));
+      listCampaignRaces(cId, { pageSize: 500 }, lang)
+        .then(res => {
+          const items = res.items || [];
+          setRaceOptions(items.map((r: any) => r.name).filter(Boolean));
+          setRaceItems(items.map((r: any) => ({ id: r.id, name: r.name })).filter((r: OptionItem) => r.id && r.name));
+        })
+        .catch(() => { setRaceOptions([]); setRaceItems([]); });
       // Load background names
-      listCampaignBackgrounds(cId, { pageSize: 500 })
+      listCampaignBackgrounds(cId, { pageSize: 500 }, lang)
         .then(res => setBackgroundOptions((res.items || []).map((b: any) => b.name).filter(Boolean)))
         .catch(() => setBackgroundOptions([]));
     } else {
       setMaps([]);
       setClassOptions([]);
+      setClassItems([]);
       setRaceOptions([]);
+      setRaceItems([]);
       setBackgroundOptions([]);
     }
   }, [initialDraft, open]);
@@ -385,9 +405,92 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   };
 
   return (
+    <>
+      {/* ═══════════════ AUTOFILL PANEL — outside Dialog ═══════════════ */}
+      {open && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            pointerEvents: 'none',
+            zIndex: (theme) => theme.zIndex.modal + 1,
+            display: { xs: 'none', md: 'flex' },
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          {/* Positioning wrapper aligned to Dialog top-left */}
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: (theme) => theme.breakpoints.values.xl,
+              height: '90vh',
+              pointerEvents: 'none',
+            }}
+          >
+            {/* Collapsed FAB */}
+            {!assistantOpen && (
+              <Fab
+                size="small"
+                color="primary"
+                onClick={() => setAssistantOpen(true)}
+                sx={{
+                  position: 'absolute',
+                  left: -52,
+                  top: 12,
+                  pointerEvents: 'auto',
+                  zIndex: 1,
+                }}
+              >
+                <AutoFixHighIcon fontSize="small" />
+              </Fab>
+            )}
+
+            {/* Expanded panel */}
+            <Slide direction="right" in={assistantOpen} mountOnEnter unmountOnExit>
+              <Paper
+                elevation={6}
+                sx={{
+                  position: 'absolute',
+                  left: -310,
+                  top: 0,
+                  width: 300,
+                  height: '100%',
+                  overflow: 'auto',
+                  pointerEvents: 'auto',
+                  bgcolor: 'background.paper',
+                  borderRadius: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 0.5 }}>
+                  <IconButton size="small" onClick={() => setAssistantOpen(false)}>
+                    <AutoFixHighIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+                <Box sx={{ flex: 1, overflow: 'auto' }}>
+                  <CharacterAutoFillPanel
+                    draft={draft}
+                    campaignId={draft.campaignId}
+                    classItems={classItems}
+                    raceItems={raceItems}
+                    onApply={(patch) => setDraft({ ...draft, ...patch })}
+                  />
+                </Box>
+              </Paper>
+            </Slide>
+          </Box>
+        </Box>
+      )}
+
     <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
       <DialogContent sx={{ p: 0 }}>
+        <Stack direction="row" sx={{ minHeight: 0 }}>
+
         {/* ═══════════════ D&D-STYLE EDITOR SHEET ═══════════════ */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
 
         {/* ── TITLE STRIP ── */}
         <Box sx={{ bgcolor: 'primary.dark', color: 'primary.contrastText', px: 2, py: 1 }}>
@@ -819,6 +922,12 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
 
                 {/* Traits & Features */}
                 <SheetSection title={t('traits_and_features', 'Rasgos y Características')}>
+                  <TraitAutocomplete
+                    campaignId={draft.campaignId}
+                    value={draft.selectedTraits || []}
+                    onChange={(traits) => setDraft({ ...draft, selectedTraits: traits })}
+                    label={t('traits_select', 'Seleccionar rasgos')}
+                  />
                   <TextField
                     value={draft.traitsAndFeatures || ''}
                     onChange={(e) => setDraft({ ...draft, traitsAndFeatures: e.target.value })}
@@ -826,6 +935,8 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                     multiline
                     minRows={2}
                     size="small"
+                    placeholder={t('traits_notes_placeholder', 'Notas adicionales sobre rasgos...')}
+                    sx={{ mt: 1 }}
                   />
                 </SheetSection>
 
@@ -1019,11 +1130,14 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
             </Grid>
           </Box>
         )}
+        </Box>{/* end right column */}
+        </Stack>{/* end row */}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t('cancel', 'Cancelar')}</Button>
         <Button onClick={onSave} variant="contained">{t('save', 'Guardar')}</Button>
       </DialogActions>
     </Dialog>
+    </>
   );
 };
