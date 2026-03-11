@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
   Grid, IconButton, Box, Typography, FormControl, InputLabel, Select,
@@ -11,6 +12,7 @@ import type { ClassFeature, ClassLevelProgression } from '../../types';
 import ClassLevelProgressionEditor, {
   createDefaultLevelProgression,
   DEFAULT_PB,
+  FeatureEntry,
   LevelProgressionState,
   SPELL_SLOT_LEVELS,
   SpellSlotLevel,
@@ -36,18 +38,22 @@ function initProgressionFromClassData(classData: CampaignClassDetail | null): Le
   const state = createDefaultLevelProgression();
   if (!classData?.levels?.length) return state;
 
-  const featureMap = new Map<string, string>();
+  const featureMap = new Map<string, FeatureEntry>();
   (classData.features || []).forEach((f: any) => {
-    if (f.id && f.name) featureMap.set(String(f.id), String(f.name));
+    if (f.id && f.name) {
+      featureMap.set(String(f.id), {
+        name: String(f.name),
+        description: f.description ?? undefined,
+      });
+    }
   });
 
   for (const lvlData of classData.levels as ClassLevelProgression[]) {
     const lvl = lvlData.level;
     if (lvl < 1 || lvl > 20) continue;
 
-    const featureNames = (lvlData.features || [])
-      .map((fid: string) => featureMap.get(fid) ?? fid)
-      .join(', ');
+    const featureEntries: FeatureEntry[] = (lvlData.features || [])
+      .map((fid: string) => featureMap.get(fid) ?? { name: fid });
 
     const cantrips =
       lvlData.cantripsKnown != null
@@ -58,7 +64,7 @@ function initProgressionFromClassData(classData: CampaignClassDetail | null): Le
 
     state[lvl] = {
       proficiencyBonus: String(lvlData.proficiencyBonus ?? DEFAULT_PB[lvl]),
-      features: featureNames,
+      features: featureEntries,
       cantripsKnown: cantrips,
       knownSpellsCount: lvlData.knownSpellsCount != null ? String(lvlData.knownSpellsCount) : '',
       spellSlots: Object.fromEntries(
@@ -89,14 +95,11 @@ function buildProgressionPayload(state: LevelProgressionState): {
   for (let lvl = 1; lvl <= 20; lvl++) {
     const row = state[lvl];
 
-    const featureNames = row.features
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const featureEntries = row.features.filter((e) => e.name.trim());
 
-    const featureIds: string[] = featureNames.map((name, idx) => {
-      const id = `lv${lvl}-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${idx}`;
-      allFeatures.push({ id, name, level: lvl });
+    const featureIds: string[] = featureEntries.map((entry, idx) => {
+      const id = `lv${lvl}-${entry.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${idx}`;
+      allFeatures.push({ id, name: entry.name, level: lvl, description: entry.description });
       return id;
     });
 
@@ -143,6 +146,7 @@ export default function EditClassDialog({
   onSave,
 }: EditClassDialogProps) {
   const { t } = useTranslation();
+  const { activeCampaign } = useActiveCampaign();
   const [activeTab, setActiveTab] = useState(0);
   const [name, setName] = useState('');
   const [hitDie, setHitDie] = useState(8);
@@ -288,6 +292,7 @@ export default function EditClassDialog({
           <ClassLevelProgressionEditor
             value={levelProgression}
             onChange={setLevelProgression}
+            campaignId={activeCampaign?.id}
           />
         )}
 

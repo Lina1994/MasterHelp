@@ -26,6 +26,7 @@ import { MapImage } from './maps/entities/map-image.entity';
 import { MapSkylineImage } from './maps/entities/map-skyline-image.entity';
 import { CharactersModule } from './characters/characters.module';
 import { Character } from './characters/entities/character.entity';
+import { AffinityLink } from './characters/entities/affinity-link.entity';
 import { Encounter } from './encounters/entities/encounter.entity';
 import { EncountersModule } from './encounters/encounters.module';
 import { DiaryModule } from './diary/diary.module';
@@ -81,6 +82,7 @@ import { CampaignBackground } from './backgrounds/entities/campaign-background.e
           MapImage,
           MapSkylineImage,
           Character,
+          AffinityLink,
           Encounter,
           Shop,
           ShopSection,

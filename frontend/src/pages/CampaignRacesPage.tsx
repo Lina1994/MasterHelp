@@ -346,6 +346,7 @@ export default function CampaignRacesPage() {
         isCreate={isCreating}
         onClose={handleCloseEdit}
         onSave={handleSave}
+        campaignId={campaignId}
       />
     </Box>
   );
