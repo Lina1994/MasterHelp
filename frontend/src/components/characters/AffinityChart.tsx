@@ -101,66 +101,145 @@ function isUserMaster(activeCampaign: any, userId: number | undefined): boolean 
 }
 
 /** Generates initial positions, clustering characters by primaryMapId when present. */
+/**
+ * Minimum centre-to-centre distance between any two nodes.
+ * Edge-to-edge gap = NODE_RADIUS * 2 = one full token diameter.
+ */
+const MIN_NODE_C2C = NODE_RADIUS * 6; // 216 px  (edge-to-edge gap ≈ 2 token diameters)
+
+/**
+ * Minimum edge-to-edge gap between any two zone bounding boxes, and between
+ * any non-member character node edge and a zone bounding box edge.
+ * = one full token diameter.
+ */
+const MIN_ZONE_GAP = NODE_RADIUS * 4; // 144 px
+
+/**
+ * Computes the minimum ring radius so that N nodes placed on the ring
+ * have adjacent centres at least MIN_NODE_C2C apart.
+ */
+function minRingRadius(n: number): number {
+  if (n <= 1) return 0;
+  return Math.ceil(MIN_NODE_C2C / (2 * Math.sin(Math.PI / n)));
+}
+
+/**
+ * Generates initial positions for all characters.
+ *
+ * Layout guarantees:
+ *  1. PCs form a central "player zone". Their bbox is exclusive — no NPC node
+ *     or NPC zone bbox may come closer than MIN_ZONE_GAP to its boundary.
+ *  2. Only NPCs are grouped into map-based zones.  Zone bboxes must not
+ *     overlap each other, and adjacent zone bboxes must have at least
+ *     MIN_ZONE_GAP between their edges.
+ *  3. An unzoned (non-member) character node must not overlap any zone bbox,
+ *     not even partially; its edge must be at least MIN_ZONE_GAP outside it.
+ *  4. Adjacent nodes within any ring / cluster have edge-to-edge >= one token
+ *     diameter (MIN_NODE_C2C guarantees centre-to-centre >= 4×NODE_RADIUS).
+ */
 function layoutNodes(characters: CharacterPayload[], width: number, height: number): NodePos[] {
   const cx = width / 2;
   const cy = height / 2;
   const positions: NodePos[] = [];
 
-  // Group by effective map id (explicit primaryMapId, or the sole associated map)
-  const zoneMap = new Map<string, CharacterPayload[]>();
-  const unzoned: CharacterPayload[] = [];
-  for (const ch of characters) {
-    const specificMaps = (ch.associatedMapIds || []).filter((id) => id !== '__ALL__');
-    const effectiveMapId =
-      ch.primaryMapId || (specificMaps.length === 1 ? specificMaps[0] : null);
-    if (effectiveMapId) {
-      const arr = zoneMap.get(effectiveMapId) ?? [];
-      arr.push(ch);
-      zoneMap.set(effectiveMapId, arr);
-    } else {
-      unzoned.push(ch);
-    }
-  }
+  const pcs  = characters.filter((c) => c.kind === 'pc');
+  const npcs = characters.filter((c) => c.kind === 'npc');
 
-  const zones = Array.from(zoneMap.values());
-
-  if (zones.length === 0) {
-    // No zones: original PC inner circle / NPC outer ring layout
-    const pcs = characters.filter((c) => c.kind === 'pc');
-    const npcs = characters.filter((c) => c.kind === 'npc');
-    const pcRadius = Math.min(width, height) * 0.2;
-    pcs.forEach((c, i) => {
-      const angle = (2 * Math.PI * i) / (pcs.length || 1) - Math.PI / 2;
-      positions.push({ id: c.id!, x: cx + pcRadius * Math.cos(angle), y: cy + pcRadius * Math.sin(angle) });
-    });
-    const npcRadius = Math.min(width, height) * 0.38;
-    npcs.forEach((c, i) => {
-      const angle = (2 * Math.PI * i) / (npcs.length || 1) - Math.PI / 2;
-      positions.push({ id: c.id!, x: cx + npcRadius * Math.cos(angle), y: cy + npcRadius * Math.sin(angle) });
-    });
-    return positions;
-  }
-
-  // Zone centres arranged in a circle
-  const zoneCentreRadius = Math.min(width, height) * 0.3;
-  zones.forEach((chars, zoneIdx) => {
-    const zoneAngle = (2 * Math.PI * zoneIdx) / zones.length - Math.PI / 2;
-    const zoneCx = cx + (zones.length === 1 ? 0 : zoneCentreRadius) * Math.cos(zoneAngle);
-    const zoneCy = cy + (zones.length === 1 ? 0 : zoneCentreRadius) * Math.sin(zoneAngle);
-    const nodeRadius = Math.max(50, Math.min(120, 80 / Math.max(1, Math.sqrt(chars.length))));
-    chars.forEach((ch, i) => {
-      const angle = (2 * Math.PI * i) / (chars.length || 1) - Math.PI / 2;
-      positions.push({ id: ch.id!, x: zoneCx + nodeRadius * Math.cos(angle), y: zoneCy + nodeRadius * Math.sin(angle) });
-    });
+  // ── 1. PCs: central ring ────────────────────────────────────────────────
+  const pcRingR = minRingRadius(pcs.length);
+  pcs.forEach((c, i) => {
+    const angle = (2 * Math.PI * i) / Math.max(pcs.length, 1) - Math.PI / 2;
+    positions.push({ id: c.id!, x: cx + pcRingR * Math.cos(angle), y: cy + pcRingR * Math.sin(angle) });
   });
 
-  // Unzoned characters in a small cluster above zone ring
-  if (unzoned.length > 0) {
-    const unzonedRadius = Math.min(width, height) * 0.12;
-    unzoned.forEach((ch, i) => {
-      const angle = (2 * Math.PI * i) / (unzoned.length || 1) - Math.PI / 2;
-      positions.push({ id: ch.id!, x: cx + unzonedRadius * Math.cos(angle), y: cy + unzonedRadius * Math.sin(angle) });
+  // Outer boundary of the PC zone bbox.  NPC zone bbox inner edges must be
+  // at least MIN_ZONE_GAP beyond this radius.
+  const pcZoneBBoxR = pcRingR + NODE_RADIUS + ZONE_PAD;
+
+  // ── 2. Group NPCs by zone ─────────────────────────────────────────────
+  const npcZoneMap = new Map<string, CharacterPayload[]>();
+  const unzonedNpcs: CharacterPayload[] = [];
+  for (const ch of npcs) {
+    const specific = (ch.associatedMapIds ?? []).filter((id) => id !== '__ALL__');
+    const effectiveMapId = ch.primaryMapId ?? (specific.length === 1 ? specific[0] : null);
+    if (effectiveMapId) {
+      const arr = npcZoneMap.get(effectiveMapId) ?? [];
+      arr.push(ch);
+      npcZoneMap.set(effectiveMapId, arr);
+    } else {
+      unzonedNpcs.push(ch);
+    }
+  }
+  const npcZones = Array.from(npcZoneMap.values());
+
+  // ── 3. NPC zone clusters ───────────────────────────────────────────────
+  if (npcZones.length > 0) {
+    // "Extent" of each zone = how far its bbox boundary reaches from the zone centre.
+    const zoneExtents = npcZones.map((chars) => minRingRadius(chars.length) + NODE_RADIUS + ZONE_PAD);
+    const maxExtent   = Math.max(...zoneExtents);
+
+    // Constraint (a): NPC zone bbox must be at least MIN_ZONE_GAP outside PC zone bbox.
+    //   zoneOrbitR - maxExtent >= pcZoneBBoxR + MIN_ZONE_GAP
+    //   => zoneOrbitR >= pcZoneBBoxR + maxExtent + MIN_ZONE_GAP
+    const orbitFromPcZone = pcZoneBBoxR + maxExtent + MIN_ZONE_GAP;
+
+    // Constraint (b): Adjacent NPC zone bboxes must be at least MIN_ZONE_GAP apart.
+    //   Adjacent centres on the orbit ring: 2·R·sin(π/n)
+    //   Edge-to-edge gap = 2·R·sin(π/n) − extent_i − extent_j ≥ MIN_ZONE_GAP
+    //   Worst case (both have maxExtent):
+    //   R ≥ (maxExtent + MIN_ZONE_GAP / 2) / sin(π / n)
+    const orbitFromAdjacentZones = npcZones.length >= 2
+      ? (maxExtent + MIN_ZONE_GAP / 2) / Math.sin(Math.PI / npcZones.length)
+      : 0;
+
+    const zoneOrbitR = Math.max(orbitFromPcZone, orbitFromAdjacentZones);
+
+    npcZones.forEach((chars, idx) => {
+      const angle = (2 * Math.PI * idx) / npcZones.length - Math.PI / 2;
+      const zoneCx = cx + zoneOrbitR * Math.cos(angle);
+      const zoneCy = cy + zoneOrbitR * Math.sin(angle);
+      const clusterR = minRingRadius(chars.length);
+      // Rotate the internal ring so characters spread *perpendicular* to the
+      // center→zone axis.  This way affinity lines to PCs fan out instead of
+      // stacking on top of each other.
+      // E.g. zone directly above (angle = -π/2): startAngle = -π/2 + π/2 = 0
+      //   → chars arranged left/right, not top/bottom → no vertical overlap.
+      const startAngle = angle + Math.PI / 2;
+      chars.forEach((ch, i) => {
+        const a = (2 * Math.PI * i) / Math.max(chars.length, 1) + startAngle;
+        positions.push({ id: ch.id!, x: zoneCx + clusterR * Math.cos(a), y: zoneCy + clusterR * Math.sin(a) });
+      });
     });
+
+    // ── 4. Unzoned NPCs: outer ring, strictly outside all zone bboxes ────
+    // Worst case: an unzoned node aligns angularly with a zone centre.
+    // Its inner edge (toward centre) = unzonedOrbitR − NODE_RADIUS.
+    // That zone's outer bbox edge (from canvas centre) = zoneOrbitR + maxExtent.
+    // Required: unzonedOrbitR − NODE_RADIUS ≥ zoneOrbitR + maxExtent + MIN_ZONE_GAP
+    // => unzonedOrbitR ≥ zoneOrbitR + maxExtent + NODE_RADIUS + MIN_ZONE_GAP
+    if (unzonedNpcs.length > 0) {
+      const unzonedOrbitR = Math.max(
+        minRingRadius(unzonedNpcs.length),
+        pcZoneBBoxR     + NODE_RADIUS + MIN_ZONE_GAP,
+        zoneOrbitR + maxExtent + NODE_RADIUS + MIN_ZONE_GAP,
+      );
+      unzonedNpcs.forEach((ch, i) => {
+        const angle = (2 * Math.PI * i) / Math.max(unzonedNpcs.length, 1) - Math.PI / 2;
+        positions.push({ id: ch.id!, x: cx + unzonedOrbitR * Math.cos(angle), y: cy + unzonedOrbitR * Math.sin(angle) });
+      });
+    }
+  } else {
+    // No NPC zones — place unzoned NPCs on a ring outside the PC zone.
+    if (unzonedNpcs.length > 0) {
+      const unzonedOrbitR = Math.max(
+        minRingRadius(unzonedNpcs.length),
+        pcZoneBBoxR + NODE_RADIUS + MIN_ZONE_GAP,
+      );
+      unzonedNpcs.forEach((ch, i) => {
+        const angle = (2 * Math.PI * i) / Math.max(unzonedNpcs.length, 1) - Math.PI / 2;
+        positions.push({ id: ch.id!, x: cx + unzonedOrbitR * Math.cos(angle), y: cy + unzonedOrbitR * Math.sin(angle) });
+      });
+    }
   }
 
   return positions;
@@ -173,6 +252,35 @@ function initials(name: string): string {
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase())
     .join('');
+}
+
+/* ─────────────────────── layout persistence (localStorage) ─────────────── */
+
+/**
+ * Attempts to load saved character positions for the given campaign from
+ * localStorage.  Returns null if nothing is stored or the data is malformed.
+ */
+function loadSavedLayout(campaignId: string | number): NodePos[] | null {
+  try {
+    const raw = localStorage.getItem(`affinity_layout_${campaignId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed as NodePos[];
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Persists current character positions for the given campaign to localStorage.
+ */
+function saveLayout(campaignId: string | number, positions: NodePos[]): void {
+  try {
+    localStorage.setItem(`affinity_layout_${campaignId}`, JSON.stringify(positions));
+  } catch {
+    // Ignore storage quota errors
+  }
 }
 
 /* ─────────────────────── component ─────────────────────── */
@@ -208,6 +316,15 @@ export default function AffinityChart() {
   const dragRef = useRef<{ nodeId: string; offsetX: number; offsetY: number } | null>(null);
   /** Tracks pointer position on node press to distinguish click from drag. */
   const pointerDownRef = useRef<{ nodeId: string; x: number; y: number } | null>(null);
+  /** Zone drag: tracks which characters move together and the world-space anchor. */
+  const zoneDragRef = useRef<{
+    charIds: string[];
+    startWorldX: number;
+    startWorldY: number;
+    startPositions: NodePos[];
+  } | null>(null);
+  /** Set to true when the user repositions nodes/zones; triggers localStorage save. */
+  const dirtyRef = useRef(false);
 
   /* ── radial menu + sheet ── */
   const [radialMenuCharId, setRadialMenuCharId] = useState<string | null>(null);
@@ -281,7 +398,13 @@ export default function AffinityChart() {
         const existingIds = new Set(prev.map((p) => p.id));
         const allExist = chars.every((c) => existingIds.has(c.id!));
         if (allExist && prev.length === chars.length && !zoneChanged) return prev;
-        return layoutNodes(chars, canvasSize.w, canvasSize.h);
+        // Always compute a fresh geometric layout as a baseline for new characters
+        const fresh = layoutNodes(chars, canvasSize.w, canvasSize.h);
+        // Override fresh positions with any previously saved user arrangement
+        const saved = loadSavedLayout(campaignId!);
+        if (!saved) return fresh;
+        const savedMap = new Map(saved.map((p) => [p.id, p]));
+        return fresh.map((fp) => savedMap.get(fp.id) ?? fp);
       });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error loading affinity data');
@@ -292,6 +415,13 @@ export default function AffinityChart() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  /** Save positions to localStorage whenever the user finishes a drag/zone-move. */
+  useEffect(() => {
+    if (!campaignId || !dirtyRef.current || positions.length === 0) return;
+    saveLayout(campaignId, positions);
+    dirtyRef.current = false;
+  }, [positions, campaignId]);
+
   /**
    * Computed zones: one per unique primaryMapId that has ≥1 character.
    * Each zone's bounding box is derived from current node positions.
@@ -299,8 +429,8 @@ export default function AffinityChart() {
   const zones = useMemo(() => {
     const seen = new Map<string, { map: MapItemDto; charIds: string[]; colorIdx: number }>();
     let colorIdx = 0;
-    for (const ch of characters) {
-      // Use explicit primaryMapId, or auto-fall back to the only associated map
+    // Only NPCs contribute to map-based zones; PCs always form the central player zone.
+    for (const ch of characters.filter((c) => c.kind === 'npc')) {
       const specificMaps = (ch.associatedMapIds || []).filter((id) => id !== '__ALL__');
       const effectiveMapId =
         ch.primaryMapId ||
@@ -397,6 +527,27 @@ export default function AffinityChart() {
     setLinkSourceId(nodeId);
   };
 
+  /**
+   * Pointer down on a zone background div — begins moving all member characters
+   * together as a group.  Pointer capture ensures smooth dragging even when the
+   * cursor leaves the zone element.
+   */
+  const handleZonePointerDown = (charIds: string[], e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation(); // Prevent canvas pan
+    if (e.button !== 0) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const worldX = (e.clientX - rect.left - pan.x) / zoom;
+    const worldY = (e.clientY - rect.top - pan.y) / zoom;
+    zoneDragRef.current = {
+      charIds,
+      startWorldX: worldX,
+      startWorldY: worldY,
+      startPositions: positions.slice(),
+    };
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
+
   /** Cancel linking mode on ESC. */
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -433,6 +584,16 @@ export default function AffinityChart() {
       setPositions((prev) =>
         prev.map((p) => (p.id === nodeId ? { ...p, x: worldX - offsetX, y: worldY - offsetY } : p)),
       );
+    } else if (zoneDragRef.current) {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const worldX = (e.clientX - rect.left - pan.x) / zoom;
+      const worldY = (e.clientY - rect.top - pan.y) / zoom;
+      const dx = worldX - zoneDragRef.current.startWorldX;
+      const dy = worldY - zoneDragRef.current.startWorldY;
+      const charIdSet = new Set(zoneDragRef.current.charIds);
+      const start = zoneDragRef.current.startPositions;
+      setPositions(start.map((p) => (charIdSet.has(p.id) ? { ...p, x: p.x + dx, y: p.y + dy } : p)));
     } else if (panDragRef.current) {
       const dx = e.clientX - panDragRef.current.startX;
       const dy = e.clientY - panDragRef.current.startY;
@@ -450,10 +611,15 @@ export default function AffinityChart() {
         // Click: toggle radial menu for this node
         setRadialMenuCharId((prev) => prev === down.nodeId ? null : down.nodeId);
       } else {
-        // Drag ended: close any open menu
+        // Drag ended: close any open menu and persist layout
         setRadialMenuCharId(null);
+        dirtyRef.current = true;
       }
       pointerDownRef.current = null;
+    }
+    if (zoneDragRef.current) {
+      dirtyRef.current = true; // zone was moved — persist on next render
+      zoneDragRef.current = null;
     }
     dragRef.current = null;
     panDragRef.current = null;
@@ -729,7 +895,38 @@ export default function AffinityChart() {
           <svg
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}
           >
-            {/* Zone backgrounds */}
+            {/* Player zone background — always rendered separately from map zones */}
+            {showZones && (() => {
+              const pcPts = characters
+                .filter((c) => c.kind === 'pc')
+                .map((c) => posOf(c.id!))
+                .filter(Boolean) as NodePos[];
+              if (pcPts.length === 0) return null;
+              const pMinX = Math.min(...pcPts.map((p) => p.x)) - NODE_RADIUS - ZONE_PAD;
+              const pMinY = Math.min(...pcPts.map((p) => p.y)) - NODE_RADIUS - ZONE_PAD;
+              const pMaxX = Math.max(...pcPts.map((p) => p.x)) + NODE_RADIUS + ZONE_PAD;
+              const pMaxY = Math.max(...pcPts.map((p) => p.y)) + NODE_RADIUS + ZONE_PAD;
+              return (
+                <g key="__pc_zone__">
+                  <rect
+                    x={pMinX} y={pMinY} width={pMaxX - pMinX} height={pMaxY - pMinY}
+                    rx={20} ry={20}
+                    fill="#ffa726" fillOpacity={0.06}
+                    stroke="#ffa726" strokeOpacity={0.30}
+                    strokeWidth={2} strokeDasharray="8 4"
+                    pointerEvents="none"
+                  />
+                  <text
+                    x={pMinX + 14} y={pMinY + 24}
+                    fill="#ffa726" fontSize={13} fontWeight={700}
+                    opacity={0.85} style={{ pointerEvents: 'none', userSelect: 'none' }}
+                  >
+                    {t('players', 'Jugadores')}
+                  </text>
+                </g>
+              );
+            })()}
+            {/* Map-based NPC zone backgrounds */}
             {showZones && zones.map(({ map, charIds, colorIdx }) => {
               const pts = charIds.map((id) => posOf(id)).filter(Boolean) as NodePos[];
               if (pts.length === 0) return null;
@@ -745,8 +942,8 @@ export default function AffinityChart() {
                   <rect
                     x={minX} y={minY} width={zw} height={zh}
                     rx={20} ry={20}
-                    fill={color} fillOpacity={0.1}
-                    stroke={color} strokeOpacity={0.6}
+                    fill={color} fillOpacity={0.06}
+                    stroke={color} strokeOpacity={0.30}
                     strokeWidth={2} strokeDasharray="8 4"
                     pointerEvents="none"
                   />
@@ -839,8 +1036,60 @@ export default function AffinityChart() {
             })}
           </svg>
 
-          {/* Character nodes */}
-          {characters.map((ch) => {
+          {/* Zone label drag-handles — small pill positioned over the zone name text.
+              Dragging the label moves all characters in the zone together.
+              Position mirrors the SVG <text> at (minX+14, minY+24). */}
+          {showZones && (() => {
+            const pcIds = characters.filter((c) => c.kind === 'pc').map((c) => c.id!);
+            const pcPts = pcIds.map((id) => posOf(id)).filter(Boolean) as NodePos[];
+            if (pcPts.length === 0) return null;
+            const pMinX = Math.min(...pcPts.map((p) => p.x)) - NODE_RADIUS - ZONE_PAD;
+            const pMinY = Math.min(...pcPts.map((p) => p.y)) - NODE_RADIUS - ZONE_PAD;
+            const labelText = t('players', 'Jugadores');
+            const labelW = labelText.length * 8 + 16; // rough estimate: ~8 px/char + padding
+            return (
+              <div
+                key="__pc_zone_handle__"
+                onPointerDown={(e) => handleZonePointerDown(pcIds, e)}
+                title={t('drag_zone', 'Arrastra para mover la zona')}
+                style={{
+                  position: 'absolute',
+                  left: pMinX + 10,
+                  top: pMinY + 8,
+                  width: labelW,
+                  height: 22,
+                  cursor: 'move',
+                  borderRadius: 4,
+                }}
+              />
+            );
+          })()}
+          {showZones && zones.map(({ map, charIds }) => {
+            const pts = charIds.map((id) => posOf(id)).filter(Boolean) as NodePos[];
+            if (pts.length === 0) return null;
+            const minX = Math.min(...pts.map((p) => p.x)) - NODE_RADIUS - ZONE_PAD;
+            const minY = Math.min(...pts.map((p) => p.y)) - NODE_RADIUS - ZONE_PAD;
+            const labelW = map.name.length * 8 + 16;
+            return (
+              <div
+                key={`zone-handle-${map.id}`}
+                onPointerDown={(e) => handleZonePointerDown(charIds, e)}
+                title={t('drag_zone', 'Arrastra para mover la zona')}
+                style={{
+                  position: 'absolute',
+                  left: minX + 10,
+                  top: minY + 8,
+                  width: labelW,
+                  height: 22,
+                  cursor: 'move',
+                  borderRadius: 4,
+                }}
+              />
+            );
+          })}
+
+          {/* Character nodes — NPCs before PCs so PCs always render on top (higher z-index) */}
+          {[...characters].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'pc' ? 1 : -1)).map((ch) => {
             const pos = posOf(ch.id!);
             if (!pos) return null;
             const avatarBg = ch.tokenColor || '#607d8b';
@@ -1020,7 +1269,7 @@ export default function AffinityChart() {
                 <CenterFocusStrongIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            {zones.length > 0 && (
+{(zones.length > 0 || characters.some((c) => c.kind === 'pc')) && (
               <Tooltip title={showZones ? t('hide_zones', 'Ocultar zonas') : t('show_zones', 'Mostrar zonas')}>
                 <IconButton
                   size="small"
@@ -1031,11 +1280,11 @@ export default function AffinityChart() {
                 </IconButton>
               </Tooltip>
             )}
-            {zones.length > 0 && (
+            {(zones.length > 0 || characters.some((c) => c.kind === 'pc')) && (
               <Tooltip title={t('reorganize_zones', 'Reorganizar por zonas')}>
                 <IconButton
                   size="small"
-                  onClick={() => setPositions(layoutNodes(characters, canvasSize.w, canvasSize.h))}
+                  onClick={() => { const fresh = layoutNodes(characters, canvasSize.w, canvasSize.h); setPositions(fresh); dirtyRef.current = true; }}
                   sx={{ color: 'rgba(255,255,255,0.7)' }}
                 >
                   <DashboardIcon fontSize="small" />
