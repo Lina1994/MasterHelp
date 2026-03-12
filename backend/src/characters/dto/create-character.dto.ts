@@ -93,6 +93,9 @@ export class CreateCharacterDto {
 
   @IsOptional() @IsBoolean() visibleToPlayers?: boolean;
 
+  /** Primary map UUID for Afinigrama zone grouping. Must be one of associatedMapIds. */
+  @IsOptional() @IsString() primaryMapId?: string;
+
   /**
    * Map associations. Special value "__ALL__" = character visible in all maps.
    * Can be sent as JSON string or array.

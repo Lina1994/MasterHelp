@@ -196,6 +196,13 @@ export class Character {
   visibleToPlayers: boolean;
 
   /**
+   * Primary map ID used for Afinigrama zone grouping.
+   * Must be one of the character's associatedMapIds.
+   */
+  @Column({ type: 'text', nullable: true, default: null })
+  primaryMapId?: string | null;
+
+  /**
    * Optional map associations for filtering/categorization.
    * Empty array or includes "__ALL__" = character appears in all maps.
    * Stored as JSON array string.

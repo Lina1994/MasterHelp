@@ -32,6 +32,7 @@ export interface CharacterPayload {
   savingThrowProficiencies?: Record<string, boolean> | null;
   skillProficiencies?: Record<string, boolean> | null;
   visibleToPlayers?: boolean;
+  primaryMapId?: string | null;
   associatedMapIds?: string[];
 }
 
