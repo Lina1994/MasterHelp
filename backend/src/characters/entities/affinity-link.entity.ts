@@ -48,6 +48,10 @@ export class AffinityLink {
   @Column({ type: 'varchar', length: 20, default: '#90caf9' })
   color: string;
 
+  /** Optional free-form notes about this relationship. */
+  @Column({ type: 'text', nullable: true, default: null })
+  notes: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

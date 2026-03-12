@@ -11,6 +11,8 @@ export interface AffinityLinkPayload {
   /** Sentiment from -3 (hatred) to 3 (love). */
   sentiment: number;
   color: string;
+  /** Optional free-form notes about this relationship. */
+  notes: string | null;
 }
 
 /**
@@ -38,6 +40,7 @@ export async function createAffinityLink(data: {
   labelBtoA?: string;
   sentiment?: number;
   color?: string;
+  notes?: string;
 }): Promise<AffinityLinkPayload> {
   const res = await api.post('/affinity-links', data);
   return res.data as AffinityLinkPayload;
@@ -52,7 +55,7 @@ export async function createAffinityLink(data: {
  */
 export async function updateAffinityLink(
   id: string,
-  patch: { labelAtoB?: string; labelBtoA?: string; sentiment?: number; color?: string },
+  patch: { labelAtoB?: string; labelBtoA?: string; sentiment?: number; color?: string; notes?: string },
 ): Promise<AffinityLinkPayload> {
   const res = await api.patch(`/affinity-links/${id}`, patch);
   return res.data as AffinityLinkPayload;

@@ -61,6 +61,7 @@ import {
   ReadOnlyProficiencyRow,
   SpellInfoRow,
 } from './charSheetShared';
+import CharacterRelationsSection from './CharacterRelationsSection';
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -653,6 +654,11 @@ const CharacterSheetModal: React.FC<Props> = ({ charId, campaignId, open, onClos
                             <Typography variant="body2" color="text.secondary">—</Typography>
                           )}
                         </SheetSection>
+                        <CharacterRelationsSection
+                          charId={charId}
+                          campaignId={campaignId}
+                          isMaster={isMaster}
+                        />
                       </Grid>
                     </Grid>
                   </Box>

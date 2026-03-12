@@ -24,4 +24,8 @@ export class UpdateAffinityLinkDto {
   @IsString()
   @MaxLength(20)
   color?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

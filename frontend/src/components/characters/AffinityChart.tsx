@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Avatar,
   Box,
   Button,
@@ -20,13 +21,24 @@ import {
   Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import LayersIcon from '@mui/icons-material/Layers';
+import SearchIcon from '@mui/icons-material/Search';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import ArticleIcon from '@mui/icons-material/Article';
+import AddLinkIcon from '@mui/icons-material/AddLink';
+import CastIcon from '@mui/icons-material/Cast';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
+import { useCampaignsContext } from '../Campaign/CampaignContext';
 import { getCurrentUser } from '../../utils/getCurrentUser';
 import { listCharacters, type CharacterPayload } from '../../api/characters';
+import { listMaps, type MapItemDto } from '../../api/maps';
+import { setActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
+import CharacterSheetModal from './CharacterSheetModal';
+import WorldpediaEntityViewer from '../Worldpedia/WorldpediaEntityViewer';
 import {
   listAffinityLinks,
   createAffinityLink,
@@ -40,6 +52,13 @@ import {
 const NODE_RADIUS = 36;
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 3;
+/** Extra padding around zone bounding boxes. */
+const ZONE_PAD = 48;
+/** Palette for zone fill/stroke colours. */
+const ZONE_COLORS = [
+  '#64b5f6', '#ef9a9a', '#a5d6a7', '#ffcc80', '#ce93d8',
+  '#80deea', '#f48fb1', '#ffe082', '#bcaaa4', '#b0bec5',
+];
 
 /** Predefined palette for link colours. */
 const LINK_COLORS = [
@@ -81,33 +100,68 @@ function isUserMaster(activeCampaign: any, userId: number | undefined): boolean 
   );
 }
 
-/** Generates initial positions — PCs in an inner circle, NPCs in an outer ring. */
+/** Generates initial positions, clustering characters by primaryMapId when present. */
 function layoutNodes(characters: CharacterPayload[], width: number, height: number): NodePos[] {
-  const pcs = characters.filter((c) => c.kind === 'pc');
-  const npcs = characters.filter((c) => c.kind === 'npc');
   const cx = width / 2;
   const cy = height / 2;
   const positions: NodePos[] = [];
 
-  const pcRadius = Math.min(width, height) * 0.2;
-  pcs.forEach((c, i) => {
-    const angle = (2 * Math.PI * i) / (pcs.length || 1) - Math.PI / 2;
-    positions.push({
-      id: c.id!,
-      x: cx + pcRadius * Math.cos(angle),
-      y: cy + pcRadius * Math.sin(angle),
+  // Group by effective map id (explicit primaryMapId, or the sole associated map)
+  const zoneMap = new Map<string, CharacterPayload[]>();
+  const unzoned: CharacterPayload[] = [];
+  for (const ch of characters) {
+    const specificMaps = (ch.associatedMapIds || []).filter((id) => id !== '__ALL__');
+    const effectiveMapId =
+      ch.primaryMapId || (specificMaps.length === 1 ? specificMaps[0] : null);
+    if (effectiveMapId) {
+      const arr = zoneMap.get(effectiveMapId) ?? [];
+      arr.push(ch);
+      zoneMap.set(effectiveMapId, arr);
+    } else {
+      unzoned.push(ch);
+    }
+  }
+
+  const zones = Array.from(zoneMap.values());
+
+  if (zones.length === 0) {
+    // No zones: original PC inner circle / NPC outer ring layout
+    const pcs = characters.filter((c) => c.kind === 'pc');
+    const npcs = characters.filter((c) => c.kind === 'npc');
+    const pcRadius = Math.min(width, height) * 0.2;
+    pcs.forEach((c, i) => {
+      const angle = (2 * Math.PI * i) / (pcs.length || 1) - Math.PI / 2;
+      positions.push({ id: c.id!, x: cx + pcRadius * Math.cos(angle), y: cy + pcRadius * Math.sin(angle) });
+    });
+    const npcRadius = Math.min(width, height) * 0.38;
+    npcs.forEach((c, i) => {
+      const angle = (2 * Math.PI * i) / (npcs.length || 1) - Math.PI / 2;
+      positions.push({ id: c.id!, x: cx + npcRadius * Math.cos(angle), y: cy + npcRadius * Math.sin(angle) });
+    });
+    return positions;
+  }
+
+  // Zone centres arranged in a circle
+  const zoneCentreRadius = Math.min(width, height) * 0.3;
+  zones.forEach((chars, zoneIdx) => {
+    const zoneAngle = (2 * Math.PI * zoneIdx) / zones.length - Math.PI / 2;
+    const zoneCx = cx + (zones.length === 1 ? 0 : zoneCentreRadius) * Math.cos(zoneAngle);
+    const zoneCy = cy + (zones.length === 1 ? 0 : zoneCentreRadius) * Math.sin(zoneAngle);
+    const nodeRadius = Math.max(50, Math.min(120, 80 / Math.max(1, Math.sqrt(chars.length))));
+    chars.forEach((ch, i) => {
+      const angle = (2 * Math.PI * i) / (chars.length || 1) - Math.PI / 2;
+      positions.push({ id: ch.id!, x: zoneCx + nodeRadius * Math.cos(angle), y: zoneCy + nodeRadius * Math.sin(angle) });
     });
   });
 
-  const npcRadius = Math.min(width, height) * 0.38;
-  npcs.forEach((c, i) => {
-    const angle = (2 * Math.PI * i) / (npcs.length || 1) - Math.PI / 2;
-    positions.push({
-      id: c.id!,
-      x: cx + npcRadius * Math.cos(angle),
-      y: cy + npcRadius * Math.sin(angle),
+  // Unzoned characters in a small cluster above zone ring
+  if (unzoned.length > 0) {
+    const unzonedRadius = Math.min(width, height) * 0.12;
+    unzoned.forEach((ch, i) => {
+      const angle = (2 * Math.PI * i) / (unzoned.length || 1) - Math.PI / 2;
+      positions.push({ id: ch.id!, x: cx + unzonedRadius * Math.cos(angle), y: cy + unzonedRadius * Math.sin(angle) });
     });
-  });
+  }
 
   return positions;
 }
@@ -134,6 +188,7 @@ function initials(name: string): string {
 export default function AffinityChart() {
   const { t } = useTranslation();
   const { activeCampaign } = useActiveCampaign();
+  const { fetchCampaigns } = useCampaignsContext();
   const campaignId = activeCampaign?.id ?? null;
   const currentUserId = getCurrentUser()?.id as number | undefined;
   const isMaster = isUserMaster(activeCampaign, currentUserId);
@@ -141,12 +196,23 @@ export default function AffinityChart() {
   /* ── data state ── */
   const [characters, setCharacters] = useState<CharacterPayload[]>([]);
   const [links, setLinks] = useState<AffinityLinkPayload[]>([]);
+  const [maps, setMaps] = useState<MapItemDto[]>([]);
   const [positions, setPositions] = useState<NodePos[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /* ── zones visibility toggle ── */
+  const [showZones, setShowZones] = useState(true);
+
   /* ── drag state ── */
   const dragRef = useRef<{ nodeId: string; offsetX: number; offsetY: number } | null>(null);
+  /** Tracks pointer position on node press to distinguish click from drag. */
+  const pointerDownRef = useRef<{ nodeId: string; x: number; y: number } | null>(null);
+
+  /* ── radial menu + sheet ── */
+  const [radialMenuCharId, setRadialMenuCharId] = useState<string | null>(null);
+  const [sheetCharId, setSheetCharId] = useState<string | null>(null);
+  const [skylineLoading, setSkylineLoading] = useState(false);
 
   /* ── dialogs ── */
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -161,22 +227,29 @@ export default function AffinityChart() {
   const [editLabelBtoA, setEditLabelBtoA] = useState('');
   const [editSentiment, setEditSentiment] = useState(0);
   const [editColor, setEditColor] = useState('');
+  const [addNotes, setAddNotes] = useState('');
+  const [editNotes, setEditNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
   /* ── right-click linking mode ── */
   const [linkSourceId, setLinkSourceId] = useState<string | null>(null);
 
+  /* ── search ── */
+  const [searchHighlightId, setSearchHighlightId] = useState<string | null>(null);
+
   /* ── hover / highlight state ── */
   const [hoveredCharId, setHoveredCharId] = useState<string | null>(null);
   const [hoveredLinkId, setHoveredLinkId] = useState<string | null>(null);
 
-  /* ── zoom / pan state ── */
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+  /* ── zoom / pan state (merged so wheel updates are always atomic) ── */
+  const [viewport, setViewport] = useState({ zoom: 1, pan: { x: 0, y: 0 } });
+  const { zoom, pan } = viewport;
   const panDragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
 
   /* ── canvas dimensions ── */
   const containerRef = useRef<HTMLDivElement>(null);
+  /** Tracks sorted zone assignments to detect when re-layout is needed. */
+  const zoneSignatureRef = useRef<string>('');
   const [canvasSize, setCanvasSize] = useState({ w: 900, h: 600 });
 
   /* ── load data ── */
@@ -185,17 +258,29 @@ export default function AffinityChart() {
     setLoading(true);
     setError(null);
     try {
-      const [chars, lnks] = await Promise.all([
+      const [chars, lnks, mps] = await Promise.all([
         listCharacters(campaignId),
         listAffinityLinks(campaignId),
+        listMaps({ campaignId }),
       ]);
       setCharacters(chars);
       setLinks(lnks);
-      // Recompute positions only when characters change
+      setMaps(mps);
+      // Detect zone-assignment changes (primaryMapId or associatedMapIds)
+      const newZoneSig = chars
+        .map((c) => {
+          const specific = (c.associatedMapIds || []).filter((id) => id !== '__ALL__').join(',');
+          return `${c.id}:${c.primaryMapId ?? ''}:${specific}`;
+        })
+        .sort()
+        .join('|');
+      const zoneChanged = newZoneSig !== zoneSignatureRef.current;
+      zoneSignatureRef.current = newZoneSig;
+      // Recompute positions when: characters added/removed, OR zone assignments changed
       setPositions((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
         const allExist = chars.every((c) => existingIds.has(c.id!));
-        if (allExist && prev.length === chars.length) return prev;
+        if (allExist && prev.length === chars.length && !zoneChanged) return prev;
         return layoutNodes(chars, canvasSize.w, canvasSize.h);
       });
     } catch (err: any) {
@@ -206,6 +291,30 @@ export default function AffinityChart() {
   }, [campaignId, canvasSize.w, canvasSize.h]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  /**
+   * Computed zones: one per unique primaryMapId that has ≥1 character.
+   * Each zone's bounding box is derived from current node positions.
+   */
+  const zones = useMemo(() => {
+    const seen = new Map<string, { map: MapItemDto; charIds: string[]; colorIdx: number }>();
+    let colorIdx = 0;
+    for (const ch of characters) {
+      // Use explicit primaryMapId, or auto-fall back to the only associated map
+      const specificMaps = (ch.associatedMapIds || []).filter((id) => id !== '__ALL__');
+      const effectiveMapId =
+        ch.primaryMapId ||
+        (specificMaps.length === 1 ? specificMaps[0] : null);
+      if (!effectiveMapId) continue;
+      const map = maps.find((m) => m.id === effectiveMapId);
+      if (!map) continue;
+      if (!seen.has(effectiveMapId)) {
+        seen.set(effectiveMapId, { map, charIds: [], colorIdx: colorIdx++ });
+      }
+      seen.get(effectiveMapId)!.charIds.push(ch.id!);
+    }
+    return Array.from(seen.values());
+  }, [characters, maps]);
 
   /* ── observe container size ── */
   useEffect(() => {
@@ -230,15 +339,21 @@ export default function AffinityChart() {
     if (!rect) return;
     const cursorX = e.clientX - rect.left;
     const cursorY = e.clientY - rect.top;
-    setZoom((prev) => {
-      const factor = e.deltaY > 0 ? 0.9 : 1.1;
-      const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev * factor));
-      const ratio = next / prev;
-      setPan((p) => ({
-        x: cursorX - ratio * (cursorX - p.x),
-        y: cursorY - ratio * (cursorY - p.y),
-      }));
-      return next;
+    // Normalise delta: cap to avoid huge jumps on trackpads with pixel-mode delta
+    const rawDelta = e.deltaMode === 0 ? e.deltaY : e.deltaY * 16;
+    const clampedDelta = Math.max(-80, Math.min(80, rawDelta));
+    const factor = clampedDelta > 0 ? 0.9 : 1.1;
+    setViewport((prev) => {
+      const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev.zoom * factor));
+      if (nextZoom === prev.zoom) return prev;
+      const ratio = nextZoom / prev.zoom;
+      return {
+        zoom: nextZoom,
+        pan: {
+          x: cursorX - ratio * (cursorX - prev.pan.x),
+          y: cursorY - ratio * (cursorY - prev.pan.y),
+        },
+      };
     });
   }, []);
 
@@ -271,6 +386,7 @@ export default function AffinityChart() {
     const worldX = (e.clientX - rect.left - pan.x) / zoom;
     const worldY = (e.clientY - rect.top - pan.y) / zoom;
     dragRef.current = { nodeId, offsetX: worldX - pos.x, offsetY: worldY - pos.y };
+    pointerDownRef.current = { nodeId, x: e.clientX, y: e.clientY };
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
 
@@ -284,19 +400,24 @@ export default function AffinityChart() {
   /** Cancel linking mode on ESC. */
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLinkSourceId(null);
+      if (e.key === 'Escape') {
+        setLinkSourceId(null);
+        setRadialMenuCharId(null);
+      }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  /** Pointer down on canvas background — start pan or cancel linking mode. */
+  /** Pointer down on canvas background — start pan or cancel linking/radial menu. */
   const handleCanvasPointerDown = (e: React.PointerEvent) => {
+    setRadialMenuCharId(null);
     if (e.button === 0 && linkSourceId) {
       setLinkSourceId(null);
       return;
     }
     if (e.button === 0 || e.button === 1) {
+      // Capture the current pan at drag start (read from viewport state at this render)
       panDragRef.current = { startX: e.clientX, startY: e.clientY, panX: pan.x, panY: pan.y };
       if (e.button === 1) e.preventDefault();
     }
@@ -315,27 +436,113 @@ export default function AffinityChart() {
     } else if (panDragRef.current) {
       const dx = e.clientX - panDragRef.current.startX;
       const dy = e.clientY - panDragRef.current.startY;
-      setPan({ x: panDragRef.current.panX + dx, y: panDragRef.current.panY + dy });
+      const nextPan = { x: panDragRef.current.panX + dx, y: panDragRef.current.panY + dy };
+      setViewport((prev) => ({ ...prev, pan: nextPan }));
     }
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
+    const down = pointerDownRef.current;
+    if (down) {
+      const dx = e.clientX - down.x;
+      const dy = e.clientY - down.y;
+      if (Math.sqrt(dx * dx + dy * dy) < 5) {
+        // Click: toggle radial menu for this node
+        setRadialMenuCharId((prev) => prev === down.nodeId ? null : down.nodeId);
+      } else {
+        // Drag ended: close any open menu
+        setRadialMenuCharId(null);
+      }
+      pointerDownRef.current = null;
+    }
     dragRef.current = null;
     panDragRef.current = null;
   };
 
   /* ── zoom control helpers ── */
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(MAX_ZOOM, prev * 1.2));
+    setViewport((prev) => ({ ...prev, zoom: Math.min(MAX_ZOOM, prev.zoom * 1.2) }));
   };
 
   const handleZoomOut = () => {
-    setZoom((prev) => Math.max(MIN_ZOOM, prev / 1.2));
+    setViewport((prev) => ({ ...prev, zoom: Math.max(MIN_ZOOM, prev.zoom / 1.2) }));
   };
 
   const handleResetView = () => {
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
+    if (positions.length === 0) {
+      setViewport({ zoom: 1, pan: { x: 0, y: 0 } });
+      return;
+    }
+    // Compute bounding box of all nodes and center it in the canvas at zoom 1
+    const xs = positions.map((p) => p.x);
+    const ys = positions.map((p) => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    setViewport({
+      zoom: 1,
+      pan: {
+        x: canvasSize.w / 2 - centerX,
+        y: canvasSize.h / 2 - centerY,
+      },
+    });
+  };
+
+  /**
+   * Centers the viewport on the searched character node.
+   *
+   * @param charId - UUID of the character to center on.
+   */
+  const handleSearchSelect = (charId: string | null) => {
+    setSearchHighlightId(charId);
+    if (!charId) return;
+    const pos = positions.find((p) => p.id === charId);
+    if (!pos) return;
+    const cw = canvasSize.w;
+    const ch = canvasSize.h;
+    // Center the node in the canvas keeping current zoom
+    setViewport((prev) => ({
+      zoom: prev.zoom,
+      pan: {
+        x: cw / 2 - pos.x * prev.zoom,
+        y: ch / 2 - pos.y * prev.zoom,
+      },
+    }));
+  };
+
+  /* ── skyline toggle ── */
+  /**
+   * Sends or removes the given character from the Skyline overlay.
+   * Only the campaign owner/master should invoke this.
+   *
+   * @param charId - UUID of the character to toggle.
+   */
+  const handleSkylineToggle = async (charId: string) => {
+    if (!campaignId) return;
+    setSkylineLoading(true);
+    setRadialMenuCharId(null);
+    try {
+      const isActive = (activeCampaign as any)?.activeSkylineCharacter?.id === charId;
+      await setActiveSkylineCharacterId(campaignId, isActive ? null : charId);
+      await fetchCampaigns();
+      localStorage.setItem(
+        'app.skyline.activeCharacterUpdated',
+        JSON.stringify({ campaignId, at: Date.now() }),
+      );
+      if ('BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('campaign-sync');
+        bc.postMessage({ type: 'activeSkylineChanged', campaignId });
+        bc.close();
+      }
+      try { (window as any).electronAPI?.projectionPoke?.({ kind: 'activeSkylineChanged', campaignId }); } catch (_) { /* desktop only */ }
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Error al actualizar Skyline');
+    } finally {
+      setSkylineLoading(false);
+    }
   };
 
   /* ── link CRUD ── */
@@ -351,6 +558,7 @@ export default function AffinityChart() {
         labelBtoA: addLabelBtoA,
         sentiment: addSentiment,
         color: addColor,
+        notes: addNotes || undefined,
       });
       setAddDialogOpen(false);
       setAddCharA('');
@@ -359,6 +567,7 @@ export default function AffinityChart() {
       setAddLabelBtoA('');
       setAddSentiment(0);
       setAddColor(LINK_COLORS[0]);
+      setAddNotes('');
       loadData();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error creating link');
@@ -376,6 +585,7 @@ export default function AffinityChart() {
         labelBtoA: editLabelBtoA,
         sentiment: editSentiment,
         color: editColor,
+        notes: editNotes || undefined,
       });
       setEditLink(null);
       loadData();
@@ -405,6 +615,7 @@ export default function AffinityChart() {
     setEditLabelBtoA(link.labelBtoA);
     setEditSentiment(link.sentiment);
     setEditColor(link.color);
+    setEditNotes(link.notes ?? '');
   };
 
   /* ── highlight helpers ── */
@@ -423,53 +634,89 @@ export default function AffinityChart() {
     return <Alert severity="info">{t('select_campaign', 'Selecciona una campaña para ver el afinigrama.')}</Alert>;
   }
 
-  if (loading && !characters.length) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }} flexWrap="wrap" gap={1}>
         <Typography variant="h5">{t('affinity_chart', 'Afinigrama')}</Typography>
-        {linkSourceId && (
+        {linkSourceId ? (
           <Typography variant="body2" color="warning.main" sx={{ fontWeight: 600 }}>
             {t('linking_mode', 'Haz clic en otro personaje para crear un vínculo (ESC para cancelar)')}
           </Typography>
+        ) : (
+          <Autocomplete
+            options={characters}
+            getOptionLabel={(c) => c.name}
+            size="small"
+            sx={{ width: 240 }}
+            onChange={(_e, value) => handleSearchSelect(value?.id ?? null)}
+            onInputChange={(_e, val) => { if (!val) setSearchHighlightId(null); }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder={t('search_character', 'Buscar personaje...')}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: <SearchIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />,
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <li {...props} key={option.id}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Avatar
+                    src={option.tokenKind === 'image' && option.tokenImageUrl ? option.tokenImageUrl : undefined}
+                    sx={{ width: 24, height: 24, fontSize: '0.65rem', bgcolor: option.tokenColor || '#607d8b' }}
+                  >
+                    {!(option.tokenKind === 'image' && option.tokenImageUrl) && option.name.slice(0, 2).toUpperCase()}
+                  </Avatar>
+                  <Typography variant="body2">{option.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">{option.kind === 'pc' ? 'PC' : 'NPC'}</Typography>
+                </Stack>
+              </li>
+            )}
+          />
         )}
       </Stack>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {characters.length === 0 ? (
-        <Alert severity="info">
-          {t('no_characters_affinity', 'No hay personajes en esta campaña para mostrar en el afinigrama.')}
-        </Alert>
-      ) : (
-        <Box
-          ref={containerRef}
-          onPointerDown={handleCanvasPointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          sx={{
-            position: 'relative',
-            width: '100%',
-            height: 600,
-            bgcolor: 'background.default',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 2,
-            overflow: 'hidden',
-            userSelect: 'none',
-            touchAction: 'none',
-            cursor: linkSourceId ? 'crosshair' : 'grab',
-            '&:active': { cursor: linkSourceId ? 'crosshair' : 'grabbing' },
-          }}
-        >
-          {/* Transformed content layer (zoom + pan) */}
+      <Box
+        ref={containerRef}
+        onPointerDown={handleCanvasPointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        sx={{
+          position: 'relative',
+          width: '100%',
+          height: 'calc(100vh - 320px)',
+          minHeight: 500,
+          bgcolor: 'background.default',
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 2,
+          overflow: 'hidden',
+          userSelect: 'none',
+          touchAction: 'none',
+          cursor: linkSourceId ? 'crosshair' : 'grab',
+          '&:active': { cursor: linkSourceId ? 'crosshair' : 'grabbing' },
+        }}
+      >
+        {/* Loading overlay */}
+        {loading && !characters.length && (
+          <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+            <CircularProgress />
+          </Box>
+        )}
+        {/* Empty state overlay */}
+        {!loading && characters.length === 0 && (
+          <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+            <Alert severity="info" sx={{ width: '100%' }}>
+              {t('no_characters_affinity', 'No hay personajes en esta campaña para mostrar en el afinigrama.')}
+            </Alert>
+          </Box>
+        )}
+        {/* Transformed content layer (zoom + pan) — only when there are characters */}
+        {characters.length > 0 && (
           <div
             style={{
               position: 'absolute',
@@ -482,6 +729,37 @@ export default function AffinityChart() {
           <svg
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}
           >
+            {/* Zone backgrounds */}
+            {showZones && zones.map(({ map, charIds, colorIdx }) => {
+              const pts = charIds.map((id) => posOf(id)).filter(Boolean) as NodePos[];
+              if (pts.length === 0) return null;
+              const minX = Math.min(...pts.map((p) => p.x)) - NODE_RADIUS - ZONE_PAD;
+              const minY = Math.min(...pts.map((p) => p.y)) - NODE_RADIUS - ZONE_PAD;
+              const maxX = Math.max(...pts.map((p) => p.x)) + NODE_RADIUS + ZONE_PAD;
+              const maxY = Math.max(...pts.map((p) => p.y)) + NODE_RADIUS + ZONE_PAD;
+              const zw = maxX - minX;
+              const zh = maxY - minY;
+              const color = ZONE_COLORS[colorIdx % ZONE_COLORS.length];
+              return (
+                <g key={map.id}>
+                  <rect
+                    x={minX} y={minY} width={zw} height={zh}
+                    rx={20} ry={20}
+                    fill={color} fillOpacity={0.1}
+                    stroke={color} strokeOpacity={0.6}
+                    strokeWidth={2} strokeDasharray="8 4"
+                    pointerEvents="none"
+                  />
+                  <text
+                    x={minX + 14} y={minY + 24}
+                    fill={color} fontSize={13} fontWeight={700}
+                    opacity={0.85} style={{ pointerEvents: 'none', userSelect: 'none' }}
+                  >
+                    {map.name}
+                  </text>
+                </g>
+              );
+            })}
             {links.map((link) => {
               const a = posOf(link.characterA.id!);
               const b = posOf(link.characterB.id!);
@@ -599,10 +877,16 @@ export default function AffinityChart() {
                       fontWeight: 700,
                       border: isSource
                         ? '3px solid #ffeb3b'
-                        : ch.kind === 'pc'
-                          ? '3px solid #ffa726'
-                          : '2px solid rgba(255,255,255,0.3)',
-                      boxShadow: isSource ? '0 0 12px 3px #ffeb3b' : 2,
+                        : searchHighlightId === ch.id
+                          ? '3px solid #00e5ff'
+                          : ch.kind === 'pc'
+                            ? '3px solid #ffa726'
+                            : '2px solid rgba(255,255,255,0.3)',
+                      boxShadow: isSource
+                        ? '0 0 12px 3px #ffeb3b'
+                        : searchHighlightId === ch.id
+                          ? '0 0 14px 4px #00e5ff'
+                          : 2,
                       transition: 'box-shadow 0.2s, border 0.2s',
                     }}
                   >
@@ -627,8 +911,87 @@ export default function AffinityChart() {
             );
           })}
           </div>
+        )}
 
-          {/* Zoom controls (outside transform so they stay fixed) */}
+        {/* Radial action menu — rendered in screen space so it doesn't zoom/pan */}
+        {(() => {
+          if (!radialMenuCharId) return null;
+          const pos = posOf(radialMenuCharId);
+          if (!pos) return null;
+          const R = NODE_RADIUS * zoom + 28;
+          const cx = pos.x * zoom + pan.x;
+          const cy = pos.y * zoom + pan.y;
+          const isInSkyline = (activeCampaign as any)?.activeSkylineCharacter?.id === radialMenuCharId;
+          const actions = [
+            {
+              angle: -90,
+              label: t('view_sheet', 'Ver ficha'),
+              icon: <ArticleIcon fontSize="small" />,
+              color: '#1565c0',
+              disabled: false,
+              onClick: () => { setSheetCharId(radialMenuCharId); setRadialMenuCharId(null); },
+            },
+            ...(isMaster ? [
+              {
+                angle: -150,
+                label: t('add_link', 'Añadir vínculo'),
+                icon: <AddLinkIcon fontSize="small" />,
+                color: '#2e7d32',
+                disabled: false,
+                onClick: () => { setLinkSourceId(radialMenuCharId); setRadialMenuCharId(null); },
+              },
+              {
+                angle: -30,
+                label: isInSkyline
+                  ? t('remove_from_skyline', 'Quitar de Skyline')
+                  : t('send_to_skyline', 'Enviar a Skyline'),
+                icon: <CastIcon fontSize="small" />,
+                color: isInSkyline ? '#b71c1c' : '#e65100',
+                disabled: skylineLoading,
+                onClick: () => handleSkylineToggle(radialMenuCharId),
+              },
+            ] : []),
+          ];
+          return (
+            <>
+              {actions.map(({ angle, label, icon, color, disabled, onClick }) => {
+                const rad = (angle * Math.PI) / 180;
+                const bx = cx + R * Math.cos(rad) - 20;
+                const by = cy + R * Math.sin(rad) - 20;
+                return (
+                  <Tooltip key={label} title={label} arrow placement="top">
+                    <span
+                      style={{ position: 'absolute', left: bx, top: by, zIndex: 20 }}
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      <IconButton
+                        size="small"
+                        disabled={disabled}
+                        onClick={(e) => { e.stopPropagation(); onClick(); }}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          bgcolor: color,
+                          color: 'white',
+                          '&:hover': { bgcolor: color, filter: 'brightness(1.15)' },
+                          '&.Mui-disabled': { bgcolor: `${color}99`, color: 'rgba(255,255,255,0.5)' },
+                          boxShadow: 4,
+                          transition: 'transform 0.12s, box-shadow 0.12s',
+                          '&:active': { transform: 'scale(0.88)' },
+                        }}
+                      >
+                        {icon}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                );
+              })}
+            </>
+          );
+        })()}
+
+          {/* Zoom controls (outside transform so they stay fixed, only shown when there's content) */}
+          {characters.length > 0 && (
           <Stack
             direction="row"
             spacing={0.5}
@@ -657,11 +1020,44 @@ export default function AffinityChart() {
                 <CenterFocusStrongIcon fontSize="small" />
               </IconButton>
             </Tooltip>
+            {zones.length > 0 && (
+              <Tooltip title={showZones ? t('hide_zones', 'Ocultar zonas') : t('show_zones', 'Mostrar zonas')}>
+                <IconButton
+                  size="small"
+                  onClick={() => setShowZones((v) => !v)}
+                  sx={{ color: showZones ? '#80deea' : 'rgba(255,255,255,0.45)' }}
+                >
+                  <LayersIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {zones.length > 0 && (
+              <Tooltip title={t('reorganize_zones', 'Reorganizar por zonas')}>
+                <IconButton
+                  size="small"
+                  onClick={() => setPositions(layoutNodes(characters, canvasSize.w, canvasSize.h))}
+                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                >
+                  <DashboardIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
             <Typography variant="caption" sx={{ color: 'white', display: 'flex', alignItems: 'center', px: 0.5 }}>
               {Math.round(zoom * 100)}%
             </Typography>
           </Stack>
+          )}
         </Box>
+
+      {/* ── Character Sheet Modal (opened from radial menu) ── */}
+      {sheetCharId && campaignId && (
+        <WorldpediaEntityViewer
+          open={!!sheetCharId}
+          entityType="character"
+          entityId={sheetCharId}
+          campaignId={campaignId}
+          onClose={() => setSheetCharId(null)}
+        />
       )}
 
       {/* ── Add Link Dialog ── */}
@@ -754,6 +1150,17 @@ export default function AffinityChart() {
                 ))}
               </Stack>
             </Box>
+            {/* Notes */}
+            <TextField
+              label={t('link_notes', 'Notas')}
+              value={addNotes}
+              onChange={(e) => setAddNotes(e.target.value)}
+              size="small"
+              fullWidth
+              multiline
+              minRows={2}
+              placeholder={t('link_notes_placeholder', 'Historia, secretos o contexto de esta relación...')}
+            />
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -844,6 +1251,17 @@ export default function AffinityChart() {
                   ))}
                 </Stack>
               </Box>
+              {/* Notes */}
+              <TextField
+                label={t('link_notes', 'Notas')}
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+                size="small"
+                fullWidth
+                multiline
+                minRows={2}
+                placeholder={t('link_notes_placeholder', 'Historia, secretos o contexto de esta relación...')}
+              />
             </Stack>
           )}
         </DialogContent>

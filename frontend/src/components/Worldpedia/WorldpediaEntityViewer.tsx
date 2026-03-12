@@ -33,6 +33,7 @@ import { setActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCh
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useCampaignsContext } from '../Campaign/CampaignContext';
 import { MonsterStatBlock } from '../bestiary/MonsterStatBlock';
+import CharacterRelationsSection from '../characters/CharacterRelationsSection';
 import { SpellStatBlock } from '../spells/SpellStatBlock';
 import AuthImage from '../common/AuthImage';
 
@@ -504,6 +505,13 @@ export default function WorldpediaEntityViewer({
               <SheetSection title={t('backstory', 'Trasfondo')}>
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ch.backstory}</Typography>
               </SheetSection>
+            )}
+            {entityId && campaignId && (
+              <CharacterRelationsSection
+                charId={entityId}
+                campaignId={campaignId}
+                isMaster={!!(activeCampaign?.owner)}
+              />
             )}
           </Grid>
         </Grid>

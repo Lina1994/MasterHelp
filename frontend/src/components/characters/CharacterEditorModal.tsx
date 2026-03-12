@@ -46,6 +46,7 @@ import { SpellAutocomplete } from './SpellAutocomplete';
 import { TraitAutocomplete } from './TraitAutocomplete';
 import { FeatAutocomplete } from './FeatAutocomplete';
 import { CharacterAutoFillPanel, OptionItem } from './CharacterAutoFillPanel';
+import CharacterRelationsSection from './CharacterRelationsSection';
 
 /* ──────────────────── helpers ──────────────────── */
 
@@ -623,6 +624,27 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
               )}
               sx={{ minWidth: 320, flex: 1 }}
             />
+            {/* Primary map selector — shown whenever at least one specific map is selected */}
+            {(draft.associatedMapIds || []).filter(id => id !== '__ALL__').length > 0 && (
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>{t('primary_map', 'Mapa principal')}</InputLabel>
+                <Select
+                  value={draft.primaryMapId || ''}
+                  label={t('primary_map', 'Mapa principal')}
+                  onChange={(e) => setDraft({ ...draft, primaryMapId: e.target.value || null })}
+                >
+                  <MenuItem value="">{t('none', 'Ninguno')}</MenuItem>
+                  {(draft.associatedMapIds || [])
+                    .filter(id => id !== '__ALL__')
+                    .map(id => (
+                      <MenuItem key={id} value={id}>
+                        {maps.find(m => m.id === id)?.name || id}
+                      </MenuItem>
+                    ))
+                  }
+                </Select>
+              </FormControl>
+            )}
           </Stack>
 
           {/* Experience Points inline */}
@@ -1134,6 +1156,13 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                     size="small"
                   />
                 </SheetSection>
+                {draft.id && (
+                  <CharacterRelationsSection
+                    charId={draft.id}
+                    campaignId={draft.campaignId!}
+                    isMaster={isMaster}
+                  />
+                )}
               </Grid>
             </Grid>
           </Box>

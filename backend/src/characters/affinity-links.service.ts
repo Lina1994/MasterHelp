@@ -89,6 +89,7 @@ export class AffinityLinksService {
       labelBtoA: dto.labelBtoA ?? '',
       sentiment: dto.sentiment ?? 0,
       color: dto.color ?? '#90caf9',
+      notes: dto.notes ?? null,
     });
     return this.repo.save(link);
   }
@@ -115,6 +116,7 @@ export class AffinityLinksService {
     if (dto.labelBtoA !== undefined) link.labelBtoA = dto.labelBtoA;
     if (dto.sentiment !== undefined) link.sentiment = dto.sentiment;
     if (dto.color !== undefined) link.color = dto.color;
+    if (dto.notes !== undefined) link.notes = dto.notes ?? null;
     return this.repo.save(link);
   }
 

@@ -41,6 +41,7 @@ import {
   AbilityBlock, HpBar, ReadOnlyProficiencyRow,
   SheetRow, SheetSection, SpellInfoRow, StatBox,
 } from '../components/characters/charSheetShared';
+import CharacterRelationsSection from '../components/characters/CharacterRelationsSection';
 
 /* ───────────────────────── PAGE ──────────────────────────── */
 
@@ -699,6 +700,13 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
                   <Typography variant="body2" color="text.secondary">—</Typography>
                 )}
               </SheetSection>
+              {id && activeCampaign?.id && (
+                <CharacterRelationsSection
+                  charId={id}
+                  campaignId={activeCampaign.id}
+                  isMaster={isMaster}
+                />
+              )}
             </Grid>
           </Grid>
         </Box>

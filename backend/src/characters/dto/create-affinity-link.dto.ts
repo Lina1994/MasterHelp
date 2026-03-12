@@ -36,4 +36,8 @@ export class CreateAffinityLinkDto {
   @IsString()
   @MaxLength(20)
   color?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }
