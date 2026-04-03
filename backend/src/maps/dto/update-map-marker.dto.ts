@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsNumber,
   IsObject,
   IsOptional,
@@ -47,6 +48,11 @@ export class UpdateMapMarkerDto {
   @Min(0)
   @Max(100)
   y?: number;
+
+  /** Toggle marker visibility in the player projection window. */
+  @IsOptional()
+  @IsBoolean()
+  visibleToPlayers?: boolean;
 
   /**
    * Replaces the full associated-entities block.

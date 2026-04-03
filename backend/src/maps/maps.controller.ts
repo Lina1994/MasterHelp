@@ -75,6 +75,15 @@ export class MapsController {
     return this.service.createBulk(req.user, files || [], campaignId);
   }
 
+  /**
+   * Toggle the prepared status of a map.
+   * Returns the new isPrepared value.
+   */
+  @Patch(':id/prepared')
+  async togglePrepared(@Req() req, @Param('id') id: string) {
+    return this.service.togglePrepared(req.user, id);
+  }
+
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file'))
   async update(

@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import * as os from 'os';
+import { resolve, dirname } from 'path';
 
 /** Shape of the response returned by the network-info endpoint. */
 interface NetworkInfoResponse {
@@ -9,6 +10,8 @@ interface NetworkInfoResponse {
   backendPort: number;
   /** Expected frontend (Vite) port. */
   frontendPort: number;
+  /** Absolute path to the directory that contains the SQLite database file. */
+  dbFolder: string;
 }
 
 /**
@@ -41,10 +44,14 @@ export class NetworkInfoController {
       }
     }
 
+    const dbPath = process.env.DB_DATABASE || 'data/dm_app.db';
+    const dbFolder = resolve(dirname(dbPath));
+
     return {
       localIps,
       backendPort: Number(process.env.PORT) || 3000,
       frontendPort: 5173,
+      dbFolder,
     };
   }
 }

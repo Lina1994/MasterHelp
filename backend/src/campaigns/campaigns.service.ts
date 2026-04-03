@@ -555,8 +555,62 @@ export class CampaignsService {
     return { ok: true };
   }
 
+  // --- DEFAULT SKYLINE IMAGE ---
+
+  /**
+   * Upload (or replace) the default/fallback skyline image for a campaign.
+   * @param campaignId Campaign UUID.
+   * @param file Uploaded file buffer + metadata.
+   */
+  async uploadDefaultSkyline(campaignId: string, file: { buffer: Buffer; mimetype: string }) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    campaign.defaultSkylineMimeType = file.mimetype;
+    (campaign as any).defaultSkylineData = file.buffer;
+    await this.campaignsRepository.save(campaign);
+    return { ok: true };
+  }
+
+  /**
+   * Retrieve the default skyline image data for a campaign.
+   * We need addSelect because the blob column has `select: false`.
+   * @returns `{ buffer, mimeType }` or throws NotFoundException.
+   */
+  async getDefaultSkyline(campaignId: string): Promise<{ buffer: Buffer; mimeType: string }> {
+    const campaign = await this.campaignsRepository
+      .createQueryBuilder('c')
+      .addSelect('c.defaultSkylineData')
+      .where('c.id = :id', { id: campaignId })
+      .getOne();
+    if (!campaign || !campaign.defaultSkylineData || !campaign.defaultSkylineMimeType) {
+      throw new NotFoundException('No default skyline image');
+    }
+    return { buffer: campaign.defaultSkylineData, mimeType: campaign.defaultSkylineMimeType };
+  }
+
+  /**
+   * Check whether a default skyline image exists for a campaign.
+   * @returns `{ exists: boolean }`
+   */
+  async hasDefaultSkyline(campaignId: string): Promise<{ exists: boolean }> {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, select: ['id', 'defaultSkylineMimeType'] });
+    return { exists: !!campaign?.defaultSkylineMimeType };
+  }
+
+  /**
+   * Delete the default skyline image for a campaign.
+   */
+  async deleteDefaultSkyline(campaignId: string) {
+    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    campaign.defaultSkylineMimeType = null;
+    (campaign as any).defaultSkylineData = null;
+    await this.campaignsRepository.save(campaign);
+    return { ok: true };
+  }
+
   // --- Skyline Item Overlays ---
-  
+
   /**
    * Get all skyline item overlays for a campaign.
    * Only owner can view (players don't control skyline).

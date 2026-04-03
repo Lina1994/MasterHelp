@@ -1,8 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Paper, Typography, TextField, MenuItem, Stack, Button, ToggleButton, ToggleButtonGroup, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useActiveMap } from './ActiveMapContext';
 import AuthImage from '../common/AuthImage';
-import { getMapImageUrlSized, getMapSkylineUrlSized, listMaps } from '../../api/maps';
+import { getMapImageUrlSized, getMapSkylineUrlSized, listMaps, listMapMarkers, MapItemDto, MapMarkerDto } from '../../api/maps';
+import { listCharacters, CharacterPayload } from '../../api/characters';
+import { listCampaignMonsters, CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
+import { listEncounters, EncounterSummary } from '../../api/encounters';
+import MapMarkerDetail from './MapMarkerDetail';
+import MapMarkerDialog from './MapMarkerDialog';
 import MapGridOverlay, { GridSettings } from './MapGridOverlay';
 import FogOfWarOverlay from './FogOfWarOverlay';
 import FogEditorLayer from './FogEditorLayer';
@@ -101,6 +106,59 @@ const ProjectedMapMirror: React.FC<{
       return true;
     }
   });
+
+  // --- Markers state ---
+  const [showMarkers, setShowMarkers] = useState<boolean>(() => {
+    try {
+      const val = localStorage.getItem('app.map.showMarkers');
+      return val === 'true';
+    } catch { return false; }
+  });
+  const [markers, setMarkers] = useState<MapMarkerDto[]>([]);
+
+  // Persist markers toggle
+  useEffect(() => {
+    try { localStorage.setItem('app.map.showMarkers', String(showMarkers)); } catch { /* noop */ }
+  }, [showMarkers]);
+
+  // Fetch markers when toggle is on and a map is active
+  const loadMarkers = useCallback(async () => {
+    if (!showMarkers || !mapId || !activeCampaign?.id) { setMarkers([]); return; }
+    try {
+      const list = await listMapMarkers(mapId, activeCampaign.id);
+      setMarkers(list);
+    } catch { setMarkers([]); }
+  }, [showMarkers, mapId, activeCampaign?.id]);
+
+  useEffect(() => { loadMarkers(); }, [loadMarkers]);
+
+  const [detailMarker, setDetailMarker] = useState<MapMarkerDto | null>(null);
+  const [editingMarker, setEditingMarker] = useState<MapMarkerDto | null>(null);
+  const [addMarkerMode, setAddMarkerMode] = useState(false);
+  const [createMarkerPos, setCreateMarkerPos] = useState<{ x: number; y: number } | null>(null);
+  const [assocMaps, setAssocMaps] = useState<MapItemDto[]>([]);
+  const [assocChars, setAssocChars] = useState<CharacterPayload[]>([]);
+  const [assocEnemies, setAssocEnemies] = useState<CampaignMonsterListItem[]>([]);
+  const [assocEncounters, setAssocEncounters] = useState<EncounterSummary[]>([]);
+
+  // Lazy-fetch association lists when markers are shown
+  useEffect(() => {
+    if (!showMarkers || !activeCampaign?.id) return;
+    let alive = true;
+    Promise.allSettled([
+      listMaps({ campaignId: activeCampaign.id }),
+      listCharacters(activeCampaign.id),
+      listCampaignMonsters(activeCampaign.id, { pageSize: 9999 }, 'en'),
+      listEncounters(activeCampaign.id),
+    ]).then(([mRes, cRes, eRes, enRes]) => {
+      if (!alive) return;
+      if (mRes.status === 'fulfilled') setAssocMaps(mRes.value);
+      if (cRes.status === 'fulfilled') setAssocChars(cRes.value as CharacterPayload[]);
+      if (eRes.status === 'fulfilled') setAssocEnemies((eRes.value as any).items ?? eRes.value);
+      if (enRes.status === 'fulfilled') setAssocEncounters(enRes.value);
+    });
+    return () => { alive = false; };
+  }, [showMarkers, activeCampaign?.id]);
 
   // Listen for token visualization setting changes from other windows
   useEffect(() => {
@@ -371,6 +429,11 @@ const ProjectedMapMirror: React.FC<{
           onCreateTokenForCandidate={onCreateTokenForCandidate}
           existingTokenIds={existingTokenIds}
           onClearAllTokens={() => setConfirmClearTokens(true)}
+
+          showMarkers={showMarkers}
+          onToggleMarkers={setShowMarkers}
+          addMarkerMode={addMarkerMode}
+          onToggleAddMarkerMode={(v) => { setAddMarkerMode(v); if (v) setShowMarkers(true); }}
         />
       )}
       <Box ref={containerRef} sx={{ width: '100%', overflow: 'auto' }}>
@@ -467,6 +530,59 @@ const ProjectedMapMirror: React.FC<{
                             showGuideDots={showGuideDots}
                             showCellShading={showCellShading}
                           />
+                          {/* Click-to-add marker overlay */}
+                          {addMarkerMode && showMarkers && (
+                            <Box
+                              sx={{ position: 'absolute', inset: 0, zIndex: 12, cursor: 'crosshair' }}
+                              onClick={(e) => {
+                                // offsetX/offsetY are in the target's local coordinate space,
+                                // already accounting for all CSS transforms (rotation, zoom, scale).
+                                const pctX = (e.nativeEvent.offsetX / contentW) * 100;
+                                const pctY = (e.nativeEvent.offsetY / contentH) * 100;
+                                const clamp = (v: number) => Math.max(0, Math.min(100, v));
+                                setCreateMarkerPos({ x: clamp(pctX), y: clamp(pctY) });
+                                setAddMarkerMode(false);
+                              }}
+                            />
+                          )}
+                          {/* World-map markers overlay (preview only) */}
+                          {showMarkers && markers.length > 0 && (
+                            <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+                              {markers.map((m) => (
+                                <Box
+                                  key={m.id}
+                                  sx={{
+                                    position: 'absolute',
+                                    left: `${m.x}%`,
+                                    top: `${m.y}%`,
+                                    transform: `translate(-50%, -100%) scale(${1 / (activeTransform?.zoom ?? 1)})`,
+                                    transformOrigin: '50% 100%',
+                                    pointerEvents: 'auto',
+                                    cursor: 'pointer',
+                                    userSelect: 'none',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    opacity: m.visibleToPlayers ? 1 : 0.70,
+                                  }}
+                                  title={m.name}
+                                  onClick={(e) => { e.stopPropagation(); setDetailMarker(m); }}
+                                >
+                                  <Paper elevation={4} sx={{
+                                    px: 0.75, py: 0.25, borderRadius: 2,
+                                    bgcolor: 'background.paper',
+                                    border: '2px solid', borderColor: 'primary.main',
+                                    minWidth: 32, textAlign: 'center', lineHeight: 1,
+                                  }}>
+                                    <Typography variant="body1" component="span" sx={{ fontSize: '1.25rem' }}>
+                                      {m.icon}
+                                    </Typography>
+                                  </Paper>
+                                  <Box sx={{ width: 2, height: 8, bgcolor: 'primary.main' }} />
+                                </Box>
+                              ))}
+                            </Box>
+                          )}
                           {/* Editor layer captures pointer events only when explicit fog edit is enabled */}
                           {fogEnabled && fogEditEnabled && (
                             <FogEditorLayer
@@ -531,6 +647,61 @@ const ProjectedMapMirror: React.FC<{
           }
         }}
       />
+
+      {detailMarker && mapId && activeCampaign?.id && (
+        <MapMarkerDetail
+          marker={detailMarker}
+          mapId={mapId}
+          campaignId={activeCampaign.id}
+          open={!!detailMarker}
+          onClose={() => setDetailMarker(null)}
+          onEdit={() => {
+            setEditingMarker(detailMarker);
+            setDetailMarker(null);
+          }}
+          onDelete={(deletedId) => {
+            setDetailMarker(null);
+            setMarkers(prev => prev.filter(m => m.id !== deletedId));
+          }}
+          allMaps={assocMaps}
+          allCharacters={assocChars}
+          allEnemies={assocEnemies}
+          allEncounters={assocEncounters}
+        />
+      )}
+
+      {/* Create marker dialog (click-to-add from preview) */}
+      {createMarkerPos && !editingMarker && mapId && activeCampaign?.id && (
+        <MapMarkerDialog
+          initialX={createMarkerPos.x}
+          initialY={createMarkerPos.y}
+          campaignId={activeCampaign.id}
+          mapId={mapId}
+          onClose={() => setCreateMarkerPos(null)}
+          onSaved={(saved) => {
+            setMarkers(prev => [...prev, saved]);
+            setCreateMarkerPos(null);
+          }}
+        />
+      )}
+
+      {/* Edit marker dialog (opened from detail view) */}
+      {editingMarker && mapId && activeCampaign?.id && (
+        <MapMarkerDialog
+          marker={editingMarker}
+          campaignId={activeCampaign.id}
+          mapId={mapId}
+          onClose={() => setEditingMarker(null)}
+          onSaved={(saved) => {
+            setMarkers(prev => prev.map(m => m.id === saved.id ? saved : m));
+            setEditingMarker(null);
+          }}
+          onDelete={(deletedId) => {
+            setMarkers(prev => prev.filter(m => m.id !== deletedId));
+            setEditingMarker(null);
+          }}
+        />
+      )}
 
       <Dialog
         open={confirmClearTokens}

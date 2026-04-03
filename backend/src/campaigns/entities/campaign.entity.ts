@@ -135,4 +135,18 @@ export class Campaign {
    */
   @Column({ type: 'simple-json', nullable: true })
   selectedManualIds?: string[] | null;
+
+  /**
+   * MIME type of the default/fallback skyline image for this campaign.
+   * Shown when the active map has no skyline image of its own.
+   */
+  @Column({ type: 'text', nullable: true })
+  defaultSkylineMimeType?: string | null;
+
+  /**
+   * Raw binary data of the default/fallback skyline image.
+   * Excluded from normal selects to keep eager loads lightweight.
+   */
+  @Column({ type: 'blob', nullable: true, select: false })
+  defaultSkylineData?: Buffer | null;
 }

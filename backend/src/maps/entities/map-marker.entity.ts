@@ -103,6 +103,13 @@ export class MapMarker {
   y: number;
 
   /**
+   * Whether this marker is visible in the player projection window.
+   * Defaults to false — the DM must explicitly share each marker.
+   */
+  @Column({ type: 'boolean', default: false })
+  visibleToPlayers: boolean;
+
+  /**
    * JSON block of associated entity IDs.
    * Deliberately kept as IDs only — display data is resolved on the client.
    */

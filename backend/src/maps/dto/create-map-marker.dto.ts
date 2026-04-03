@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsNumber,
   IsObject,
   IsOptional,
@@ -51,6 +52,11 @@ export class CreateMapMarkerDto {
   /** Campaign this marker is scoped to. */
   @IsUUID()
   campaignId: string;
+
+  /** Whether this marker should be visible in the player projection window. */
+  @IsOptional()
+  @IsBoolean()
+  visibleToPlayers?: boolean;
 
   /**
    * Optional set of associated entity IDs.

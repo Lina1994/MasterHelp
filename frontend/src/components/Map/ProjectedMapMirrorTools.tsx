@@ -14,7 +14,7 @@ import {
 import type { GridSettings } from './MapGridOverlay';
 import type { TokenEditMode } from './MapTokensOverlay';
 
-type ToolGroup = 'move' | 'grid' | 'fog' | 'tokens';
+type ToolGroup = 'move' | 'grid' | 'fog' | 'tokens' | 'markers';
 
 export type TokenCandidate = {
   id: string;
@@ -76,6 +76,12 @@ export type ProjectedMapMirrorToolsProps = {
   existingTokenIds?: Set<string>;
   /** Create a token for a given candidate. */
   onCreateTokenForCandidate?: (candidate: TokenCandidate) => void;
+
+  // --- Markers ---
+  showMarkers: boolean;
+  onToggleMarkers: (v: boolean) => void;
+  addMarkerMode?: boolean;
+  onToggleAddMarkerMode?: (v: boolean) => void;
 };
 
 /**
@@ -95,6 +101,7 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
       case 'grid': return 'Cuadrícula';
       case 'fog': return 'Niebla';
       case 'tokens': return 'Tokens';
+      case 'markers': return 'Marcadores';
       default: return '';
     }
   }, [openGroup]);
@@ -127,6 +134,9 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
         </Button>
         <Button size="small" variant="outlined" onClick={onOpen('tokens')}>
           Tokens
+        </Button>
+        <Button size="small" variant={props.showMarkers ? 'contained' : 'outlined'} onClick={onOpen('markers')}>
+          Marcadores
         </Button>
       </Stack>
 
@@ -274,6 +284,27 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                 <Typography variant="body2" color="text.secondary">
                   Activa la niebla desde la cabecera de Combate para editarla aquí.
                 </Typography>
+              )}
+            </Stack>
+          )}
+
+          {openGroup === 'markers' && (
+            <Stack spacing={1}>
+              <FormControlLabel
+                control={<Switch checked={props.showMarkers} onChange={(e) => props.onToggleMarkers(e.target.checked)} />}
+                label="Mostrar marcadores del mapa"
+              />
+              {props.onToggleAddMarkerMode && (
+                <Button
+                  size="small"
+                  variant={props.addMarkerMode ? 'contained' : 'outlined'}
+                  onClick={() => {
+                    props.onToggleAddMarkerMode!(!props.addMarkerMode);
+                    if (!props.addMarkerMode) onClose();
+                  }}
+                >
+                  {props.addMarkerMode ? 'Cancelar colocación' : 'Añadir marcador'}
+                </Button>
               )}
             </Stack>
           )}

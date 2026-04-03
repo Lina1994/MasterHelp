@@ -1,12 +1,12 @@
 /**
  * Settings panel that lets users choose which tools appear in the sidebar
- * and in what order. Renders a reorderable list with visibility toggles.
+ * and in what order. Renders a drag-and-drop reorderable list with
+ * visibility toggles and per-item icons.
  */
 import {
   Box,
   Typography,
   Switch,
-  IconButton,
   List,
   ListItem,
   ListItemIcon,
@@ -15,12 +15,54 @@ import {
   Divider,
 } from '@mui/material';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import MapIcon from '@mui/icons-material/Map';
+import PeopleIcon from '@mui/icons-material/People';
+import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import PetsIcon from '@mui/icons-material/Pets';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactElement } from 'react';
 import { useSidebarConfig } from '../contexts/SidebarConfigContext';
 import { DEFAULT_SIDEBAR_ITEMS, type SidebarConfig } from '../constants/sidebarItems';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+/** Maps iconName strings to MUI icon elements. */
+const ICON_MAP: Record<string, ReactElement> = {
+  FolderSpecial: <FolderSpecialIcon fontSize="small" />,
+  MusicNote: <MusicNoteIcon fontSize="small" />,
+  MenuBook: <MenuBookIcon fontSize="small" />,
+  Map: <MapIcon fontSize="small" />,
+  SportsKabaddi: <SportsKabaddiIcon fontSize="small" />,
+  People: <PeopleIcon fontSize="small" />,
+  Assignment: <AssignmentIcon fontSize="small" />,
+  Storefront: <StorefrontIcon fontSize="small" />,
+  AutoStories: <AutoStoriesIcon fontSize="small" />,
+  EventNote: <EventNoteIcon fontSize="small" />,
+  Pets: <PetsIcon fontSize="small" />,
+  AutoFixHigh: <AutoFixHighIcon fontSize="small" />,
+};
 
 /** Local working-copy item. */
 interface LocalItem {
@@ -29,8 +71,77 @@ interface LocalItem {
 }
 
 /**
+ * A single sortable sidebar-item row.
+ */
+function SortableItem({
+  item,
+  onToggle,
+}: {
+  item: LocalItem;
+  onToggle: () => void;
+}) {
+  const { t } = useTranslation();
+  const def = DEFAULT_SIDEBAR_ITEMS.find((d) => d.key === item.key);
+  const label = def ? t(def.labelKey, def.fallback) : item.key;
+  const icon = def ? ICON_MAP[def.iconName] : null;
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.key });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <ListItem
+      ref={setNodeRef}
+      style={style}
+      disablePadding
+      secondaryAction={
+        <Switch
+          edge="end"
+          size="small"
+          checked={item.visible}
+          onChange={onToggle}
+        />
+      }
+      sx={{ pr: 7 }}
+    >
+      <ListItemIcon
+        {...attributes}
+        {...listeners}
+        sx={{ minWidth: 28, cursor: 'grab', color: 'text.secondary' }}
+      >
+        <DragIndicatorIcon fontSize="small" />
+      </ListItemIcon>
+      {icon && (
+        <ListItemIcon sx={{ minWidth: 32, opacity: item.visible ? 1 : 0.4 }}>
+          {icon}
+        </ListItemIcon>
+      )}
+      <ListItemText
+        primary={label}
+        primaryTypographyProps={{
+          variant: 'body2',
+          sx: { opacity: item.visible ? 1 : 0.5 },
+        }}
+      />
+    </ListItem>
+  );
+}
+
+/**
  * SidebarSettings component.
- * Allows the user to toggle visibility and reorder sidebar shortcuts.
+ * Allows the user to toggle visibility and reorder sidebar shortcuts
+ * via drag-and-drop.
  */
 const SidebarSettings = () => {
   const { t } = useTranslation();
@@ -40,17 +151,16 @@ const SidebarSettings = () => {
   const [items, setItems] = useState<LocalItem[]>([]);
   const [dirty, setDirty] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
   // Sync from context whenever sidebarItems change externally.
   useEffect(() => {
     setItems(sidebarItems.map((i) => ({ ...i })));
     setDirty(false);
   }, [sidebarItems]);
-
-  /** Resolves a human-readable label for a sidebar key. */
-  const labelFor = (key: string) => {
-    const def = DEFAULT_SIDEBAR_ITEMS.find((d) => d.key === key);
-    return def ? t(def.labelKey, def.fallback) : key;
-  };
 
   /**
    * Toggles the visibility flag for the item at the given index.
@@ -67,18 +177,17 @@ const SidebarSettings = () => {
   };
 
   /**
-   * Moves an item up or down in the list.
+   * Handles the end of a drag-and-drop reorder.
    *
-   * @param idx - Current index.
-   * @param direction - -1 for up, 1 for down.
+   * @param event - DnD drag-end event.
    */
-  const move = (idx: number, direction: -1 | 1) => {
-    const target = idx + direction;
-    if (target < 0 || target >= items.length) return;
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
     setItems((prev) => {
-      const next = [...prev];
-      [next[idx], next[target]] = [next[target], next[idx]];
-      return next;
+      const oldIndex = prev.findIndex((i) => i.key === active.id);
+      const newIndex = prev.findIndex((i) => i.key === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
     });
     setDirty(true);
   };
@@ -102,49 +211,26 @@ const SidebarSettings = () => {
         {t('sidebar_settings_hint', 'Activa o desactiva herramientas y cambia su orden en el sidebar.')}
       </Typography>
 
-      <List dense disablePadding>
-        {items.map((item, idx) => (
-          <ListItem
-            key={item.key}
-            disablePadding
-            secondaryAction={
-              <Switch
-                edge="end"
-                size="small"
-                checked={item.visible}
-                onChange={() => toggleVisibility(idx)}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={items.map((i) => i.key)}
+          strategy={verticalListSortingStrategy}
+        >
+          <List dense disablePadding>
+            {items.map((item, idx) => (
+              <SortableItem
+                key={item.key}
+                item={item}
+                onToggle={() => toggleVisibility(idx)}
               />
-            }
-            sx={{ pr: 7 }}
-          >
-            <ListItemIcon sx={{ minWidth: 32, color: 'text.secondary' }}>
-              <DragIndicatorIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText
-              primary={labelFor(item.key)}
-              primaryTypographyProps={{
-                variant: 'body2',
-                sx: { opacity: item.visible ? 1 : 0.5 },
-              }}
-            />
-            <IconButton
-              size="small"
-              disabled={idx === 0}
-              onClick={() => move(idx, -1)}
-              sx={{ mr: 0.25 }}
-            >
-              <ArrowUpwardIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              disabled={idx === items.length - 1}
-              onClick={() => move(idx, 1)}
-            >
-              <ArrowDownwardIcon fontSize="small" />
-            </IconButton>
-          </ListItem>
-        ))}
-      </List>
+            ))}
+          </List>
+        </SortableContext>
+      </DndContext>
 
       <Divider sx={{ my: 1.5 }} />
 

@@ -103,4 +103,14 @@ export class UpdateMapDto {
   })
   @IsObject()
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined) return undefined;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value === 'true';
+    return Boolean(value);
+  })
+  @IsBoolean()
+  isPrepared?: boolean;
 }

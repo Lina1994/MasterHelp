@@ -31,6 +31,7 @@ interface NetworkInfo {
   localIps: string[];
   backendPort: number;
   frontendPort: number;
+  dbFolder: string;
 }
 const SettingsSection = () => {
   const navigate = useNavigate();
@@ -380,6 +381,42 @@ const SettingsSection = () => {
             <UpdateChecker />
           </AccordionDetails>
         </Accordion>
+
+        {/* ── Database location ───────────────────────────────── */}
+        {networkInfo?.dbFolder && (
+          <Accordion disableGutters elevation={0} sx={{ '&::before': { display: 'none' } }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                {t('db_location_title', 'Base de datos')}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                {t('db_location_description', 'Carpeta donde se almacena la base de datos de la aplicación:')}
+              </Typography>
+              <OutlinedInput
+                fullWidth
+                readOnly
+                value={networkInfo.dbFolder}
+                size="small"
+                sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <Tooltip title={t('copy_url', 'Copiar URL')}>
+                      <Button
+                        size="small"
+                        onClick={() => handleCopyUrl(networkInfo.dbFolder)}
+                        sx={{ minWidth: 0, p: 0.5 }}
+                      >
+                        <ContentCopyIcon fontSize="small" />
+                      </Button>
+                    </Tooltip>
+                  </InputAdornment>
+                }
+              />
+            </AccordionDetails>
+          </Accordion>
+        )}
 
         {/* ── Account settings (collapsible) ──────────────────── */}
         <Accordion disableGutters elevation={0} sx={{ '&::before': { display: 'none' } }}>

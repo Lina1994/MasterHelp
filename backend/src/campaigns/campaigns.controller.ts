@@ -8,7 +8,12 @@ import {
   Delete,
   UseGuards,
   Request,
+  Res,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CampaignsService } from './campaigns.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
@@ -252,6 +257,20 @@ export class CampaignsController {
     return this.campaignsService.getParticipantMonsterMappingPublic(id);
   }
 
+  @Get('projection/:id/default-skyline')
+  async getDefaultSkylinePublic(@Param('id') id: string, @Res() res: Response) {
+    const img = await this.campaignsService.getDefaultSkyline(id);
+    res.setHeader('Content-Type', img.mimeType);
+    res.setHeader('Content-Length', img.buffer.length.toString());
+    res.setHeader('Cache-Control', 'no-store');
+    res.end(img.buffer);
+  }
+
+  @Get('projection/:id/default-skyline/exists')
+  async hasDefaultSkylinePublic(@Param('id') id: string) {
+    return this.campaignsService.hasDefaultSkyline(id);
+  }
+
   /**
    * Update battle state for a campaign. Only owner can update.
    */
@@ -278,6 +297,54 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   async setSelectedManuals(@Param('id') id: string, @Body() body: UpdateCampaignManualsDto) {
     return this.campaignsService.setSelectedManuals(id, body);
+  }
+
+  // --- DEFAULT SKYLINE IMAGE ---
+
+  /**
+   * Upload (or replace) the default/fallback skyline image for the campaign.
+   * Only the campaign owner can upload.
+   */
+  @Post(':id/default-skyline')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadDefaultSkyline(
+    @Param('id') id: string,
+    @UploadedFile() file?: { buffer: Buffer; mimetype: string; size: number },
+  ) {
+    if (!file) return { ok: false, message: 'Missing file' };
+    return this.campaignsService.uploadDefaultSkyline(id, file);
+  }
+
+  /**
+   * Stream the default/fallback skyline image. Authenticated users only.
+   */
+  @Get(':id/default-skyline')
+  @UseGuards(JwtAuthGuard)
+  async getDefaultSkyline(@Param('id') id: string, @Res() res: Response) {
+    const img = await this.campaignsService.getDefaultSkyline(id);
+    res.setHeader('Content-Type', img.mimeType);
+    res.setHeader('Content-Length', img.buffer.length.toString());
+    res.setHeader('Cache-Control', 'no-store');
+    res.end(img.buffer);
+  }
+
+  /**
+   * Check whether a default skyline image exists for the campaign.
+   */
+  @Get(':id/default-skyline/exists')
+  @UseGuards(JwtAuthGuard)
+  async hasDefaultSkyline(@Param('id') id: string) {
+    return this.campaignsService.hasDefaultSkyline(id);
+  }
+
+  /**
+   * Delete the default skyline image. Only the campaign owner can delete.
+   */
+  @Delete(':id/default-skyline')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async deleteDefaultSkyline(@Param('id') id: string) {
+    return this.campaignsService.deleteDefaultSkyline(id);
   }
 
   // --- INVITATION ENDPOINTS ---

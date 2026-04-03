@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Box, Paper, Typography } from '@mui/material';
 import AuthImage from '../components/common/AuthImage';
-import { getMapImageUrlSized } from '../api/maps';
+import { getMapImageUrlSized, listMaps, listMapMarkers, MapMarkerDto } from '../api/maps';
 import { useActiveMap } from '../components/Map/ActiveMapContext';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
-import { listMaps } from '../api/maps';
 import MapGridOverlay, { GridSettings } from '../components/Map/MapGridOverlay';
 import FogOfWarOverlay from '../components/Map/FogOfWarOverlay';
 import { useFogOfWar } from '../hooks/useFogOfWar';
@@ -41,6 +40,24 @@ const ProjectionMapPage: React.FC = () => {
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
   const { resolver: tokenImageResolver } = useTokenImageResolver(activeCampaign?.id, { pollMs: 5000 });
+
+  // ─── Visible markers ─────────────────────────────────────────────────
+  const [visibleMarkers, setVisibleMarkers] = useState<MapMarkerDto[]>([]);
+
+  const loadVisibleMarkers = useCallback(async () => {
+    if (!activeMapId || !activeCampaign?.id) { setVisibleMarkers([]); return; }
+    try {
+      const all = await listMapMarkers(activeMapId, activeCampaign.id);
+      setVisibleMarkers(all.filter(m => m.visibleToPlayers));
+    } catch { setVisibleMarkers([]); }
+  }, [activeMapId, activeCampaign?.id]);
+
+  useEffect(() => {
+    loadVisibleMarkers();
+    const id = window.setInterval(loadVisibleMarkers, 5000);
+    return () => window.clearInterval(id);
+  }, [loadVisibleMarkers]);
+
   // Initialize synchronously from localStorage so the correct turn is highlighted from frame 1.
   // useSkylineInitiativeSync writes 'app.skyline.initiativeStrip' synchronously on every turn change,
   // so this is always fresher than anything the server could return.
@@ -525,6 +542,47 @@ const ProjectionMapPage: React.FC = () => {
                   renderFacing={true}
                   zIndex={50}
                 />
+              )}
+
+              {/* Visible markers overlay (above fog so players always see them) */}
+              {naturalSize?.w && naturalSize?.h && visibleMarkers.length > 0 && (
+                <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 60 }}>
+                  {visibleMarkers.map((m) => (
+                    <Box
+                      key={m.id}
+                      sx={{
+                        position: 'absolute',
+                        left: `${m.x}%`,
+                        top: `${m.y}%`,
+                        transform: 'translate(-50%, -100%)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Paper elevation={4} sx={{
+                        px: 0.75, py: 0.25, borderRadius: 2,
+                        bgcolor: 'background.paper',
+                        border: '2px solid', borderColor: 'primary.main',
+                        minWidth: 32, textAlign: 'center', lineHeight: 1,
+                      }}>
+                        <Typography variant="body1" component="span" sx={{ fontSize: '1.25rem' }}>
+                          {m.icon}
+                        </Typography>
+                      </Paper>
+                      <Box sx={{ width: 2, height: 8, bgcolor: 'primary.main' }} />
+                      <Typography variant="caption" sx={{
+                        color: 'white',
+                        textShadow: '0 0 4px black, 0 0 4px black',
+                        fontWeight: 700,
+                        whiteSpace: 'nowrap',
+                        mt: 0.25,
+                      }}>
+                        {m.name}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
               )}
             </Box>
           </Box>

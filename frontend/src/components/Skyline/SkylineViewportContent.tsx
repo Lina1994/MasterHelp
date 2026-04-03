@@ -27,6 +27,7 @@ import { api } from '../../apiBase';
 import { getActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
 import { getSkylineItems, type SkylineItemOverlay } from '../../api/campaigns/skylineItems';
 import { getSkylineOverlaySettingsPublic } from '../../api/campaigns/skylineOverlay';
+import { hasDefaultSkylinePublic, getDefaultSkylinePublicUrl } from '../../api/campaigns/defaultSkyline';
 import { getCampaignNowPlayingTitlePublic } from '../../api/soundtrack/nowPlaying';
 import { getCharacter, type CharacterPayload } from '../../api/characters';
 
@@ -221,6 +222,7 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
   const [nowPlayingTitle, setNowPlayingTitle] = useState<string | null>(null);
   const [selectedDayLabel, setSelectedDayLabel] = useState<string | null>(() => readSelectedDay(campaignId));
   const [showDayInSkyline, setShowDayInSkyline] = useState<boolean>(readShowDayInSkyline);
+  const [hasDefaultSkylineImg, setHasDefaultSkylineImg] = useState(false);
   /** Tracks which overlay source was last activated; the last entry is the visible one. */
   const [overlayStack, setOverlayStack] = useState<Array<'character' | 'turnImage' | 'shopItem'>>([]);  /** Manual override written by SkylinePreviewOverlay. */
   const [forcedOverlay, setForcedOverlay] = useState<'character' | 'shopItem' | 'turnImage' | null>(() => {
@@ -242,6 +244,13 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
     setSelectedDayLabel(readSelectedDay(campaignId));
     setShowDayInSkyline(readShowDayInSkyline());
     setSettings(prev => ({ ...prev, ...readExtraSettings() }));
+  }, [campaignId]);
+
+  // Check if campaign has a default skyline fallback image
+  useEffect(() => {
+    let cancelled = false;
+    hasDefaultSkylinePublic(campaignId).then(v => { if (!cancelled) setHasDefaultSkylineImg(v); }).catch(() => {});
+    return () => { cancelled = true; };
   }, [campaignId]);
 
   // ── data fetching ───────────────────────────────────────────────────────
@@ -509,6 +518,12 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
           <AuthImage
             src={getMapSkylineUrlSized(mapId, 'full', { timeOfDay: timeOfDay as any, cacheBust: timeOfDay })}
             alt="Skyline"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        ) : hasDefaultSkylineImg ? (
+          <img
+            src={getDefaultSkylinePublicUrl(campaignId)}
+            alt="Skyline por defecto"
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         ) : (

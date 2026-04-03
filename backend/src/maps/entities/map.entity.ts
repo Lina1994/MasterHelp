@@ -85,6 +85,13 @@ export class MapEntity {
   @Column({ type: 'simple-json', nullable: true })
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number } | null;
 
+  /**
+   * Whether this map is marked as "prepared" by the DM.
+   * Prepared maps are shown first in the list for quick access during sessions.
+   */
+  @Column({ type: 'boolean', default: false })
+  isPrepared: boolean;
+
   // Legacy single-image fields (kept for backward compatibility; prefer MapImage variants)
   @Column({ nullable: true })
   imageMimeType?: string | null;

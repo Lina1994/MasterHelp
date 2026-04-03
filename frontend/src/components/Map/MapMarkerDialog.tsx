@@ -16,6 +16,7 @@ import {
   InputAdornment,
   Skeleton,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -269,6 +270,7 @@ export default function MapMarkerDialog({
   const [name, setName] = useState(marker?.name ?? '');
   const [icon, setIcon] = useState(marker?.icon ?? '📍');
   const [notes, setNotes] = useState(marker?.notes ?? '');
+  const [visibleToPlayers, setVisibleToPlayers] = useState(marker?.visibleToPlayers ?? false);
   const [associated, setAssociated] = useState<MarkerAssociated>(marker?.associated ?? {});
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -339,9 +341,9 @@ export default function MapMarkerDialog({
     if (!name.trim()) return;
     setSaving(true);
     try {
-      const payload = { name: name.trim(), icon, notes: notes || undefined, x, y, campaignId, associated };
+      const payload = { name: name.trim(), icon, notes: notes || undefined, x, y, campaignId, visibleToPlayers, associated };
       const saved = isEdit
-        ? await updateMapMarker(mapId, marker!.id, { name: payload.name, icon, notes: notes || null, associated })
+        ? await updateMapMarker(mapId, marker!.id, { name: payload.name, icon, notes: notes || null, visibleToPlayers, associated })
         : await createMapMarker(mapId, payload);
       onSaved(saved);
     } finally {
@@ -409,7 +411,11 @@ export default function MapMarkerDialog({
             multiline
             rows={3}
           />
-
+          {/* Visible to players */}
+          <FormControlLabel
+            control={<Switch checked={visibleToPlayers} onChange={(_, v) => setVisibleToPlayers(v)} />}
+            label="Visible para jugadores"
+          />
           {/* ─── Associations ──────────────────────────────────────────────── */}
           <Typography variant="subtitle2" sx={{ mt: 1 }}>Asociaciones</Typography>
 

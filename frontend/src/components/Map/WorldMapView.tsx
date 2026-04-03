@@ -367,6 +367,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onDragStart={(e) => e.preventDefault()}
       >
         {/* ─── Map + Markers (transform wrapper) ──────────────────────── */}
         <Box
@@ -446,7 +447,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
           }}
           onPointerDown={(e) => e.stopPropagation()}
         >
-          <Tooltip title="Cerrar mapa mundial">
+          <Tooltip title="Cerrar vista en detalle">
             <IconButton size="small" onClick={onClose}><CloseIcon /></IconButton>
           </Tooltip>
 

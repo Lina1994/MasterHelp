@@ -27,6 +27,9 @@ import MapIcon from '@mui/icons-material/Map';
 import PresentToAllIcon from '@mui/icons-material/PresentToAll';
 import SkylineIcon from '@mui/icons-material/Layers';
 
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+
 import WorldpediaEntityViewer from '../Worldpedia/WorldpediaEntityViewer';
 
 import { MapMarkerDto, MapItemDto, getMapImageUrlSized, listMaps, deleteMapMarker } from '../../api/maps';
@@ -364,6 +367,14 @@ function MarkerRootView({ marker, campaignId, allMaps, allCharacters, allEnemies
             {marker.notes}
           </Typography>
         )}
+        <Chip
+          icon={marker.visibleToPlayers ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
+          label={marker.visibleToPlayers ? 'Visible para jugadores' : 'Oculto para jugadores'}
+          size="small"
+          variant="outlined"
+          color={marker.visibleToPlayers ? 'success' : 'default'}
+          sx={{ mt: 1, alignSelf: 'flex-start' }}
+        />
       </Box>
 
       {totalAssociated > 0 && (

@@ -207,6 +207,7 @@ export class MapsService {
         'm.group',
         'm.timeOfDay',
         'm.isWorldMap',
+        'm.isPrepared',
         'm.musicConfig',
         'm.sfxConfig',
         'm.transform',
@@ -221,7 +222,8 @@ export class MapsService {
     if (q) {
       qb.andWhere('(LOWER(m.name) LIKE :q OR LOWER(m.description) LIKE :q)', { q: `%${q.toLowerCase()}%` });
     }
-    qb.orderBy('m.updatedAt', 'DESC');
+    qb.orderBy('m.isPrepared', 'DESC')
+      .addOrderBy('m.updatedAt', 'DESC');
     const rows = await qb.getMany();
     // Compute imageAvailable without fetching BLOBs
     const imageCounts = await this.imagesRepo.createQueryBuilder('img')
@@ -245,6 +247,7 @@ export class MapsService {
       group: (r as any).group ?? [],
       timeOfDay: (r as any).timeOfDay,
       isWorldMap: (r as any).isWorldMap ?? false,
+      isPrepared: (r as any).isPrepared ?? false,
       musicConfig: (r as any).musicConfig,
       sfxConfig: (r as any).sfxConfig,
       transform: (r as any).transform,
@@ -323,6 +326,21 @@ export class MapsService {
     return results;
   }
 
+  /**
+   * Toggles the isPrepared flag on a map owned by the authenticated user.
+   * @returns The new isPrepared value.
+   */
+  async togglePrepared(user: User | any, id: string) {
+    const entity = await this.repo.findOne({ where: { id }, relations: ['owner'] });
+    if (!entity) throw new NotFoundException('Map not found');
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    if (entity.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    entity.isPrepared = !entity.isPrepared;
+    await this.repo.save(entity);
+    return { isPrepared: entity.isPrepared };
+  }
+
   async update(
     user: User | any,
     id: string,
@@ -343,6 +361,7 @@ export class MapsService {
     if (dto.musicConfig !== undefined) (entity as any).musicConfig = dto.musicConfig ?? null;
     if (dto.sfxConfig !== undefined) (entity as any).sfxConfig = dto.sfxConfig ?? null;
     if ((dto as any).transform !== undefined) (entity as any).transform = (dto as any).transform ?? null;
+    if (dto.isPrepared !== undefined) (entity as any).isPrepared = dto.isPrepared;
     if (dto.campaignId !== undefined) {
       if (!dto.campaignId) {
         entity.campaign = null;
@@ -623,6 +642,7 @@ export class MapsService {
       notes: dto.notes ?? null,
       x: dto.x,
       y: dto.y,
+      visibleToPlayers: dto.visibleToPlayers ?? false,
       associated: dto.associated ?? null,
     });
 
@@ -651,6 +671,7 @@ export class MapsService {
     if (dto.notes !== undefined) marker.notes = dto.notes ?? null;
     if (dto.x !== undefined) marker.x = dto.x;
     if (dto.y !== undefined) marker.y = dto.y;
+    if (dto.visibleToPlayers !== undefined) marker.visibleToPlayers = dto.visibleToPlayers;
     if (dto.associated !== undefined) marker.associated = dto.associated ?? null;
 
     return this.markersRepo.save(marker);

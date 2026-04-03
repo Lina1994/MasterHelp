@@ -13,6 +13,7 @@ import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { getSkylineOverlaySettingsPublic } from '../api/campaigns/skylineOverlay';
 import { getCampaignNowPlayingTitlePublic } from '../api/soundtrack/nowPlaying';
 import { getSkylineItems, SkylineItemOverlay } from '../api/campaigns/skylineItems';
+import { hasDefaultSkylinePublic, getDefaultSkylinePublicUrl } from '../api/campaigns/defaultSkyline';
 import { getCellStreamUrl } from '../api/shops';
 
 const SHOW_DAY_IN_SKYLINE_KEY = 'diary_showSelectedDayInSkyline';
@@ -52,6 +53,7 @@ const ProjectionSkylinePage: React.FC = () => {
   const { timeOfDay } = useTimeOfDay();
   const { setActiveCampaignId, activeCampaign, activeCampaignId: rawCampaignId } = useActiveCampaign();
   const [hasSkyline, setHasSkyline] = useState<boolean>(true);
+  const [hasDefaultSkylineImg, setHasDefaultSkylineImg] = useState(false);
   // Initialize synchronously from URL so that the first render already has the campaign ID.
   // In HashRouter, ?campaignId=X is part of the hash (e.g. #/projection/skyline?campaignId=abc),
   // so window.location.search is empty — we parse both locations.
@@ -652,6 +654,15 @@ const ProjectionSkylinePage: React.FC = () => {
     return () => { cancelled = true; };
   }, [activeMapId, activeCampaign?.id, campaignIdFromQuery]);
 
+  // Check if campaign has a default skyline fallback image
+  useEffect(() => {
+    let cancelled = false;
+    const cid = activeCampaign?.id || campaignIdFromQuery;
+    if (!cid) { setHasDefaultSkylineImg(false); return; }
+    hasDefaultSkylinePublic(cid).then(v => { if (!cancelled) setHasDefaultSkylineImg(v); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [activeCampaign?.id, campaignIdFromQuery]);
+
   // Reportar tamaño de la ventana Skyline (Electron) y guardarlo en localStorage
   useEffect(() => {
     const KEY_SIZE = 'app.projection.skyline.size';
@@ -881,6 +892,12 @@ const ProjectionSkylinePage: React.FC = () => {
           <AuthImage
             src={getMapSkylineUrlSized(activeMapId, 'full', { timeOfDay, cacheBust: timeOfDay })}
             alt="Skyline proyectado"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : hasDefaultSkylineImg && (activeCampaign?.id || campaignIdFromQuery) ? (
+          <img
+            src={getDefaultSkylinePublicUrl((activeCampaign?.id || campaignIdFromQuery)!)}
+            alt="Skyline por defecto"
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (

@@ -7,6 +7,7 @@ export interface MapItemDto {
   group?: string[];
   timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
   isWorldMap?: boolean;
+  isPrepared?: boolean;
   musicConfig?: Record<string, any>;
   sfxConfig?: Record<string, any>;
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
@@ -101,6 +102,15 @@ export async function updateMap(id: string, payload: {
 
 export async function deleteMap(id: string) {
   const res = await api.delete<{ ok: true }>(`/maps/${id}`);
+  return res.data;
+}
+
+/**
+ * Toggles the isPrepared flag on a map.
+ * @returns The new isPrepared value.
+ */
+export async function toggleMapPrepared(id: string) {
+  const res = await api.patch<{ isPrepared: boolean }>(`/maps/${id}/prepared`);
   return res.data;
 }
 
@@ -271,6 +281,8 @@ export interface MapMarkerDto {
   x: number;
   /** Vertical position as percentage of map image height (0–100). */
   y: number;
+  /** Whether this marker is visible in the player projection window. */
+  visibleToPlayers: boolean;
   associated: MarkerAssociated | null;
   createdAt: string;
   updatedAt: string;
@@ -302,6 +314,7 @@ export async function createMapMarker(
     x: number;
     y: number;
     campaignId: string;
+    visibleToPlayers?: boolean;
     associated?: MarkerAssociated;
   },
 ): Promise<MapMarkerDto> {

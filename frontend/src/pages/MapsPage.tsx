@@ -1,25 +1,35 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip, Paper, Typography, MenuItem, Divider, Autocomplete, Chip } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Box, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Paper, Typography, MenuItem, Divider, Autocomplete, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import PresentToAllIcon from '@mui/icons-material/PresentToAll';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PublicIcon from '@mui/icons-material/Public';
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap';
 import SettingsIcon from '@mui/icons-material/Settings';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import SendIcon from '@mui/icons-material/Send';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import FolderIcon from '@mui/icons-material/Folder';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useActiveMap } from '../components/Map/ActiveMapContext';
 import ProjectedMapMirror from '../components/Map/ProjectedMapMirror';
 import AuthImage from '../components/common/AuthImage';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
-import { createMap, createMapsBulk, deleteMap, getMapImageUrl, getMapImageUrlSized, listMaps, MapItemDto, updateMap, getMapsUsage } from '../api/maps';
+import { createMap, createMapsBulk, deleteMap, getMapImageUrl, getMapImageUrlSized, listMaps, MapItemDto, updateMap, getMapsUsage, toggleMapPrepared } from '../api/maps';
 import AudioConfigEditor, { MusicConfig as MusicCfg, SfxConfig as SfxCfg } from '../components/soundtrack/AudioConfigEditor';
 import MapTodImagesEditor from '../components/Map/MapTodImagesEditor';
 import MapSkylineTodImagesEditor from '../components/Map/MapSkylineTodImagesEditor';
 import WorldMapView from '../components/Map/WorldMapView';
 import SecondaryWindowSizesSettings from '../components/common/SecondaryWindowSizesSettings';
 import { useSecondaryWindowSizes } from '../hooks/useSecondaryWindowSizes';
+import { uploadDefaultSkyline, getDefaultSkylineUrl, hasDefaultSkyline, deleteDefaultSkyline } from '../api/campaigns/defaultSkyline';
 
 type FormState = {
   id?: string;
@@ -48,6 +58,13 @@ export default function MapsPage() {
   });
   const [loading, setLoading] = useState(false);
   const [usage, setUsage] = useState<{ totalSize: number; count: number } | null>(null);
+  const [sortOrder, setSortOrder] = useState<'alpha' | 'newest' | 'oldest' | 'lastUsed'>(() => {
+    try {
+      const saved = localStorage.getItem('mapsPage.sortOrder');
+      if (saved === 'alpha' || saved === 'newest' || saved === 'oldest' || saved === 'lastUsed') return saved;
+    } catch { /* noop */ }
+    return 'lastUsed';
+  });
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>({ name: '', isWorldMap: false });
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -59,6 +76,46 @@ export default function MapsPage() {
   const [worldMapItem, setWorldMapItem] = useState<MapItemDto | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { mode: windowSizeMode, customSizes, setMode: setWindowSizeMode, setCustomSize } = useSecondaryWindowSizes();
+  const [viewMode, setViewMode] = useState<'list' | 'groups'>(() => {
+    try {
+      const saved = localStorage.getItem('mapsPage.viewMode');
+      if (saved === 'list' || saved === 'groups') return saved;
+    } catch { /* noop */ }
+    return 'list';
+  });
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Default skyline fallback state
+  const [defaultSkylineExists, setDefaultSkylineExists] = useState(false);
+  const [defaultSkylineCb, setDefaultSkylineCb] = useState(0);
+  const [uploadingSkyline, setUploadingSkyline] = useState(false);
+
+  // Check if default skyline exists when settings open or campaign changes
+  useEffect(() => {
+    if (!campaignId) return;
+    let cancelled = false;
+    hasDefaultSkyline(campaignId).then(v => { if (!cancelled) setDefaultSkylineExists(v); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [campaignId, defaultSkylineCb]);
+
+  const handleUploadDefaultSkyline = useCallback(async (file: File) => {
+    if (!campaignId) return;
+    setUploadingSkyline(true);
+    try {
+      await uploadDefaultSkyline(campaignId, file);
+      setDefaultSkylineExists(true);
+      setDefaultSkylineCb(c => c + 1);
+    } finally {
+      setUploadingSkyline(false);
+    }
+  }, [campaignId]);
+
+  const handleDeleteDefaultSkyline = useCallback(async () => {
+    if (!campaignId) return;
+    await deleteDefaultSkyline(campaignId);
+    setDefaultSkylineExists(false);
+    setDefaultSkylineCb(c => c + 1);
+  }, [campaignId]);
 
   // Persist group filter to localStorage
   useEffect(() => {
@@ -67,6 +124,16 @@ export default function MapsPage() {
     } catch { /* noop */ }
   }, [groupFilter]);
 
+  // Persist sort order to localStorage
+  useEffect(() => {
+    try { localStorage.setItem('mapsPage.sortOrder', sortOrder); } catch { /* noop */ }
+  }, [sortOrder]);
+
+  // Persist view mode to localStorage
+  useEffect(() => {
+    try { localStorage.setItem('mapsPage.viewMode', viewMode); } catch { /* noop */ }
+  }, [viewMode]);
+
   const filtered = useMemo(() => {
     let result = [...items];
     
@@ -74,13 +141,30 @@ export default function MapsPage() {
     if (groupFilter.length > 0) {
       result = result.filter((map) => {
         const mapGroups = map.group || [];
-        // Map is included if it has at least one of the selected groups
         return groupFilter.some(g => mapGroups.includes(g));
       });
     }
+
+    // Sort: prepared maps always first, then by chosen order
+    result.sort((a, b) => {
+      const ap = a.isPrepared ? 1 : 0;
+      const bp = b.isPrepared ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+      switch (sortOrder) {
+        case 'alpha':
+          return a.name.localeCompare(b.name);
+        case 'newest':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'lastUsed':
+        default:
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+    });
     
     return result;
-  }, [items, groupFilter]);
+  }, [items, groupFilter, sortOrder]);
 
   /** All distinct groups across loaded maps, for autocomplete suggestions. */
   const allGroups = useMemo(() => {
@@ -248,6 +332,7 @@ export default function MapsPage() {
   return (
     <Box>
       <ProjectedMapMirror
+        fogEnabled
         useCustomSizes={windowSizeMode === 'custom'}
         customPlayersSize={customSizes.players}
         customSkylineSize={customSizes.skyline}
@@ -268,9 +353,28 @@ export default function MapsPage() {
           renderInput={(params) => <TextField {...params} label="Filtrar por grupos" placeholder="Selecciona grupos" />}
           sx={{ minWidth: 280 }}
         />
-        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 200 }}>
-          {usage ? `${(usage.totalSize/1024/1024).toFixed(2)} MB / ${usage.count} mapas` : 'Calculando uso...'}
-        </Typography>
+        <TextField
+          select
+          size="small"
+          label="Ordenar por"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as any)}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="lastUsed">Últimos usados</MenuItem>
+          <MenuItem value="alpha">Alfabético</MenuItem>
+          <MenuItem value="newest">Más recientes</MenuItem>
+          <MenuItem value="oldest">Más antiguos</MenuItem>
+        </TextField>
+        <ToggleButtonGroup
+          size="small"
+          value={viewMode}
+          exclusive
+          onChange={(_e, v) => { if (v) setViewMode(v); }}
+        >
+          <ToggleButton value="list"><Tooltip title="Vista lista"><ViewListIcon fontSize="small" /></Tooltip></ToggleButton>
+          <ToggleButton value="groups"><Tooltip title="Vista grupos"><FolderIcon fontSize="small" /></Tooltip></ToggleButton>
+        </ToggleButtonGroup>
         <Button variant="contained" startIcon={<AddIcon />} onClick={onOpenCreate}>Nuevo mapa</Button>
         <Button
           variant="outlined"
@@ -315,60 +419,11 @@ export default function MapsPage() {
           </Button>
         </Tooltip>
       </Stack>
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: {
-          xs: '1fr',
-          sm: 'repeat(2, 1fr)',
-          md: 'repeat(2, 1fr)',
-          lg: 'repeat(3, 1fr)',
-          xl: 'repeat(4, 1fr)'
-        },
-        gap: 1.5,
-      }}>
-        {filtered.map((it) => (
-          <Paper key={it.id} variant="outlined" sx={{ p: 1.25, display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-            {/* Thumbnail */}
-            <Box sx={{ width: 56, height: 56, borderRadius: 1, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {it.imageAvailable ? (
-                <AuthImage src={getMapImageUrlSized(it.id, 'thumb')} alt={it.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onErrorIcon={<ImageIcon fontSize="medium" />} />
-              ) : (
-                <ImageIcon fontSize="medium" />
-              )}
-            </Box>
-            {/* Text */}
-            <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-              <Typography variant="subtitle1" noWrap title={it.name}>{it.name}</Typography>
-              {it.description && (
-                <Typography variant="body2" color="text.secondary" noWrap title={it.description}>{it.description}</Typography>
-              )}
-            </Box>
-            {/* Actions */}
-            <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
-              {activeMapId === it.id && (
-                <Tooltip title="Activo"><span><CheckCircleIcon color="success" /></span></Tooltip>
-              )}
-              <Tooltip title="Editar"><span><IconButton onClick={() => onOpenEdit(it)}><EditIcon /></IconButton></span></Tooltip>
-              <Tooltip title="Hacer activo">
-                <span>
-                  <IconButton onClick={() => {
-                    setActiveMapId(it.id);
-                  }}>
-                    <VisibilityIcon />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip title="Abrir modo Mapa Mundial">
-                <span>
-                  <IconButton onClick={() => setWorldMapItem(it)}>
-                    <PublicIcon />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </Stack>
-          </Paper>
-        ))}
-      </Box>
+      {viewMode === 'list' ? (
+        <MapsGrid maps={filtered} activeMapId={activeMapId} setActiveMapId={setActiveMapId} onOpenEdit={onOpenEdit} setWorldMapItem={setWorldMapItem} setItems={setItems} />
+      ) : (
+        <MapsGroupsView maps={filtered} allGroups={allGroups} activeMapId={activeMapId} setActiveMapId={setActiveMapId} onOpenEdit={onOpenEdit} setWorldMapItem={setWorldMapItem} setItems={setItems} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} />
+      )}
 
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>{form.id ? 'Editar mapa' : 'Nuevo mapa'}</DialogTitle>
@@ -550,7 +605,7 @@ export default function MapsPage() {
         onConfirm={handleConfirmDelete}
       />
 
-      {/* Modo Mapa Mundial — visualizador fullscreen con zoom/pan y marcadores */}
+      {/* Modo Vista en detalle — visualizador fullscreen con zoom/pan y marcadores */}
       {worldMapItem && campaignId && (
         <WorldMapView
           map={worldMapItem}
@@ -564,6 +619,72 @@ export default function MapsPage() {
         <DialogTitle>Ajustes de Mapas</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Uso de almacenamiento</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {usage ? `${(usage.totalSize / 1024 / 1024).toFixed(2)} MB / ${usage.count} mapas` : 'Calculando uso...'}
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+
+            {/* Default skyline fallback */}
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Skyline por defecto</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Se muestra cuando el mapa activo no tiene imagen de skyline propia.
+            </Typography>
+            {defaultSkylineExists && campaignId ? (
+              <Box sx={{ mb: 2 }}>
+                <AuthImage
+                  src={`${getDefaultSkylineUrl(campaignId)}?_cb=${defaultSkylineCb}`}
+                  alt="Skyline por defecto"
+                  style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 4 }}
+                />
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<CloudUploadIcon />}
+                    component="label"
+                    disabled={uploadingSkyline}
+                  >
+                    Reemplazar
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleUploadDefaultSkyline(f); e.target.value = ''; }}
+                    />
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleDeleteDefaultSkyline}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
+              </Box>
+            ) : (
+              <Box sx={{ mb: 2 }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<CloudUploadIcon />}
+                  component="label"
+                  disabled={uploadingSkyline || !campaignId}
+                >
+                  {uploadingSkyline ? 'Subiendo...' : 'Subir imagen'}
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleUploadDefaultSkyline(f); e.target.value = ''; }}
+                  />
+                </Button>
+              </Box>
+            )}
+
+            <Divider sx={{ mb: 2 }} />
             <SecondaryWindowSizesSettings
               mode={windowSizeMode}
               customSizes={customSizes}
@@ -577,5 +698,204 @@ export default function MapsPage() {
         </DialogActions>
       </Dialog>
     </Box>
+  );
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Shared map card                                            */
+/* ────────────────────────────────────────────────────────── */
+
+interface MapCardProps {
+  it: MapItemDto;
+  activeMapId: string | null;
+  setActiveMapId: (id: string) => void;
+  onOpenEdit: (it: MapItemDto) => void;
+  setWorldMapItem: (it: MapItemDto) => void;
+  setItems: React.Dispatch<React.SetStateAction<MapItemDto[]>>;
+}
+
+function MapCard({ it, activeMapId, setActiveMapId, onOpenEdit, setWorldMapItem, setItems }: MapCardProps) {
+  return (
+    <Paper variant="outlined" sx={{ p: 1.25, display: 'flex', gap: 1.5, minWidth: 0, borderLeft: it.isPrepared ? '3px solid' : undefined, borderLeftColor: it.isPrepared ? 'warning.main' : undefined }}>
+      <Box sx={{ width: 56, height: 56, borderRadius: 1, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {it.imageAvailable ? (
+          <AuthImage src={getMapImageUrlSized(it.id, 'thumb')} alt={it.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onErrorIcon={<ImageIcon fontSize="medium" />} />
+        ) : (
+          <ImageIcon fontSize="medium" />
+        )}
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
+          <Typography variant="subtitle1" noWrap title={it.name}>{it.name}</Typography>
+          {it.musicConfig && Object.values(it.musicConfig).some(v => v && typeof v === 'object' && Object.keys(v).length > 0) && (
+            <Tooltip title="Tiene música asociada"><MusicNoteIcon fontSize="small" color="action" /></Tooltip>
+          )}
+        </Stack>
+        <Stack direction="row" spacing={0.5} sx={{ mt: 0.25 }}>
+          <Tooltip title={it.isPrepared ? 'Quitar de preparados' : 'Marcar como preparado'}>
+            <span>
+              <IconButton
+                size="small"
+                onClick={async () => {
+                  try {
+                    const res = await toggleMapPrepared(it.id);
+                    setItems(prev => prev.map(m => m.id === it.id ? { ...m, isPrepared: res.isPrepared } : m));
+                  } catch { /* noop */ }
+                }}
+                color={it.isPrepared ? 'warning' : 'default'}
+              >
+                {it.isPrepared ? <BookmarkIcon fontSize="small" /> : <BookmarkBorderIcon fontSize="small" />}
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Editar">
+            <span><IconButton size="small" onClick={() => onOpenEdit(it)}><EditIcon fontSize="small" /></IconButton></span>
+          </Tooltip>
+          <Tooltip title="Hacer activo">
+            <span>
+              <IconButton size="small" onClick={() => setActiveMapId(it.id)}>
+                {activeMapId === it.id ? <CheckCircleIcon fontSize="small" color="success" /> : <SendIcon fontSize="small" />}
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Abrir vista en detalle">
+            <span>
+              <IconButton size="small" onClick={() => setWorldMapItem(it)}>
+                <ZoomInMapIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Stack>
+      </Box>
+    </Paper>
+  );
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Grid (flat list view)                                      */
+/* ────────────────────────────────────────────────────────── */
+
+const gridSx = {
+  display: 'grid',
+  gridTemplateColumns: {
+    xs: '1fr',
+    sm: 'repeat(2, 1fr)',
+    md: 'repeat(2, 1fr)',
+    lg: 'repeat(3, 1fr)',
+    xl: 'repeat(4, 1fr)',
+  },
+  gap: 1.5,
+} as const;
+
+interface MapsGridProps {
+  maps: MapItemDto[];
+  activeMapId: string | null;
+  setActiveMapId: (id: string) => void;
+  onOpenEdit: (it: MapItemDto) => void;
+  setWorldMapItem: (it: MapItemDto) => void;
+  setItems: React.Dispatch<React.SetStateAction<MapItemDto[]>>;
+}
+
+function MapsGrid({ maps, activeMapId, setActiveMapId, onOpenEdit, setWorldMapItem, setItems }: MapsGridProps) {
+  return (
+    <Box sx={gridSx}>
+      {maps.map((it) => (
+        <MapCard key={it.id} it={it} activeMapId={activeMapId} setActiveMapId={setActiveMapId} onOpenEdit={onOpenEdit} setWorldMapItem={setWorldMapItem} setItems={setItems} />
+      ))}
+    </Box>
+  );
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Groups view (collapsible sections)                         */
+/* ────────────────────────────────────────────────────────── */
+
+interface MapsGroupsViewProps extends MapsGridProps {
+  allGroups: string[];
+  expandedGroups: Set<string>;
+  setExpandedGroups: React.Dispatch<React.SetStateAction<Set<string>>>;
+}
+
+function MapsGroupsView({ maps, allGroups, activeMapId, setActiveMapId, onOpenEdit, setWorldMapItem, setItems, expandedGroups, setExpandedGroups }: MapsGroupsViewProps) {
+  const toggle = (group: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group); else next.add(group);
+      return next;
+    });
+  };
+
+  const ungroupedLabel = 'Sin grupo';
+  const mapsByGroup = useMemo(() => {
+    const result = new Map<string, MapItemDto[]>();
+    for (const g of allGroups) result.set(g, []);
+    const ungrouped: MapItemDto[] = [];
+    for (const m of maps) {
+      const groups = m.group?.filter(g => allGroups.includes(g)) ?? [];
+      if (groups.length === 0) {
+        ungrouped.push(m);
+      } else {
+        for (const g of groups) result.get(g)!.push(m);
+      }
+    }
+    return { grouped: result, ungrouped };
+  }, [maps, allGroups]);
+
+  const sections = [...mapsByGroup.grouped.entries()].filter(([, list]) => list.length > 0);
+
+  // Sort groups: those containing prepared maps first, then alphabetically
+  const sortedSections = useMemo(() => {
+    return [...sections].sort((a, b) => {
+      const aHasPrepared = a[1].some(m => m.isPrepared);
+      const bHasPrepared = b[1].some(m => m.isPrepared);
+      if (aHasPrepared !== bHasPrepared) return aHasPrepared ? -1 : 1;
+      return a[0].localeCompare(b[0]);
+    });
+  }, [sections]);
+
+  return (
+    <Stack spacing={1}>
+      {sortedSections.map(([group, groupMaps]) => {
+        const hasPrepared = groupMaps.some(m => m.isPrepared);
+        return (
+        <Box key={group}>
+          <Paper variant="outlined" sx={{ px: 2, py: 0.75, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: hasPrepared ? '3px solid' : undefined, borderLeftColor: hasPrepared ? 'warning.main' : undefined }} onClick={() => toggle(group)}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <FolderIcon fontSize="small" color={hasPrepared ? 'warning' : 'action'} />
+              <Typography variant="subtitle2">{group}</Typography>
+              <Chip label={groupMaps.length} size="small" />
+            </Stack>
+            {expandedGroups.has(group) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </Paper>
+          <Collapse in={expandedGroups.has(group)}>
+            <Box sx={{ ...gridSx, mt: 1, mb: 1 }}>
+              {groupMaps.map((it) => (
+                <MapCard key={it.id} it={it} activeMapId={activeMapId} setActiveMapId={setActiveMapId} onOpenEdit={onOpenEdit} setWorldMapItem={setWorldMapItem} setItems={setItems} />
+              ))}
+            </Box>
+          </Collapse>
+        </Box>
+        );
+      })}
+      {mapsByGroup.ungrouped.length > 0 && (
+        <Box>
+          <Paper variant="outlined" sx={{ px: 2, py: 0.75, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onClick={() => toggle(ungroupedLabel)}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <FolderIcon fontSize="small" color="disabled" />
+              <Typography variant="subtitle2" color="text.secondary">{ungroupedLabel}</Typography>
+              <Chip label={mapsByGroup.ungrouped.length} size="small" />
+            </Stack>
+            {expandedGroups.has(ungroupedLabel) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </Paper>
+          <Collapse in={expandedGroups.has(ungroupedLabel)}>
+            <Box sx={{ ...gridSx, mt: 1, mb: 1 }}>
+              {mapsByGroup.ungrouped.map((it) => (
+                <MapCard key={it.id} it={it} activeMapId={activeMapId} setActiveMapId={setActiveMapId} onOpenEdit={onOpenEdit} setWorldMapItem={setWorldMapItem} setItems={setItems} />
+              ))}
+            </Box>
+          </Collapse>
+        </Box>
+      )}
+    </Stack>
   );
 }

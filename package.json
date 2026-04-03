@@ -1,6 +1,6 @@
 {
   "name": "masterhelp-desktop",
-  "version": "0.26.309",
+  "version": "0.26.310",
   "description": "Desktop application for MasterHelp",
   "main": "electron.js",
   "scripts": {
