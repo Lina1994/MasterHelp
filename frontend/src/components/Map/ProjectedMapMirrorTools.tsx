@@ -13,8 +13,13 @@ import {
 } from '@mui/material';
 import type { GridSettings } from './MapGridOverlay';
 import type { TokenEditMode } from './MapTokensOverlay';
+import type { FogMode } from '../../api/campaigns/fogOfWar';
+import type { OrganicFogTool } from './OrganicFogEditorLayer';
+import type { ElementEditorTool } from './MapElementsEditorLayer';
+import type { MapElement, MapLightElement } from '../../api/mapElements';
+import MapElementsPanel from './MapElementsPanel';
 
-type ToolGroup = 'move' | 'grid' | 'fog' | 'tokens' | 'markers';
+type ToolGroup = 'move' | 'grid' | 'fog' | 'tokens' | 'markers' | 'elements';
 
 export type TokenCandidate = {
   id: string;
@@ -43,6 +48,10 @@ export type ProjectedMapMirrorToolsProps = {
   fogEnabled: boolean;
   fogEditEnabled: boolean;
   onSetFogEditEnabled: (v: boolean) => void;
+  /** Which fog system is active: grid (classic) or organic (brush-based). */
+  fogMode: FogMode;
+  onSetFogMode: (v: FogMode) => void;
+  // Grid fog controls
   fogTool: 'paint' | 'erase';
   onSetFogTool: (v: 'paint' | 'erase') => void;
   /** Visual-only fog shading in the master preview (does not affect players). */
@@ -56,6 +65,13 @@ export type ProjectedMapMirrorToolsProps = {
   canFogFillAll: boolean;
   onFogFillAll: () => void;
   onFogClearAll: () => void;
+  // Organic fog controls
+  organicFogTool: OrganicFogTool;
+  onSetOrganicFogTool: (v: OrganicFogTool) => void;
+  organicBrushRadius: number;
+  onSetOrganicBrushRadius: (v: number) => void;
+  onOrganicFogClearAll: () => void;
+  onOrganicFogFillAll: () => void;
 
   // --- Tokens ---
   tokenMode: TokenEditMode;
@@ -82,6 +98,23 @@ export type ProjectedMapMirrorToolsProps = {
   onToggleMarkers: (v: boolean) => void;
   addMarkerMode?: boolean;
   onToggleAddMarkerMode?: (v: boolean) => void;
+
+  // --- Elements (walls, doors, windows, lights) ---
+  elementsEditEnabled: boolean;
+  onSetElementsEditEnabled: (v: boolean) => void;
+  elementTool: ElementEditorTool;
+  onSetElementTool: (v: ElementEditorTool) => void;
+  elements: MapElement[];
+  selectedElement: MapElement | null;
+  onSelectElement: (el: MapElement | null) => void;
+  onUpdateElement: (id: string, patch: Partial<MapElement>) => void;
+  onRemoveElement: (id: string) => void;
+  onClearAllElements: () => void;
+  newLightRadius: number;
+  onSetNewLightRadius: (v: number) => void;
+  /** Toggle a light on/off from the preview toolbar. */
+  previewLights: MapLightElement[];
+  onToggleLight: (id: string) => void;
 };
 
 /**
@@ -102,6 +135,7 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
       case 'fog': return 'Niebla';
       case 'tokens': return 'Tokens';
       case 'markers': return 'Marcadores';
+      case 'elements': return 'Elementos del mapa';
       default: return '';
     }
   }, [openGroup]);
@@ -120,23 +154,54 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
 
   const panelSx = { p: 1.5, minWidth: 280, maxWidth: 420 } as const;
 
+  /** Human-readable label for the active token editing sub-mode. */
+  const tokenModeLabel = useMemo((): string | null => {
+    switch (props.tokenMode) {
+      case 'ally': return 'Añadir aliado';
+      case 'enemy': return 'Añadir enemigo';
+      case 'rotate': return 'Rotar';
+      case 'erase': return 'Borrar';
+      default: return null;
+    }
+  }, [props.tokenMode]);
+
+  /** Whether each tool group is considered "active" (has persistent effect beyond the popover). */
+  const gridActive = props.gridSettings.enabled;
+  const fogActive = props.fogEditEnabled;
+  const tokensActive = props.tokenMode !== 'none';
+  const markersActive = props.showMarkers;
+  const elementsActive = props.elementsEditEnabled;
+
   return (
     <>
       <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 1 }}>
         <Button size="small" variant="outlined" onClick={onOpen('move')} disabled={!props.canMoveScenario}>
           Mover escenario
         </Button>
-        <Button size="small" variant="outlined" onClick={onOpen('grid')}>
-          Cuadrícula
+        <Button size="small" variant={gridActive ? 'contained' : 'outlined'} onClick={onOpen('grid')}>
+          Cuadrícula{gridActive ? ` ✓` : ''}
         </Button>
-        <Button size="small" variant="outlined" onClick={onOpen('fog')}>
-          Niebla
+        <Button
+          size="small"
+          variant={fogActive ? 'contained' : 'outlined'}
+          onClick={onOpen('fog')}
+        >
+          Niebla{fogActive ? ` · ${props.fogMode === 'organic'
+            ? (props.organicFogTool === 'reveal' ? 'Revelar' : 'Cubrir')
+            : (props.fogTool === 'paint' ? 'Pintar' : 'Borrar')}` : ''}
         </Button>
-        <Button size="small" variant="outlined" onClick={onOpen('tokens')}>
-          Tokens
+        <Button
+          size="small"
+          variant={tokensActive ? 'contained' : 'outlined'}
+          onClick={onOpen('tokens')}
+        >
+          Tokens{tokenModeLabel ? ` · ${tokenModeLabel}` : ''}
         </Button>
-        <Button size="small" variant={props.showMarkers ? 'contained' : 'outlined'} onClick={onOpen('markers')}>
-          Marcadores
+        <Button size="small" variant={markersActive ? 'contained' : 'outlined'} onClick={onOpen('markers')}>
+          Marcadores{markersActive ? ` ✓` : ''}
+        </Button>
+        <Button size="small" variant={elementsActive ? 'contained' : 'outlined'} onClick={onOpen('elements')}>
+          Elementos{elementsActive ? ` ✓` : ''}
         </Button>
       </Stack>
 
@@ -227,6 +292,17 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                 label="Niebla (controlada en Combate)"
               />
 
+              <TextField
+                select
+                size="small"
+                label="Sistema de niebla"
+                value={props.fogMode}
+                onChange={(e) => props.onSetFogMode(e.target.value as FogMode)}
+              >
+                <MenuItem value="grid">Cuadrícula (clásico)</MenuItem>
+                <MenuItem value="organic">Orgánica (pincel)</MenuItem>
+              </TextField>
+
               <Divider />
               <Typography variant="body2" color="text.secondary">
                 Apariencia (solo vista previa del master)
@@ -253,32 +329,74 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                     control={<Switch checked={props.fogEditEnabled} onChange={(e) => props.onSetFogEditEnabled(e.target.checked)} />}
                     label="Editar niebla"
                   />
-                  <TextField
-                    select
-                    size="small"
-                    label="Herramienta"
-                    value={props.fogTool}
-                    onChange={(e) => props.onSetFogTool((e.target.value as any) || 'paint')}
-                  >
-                    <MenuItem value="paint">Pintar</MenuItem>
-                    <MenuItem value="erase">Borrar</MenuItem>
-                  </TextField>
-                  <TextField
-                    size="small"
-                    type="number"
-                    label="Radio aliados"
-                    value={props.allyClearRadius}
-                    inputProps={{ min: 0, max: 10, step: 1 }}
-                    onChange={(e) => props.onSetAllyClearRadius(Math.max(0, Math.min(10, Number(e.target.value || 0))))}
-                  />
-                  <Stack direction="row" spacing={1}>
-                    <Button size="small" onClick={props.onFogFillAll} disabled={!props.canFogFillAll}>
-                      Poner todo
-                    </Button>
-                    <Button size="small" onClick={props.onFogClearAll}>
-                      Borrar todo
-                    </Button>
-                  </Stack>
+
+                  {props.fogMode === 'grid' ? (
+                    <>
+                      <TextField
+                        select
+                        size="small"
+                        label="Herramienta"
+                        value={props.fogTool}
+                        onChange={(e) => props.onSetFogTool((e.target.value as any) || 'paint')}
+                      >
+                        <MenuItem value="paint">Pintar</MenuItem>
+                        <MenuItem value="erase">Borrar</MenuItem>
+                      </TextField>
+                      <TextField
+                        size="small"
+                        type="number"
+                        label="Radio aliados"
+                        value={props.allyClearRadius}
+                        inputProps={{ min: 0, max: 10, step: 1 }}
+                        onChange={(e) => props.onSetAllyClearRadius(Math.max(0, Math.min(10, Number(e.target.value || 0))))}
+                      />
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" onClick={props.onFogFillAll} disabled={!props.canFogFillAll}>
+                          Poner todo
+                        </Button>
+                        <Button size="small" onClick={props.onFogClearAll}>
+                          Borrar todo
+                        </Button>
+                      </Stack>
+                    </>
+                  ) : (
+                    <>
+                      <TextField
+                        select
+                        size="small"
+                        label="Herramienta"
+                        value={props.organicFogTool}
+                        onChange={(e) => props.onSetOrganicFogTool((e.target.value as OrganicFogTool) || 'reveal')}
+                      >
+                        <MenuItem value="reveal">Revelar</MenuItem>
+                        <MenuItem value="fog">Cubrir</MenuItem>
+                      </TextField>
+                      <TextField
+                        size="small"
+                        type="number"
+                        label="Radio del pincel (px)"
+                        value={props.organicBrushRadius}
+                        inputProps={{ min: 5, max: 300, step: 5 }}
+                        onChange={(e) => props.onSetOrganicBrushRadius(Math.max(5, Math.min(300, Number(e.target.value || 20))))}
+                      />
+                      <TextField
+                        size="small"
+                        type="number"
+                        label="Radio aliados"
+                        value={props.allyClearRadius}
+                        inputProps={{ min: 0, max: 10, step: 1 }}
+                        onChange={(e) => props.onSetAllyClearRadius(Math.max(0, Math.min(10, Number(e.target.value || 0))))}
+                      />
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" onClick={props.onOrganicFogFillAll}>
+                          Cubrir todo
+                        </Button>
+                        <Button size="small" onClick={props.onOrganicFogClearAll}>
+                          Revelar todo
+                        </Button>
+                      </Stack>
+                    </>
+                  )}
                 </>
               ) : (
                 <Typography variant="body2" color="text.secondary">
@@ -402,6 +520,25 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                 </>
               )}
             </Stack>
+          )}
+
+          {openGroup === 'elements' && (
+            <MapElementsPanel
+              elementsEditEnabled={props.elementsEditEnabled}
+              onSetElementsEditEnabled={props.onSetElementsEditEnabled}
+              elementTool={props.elementTool}
+              onSetElementTool={props.onSetElementTool}
+              elements={props.elements}
+              selectedElement={props.selectedElement}
+              onSelectElement={props.onSelectElement}
+              onUpdateElement={props.onUpdateElement}
+              onRemoveElement={props.onRemoveElement}
+              onClearAllElements={props.onClearAllElements}
+              newLightRadius={props.newLightRadius}
+              onSetNewLightRadius={props.onSetNewLightRadius}
+              previewLights={props.previewLights}
+              onToggleLight={props.onToggleLight}
+            />
           )}
         </Box>
       </Popover>

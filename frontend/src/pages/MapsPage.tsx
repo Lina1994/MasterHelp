@@ -30,6 +30,8 @@ import WorldMapView from '../components/Map/WorldMapView';
 import SecondaryWindowSizesSettings from '../components/common/SecondaryWindowSizesSettings';
 import { useSecondaryWindowSizes } from '../hooks/useSecondaryWindowSizes';
 import { uploadDefaultSkyline, getDefaultSkylineUrl, hasDefaultSkyline, deleteDefaultSkyline } from '../api/campaigns/defaultSkyline';
+import FolderCopyIcon from '@mui/icons-material/FolderCopy';
+import ImportMapFromOtherCampaignDialog from '../components/Map/ImportMapFromOtherCampaignDialog';
 
 type FormState = {
   id?: string;
@@ -84,6 +86,7 @@ export default function MapsPage() {
     return 'list';
   });
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Default skyline fallback state
   const [defaultSkylineExists, setDefaultSkylineExists] = useState(false);
@@ -418,6 +421,15 @@ export default function MapsPage() {
             Ajustes
           </Button>
         </Tooltip>
+        <Tooltip title="Importar mapas de otras campañas">
+          <Button
+            variant="outlined"
+            startIcon={<FolderCopyIcon />}
+            onClick={() => setImportDialogOpen(true)}
+          >
+            Otras campañas
+          </Button>
+        </Tooltip>
       </Stack>
       {viewMode === 'list' ? (
         <MapsGrid maps={filtered} activeMapId={activeMapId} setActiveMapId={setActiveMapId} onOpenEdit={onOpenEdit} setWorldMapItem={setWorldMapItem} setItems={setItems} />
@@ -611,6 +623,16 @@ export default function MapsPage() {
           map={worldMapItem}
           campaignId={campaignId}
           onClose={() => setWorldMapItem(null)}
+        />
+      )}
+
+      {/* Importar mapas de otras campañas */}
+      {campaignId && (
+        <ImportMapFromOtherCampaignDialog
+          open={importDialogOpen}
+          onClose={() => setImportDialogOpen(false)}
+          campaignId={campaignId}
+          onImported={async () => { await refresh(); await refreshUsage(); }}
         />
       )}
 

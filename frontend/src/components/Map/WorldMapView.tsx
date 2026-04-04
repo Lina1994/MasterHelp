@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Button,
   CircularProgress,
   IconButton,
   Paper,
+  Popover,
   Stack,
   Tooltip,
   Typography,
@@ -14,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import FitScreenIcon from '@mui/icons-material/FitScreen';
+import WallsIcon from '@mui/icons-material/Layers';
 
 import {
   MapItemDto,
@@ -28,7 +30,12 @@ import { listEncounters, EncounterSummary } from '../../api/encounters';
 import AuthImage from '../common/AuthImage';
 import MapMarkerDialog from './MapMarkerDialog';
 import MapMarkerDetail from './MapMarkerDetail';
+import MapElementsEditorLayer from './MapElementsEditorLayer';
+import MapElementsPanel from './MapElementsPanel';
+import { useMapElements } from '../../hooks/useMapElements';
 import { TITLEBAR_HEIGHT } from '../TitleBar';
+import type { ElementEditorTool } from './MapElementsEditorLayer';
+import type { MapElement, MapLightElement } from '../../api/mapElements';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -150,6 +157,25 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
   const [createPos, setCreatePos] = useState<{ x: number; y: number } | null>(null);
   const [editingMarker, setEditingMarker] = useState<MapMarkerDto | null>(null);
   const [detailMarker, setDetailMarker] = useState<MapMarkerDto | null>(null);
+
+  // ─── Map Elements (walls, doors, windows, lights) ────────────────────────
+  const { elements, addElement, updateElement, removeElement, clearAll: clearAllElements } = useMapElements(map.id, campaignId);
+  const [elementsEditEnabled, setElementsEditEnabled] = useState(false);
+  const [elementTool, setElementTool] = useState<ElementEditorTool>('select');
+  const [selectedElement, setSelectedElement] = useState<MapElement | null>(null);
+  const [newLightRadius, setNewLightRadius] = useState(80);
+  const [elementsAnchor, setElementsAnchor] = useState<HTMLElement | null>(null);
+
+  const previewLights = useMemo(
+    () => elements.filter((el): el is MapLightElement => el.type === 'light' && !!el.showInPreview),
+    [elements],
+  );
+
+  /** Toggle a preview-light on/off by id. */
+  const handleToggleLight = useCallback((id: string) => {
+    const light = elements.find((el) => el.id === id);
+    if (light && light.type === 'light') updateElement(id, { isOn: !light.isOn } as any);
+  }, [elements, updateElement]);
 
   // ─── Association lists (fetched once, passed to dialogs/detail) ──────────
   const [allMaps, setAllMaps] = useState<MapItemDto[]>([]);
@@ -404,6 +430,23 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
             />
           ))}
 
+          {/* Map Elements editor layer (walls, doors, windows, lights) */}
+          {imageDims && elementsEditEnabled && (
+            <MapElementsEditorLayer
+              widthPx={imageDims.w}
+              heightPx={imageDims.h}
+              elements={elements}
+              tool={elementTool}
+              transform={{ zoom, rotationDeg: 0 }}
+              previewScale={1}
+              onAddElement={addElement}
+              onUpdateElement={updateElement}
+              onRemoveElement={removeElement}
+              onSelectElement={setSelectedElement}
+              newLightRadius={newLightRadius}
+            />
+          )}
+
           {/* Loading skeleton */}
           {!imageDims && (
             <Box sx={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -502,7 +545,58 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
           </Tooltip>
 
           {markersLoading && <CircularProgress size={18} sx={{ ml: 0.5 }} />}
+
+          <Box sx={{ width: 1, height: 28, bgcolor: 'divider', mx: 0.5 }} />
+
+          <Tooltip title={elementsEditEnabled ? 'Ocultar elementos' : 'Editar elementos'}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                if (elementsEditEnabled) {
+                  setElementsEditEnabled(false);
+                  setElementsAnchor(null);
+                } else {
+                  setElementsAnchor(e.currentTarget);
+                }
+              }}
+              color={elementsEditEnabled ? 'primary' : 'default'}
+              sx={{ bgcolor: elementsEditEnabled ? 'primary.light' : undefined }}
+            >
+              <WallsIcon />
+            </IconButton>
+          </Tooltip>
         </Paper>
+
+        {/* ─── Elements editing panel (floating) ──────────────────────── */}
+        <Popover
+          open={Boolean(elementsAnchor)}
+          anchorEl={elementsAnchor}
+          onClose={() => setElementsAnchor(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          disableRestoreFocus
+          slotProps={{ paper: { onPointerDown: (e: React.PointerEvent) => e.stopPropagation() } }}
+        >
+          <Box sx={{ p: 1.5, minWidth: 280, maxWidth: 420 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Elementos del mapa</Typography>
+            <MapElementsPanel
+              elementsEditEnabled={elementsEditEnabled}
+              onSetElementsEditEnabled={setElementsEditEnabled}
+              elementTool={elementTool}
+              onSetElementTool={setElementTool}
+              elements={elements}
+              selectedElement={selectedElement}
+              onSelectElement={setSelectedElement}
+              onUpdateElement={updateElement}
+              onRemoveElement={removeElement}
+              onClearAllElements={clearAllElements}
+              newLightRadius={newLightRadius}
+              onSetNewLightRadius={setNewLightRadius}
+              previewLights={previewLights}
+              onToggleLight={handleToggleLight}
+            />
+          </Box>
+        </Popover>
       </Box>
 
       {/* ─── Create marker dialog ─────────────────────────────────────────── */}

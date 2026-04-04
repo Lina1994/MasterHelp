@@ -8,7 +8,9 @@ import { UpdateMapMarkerDto } from './dto/update-map-marker.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { UpdateFogDto } from './dto/update-fog.dto';
+import { UpdateOrganicFogDto } from './dto/update-organic-fog.dto';
 import { UpdateTokensDto } from './dto/update-tokens.dto';
+import { UpdateMapElementsDto } from './dto/update-map-elements.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('maps')
@@ -30,6 +32,35 @@ export class MapsController {
   @Get('usage')
   async getUsage(@Req() req, @Query('campaignId') campaignId?: string) {
     return this.service.getUsage(req.user, campaignId);
+  }
+
+  /**
+   * Lists maps belonging to the user's other campaigns (excluding the given campaignId).
+   * Each item includes campaignName so the UI can show which campaign it came from.
+   * @param campaignId - The active campaign to exclude.
+   */
+  @Get('other-campaigns')
+  async listOtherCampaigns(
+    @Req() req,
+    @Query('campaignId') campaignId: string,
+  ) {
+    return this.service.listFromOtherCampaigns(req.user, campaignId);
+  }
+
+  /**
+   * Imports (clones) a map from another campaign into the target campaign.
+   * Copies images, skylines, musicConfig, sfxConfig, transform, etc.
+   * Adds origin campaign name to the description.
+   * @param id - The source map ID to clone.
+   * @param campaignId - The target campaign to import into.
+   */
+  @Post(':id/import')
+  async importMap(
+    @Req() req,
+    @Param('id') id: string,
+    @Body('campaignId') campaignId: string,
+  ) {
+    return this.service.importMapToCampaign(req.user, id, campaignId);
   }
 
   @Post()
@@ -222,6 +253,54 @@ export class MapsController {
     @Body() dto: UpdateFogDto,
   ) {
     return this.service.setFog(req.user, id, dto.campaignId, dto.cells);
+  }
+
+  /**
+   * Returns organic fog strokes for the given campaign+map, scoped to the authenticated owner.
+   */
+  @Get(':id/organic-fog')
+  async getOrganicFog(
+    @Req() req,
+    @Param('id') id: string,
+    @Query('campaignId') campaignId: string,
+  ) {
+    return { strokes: await this.service.getOrganicFog(req.user, id, campaignId) };
+  }
+
+  /**
+   * Sets organic fog strokes for the given campaign+map. Upserts the state.
+   */
+  @Patch(':id/organic-fog')
+  async setOrganicFog(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateOrganicFogDto,
+  ) {
+    return this.service.setOrganicFog(req.user, id, dto.campaignId, dto.strokes);
+  }
+
+  /**
+   * Returns map elements (walls, doors, windows, lights) for the given campaign+map.
+   */
+  @Get(':id/elements')
+  async getElements(
+    @Req() req,
+    @Param('id') id: string,
+    @Query('campaignId') campaignId: string,
+  ) {
+    return { elements: await this.service.getElements(req.user, id, campaignId) };
+  }
+
+  /**
+   * Sets map elements for the given campaign+map. Upserts the state.
+   */
+  @Patch(':id/elements')
+  async setElements(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateMapElementsDto,
+  ) {
+    return this.service.setElements(req.user, id, dto.campaignId, dto.elements as any);
   }
 
   /**

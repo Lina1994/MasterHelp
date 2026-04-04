@@ -118,6 +118,8 @@ export class Campaign {
   fogOfWarSettings?: {
     /** Ally clear radius (in grid cells) used to auto-clear fog around allied tokens. */
     allyClearRadius: number;
+    /** Which fog system is active: grid-based (classic) or organic (brush-based). */
+    fogMode?: 'grid' | 'organic';
   } | null;
 
   /**

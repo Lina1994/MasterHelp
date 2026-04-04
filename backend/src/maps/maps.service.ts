@@ -11,8 +11,9 @@ import { User } from '../users/entities/user.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { MapImage } from './entities/map-image.entity';
 import { MapSkylineImage } from './entities/map-skyline-image.entity';
-import { MapFogState } from './entities/map-fog-state.entity';
+import { MapFogState, OrganicFogStroke } from './entities/map-fog-state.entity';
 import { MapTokensState, MapTokenItem } from './entities/map-tokens-state.entity';
+import { MapElementsState, MapElement } from './entities/map-elements-state.entity';
 import sharp from 'sharp';
 
 @Injectable()
@@ -23,6 +24,7 @@ export class MapsService {
     @InjectRepository(MapSkylineImage) private readonly skylinesRepo: Repository<MapSkylineImage>,
     @InjectRepository(MapFogState) private readonly fogRepo: Repository<MapFogState>,
     @InjectRepository(MapTokensState) private readonly tokensRepo: Repository<MapTokensState>,
+    @InjectRepository(MapElementsState) private readonly elementsRepo: Repository<MapElementsState>,
     @InjectRepository(Campaign) private readonly campaignsRepo: Repository<Campaign>,
     @InjectRepository(MapMarker) private readonly markersRepo: Repository<MapMarker>,
   ) {}
@@ -73,6 +75,59 @@ export class MapsService {
   }
 
   /**
+   * Returns organic fog strokes for the given map+campaign scoped to owner.
+   * @param user Authenticated user
+   * @param mapId Map UUID
+   * @param campaignId Campaign UUID
+   * @returns Array of organic fog strokes
+   */
+  async getOrganicFog(user: User | any, mapId: string, campaignId: string): Promise<OrganicFogStroke[]> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const existing = await this.fogRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
+    return existing?.organicStrokes || [];
+  }
+
+  /**
+   * Upserts organic fog strokes for the given map+campaign scoped to owner.
+   * @param user Authenticated user
+   * @param mapId Map UUID
+   * @param campaignId Campaign UUID
+   * @param strokes Array of organic fog strokes to persist
+   * @returns Success indicator
+   */
+  async setOrganicFog(user: User | any, mapId: string, campaignId: string, strokes: OrganicFogStroke[]): Promise<{ ok: boolean }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    let existing = await this.fogRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
+    if (!existing) {
+      existing = new MapFogState();
+      existing.owner = map.owner;
+      existing.campaign = campaign;
+      existing.map = map;
+      existing.cells = [];
+      existing.organicStrokes = Array.isArray(strokes) ? strokes : [];
+      await this.fogRepo.save(existing);
+    } else {
+      existing.organicStrokes = Array.isArray(strokes) ? strokes : [];
+      await this.fogRepo.save(existing);
+    }
+    return { ok: true };
+  }
+
+  /**
    * Returns token items for the given map+campaign scoped to owner.
    */
   async getTokens(user: User | any, mapId: string, campaignId: string): Promise<MapTokenItem[]> {
@@ -112,6 +167,59 @@ export class MapsService {
     } else {
       existing.tokens = deduped;
       await this.tokensRepo.save(existing);
+    }
+    return { ok: true };
+  }
+
+  /**
+   * Returns map elements (walls, doors, windows, lights) for the given map+campaign scoped to owner.
+   * @param user Authenticated user.
+   * @param mapId Map UUID.
+   * @param campaignId Campaign UUID.
+   * @returns Array of map elements.
+   */
+  async getElements(user: User | any, mapId: string, campaignId: string): Promise<MapElement[]> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const existing = await this.elementsRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
+    return existing?.elements || [];
+  }
+
+  /**
+   * Upserts map elements (walls, doors, windows, lights) for the given map+campaign scoped to owner.
+   * @param user Authenticated user.
+   * @param mapId Map UUID.
+   * @param campaignId Campaign UUID.
+   * @param elements Full replacement array of map elements.
+   * @returns Success indicator.
+   */
+  async setElements(user: User | any, mapId: string, campaignId: string, elements: MapElement[]): Promise<{ ok: boolean }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    let existing = await this.elementsRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
+    const sanitised = Array.isArray(elements) ? elements : [];
+    if (!existing) {
+      existing = new MapElementsState();
+      existing.owner = map.owner;
+      existing.campaign = campaign;
+      existing.map = map;
+      existing.elements = sanitised;
+      await this.elementsRepo.save(existing);
+    } else {
+      existing.elements = sanitised;
+      await this.elementsRepo.save(existing);
     }
     return { ok: true };
   }
@@ -414,6 +522,171 @@ export class MapsService {
     }
     await this.repo.save(entity);
     return { ok: true };
+  }
+
+  /**
+   * Lists maps from other campaigns (excluding the given campaign) owned by the user.
+   * Returns a lightweight DTO with campaignName for display in the UI.
+   * @param user - Authenticated JWT payload.
+   * @param excludeCampaignId - The active campaign to exclude from results.
+   */
+  async listFromOtherCampaigns(user: User | any, excludeCampaignId: string) {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const qb = this.repo.createQueryBuilder('m')
+      .leftJoin('m.campaign', 'c')
+      .select([
+        'm.id',
+        'm.name',
+        'm.description',
+        'm.group',
+        'm.timeOfDay',
+        'm.isWorldMap',
+        'm.isPrepared',
+        'm.musicConfig',
+        'm.sfxConfig',
+        'm.transform',
+        'm.updatedAt',
+        'm.createdAt',
+        'c.id',
+        'c.name',
+      ])
+      .where('m.ownerId = :ownerId', { ownerId: authUserId })
+      .andWhere('c.id IS NOT NULL')
+      .andWhere('c.id != :excludeId', { excludeId: excludeCampaignId })
+      .orderBy('c.name', 'ASC')
+      .addOrderBy('m.name', 'ASC');
+
+    const rows = await qb.getMany();
+
+    // Compute imageAvailable without fetching BLOBs
+    const ids = rows.map(r => r.id);
+    let countByMap = new Map<string, number>();
+    let skylineCountByMap = new Map<string, number>();
+    if (ids.length > 0) {
+      const imageCounts = await this.imagesRepo.createQueryBuilder('img')
+        .select('img.mapId', 'mapId')
+        .addSelect('COUNT(*)', 'cnt')
+        .where('img.mapId IN (:...ids)', { ids })
+        .groupBy('img.mapId')
+        .getRawMany<{ mapId: string; cnt: string }>();
+      const skylineCounts = await this.skylinesRepo.createQueryBuilder('img')
+        .select('img.mapId', 'mapId')
+        .addSelect('COUNT(*)', 'cnt')
+        .where('img.mapId IN (:...ids)', { ids })
+        .groupBy('img.mapId')
+        .getRawMany<{ mapId: string; cnt: string }>();
+      countByMap = new Map(imageCounts.map(r => [r.mapId, Number(r.cnt || 0)]));
+      skylineCountByMap = new Map(skylineCounts.map(r => [r.mapId, Number(r.cnt || 0)]));
+    }
+
+    return rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      group: (r as any).group ?? [],
+      timeOfDay: (r as any).timeOfDay,
+      isWorldMap: (r as any).isWorldMap ?? false,
+      isPrepared: (r as any).isPrepared ?? false,
+      musicConfig: (r as any).musicConfig,
+      sfxConfig: (r as any).sfxConfig,
+      transform: (r as any).transform,
+      campaignId: r.campaign?.id,
+      campaignName: (r.campaign as any)?.name ?? null,
+      imageAvailable: (countByMap.get(r.id) || 0) > 0,
+      skylineAvailable: (skylineCountByMap.get(r.id) || 0) > 0,
+      updatedAt: r.updatedAt,
+      createdAt: r.createdAt,
+    }));
+  }
+
+  /**
+   * Imports (clones) a map from another campaign into the target campaign.
+   * Copies all images, skylines, musicConfig, sfxConfig, transform, and metadata.
+   * Adds a note in the description indicating the original campaign.
+   * @param user - Authenticated JWT payload.
+   * @param sourceMapId - UUID of the map to clone.
+   * @param targetCampaignId - UUID of the campaign to import into.
+   * @returns The newly created map's id.
+   */
+  async importMapToCampaign(user: User | any, sourceMapId: string, targetCampaignId: string): Promise<{ id: string }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    // Load source map with campaign relation
+    const source = await this.repo.findOne({
+      where: { id: sourceMapId },
+      relations: ['owner', 'campaign'],
+    });
+    if (!source) throw new NotFoundException('Source map not found');
+    if (source.owner.id !== authUserId) throw new ForbiddenException('Not owner of source map');
+
+    // Validate target campaign
+    const targetCampaign = await this.campaignsRepo.findOne({ where: { id: targetCampaignId } });
+    if (!targetCampaign) throw new NotFoundException('Target campaign not found');
+    if (targetCampaign.owner?.id !== authUserId) throw new ForbiddenException('Not owner of target campaign');
+
+    // Build origin label for description
+    const originCampaignName = (source.campaign as any)?.name ?? 'otra campaña';
+    const originNote = `[Importado de: ${originCampaignName}]`;
+    const newDescription = source.description
+      ? `${originNote}\n${source.description}`
+      : originNote;
+
+    // Create new map entity
+    const newMap = new MapEntity();
+    newMap.owner = source.owner;
+    newMap.campaign = targetCampaign;
+    newMap.name = source.name;
+    newMap.description = newDescription;
+    newMap.group = source.group ?? [];
+    newMap.timeOfDay = source.timeOfDay ?? null;
+    newMap.isWorldMap = source.isWorldMap ?? false;
+    newMap.musicConfig = source.musicConfig ?? null;
+    newMap.sfxConfig = source.sfxConfig ?? null;
+    (newMap as any).transform = (source as any).transform ?? null;
+    newMap.isPrepared = false;
+    // Copy legacy image fields
+    newMap.imageMimeType = source.imageMimeType ?? null;
+    newMap.imageSize = source.imageSize ?? null;
+    newMap.imageData = source.imageData ?? null;
+
+    const saved = await this.repo.save(newMap);
+
+    // Clone MapImage variants
+    const sourceImages = await this.imagesRepo.find({ where: { map: { id: sourceMapId } as any } });
+    if (sourceImages.length > 0) {
+      const clonedImages = sourceImages.map(img => {
+        const clone = new MapImage();
+        clone.variant = img.variant;
+        clone.timeOfDay = img.timeOfDay;
+        clone.mimeType = img.mimeType;
+        clone.size = img.size;
+        clone.data = img.data;
+        clone.map = saved as any;
+        return clone;
+      });
+      await this.imagesRepo.save(clonedImages);
+    }
+
+    // Clone MapSkylineImage variants
+    const sourceSkylines = await this.skylinesRepo.find({ where: { map: { id: sourceMapId } as any } });
+    if (sourceSkylines.length > 0) {
+      const clonedSkylines = sourceSkylines.map(img => {
+        const clone = new MapSkylineImage();
+        clone.variant = img.variant;
+        clone.timeOfDay = img.timeOfDay;
+        clone.mimeType = img.mimeType;
+        clone.size = img.size;
+        clone.data = img.data;
+        clone.map = saved as any;
+        return clone;
+      });
+      await this.skylinesRepo.save(clonedSkylines);
+    }
+
+    return { id: saved.id };
   }
 
   async remove(user: User | any, id: string) {

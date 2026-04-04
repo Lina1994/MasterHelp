@@ -4,6 +4,16 @@ import { Campaign } from '../../campaigns/entities/campaign.entity';
 import { MapEntity } from './map.entity';
 
 /**
+ * Represents a single organic fog brush stroke.
+ * Points are normalised (0–1) relative to the map's natural dimensions.
+ */
+export interface OrganicFogStroke {
+  points: { x: number; y: number }[];
+  radius: number;
+  mode: 'reveal' | 'fog';
+}
+
+/**
  * MapFogState
  * Persists Fog of War cell keys for a specific map within a specific campaign, owned by a user.
  * Uniqueness is enforced on the tuple (ownerId, campaignId, mapId).
@@ -32,6 +42,13 @@ export class MapFogState {
    */
   @Column({ type: 'simple-json' })
   cells: string[];
+
+  /**
+   * Organic fog strokes stored as a JSON array of stroke objects.
+   * Each stroke: { points: {x,y}[] (normalised 0–1), radius: number (px at natural size), mode: 'reveal'|'fog' }.
+   */
+  @Column({ type: 'simple-json', nullable: true })
+  organicStrokes: OrganicFogStroke[] | null;
 
   @CreateDateColumn()
   createdAt: Date;

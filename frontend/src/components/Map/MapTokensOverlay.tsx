@@ -387,6 +387,23 @@ const getOccupiedCells = (
 };
 
 /**
+ * Computes the grid distance between two cells in a hex grid (odd-q offset).
+ * Uses cube-coordinate conversion for accurate hex distance.
+ */
+const hexGridDistance = (col1: number, row1: number, col2: number, row2: number): number => {
+  // odd-q offset → cube coordinates
+  const toCube = (col: number, row: number) => {
+    const x = col;
+    const z = row - Math.floor((col - (col & 1)) / 2);
+    const y = -x - z;
+    return { x, y, z };
+  };
+  const a = toCube(col1, row1);
+  const b = toCube(col2, row2);
+  return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y), Math.abs(a.z - b.z));
+};
+
+/**
  * MapTokensOverlay
  * Renders tokens at grid cell centers with slight offsets for overlaps. Supports optional editing.
  */
@@ -945,6 +962,91 @@ const MapTokensOverlay: React.FC<{
         });
       })}
       
+      {/* Movement distance line when dragging a token */}
+      {drag && drag.moved && dragPointer && (() => {
+        const draggedToken = tokenById.get(drag.id);
+        if (!draggedToken) return null;
+
+        const originCenter = getTokenCenter(draggedToken.cellKey, draggedToken.size, square, r, draggedToken.orientation);
+
+        const result = getCellFromPointForToken(dragPointer.clientX, dragPointer.clientY, draggedToken.size, drag.orientation);
+        const destCellKey = result.cellKey;
+        if (!destCellKey) return null;
+
+        const destCenter = getTokenCenter(destCellKey, draggedToken.size, square, r, result.orientation ?? drag.orientation);
+
+        const [oCol, oRow] = draggedToken.cellKey.split(':').map(s => parseInt(s, 10));
+        const [dCol, dRow] = destCellKey.split(':').map(s => parseInt(s, 10));
+
+        const cellDist = square
+          ? Math.max(Math.abs(dCol - oCol), Math.abs(dRow - oRow))
+          : hexGridDistance(oCol, oRow, dCol, dRow);
+
+        const feet = cellDist * 5;
+        if (feet === 0) return null;
+
+        const midX = (originCenter.x + destCenter.x) / 2;
+        const midY = (originCenter.y + destCenter.y) / 2;
+        const label = `${feet} ft`;
+        const rectW = Math.max(48, label.length * 10 + 16);
+        const rectH = 24;
+
+        return (
+          <svg
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: widthPx || '100%',
+              height: heightPx || '100%',
+              pointerEvents: 'none',
+              overflow: 'visible',
+              zIndex: 1,
+            }}
+          >
+            {/* Outer stroke for contrast */}
+            <line
+              x1={originCenter.x} y1={originCenter.y}
+              x2={destCenter.x} y2={destCenter.y}
+              stroke="rgba(0, 0, 0, 0.5)"
+              strokeWidth={4}
+              strokeDasharray="8 4"
+              strokeLinecap="round"
+            />
+            {/* Inner colored line */}
+            <line
+              x1={originCenter.x} y1={originCenter.y}
+              x2={destCenter.x} y2={destCenter.y}
+              stroke="rgba(255, 213, 79, 0.9)"
+              strokeWidth={2}
+              strokeDasharray="8 4"
+              strokeLinecap="round"
+            />
+            {/* Label group — counter-rotated so text is always readable */}
+            <g transform={`rotate(${-(transform?.rotationDeg || 0)} ${midX} ${midY})`}>
+              <rect
+                x={midX - rectW / 2} y={midY - rectH / 2}
+                width={rectW} height={rectH}
+                rx={6}
+                fill="rgba(0, 0, 0, 0.8)"
+                stroke="rgba(255, 213, 79, 0.6)"
+                strokeWidth={1}
+              />
+              <text
+                x={midX} y={midY + 5}
+                textAnchor="middle"
+                fill="#ffd54f"
+                fontSize={14}
+                fontWeight="bold"
+                fontFamily="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
+              >
+                {label}
+              </text>
+            </g>
+          </svg>
+        );
+      })()}
+
       {/* Shaded cells preview when dragging large tokens */}
       {showCellShading && drag && dragPointer && (() => {
         const draggedToken = tokenById.get(drag.id);

@@ -1,4 +1,4 @@
-import { IsInt, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsIn, Max, Min } from 'class-validator';
 
 /**
  * Fog of War settings DTO.
@@ -17,4 +17,13 @@ export class FogOfWarSettingsDto {
   @Min(0)
   @Max(10)
   allyClearRadius: number;
+
+  /**
+   * Which fog system is active: grid-based (classic) or organic (brush-based).
+   * Defaults to 'grid' for backward compatibility.
+   */
+  @IsOptional()
+  @IsString()
+  @IsIn(['grid', 'organic'])
+  fogMode?: 'grid' | 'organic';
 }

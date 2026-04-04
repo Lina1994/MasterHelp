@@ -1,0 +1,72 @@
+import { IsArray, IsString, IsUUID, ArrayMaxSize, ValidateNested, IsNumber, IsBoolean, IsOptional, Min, Max, IsIn } from 'class-validator';
+import { Type } from 'class-transformer';
+
+/**
+ * Normalised coordinate point (0–1).
+ */
+class PointDto {
+  @IsNumber() @Min(0) @Max(1) x: number;
+  @IsNumber() @Min(0) @Max(1) y: number;
+}
+
+/**
+ * Time-of-day intensity (0–1) for lights/windows.
+ */
+class TimeOfDayIntensityDto {
+  @IsNumber() @Min(0) @Max(1) dawn: number;
+  @IsNumber() @Min(0) @Max(1) morning: number;
+  @IsNumber() @Min(0) @Max(1) afternoon: number;
+  @IsNumber() @Min(0) @Max(1) night: number;
+}
+
+/**
+ * Single map element (wall, door, window, or light).
+ * Validated loosely via the discriminant `type` field; further runtime
+ * checks happen in the service layer.
+ */
+class MapElementDto {
+  @IsString() id: string;
+  @IsString() @IsIn(['wall', 'door', 'window', 'light']) type: 'wall' | 'door' | 'window' | 'light';
+
+  // --- Wall / Door / Window ---
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => PointDto) @ArrayMaxSize(5000)
+  points?: PointDto[];
+
+  // --- Door ---
+  @IsOptional() @IsBoolean() isOpen?: boolean;
+
+  // --- Window ---
+  @IsOptional() @ValidateNested() @Type(() => TimeOfDayIntensityDto)
+  lightByTimeOfDay?: TimeOfDayIntensityDto;
+
+  // --- Light ---
+  @IsOptional() @ValidateNested() @Type(() => PointDto)
+  position?: PointDto;
+
+  @IsOptional() @IsNumber() @Min(1) @Max(5000) radius?: number;
+  @IsOptional() @IsString() color?: string;
+  @IsOptional() @IsBoolean() isOn?: boolean;
+  @IsOptional() @IsBoolean() showInPreview?: boolean;
+  @IsOptional() @IsString() label?: string;
+
+  @IsOptional() @ValidateNested() @Type(() => TimeOfDayIntensityDto)
+  intensityByTimeOfDay?: TimeOfDayIntensityDto;
+}
+
+/**
+ * UpdateMapElementsDto
+ * Payload for setting map elements (walls, doors, windows, lights) for a given campaign+map.
+ */
+export class UpdateMapElementsDto {
+  /** Campaign scope for this elements state. */
+  @IsString()
+  @IsUUID()
+  campaignId: string;
+
+  /** Full replacement array of map elements. */
+  @IsArray()
+  @ArrayMaxSize(5000)
+  @ValidateNested({ each: true })
+  @Type(() => MapElementDto)
+  elements: MapElementDto[];
+}

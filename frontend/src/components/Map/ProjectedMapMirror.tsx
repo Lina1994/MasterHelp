@@ -11,19 +11,28 @@ import MapMarkerDialog from './MapMarkerDialog';
 import MapGridOverlay, { GridSettings } from './MapGridOverlay';
 import FogOfWarOverlay from './FogOfWarOverlay';
 import FogEditorLayer from './FogEditorLayer';
+import OrganicFogOverlay from './OrganicFogOverlay';
+import OrganicFogEditorLayer from './OrganicFogEditorLayer';
+import type { OrganicFogTool } from './OrganicFogEditorLayer';
 import { useFogOfWar } from '../../hooks/useFogOfWar';
+import { useOrganicFog } from '../../hooks/useOrganicFog';
 import { getGridOverlaySettings, setGridOverlaySettings } from '../../api/campaigns/gridOverlay';
 import { getFogOfWarSettings, setFogOfWarSettings } from '../../api/campaigns/fogOfWar';
+import type { FogMode } from '../../api/campaigns/fogOfWar';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../player/TimeOfDayContext';
 import { useMapTokens } from '../../hooks/useMapTokens';
 import MapTokensOverlay, { TokenEditMode } from './MapTokensOverlay';
-import { computeAllFogCells, computeClearedFogByAllies, subtractClearedFog } from '../../utils/fogHelpers';
+import { computeAllFogCells, computeClearedFogByAllies, subtractClearedFog, computeAllyRevealStrokes, computeLightRevealStrokes, computeClearedFogByLights } from '../../utils/fogHelpers';
 import ProjectedMapMirrorTools from './ProjectedMapMirrorTools';
 import type { TokenCandidate } from './ProjectedMapMirrorTools';
 import { useMapFogPreviewStyle } from '../../hooks/useMapFogPreviewStyle';
 import { useCharacterTokenImageResolver } from '../../hooks/useCharacterTokenImageResolver';
 import { TokenQuickInfoPopover } from './TokenQuickInfoPopover';
+import MapElementsEditorLayer from './MapElementsEditorLayer';
+import type { ElementEditorTool } from './MapElementsEditorLayer';
+import { useMapElements } from '../../hooks/useMapElements';
+import type { MapElement, MapLightElement } from '../../api/mapElements';
 import SkylineViewportContent from '../Skyline/SkylineViewportContent';
 // removed duplicate import
 
@@ -75,8 +84,17 @@ const ProjectedMapMirror: React.FC<{
   const { activeCampaign } = useActiveCampaign();
   const mapId = overrideMapId || activeMapId;
   const { cells, addCell, removeCell, clearAll, setAll } = useFogOfWar(activeCampaign?.id, mapId || undefined, gridSettings);
+  const { strokes: organicStrokes, addStroke: addOrganicStroke, setAllStrokes: setAllOrganicStrokes, clearAll: clearAllOrganicStrokes } = useOrganicFog(activeCampaign?.id, mapId || undefined);
   const { style: fogPreviewStyle, setColor: setFogPreviewColor, setOpacity: setFogPreviewOpacity } = useMapFogPreviewStyle(mapId || undefined);
   const [fogTool, setFogTool] = useState<'paint' | 'erase'>('paint');
+  const [organicFogTool, setOrganicFogTool] = useState<OrganicFogTool>('reveal');
+  const [organicBrushRadius, setOrganicBrushRadius] = useState<number>(() => {
+    try { const raw = localStorage.getItem('app.map.organicBrushRadius'); const n = raw ? parseInt(raw, 10) : 20; return Number.isFinite(n) ? Math.max(5, Math.min(300, n)) : 20; } catch { return 20; }
+  });
+  const [fogMode, setFogModeState] = useState<FogMode>(() => {
+    try { const v = localStorage.getItem('app.map.fogMode'); if (v === 'organic' || v === 'grid') return v; } catch {}
+    return 'grid';
+  });
   const [fogEditEnabled, setFogEditEnabled] = useState<boolean>(false);
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [tokenMode, setTokenMode] = useState<TokenEditMode>('none');
@@ -87,6 +105,13 @@ const ProjectedMapMirror: React.FC<{
   const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
+
+  // --- Map elements (walls, doors, windows, lights) ---
+  const { elements, addElement, updateElement, removeElement, clearAll: clearAllElements, setAll: setAllElements } = useMapElements(activeCampaign?.id, mapId || undefined);
+  const [elementsEditEnabled, setElementsEditEnabled] = useState<boolean>(false);
+  const [elementTool, setElementTool] = useState<ElementEditorTool>('select');
+  const [selectedElement, setSelectedElement] = useState<MapElement | null>(null);
+  const [newLightRadius, setNewLightRadius] = useState<number>(80);
 
   // Token visualization settings (guide dots and cell shading)
   const [showGuideDots, setShowGuideDots] = useState<boolean>(() => {
@@ -197,8 +222,17 @@ const ProjectedMapMirror: React.FC<{
         const v = Number.isFinite(s?.allyClearRadius as any) ? Math.max(0, Math.min(10, Math.floor(Number((s as any).allyClearRadius)))) : 1;
         setAllyClearRadius(v);
         try { localStorage.setItem('app.map.allyClearRadius', String(v)); } catch {}
+        // Restore fogMode
+        if (s?.fogMode === 'organic' || s?.fogMode === 'grid') {
+          setFogModeState(s.fogMode);
+          try { localStorage.setItem('app.map.fogMode', s.fogMode); } catch {}
+        }
       } catch {
         // Keep local fallback
+        try {
+          const localMode = localStorage.getItem('app.map.fogMode');
+          if (localMode === 'organic' || localMode === 'grid') setFogModeState(localMode);
+        } catch {}
       }
     })();
     return () => { cancelled = true; };
@@ -211,22 +245,42 @@ const ProjectedMapMirror: React.FC<{
     // Persist to server so browser clients (different origin) receive the same value.
     (async () => {
       try {
-        if (activeCampaign?.id) await setFogOfWarSettings(activeCampaign.id, { allyClearRadius });
+        if (activeCampaign?.id) await setFogOfWarSettings(activeCampaign.id, { allyClearRadius, fogMode });
       } catch {
         // ignore
       }
     })();
-  }, [allyClearRadius, activeCampaign?.id]);
+  }, [allyClearRadius, activeCampaign?.id, fogMode]);
+
+  // Persist organic brush radius
+  useEffect(() => {
+    try { localStorage.setItem('app.map.organicBrushRadius', String(organicBrushRadius)); } catch {}
+  }, [organicBrushRadius]);
+
+  // Handler to change fog mode (persists to server + localStorage + BC)
+  const setFogMode = useCallback((mode: FogMode) => {
+    setFogModeState(mode);
+    try { localStorage.setItem('app.map.fogMode', mode); } catch {}
+    try {
+      const bc = new BroadcastChannel('campaign-sync');
+      bc.postMessage({ type: 'fog-mode-updated', fogMode: mode, at: Date.now() });
+      bc.close();
+    } catch {}
+  }, []);
 
   // Compute fog after clearing around allied tokens (own cell + adjacent)
   const effectiveFogCells = React.useMemo(() => {
     try {
-      const cleared = computeClearedFogByAllies(gridSettings, tokens || [], allyClearRadius);
-      return subtractClearedFog(cells, cleared);
+      const mapW = naturalSize?.w || 0;
+      const mapH = naturalSize?.h || 0;
+      const cleared = computeClearedFogByAllies(gridSettings, tokens || [], allyClearRadius, elements, timeOfDay, mapW, mapH);
+      const lightCleared = computeClearedFogByLights(gridSettings, elements, timeOfDay, mapW, mapH);
+      const combined = new Set([...cleared, ...lightCleared]);
+      return subtractClearedFog(cells, combined);
     } catch {
       return cells;
     }
-  }, [cells, tokens, gridSettings, allyClearRadius]);
+  }, [cells, tokens, gridSettings, allyClearRadius, elements, timeOfDay, naturalSize]);
 
   const resolveTokenImage = React.useCallback((id: string) => {
     const resolver = tokenImageResolver || defaultTokenImageResolver;
@@ -360,6 +414,20 @@ const ProjectedMapMirror: React.FC<{
   const contentW = naturalSize?.w || baseSize?.width || 0;
   const contentH = naturalSize?.h || baseSize?.height || 0;
 
+  // Compute organic fog strokes with ally-clearing reveal circles appended
+  const effectiveOrganicStrokes = React.useMemo(() => {
+    const allyReveals = computeAllyRevealStrokes(gridSettings, tokens || [], allyClearRadius, contentW, contentH, elements, timeOfDay);
+    const lightReveals = computeLightRevealStrokes(elements, timeOfDay, contentW, contentH);
+    const extra = [...allyReveals, ...lightReveals];
+    if (extra.length === 0) return organicStrokes;
+    return [...organicStrokes, ...extra];
+  }, [organicStrokes, tokens, gridSettings, allyClearRadius, contentW, contentH, elements, timeOfDay]);
+
+  // Compute lights that have showInPreview=true (for quick toggles in toolbar)
+  const previewLights = useMemo(() => {
+    return elements.filter((el): el is MapLightElement => el.type === 'light' && el.showInPreview);
+  }, [elements]);
+
   // Capa que simula la ventana secundaria: marco escalado con fondo negro
   return (
     <Paper variant="outlined" sx={{ mb: 2, p: 1 }}>
@@ -407,6 +475,8 @@ const ProjectedMapMirror: React.FC<{
           fogEnabled={fogEnabled}
           fogEditEnabled={fogEditEnabled}
           onSetFogEditEnabled={setFogEditEnabled}
+          fogMode={fogMode}
+          onSetFogMode={setFogMode}
           fogTool={fogTool}
           onSetFogTool={setFogTool}
           fogPreviewColor={fogPreviewStyle.color}
@@ -421,6 +491,15 @@ const ProjectedMapMirror: React.FC<{
             setAll(computeAllFogCells(gridSettings, contentW, contentH));
           }}
           onFogClearAll={() => clearAll()}
+          organicFogTool={organicFogTool}
+          onSetOrganicFogTool={setOrganicFogTool}
+          organicBrushRadius={organicBrushRadius}
+          onSetOrganicBrushRadius={setOrganicBrushRadius}
+          onOrganicFogClearAll={() => clearAllOrganicStrokes()}
+          onOrganicFogFillAll={() => {
+            // "Fill all" in organic mode: add a single huge stroke covering the entire map
+            setAllOrganicStrokes([{ points: [{ x: 0.5, y: 0.5 }], radius: Math.max(contentW || 1, contentH || 1), mode: 'fog' }]);
+          }}
 
           tokenMode={tokenMode}
           onSetTokenMode={setTokenMode}
@@ -434,6 +513,24 @@ const ProjectedMapMirror: React.FC<{
           onToggleMarkers={setShowMarkers}
           addMarkerMode={addMarkerMode}
           onToggleAddMarkerMode={(v) => { setAddMarkerMode(v); if (v) setShowMarkers(true); }}
+
+          elementsEditEnabled={elementsEditEnabled}
+          onSetElementsEditEnabled={setElementsEditEnabled}
+          elementTool={elementTool}
+          onSetElementTool={setElementTool}
+          elements={elements}
+          selectedElement={selectedElement}
+          onSelectElement={setSelectedElement}
+          onUpdateElement={updateElement}
+          onRemoveElement={removeElement}
+          onClearAllElements={clearAllElements}
+          newLightRadius={newLightRadius}
+          onSetNewLightRadius={setNewLightRadius}
+          previewLights={previewLights}
+          onToggleLight={(id) => {
+            const light = elements.find(el => el.id === id);
+            if (light?.type === 'light') updateElement(id, { isOn: !light.isOn } as any);
+          }}
         />
       )}
       <Box ref={containerRef} sx={{ width: '100%', overflow: 'auto' }}>
@@ -487,13 +584,23 @@ const ProjectedMapMirror: React.FC<{
                             }}
                           />
                           {/* Fog overlay (master shading) */}
-                          {fogEnabled && (
+                          {fogEnabled && fogMode === 'grid' && (
                             <FogOfWarOverlay
                               mode="master"
                               grid={gridSettings}
                               widthPx={contentW}
                               heightPx={contentH}
                               cells={effectiveFogCells}
+                              masterColor={fogPreviewStyle.color}
+                              masterOpacity={fogPreviewStyle.opacity}
+                            />
+                          )}
+                          {fogEnabled && fogMode === 'organic' && (
+                            <OrganicFogOverlay
+                              mode="master"
+                              widthPx={contentW}
+                              heightPx={contentH}
+                              strokes={effectiveOrganicStrokes}
                               masterColor={fogPreviewStyle.color}
                               masterOpacity={fogPreviewStyle.opacity}
                             />
@@ -584,7 +691,7 @@ const ProjectedMapMirror: React.FC<{
                             </Box>
                           )}
                           {/* Editor layer captures pointer events only when explicit fog edit is enabled */}
-                          {fogEnabled && fogEditEnabled && (
+                          {fogEnabled && fogEditEnabled && fogMode === 'grid' && (
                             <FogEditorLayer
                               grid={gridSettings}
                               widthPx={contentW}
@@ -593,6 +700,33 @@ const ProjectedMapMirror: React.FC<{
                               transform={{ zoom: activeTransform?.zoom ?? 1, rotationDeg: activeTransform?.rotationDeg ?? 0 }}
                               previewScale={scale}
                               onToggleCell={(key, add) => (add ? addCell(key) : removeCell(key))}
+                            />
+                          )}
+                          {fogEnabled && fogEditEnabled && fogMode === 'organic' && (
+                            <OrganicFogEditorLayer
+                              widthPx={contentW}
+                              heightPx={contentH}
+                              tool={organicFogTool}
+                              brushRadius={organicBrushRadius}
+                              transform={{ zoom: activeTransform?.zoom ?? 1, rotationDeg: activeTransform?.rotationDeg ?? 0 }}
+                              previewScale={scale}
+                              onStrokeComplete={addOrganicStroke}
+                            />
+                          )}
+                          {/* Map elements editor layer (walls, doors, windows, lights) */}
+                          {elementsEditEnabled && (
+                            <MapElementsEditorLayer
+                              widthPx={contentW}
+                              heightPx={contentH}
+                              elements={elements}
+                              tool={elementTool}
+                              transform={{ zoom: activeTransform?.zoom ?? 1, rotationDeg: activeTransform?.rotationDeg ?? 0 }}
+                              previewScale={scale}
+                              onAddElement={addElement}
+                              onUpdateElement={updateElement}
+                              onRemoveElement={removeElement}
+                              onSelectElement={setSelectedElement}
+                              newLightRadius={newLightRadius}
                             />
                           )}
                         </Box>

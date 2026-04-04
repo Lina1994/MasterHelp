@@ -7,14 +7,18 @@ import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext'
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
 import MapGridOverlay, { GridSettings } from '../components/Map/MapGridOverlay';
 import FogOfWarOverlay from '../components/Map/FogOfWarOverlay';
+import OrganicFogOverlay from '../components/Map/OrganicFogOverlay';
 import { useFogOfWar } from '../hooks/useFogOfWar';
+import { useOrganicFog } from '../hooks/useOrganicFog';
 import { getGridOverlaySettings } from '../api/campaigns/gridOverlay';
 import { getFogOfWarSettings } from '../api/campaigns/fogOfWar';
+import type { FogMode } from '../api/campaigns/fogOfWar';
 import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { useMapTokens } from '../hooks/useMapTokens';
 import MapTokensOverlay from '../components/Map/MapTokensOverlay';
-import { computeClearedFogByAllies, subtractClearedFog } from '../utils/fogHelpers';
+import { computeClearedFogByAllies, subtractClearedFog, computeAllyRevealStrokes, computeLightRevealStrokes, computeClearedFogByLights } from '../utils/fogHelpers';
 import { useTokenImageResolver } from '../hooks/useTokenImageResolver';
+import { useMapElements } from '../hooks/useMapElements';
 
 /** Parses campaignId from any URL form (search string or hash-router query). */
 function parseCampaignIdFromUrl(): string | null {
@@ -38,7 +42,12 @@ const ProjectionMapPage: React.FC = () => {
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
+  const { strokes: organicStrokes } = useOrganicFog(activeCampaign?.id, activeMapId || undefined);
+  const [fogMode, setFogMode] = useState<FogMode>(() => {
+    try { const v = localStorage.getItem('app.map.fogMode'); return v === 'organic' ? 'organic' : 'grid'; } catch { return 'grid'; }
+  });
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
+  const { elements } = useMapElements(activeCampaign?.id, activeMapId || undefined);
   const { resolver: tokenImageResolver } = useTokenImageResolver(activeCampaign?.id, { pollMs: 5000 });
 
   // ─── Visible markers ─────────────────────────────────────────────────
@@ -106,6 +115,11 @@ const ProjectionMapPage: React.FC = () => {
         const v = Number.isFinite(s?.allyClearRadius as any) ? Math.max(0, Math.min(10, Math.floor(Number((s as any).allyClearRadius)))) : 1;
         setAllyClearRadius(v);
         try { localStorage.setItem('app.map.allyClearRadius', String(v)); } catch {}
+        // Sync fogMode
+        if (s?.fogMode === 'organic' || s?.fogMode === 'grid') {
+          setFogMode(s.fogMode);
+          try { localStorage.setItem('app.map.fogMode', s.fogMode); } catch {}
+        }
       } catch {
         // ignore
       }
@@ -125,10 +139,18 @@ const ProjectionMapPage: React.FC = () => {
         if (Number.isFinite(n)) setAllyClearRadius(Math.max(0, Math.min(10, n)));
       }
     } catch {}
+    // Also load fogMode from localStorage on mount
+    try {
+      const lm = localStorage.getItem('app.map.fogMode');
+      if (lm === 'organic' || lm === 'grid') setFogMode(lm);
+    } catch {}
     const onStorage = (ev: StorageEvent) => {
       if (ev.key === KEY && ev.newValue) {
         const n = parseInt(ev.newValue, 10);
         if (Number.isFinite(n)) setAllyClearRadius(Math.max(0, Math.min(10, n)));
+      }
+      if (ev.key === 'app.map.fogMode' && ev.newValue) {
+        if (ev.newValue === 'organic' || ev.newValue === 'grid') setFogMode(ev.newValue);
       }
       // React to initiative strip written by useSkylineInitiativeSync (cross-window via storage event)
       if (ev.key === 'app.skyline.initiativeStrip' && ev.newValue) {
@@ -158,6 +180,9 @@ const ProjectionMapPage: React.FC = () => {
           const v = data?.value;
           if (Number.isFinite(v)) setAllyClearRadius(Math.max(0, Math.min(10, Number(v))));
         }
+        if (data?.type === 'fog-mode-updated') {
+          if (data?.fogMode === 'organic' || data?.fogMode === 'grid') setFogMode(data.fogMode);
+        }
         // React to turn changes broadcast by useSkylineInitiativeSync / applyTurnNav
         if (data?.type === 'initiativeStripUpdated' && data?.campaignId === campaignIdRef.current) {
           lastBcTurnUpdateRef.current = Date.now();
@@ -175,15 +200,30 @@ const ProjectionMapPage: React.FC = () => {
     return () => { window.removeEventListener('storage', onStorage); try { bc?.close(); } catch {} };
   }, []);
 
-  // Compute fog after clearing around allied tokens
+  // Compute fog after clearing around allied tokens and active lights
   const effectiveFogCells = React.useMemo(() => {
     try {
-      const cleared = computeClearedFogByAllies(gridSettings, tokens || [], allyClearRadius);
-      return subtractClearedFog(cells, cleared);
+      const mapW = naturalSize?.w || 0;
+      const mapH = naturalSize?.h || 0;
+      const cleared = computeClearedFogByAllies(gridSettings, tokens || [], allyClearRadius, elements, timeOfDay, mapW, mapH);
+      const lightCleared = computeClearedFogByLights(gridSettings, elements, timeOfDay, mapW, mapH);
+      const combined = new Set([...cleared, ...lightCleared]);
+      return subtractClearedFog(cells, combined);
     } catch {
       return cells;
     }
-  }, [cells, tokens, gridSettings, allyClearRadius]);
+  }, [cells, tokens, gridSettings, allyClearRadius, elements, timeOfDay, naturalSize]);
+
+  // Compute organic fog strokes with ally-clearing and light reveal circles appended
+  const effectiveOrganicStrokes = React.useMemo(() => {
+    const mapW = naturalSize?.w || 0;
+    const mapH = naturalSize?.h || 0;
+    const allyReveals = computeAllyRevealStrokes(gridSettings, tokens || [], allyClearRadius, mapW, mapH, elements, timeOfDay);
+    const lightReveals = computeLightRevealStrokes(elements, timeOfDay, mapW, mapH);
+    const extra = [...allyReveals, ...lightReveals];
+    if (extra.length === 0) return organicStrokes;
+    return [...organicStrokes, ...extra];
+  }, [organicStrokes, tokens, gridSettings, allyClearRadius, naturalSize, elements, timeOfDay]);
 
   const visibleTokensForLabels = React.useMemo(() => {
     return (tokens || []).filter((t) => !effectiveFogCells.has(t.cellKey));
@@ -409,6 +449,42 @@ const ProjectionMapPage: React.FC = () => {
     return () => { disposed = true; window.clearInterval(id); };
   }, [activeCampaign?.id, activeMapId]);
 
+  // Periodically refresh organic fog from server (pure web)
+  useEffect(() => {
+    let disposed = false;
+    const OF_STORAGE_KEY = 'app.map.organicFog.strokes';
+    const tick = async () => {
+      if (disposed) return;
+      try {
+        if (!activeCampaign?.id || !activeMapId) return;
+        const res = await fetch(`${window.location.protocol}//${window.location.hostname}:3000/maps/${activeMapId}/organic-fog?campaignId=${activeCampaign.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token') || ''}` },
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const serverStrokes = Array.isArray(data?.strokes) ? data.strokes : [];
+        const raw = localStorage.getItem(OF_STORAGE_KEY);
+        const obj = raw ? JSON.parse(raw) : {};
+        const keyId = `${activeCampaign.id}:${activeMapId}`;
+        const localJson = JSON.stringify(obj[keyId] || []);
+        const serverJson = JSON.stringify(serverStrokes);
+        if (serverJson !== localJson) {
+          obj[keyId] = serverStrokes;
+          try { localStorage.setItem(OF_STORAGE_KEY, JSON.stringify(obj)); } catch {}
+          try { localStorage.setItem('app.lastOrganicFogUpdate', String(Date.now())); } catch {}
+          try {
+            const bc = new BroadcastChannel('campaign-sync');
+            bc.postMessage({ type: 'map-organic-fog-updated', campaignId: activeCampaign.id, mapId: activeMapId, strokes: serverStrokes, at: Date.now() });
+            bc.close();
+          } catch {}
+        }
+      } catch {}
+    };
+    const id = window.setInterval(tick, 2000);
+    return () => { disposed = true; window.clearInterval(id); };
+  }, [activeCampaign?.id, activeMapId]);
+
   // React to external transform updates via BroadcastChannel and electron poke
   useEffect(() => {
     let disposed = false;
@@ -527,7 +603,12 @@ const ProjectionMapPage: React.FC = () => {
                 />
               )}
               {/* Fog overlay (players: black) above everything to truly mask hidden areas */}
-              <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={effectiveFogCells} />
+              {fogMode === 'grid' && (
+                <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={effectiveFogCells} />
+              )}
+              {fogMode === 'organic' && (
+                <OrganicFogOverlay mode="players" widthPx={naturalSize?.w} heightPx={naturalSize?.h} strokes={effectiveOrganicStrokes} />
+              )}
 
               {/* Labels + facing above fog, but only for visible tokens */}
               {naturalSize?.w && naturalSize?.h && visibleTokensForLabels.length > 0 && (

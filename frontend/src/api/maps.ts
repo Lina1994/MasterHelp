@@ -348,3 +348,30 @@ export async function deleteMapMarker(mapId: string, markerId: string): Promise<
   const res = await api.delete<{ ok: true }>(`/maps/${mapId}/markers/${markerId}`);
   return res.data;
 }
+
+// ─── Import Maps from Other Campaigns API ────────────────────────────────────
+
+/** DTO for maps belonging to other campaigns, includes campaignName. */
+export interface OtherCampaignMapDto extends MapItemDto {
+  campaignName: string | null;
+}
+
+/**
+ * Lists maps from other campaigns (excluding the given campaignId) owned by the user.
+ * @param campaignId - The active campaign to exclude.
+ */
+export async function listOtherCampaignMaps(campaignId: string): Promise<OtherCampaignMapDto[]> {
+  const res = await api.get<OtherCampaignMapDto[]>('/maps/other-campaigns', { params: { campaignId } });
+  return res.data;
+}
+
+/**
+ * Imports (clones) a map from another campaign into the target campaign.
+ * Copies all images, skylines, musicConfig, sfxConfig, transform and metadata.
+ * @param sourceMapId - UUID of the map to import.
+ * @param targetCampaignId - UUID of the campaign to import into.
+ */
+export async function importMapToCampaign(sourceMapId: string, targetCampaignId: string): Promise<{ id: string }> {
+  const res = await api.post<{ id: string }>(`/maps/${sourceMapId}/import`, { campaignId: targetCampaignId });
+  return res.data;
+}

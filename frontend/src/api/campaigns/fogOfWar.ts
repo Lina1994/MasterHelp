@@ -1,7 +1,10 @@
 import { api } from '../../apiBase';
 
+export type FogMode = 'grid' | 'organic';
+
 export type FogOfWarSettings = {
   allyClearRadius: number;
+  fogMode: FogMode;
 };
 
 /**
@@ -15,6 +18,6 @@ export async function getFogOfWarSettings(campaignId: string): Promise<FogOfWarS
 /**
  * Update Fog of War settings for a campaign (owner only).
  */
-export async function setFogOfWarSettings(campaignId: string, settings: FogOfWarSettings): Promise<void> {
+export async function setFogOfWarSettings(campaignId: string, settings: Partial<FogOfWarSettings>): Promise<void> {
   await api.patch(`/campaigns/${campaignId}/fog-of-war`, settings);
 }
