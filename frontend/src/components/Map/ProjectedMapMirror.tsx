@@ -31,8 +31,9 @@ import { useCharacterTokenImageResolver } from '../../hooks/useCharacterTokenIma
 import { TokenQuickInfoPopover } from './TokenQuickInfoPopover';
 import MapElementsEditorLayer from './MapElementsEditorLayer';
 import type { ElementEditorTool } from './MapElementsEditorLayer';
+import ElementsPreviewLayer from './ElementsPreviewLayer';
 import { useMapElements } from '../../hooks/useMapElements';
-import type { MapElement, MapLightElement } from '../../api/mapElements';
+import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement } from '../../api/mapElements';
 import SkylineViewportContent from '../Skyline/SkylineViewportContent';
 // removed duplicate import
 
@@ -428,6 +429,15 @@ const ProjectedMapMirror: React.FC<{
     return elements.filter((el): el is MapLightElement => el.type === 'light' && el.showInPreview);
   }, [elements]);
 
+  /** Elements (lights, doors, windows) visible in preview mode. */
+  const previewElements = useMemo(
+    () => elements.filter(
+      (el): el is MapLightElement | MapDoorElement | MapWindowElement =>
+        (el.type === 'light' || el.type === 'door' || el.type === 'window') && !!(el as any).showInPreview,
+    ),
+    [elements],
+  );
+
   // Capa que simula la ventana secundaria: marco escalado con fondo negro
   return (
     <Paper variant="outlined" sx={{ mb: 2, p: 1 }}>
@@ -713,6 +723,16 @@ const ProjectedMapMirror: React.FC<{
                               onStrokeComplete={addOrganicStroke}
                             />
                           )}
+                          {/* Element preview icons (visible outside edit mode for showInPreview elements) */}
+                          {!elementsEditEnabled && previewElements.length > 0 && (
+                            <ElementsPreviewLayer
+                              widthPx={contentW}
+                              heightPx={contentH}
+                              elements={previewElements}
+                              onUpdate={updateElement}
+                            />
+                          )}
+
                           {/* Map elements editor layer (walls, doors, windows, lights) */}
                           {elementsEditEnabled && (
                             <MapElementsEditorLayer

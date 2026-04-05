@@ -25,6 +25,8 @@ export interface MapDoorElement {
   type: 'door';
   points: [{ x: number; y: number }, { x: number; y: number }];
   isOpen: boolean;
+  /** When true the master can interact with this door from the preview toolbar. */
+  showInPreview?: boolean;
 }
 
 /** Window — 2-point segment, light passthrough varies by time of day. Points normalised 0–1. */
@@ -33,6 +35,10 @@ export interface MapWindowElement {
   type: 'window';
   points: [{ x: number; y: number }, { x: number; y: number }];
   lightByTimeOfDay: TimeOfDayIntensity;
+  /** When true the master can see this window from the preview toolbar. */
+  showInPreview?: boolean;
+  /** When true the window is covered and does not dissipate any fog. */
+  covered?: boolean;
 }
 
 /** Light source — reveals fog in a configurable radius. Position normalised 0–1. */

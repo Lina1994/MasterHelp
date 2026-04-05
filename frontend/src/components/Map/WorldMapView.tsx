@@ -32,10 +32,11 @@ import MapMarkerDialog from './MapMarkerDialog';
 import MapMarkerDetail from './MapMarkerDetail';
 import MapElementsEditorLayer from './MapElementsEditorLayer';
 import MapElementsPanel from './MapElementsPanel';
+import ElementsPreviewLayer from './ElementsPreviewLayer';
 import { useMapElements } from '../../hooks/useMapElements';
 import { TITLEBAR_HEIGHT } from '../TitleBar';
 import type { ElementEditorTool } from './MapElementsEditorLayer';
-import type { MapElement, MapLightElement } from '../../api/mapElements';
+import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement } from '../../api/mapElements';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -159,7 +160,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
   const [detailMarker, setDetailMarker] = useState<MapMarkerDto | null>(null);
 
   // ─── Map Elements (walls, doors, windows, lights) ────────────────────────
-  const { elements, addElement, updateElement, removeElement, clearAll: clearAllElements } = useMapElements(map.id, campaignId);
+  const { elements, addElement, updateElement, removeElement, clearAll: clearAllElements } = useMapElements(campaignId, map.id);
   const [elementsEditEnabled, setElementsEditEnabled] = useState(false);
   const [elementTool, setElementTool] = useState<ElementEditorTool>('select');
   const [selectedElement, setSelectedElement] = useState<MapElement | null>(null);
@@ -168,6 +169,15 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
 
   const previewLights = useMemo(
     () => elements.filter((el): el is MapLightElement => el.type === 'light' && !!el.showInPreview),
+    [elements],
+  );
+
+  /** Elements (lights, doors, windows) visible in preview mode. */
+  const previewElements = useMemo(
+    () => elements.filter(
+      (el): el is MapLightElement | MapDoorElement | MapWindowElement =>
+        (el.type === 'light' || el.type === 'door' || el.type === 'window') && !!(el as any).showInPreview,
+    ),
     [elements],
   );
 
@@ -243,6 +253,8 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     // Only handle left-button / touch
     if (e.button !== 0 && e.pointerType !== 'touch') return;
+    // Close the elements panel popover on any map interaction
+    setElementsAnchor(null);
     e.currentTarget.setPointerCapture(e.pointerId);
     isPointerDownRef.current = true;
     hasPannedRef.current = false;
@@ -430,6 +442,16 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
             />
           ))}
 
+          {/* Element preview icons (visible outside edit mode for showInPreview elements) */}
+          {imageDims && !elementsEditEnabled && previewElements.length > 0 && (
+            <ElementsPreviewLayer
+              widthPx={imageDims.w}
+              heightPx={imageDims.h}
+              elements={previewElements}
+              onUpdate={updateElement}
+            />
+          )}
+
           {/* Map Elements editor layer (walls, doors, windows, lights) */}
           {imageDims && elementsEditEnabled && (
             <MapElementsEditorLayer
@@ -548,18 +570,17 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
 
           <Box sx={{ width: 1, height: 28, bgcolor: 'divider', mx: 0.5 }} />
 
-          <Tooltip title={elementsEditEnabled ? 'Ocultar elementos' : 'Editar elementos'}>
+          <Tooltip title="Elementos del mapa">
             <IconButton
               size="small"
               onClick={(e) => {
-                if (elementsEditEnabled) {
-                  setElementsEditEnabled(false);
+                if (elementsAnchor) {
                   setElementsAnchor(null);
                 } else {
                   setElementsAnchor(e.currentTarget);
                 }
               }}
-              color={elementsEditEnabled ? 'primary' : 'default'}
+              color={elementsEditEnabled || elementsAnchor ? 'primary' : 'default'}
               sx={{ bgcolor: elementsEditEnabled ? 'primary.light' : undefined }}
             >
               <WallsIcon />

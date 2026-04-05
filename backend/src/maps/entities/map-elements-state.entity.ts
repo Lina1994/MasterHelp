@@ -32,6 +32,7 @@ export interface MapDoorElement {
   type: 'door';
   points: [{ x: number; y: number }, { x: number; y: number }];
   isOpen: boolean;
+  showInPreview?: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ export interface MapWindowElement {
   type: 'window';
   points: [{ x: number; y: number }, { x: number; y: number }];
   lightByTimeOfDay: TimeOfDayIntensity;
+  showInPreview?: boolean;
 }
 
 /**

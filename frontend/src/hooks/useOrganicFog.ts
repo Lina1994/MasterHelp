@@ -9,6 +9,8 @@ export interface OrganicFogStroke {
   points: { x: number; y: number }[];
   radius: number;
   mode: 'reveal' | 'fog';
+  /** When true the renderer draws a filled polygon instead of a thick stroke line. */
+  fill?: boolean;
 }
 
 const STORAGE_KEY = 'app.map.organicFog.strokes';

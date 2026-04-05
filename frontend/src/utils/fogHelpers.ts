@@ -1,6 +1,6 @@
 import type { GridSettings } from '../components/Map/MapGridOverlay';
 import type { MapTokenPayload } from '../api/maps';
-import type { MapElement, MapLightElement } from '../api/mapElements';
+import type { MapElement, MapLightElement, MapWindowElement } from '../api/mapElements';
 
 /**
  * Parse a cell key like "col:row" into numeric coordinates.
@@ -160,10 +160,10 @@ export function computeAllyRevealStrokes(
   mapH: number,
   elements: MapElement[],
   timeOfDay: string | null | undefined,
-): Array<{ points: { x: number; y: number }[]; radius: number; mode: 'reveal' | 'fog' }> {
+): Array<{ points: { x: number; y: number }[]; radius: number; mode: 'reveal' | 'fog'; fill?: boolean }> {
   const r = Math.max(0, Math.floor(radius || 0));
   if (r === 0 || !mapW || !mapH) return [];
-  const out: Array<{ points: { x: number; y: number }[]; radius: number; mode: 'reveal' | 'fog' }> = [];
+  const out: Array<{ points: { x: number; y: number }[]; radius: number; mode: 'reveal' | 'fog'; fill?: boolean }> = [];
   const cellSize = Math.max(4, Math.floor(grid.cellSize || 40));
   const blockers = getBlockingSegments(elements, timeOfDay, mapW, mapH);
 
@@ -184,33 +184,15 @@ export function computeAllyRevealStrokes(
       continue;
     }
 
-    // With walls: sample points in a grid within the reveal radius
-    // and only emit reveal circles where LOS is clear.
-    const step = cellSize * 0.6; // sample spacing
-    const smallR = step * 0.75;  // small circle radius to cover each sample
-
-    for (let dy = -pixelRadius; dy <= pixelRadius; dy += step) {
-      for (let dx = -pixelRadius; dx <= pixelRadius; dx += step) {
-        if (dx * dx + dy * dy > pixelRadius * pixelRadius) continue;
-        const px = allyPx.x + dx;
-        const py = allyPx.y + dy;
-        if (px < 0 || px > mapW || py < 0 || py > mapH) continue;
-
-        let blocked = false;
-        for (const seg of blockers) {
-          if (segmentsIntersect(allyPx.x, allyPx.y, px, py, seg.ax, seg.ay, seg.bx, seg.by)) {
-            blocked = true;
-            break;
-          }
-        }
-        if (!blocked) {
-          out.push({
-            points: [{ x: px / mapW, y: py / mapH }],
-            radius: smallR,
-            mode: 'reveal',
-          });
-        }
-      }
+    // Compute visibility polygon for smooth wall interaction
+    const polygon = computeVisibilityPolygon(allyPx.x, allyPx.y, pixelRadius, blockers);
+    if (polygon.length > 2) {
+      out.push({
+        points: polygon.map((p) => ({ x: p.x / mapW, y: p.y / mapH })),
+        radius: pixelRadius,
+        mode: 'reveal',
+        fill: true,
+      });
     }
   }
   return out;
@@ -315,6 +297,76 @@ export function getLightIntensity(
 }
 
 /**
+ * Resolve effective light passthrough intensity for a window element.
+ * Returns 0–1 based on time of day.
+ * @param win Window element.
+ * @param timeOfDay Current time of day.
+ */
+export function getWindowLightIntensity(
+  win: MapWindowElement,
+  timeOfDay: 'dawn' | 'morning' | 'afternoon' | 'night' | string | null | undefined,
+): number {
+  if (win.covered) return 0;
+  if (!win.lightByTimeOfDay) return 0;
+  const key = timeOfDay as keyof typeof win.lightByTimeOfDay;
+  if (key && win.lightByTimeOfDay[key] !== undefined) {
+    return Math.max(0, Math.min(1, win.lightByTimeOfDay[key]));
+  }
+  return 0;
+}
+
+/** Default radius (in map pixels) used when a window acts as a light source. */
+const WINDOW_LIGHT_RADIUS = 120;
+
+/**
+ * Offset distance (in map pixels) for each virtual window light source.
+ * Sources are placed this far from the window midpoint, perpendicular to the
+ * window segment, one on each side. Must be large enough that the source sits
+ * clearly on one side of the wall so the visibility polygon doesn't leak.
+ */
+const WINDOW_SOURCE_OFFSET = 8;
+
+/**
+ * Compute the two virtual light source positions for a window.
+ * Returns two points offset perpendicularly from the window midpoint,
+ * one on each side of the wall.
+ *
+ * @param win Window element.
+ * @param mapW Map natural width (px).
+ * @param mapH Map natural height (px).
+ * @returns Tuple of two {x,y} positions in pixel coordinates.
+ */
+function getWindowDualSources(
+  win: MapWindowElement,
+  mapW: number,
+  mapH: number,
+): [{ x: number; y: number }, { x: number; y: number }] {
+  const ax = win.points[0].x * mapW;
+  const ay = win.points[0].y * mapH;
+  const bx = win.points[1].x * mapW;
+  const by = win.points[1].y * mapH;
+
+  const midX = (ax + bx) / 2;
+  const midY = (ay + by) / 2;
+
+  const dx = bx - ax;
+  const dy = by - ay;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (len < 1e-6) {
+    return [{ x: midX, y: midY }, { x: midX, y: midY }];
+  }
+
+  // Perpendicular unit vector
+  const nx = -dy / len;
+  const ny = dx / len;
+
+  return [
+    { x: midX + nx * WINDOW_SOURCE_OFFSET, y: midY + ny * WINDOW_SOURCE_OFFSET },
+    { x: midX - nx * WINDOW_SOURCE_OFFSET, y: midY - ny * WINDOW_SOURCE_OFFSET },
+  ];
+}
+
+/**
  * Collect all line segments that block light / fog propagation.
  * - Walls: all consecutive point pairs (always block).
  * - Doors (closed): the single 2-point segment (open doors allow passage).
@@ -334,22 +386,80 @@ export function getBlockingSegments(
   mapH: number,
 ): Array<{ ax: number; ay: number; bx: number; by: number }> {
   const segs: Array<{ ax: number; ay: number; bx: number; by: number }> = [];
+  /**
+   * Small extension (px) applied to each end of every blocking segment.
+   * Closes micro-gaps at T-junctions along the segment's own direction.
+   */
+  const PAD = 2;
+
   for (const el of elements) {
     if (el.type === 'wall') {
       for (let i = 0; i < el.points.length - 1; i++) {
-        segs.push({
-          ax: el.points[i].x * mapW, ay: el.points[i].y * mapH,
-          bx: el.points[i + 1].x * mapW, by: el.points[i + 1].y * mapH,
-        });
+        let ax = el.points[i].x * mapW,     ay = el.points[i].y * mapH;
+        let bx = el.points[i + 1].x * mapW, by = el.points[i + 1].y * mapH;
+        const dx = bx - ax, dy = by - ay;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len > 0) {
+          const ux = (dx / len) * PAD, uy = (dy / len) * PAD;
+          ax -= ux; ay -= uy;
+          bx += ux; by += uy;
+        }
+        segs.push({ ax, ay, bx, by });
       }
     } else if (el.type === 'door' && !el.isOpen) {
-      segs.push({
-        ax: el.points[0].x * mapW, ay: el.points[0].y * mapH,
-        bx: el.points[1].x * mapW, by: el.points[1].y * mapH,
-      });
+      let ax = el.points[0].x * mapW, ay = el.points[0].y * mapH;
+      let bx = el.points[1].x * mapW, by = el.points[1].y * mapH;
+      const dx = bx - ax, dy = by - ay;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      if (len > 0) {
+        const ux = (dx / len) * PAD, uy = (dy / len) * PAD;
+        ax -= ux; ay -= uy;
+        bx += ux; by += uy;
+      }
+      segs.push({ ax, ay, bx, by });
     }
     // Windows never block — they allow fog and light propagation.
   }
+
+  // ── T-junction snap ──────────────────────────────────────────────────
+  // For each segment endpoint, project it onto every other segment. If the
+  // perpendicular distance is small (< SNAP px) but non-zero, snap the
+  // endpoint onto the other segment. This properly closes T-junctions
+  // where a wall meets another wall mid-segment (not at an endpoint).
+  const SNAP = 6;
+  for (let i = 0; i < segs.length; i++) {
+    for (const endKey of [0, 1] as const) {
+      const px = endKey === 0 ? segs[i].ax : segs[i].bx;
+      const py = endKey === 0 ? segs[i].ay : segs[i].by;
+      let bestDist = SNAP;
+      let bestX = px, bestY = py;
+
+      for (let j = 0; j < segs.length; j++) {
+        if (i === j) continue;
+        const sax = segs[j].ax, say = segs[j].ay;
+        const sbx = segs[j].bx, sby = segs[j].by;
+        const sdx = sbx - sax, sdy = sby - say;
+        const sLenSq = sdx * sdx + sdy * sdy;
+        if (sLenSq < 1) continue;
+        let t = ((px - sax) * sdx + (py - say) * sdy) / sLenSq;
+        t = Math.max(0, Math.min(1, t));
+        const projX = sax + t * sdx;
+        const projY = say + t * sdy;
+        const d = Math.hypot(px - projX, py - projY);
+        if (d > 0.1 && d < bestDist) {
+          bestDist = d;
+          bestX = projX;
+          bestY = projY;
+        }
+      }
+
+      if (bestDist < SNAP) {
+        if (endKey === 0) { segs[i].ax = bestX; segs[i].ay = bestY; }
+        else              { segs[i].bx = bestX; segs[i].by = bestY; }
+      }
+    }
+  }
+
   return segs;
 }
 
@@ -371,10 +481,96 @@ function segmentsIntersect(
 }
 
 /**
- * Compute virtual "reveal" strokes to clear organic fog around active light sources.
- * Respects blocking segments — only reveals positions with clear line-of-sight
- * from the light's center. When walls are present, generates a set of smaller
- * reveal circles covering the visible area instead of a single large circle.
+ * Ray–segment intersection. Ray from (ox,oy) in unit direction (dx,dy).
+ * Returns distance along the ray to the hit point, or null if no hit.
+ */
+function raySegmentIntersect(
+  ox: number, oy: number,
+  dx: number, dy: number,
+  ax: number, ay: number,
+  bx: number, by: number,
+): number | null {
+  const sdx = bx - ax;
+  const sdy = by - ay;
+  const denom = dx * sdy - dy * sdx;
+  if (Math.abs(denom) < 1e-10) return null;
+  const t = ((ax - ox) * sdy - (ay - oy) * sdx) / denom;
+  const u = ((ax - ox) * dy - (ay - oy) * dx) / denom;
+  if (t > 0 && u >= 0 && u <= 1) return t;
+  return null;
+}
+
+/**
+ * Compute a 2D visibility polygon from a point source bounded by a radius.
+ * Casts rays at regular angular intervals and toward each blocker endpoint
+ * (with slight offsets for corner precision). Returns ordered vertices in
+ * pixel coordinates that form the revealed area.
+ *
+ * @param cx   Source X (px).
+ * @param cy   Source Y (px).
+ * @param radius Maximum reveal radius (px).
+ * @param blockers Blocking segments in pixel coordinates.
+ * @returns Polygon vertices ordered by angle.
+ */
+function computeVisibilityPolygon(
+  cx: number,
+  cy: number,
+  radius: number,
+  blockers: Array<{ ax: number; ay: number; bx: number; by: number }>,
+): Array<{ x: number; y: number }> {
+  const angles: number[] = [];
+
+  // Regular angular sampling (~360 rays for smoother circle outline)
+  const STEP_DEG = 1;
+  for (let deg = 0; deg < 360; deg += STEP_DEG) {
+    angles.push((deg * Math.PI) / 180);
+  }
+
+  // Targeted rays toward blocker endpoints for precise wall edges.
+  // EPS is the angular spread on each side of the exact angle, large enough to
+  // "peek" past T-junction corners with small floating-point gaps (~1-2 px).
+  const EPS = 0.001;
+  const rSq = (radius + 50) * (radius + 50);
+  for (const seg of blockers) {
+    for (const pt of [{ x: seg.ax, y: seg.ay }, { x: seg.bx, y: seg.by }]) {
+      const ddx = pt.x - cx;
+      const ddy = pt.y - cy;
+      if (ddx * ddx + ddy * ddy > rSq) continue;
+      const a = Math.atan2(ddy, ddx);
+      angles.push(a - EPS, a, a + EPS);
+    }
+  }
+
+  angles.sort((a, b) => a - b);
+
+  // Deduplicate angles that are extremely close (< 1e-6 rad apart)
+  // to avoid casting redundant rays.
+  const uniqueAngles: number[] = [];
+  for (let i = 0; i < angles.length; i++) {
+    if (i === 0 || angles[i] - angles[i - 1] > 1e-6) {
+      uniqueAngles.push(angles[i]);
+    }
+  }
+
+  const points: Array<{ x: number; y: number }> = [];
+  for (const angle of uniqueAngles) {
+    const dirX = Math.cos(angle);
+    const dirY = Math.sin(angle);
+    let dist = radius;
+    for (const seg of blockers) {
+      const t = raySegmentIntersect(cx, cy, dirX, dirY, seg.ax, seg.ay, seg.bx, seg.by);
+      if (t !== null && t < dist) dist = t;
+    }
+    points.push({ x: cx + dirX * dist, y: cy + dirY * dist });
+  }
+
+  return points;
+}
+
+/**
+ * Compute virtual "reveal" strokes to clear organic fog around active light sources
+ * and windows. Uses a visibility-polygon approach for clean wall edges instead of
+ * grid-sampled circles.
  *
  * Points are normalised (0–1) relative to the map's natural dimensions.
  *
@@ -382,16 +578,16 @@ function segmentsIntersect(
  * @param timeOfDay Current time of day.
  * @param mapW Map natural width (px).
  * @param mapH Map natural height (px).
- * @returns Array of virtual reveal strokes.
+ * @returns Array of virtual reveal strokes (polygons or circles).
  */
 export function computeLightRevealStrokes(
   elements: MapElement[],
   timeOfDay: string | null | undefined,
   mapW: number,
   mapH: number,
-): Array<{ points: { x: number; y: number }[]; radius: number; mode: 'reveal' | 'fog' }> {
+): Array<{ points: { x: number; y: number }[]; radius: number; mode: 'reveal' | 'fog'; fill?: boolean }> {
   if (!mapW || !mapH) return [];
-  const out: Array<{ points: { x: number; y: number }[]; radius: number; mode: 'reveal' | 'fog' }> = [];
+  const out: Array<{ points: { x: number; y: number }[]; radius: number; mode: 'reveal' | 'fog'; fill?: boolean }> = [];
   const blockers = getBlockingSegments(elements, timeOfDay, mapW, mapH);
 
   for (const el of elements) {
@@ -406,7 +602,6 @@ export function computeLightRevealStrokes(
     const lightPy = el.position.y * mapH;
 
     if (blockers.length === 0) {
-      // No walls — single large reveal circle (fast path)
       out.push({
         points: [{ x: el.position.x, y: el.position.y }],
         radius: effectiveRadius,
@@ -415,35 +610,52 @@ export function computeLightRevealStrokes(
       continue;
     }
 
-    // With walls: sample points in a grid within the reveal radius
-    // and only emit reveal circles where LOS is clear.
-    const step = Math.max(8, effectiveRadius * 0.15);
-    const smallR = step * 0.75;
+    // Compute visibility polygon for smooth wall interaction
+    const polygon = computeVisibilityPolygon(lightPx, lightPy, effectiveRadius, blockers);
+    if (polygon.length > 2) {
+      out.push({
+        points: polygon.map((p) => ({ x: p.x / mapW, y: p.y / mapH })),
+        radius: effectiveRadius,
+        mode: 'reveal',
+        fill: true,
+      });
+    }
+  }
 
-    for (let dy = -effectiveRadius; dy <= effectiveRadius; dy += step) {
-      for (let dx = -effectiveRadius; dx <= effectiveRadius; dx += step) {
-        if (dx * dx + dy * dy > effectiveRadius * effectiveRadius) continue;
-        const px = lightPx + dx;
-        const py = lightPy + dy;
-        if (px < 0 || px > mapW || py < 0 || py > mapH) continue;
+  // ── Windows acting as light sources ──────────────────────────────────
+  // Each window emits from two virtual points offset to either side of the
+  // wall so the visibility polygon respects the wall and doesn't leak.
+  for (const el of elements) {
+    if (el.type !== 'window') continue;
+    const wIntensity = getWindowLightIntensity(el, timeOfDay);
+    if (wIntensity <= 0) continue;
+    const wRadius = WINDOW_LIGHT_RADIUS * wIntensity;
+    if (wRadius < 1) continue;
 
-        let blocked = false;
-        for (const seg of blockers) {
-          if (segmentsIntersect(lightPx, lightPy, px, py, seg.ax, seg.ay, seg.bx, seg.by)) {
-            blocked = true;
-            break;
-          }
-        }
-        if (!blocked) {
-          out.push({
-            points: [{ x: px / mapW, y: py / mapH }],
-            radius: smallR,
-            mode: 'reveal',
-          });
-        }
+    const [srcA, srcB] = getWindowDualSources(el, mapW, mapH);
+
+    for (const src of [srcA, srcB]) {
+      if (blockers.length === 0) {
+        out.push({
+          points: [{ x: src.x / mapW, y: src.y / mapH }],
+          radius: wRadius,
+          mode: 'reveal',
+        });
+        continue;
+      }
+
+      const polygon = computeVisibilityPolygon(src.x, src.y, wRadius, blockers);
+      if (polygon.length > 2) {
+        out.push({
+          points: polygon.map((p) => ({ x: p.x / mapW, y: p.y / mapH })),
+          radius: wRadius,
+          mode: 'reveal',
+          fill: true,
+        });
       }
     }
   }
+
   return out;
 }
 
@@ -531,5 +743,67 @@ export function computeClearedFogByLights(
       if (!blocked) cleared.add(ck);
     }
   }
+
+  // ── Windows acting as light sources (grid mode) ──────────────────────
+  // Each window uses two virtual sources offset to each side of the wall.
+  for (const el of elements) {
+    if (el.type !== 'window') continue;
+    const wIntensity = getWindowLightIntensity(el, timeOfDay);
+    if (wIntensity <= 0) continue;
+    const wRadius = WINDOW_LIGHT_RADIUS * wIntensity;
+    if (wRadius < 1) continue;
+
+    const [srcA, srcB] = getWindowDualSources(el, mapW, mapH);
+
+    for (const src of [srcA, srcB]) {
+      const wGridRadius = Math.max(0, Math.ceil(wRadius / cellSize));
+
+      let wCol: number;
+      let wRow: number;
+      if (grid.type === 'square') {
+        wCol = Math.floor(src.x / cellSize);
+        wRow = Math.floor(src.y / cellSize);
+      } else {
+        const hexR = cellSize;
+        const hexH = Math.sqrt(3) * hexR;
+        const horizStep = 1.5 * hexR;
+        wCol = Math.round((src.x - hexR) / horizStep);
+        const yOffset = (wCol % 2 === 0) ? 0 : hexH / 2;
+        wRow = Math.round((src.y - hexH / 2 - yOffset) / hexH);
+      }
+
+      const wCellKey = `${wCol}:${wRow}`;
+      const wCellsInRange = getCellsWithinRadius(grid, wCellKey, wGridRadius);
+
+      for (const ck of wCellsInRange) {
+        const [cStr, rStr] = ck.split(':');
+        const col = parseInt(cStr, 10) || 0;
+        const row = parseInt(rStr, 10) || 0;
+
+        let cx: number, cy: number;
+        if (grid.type === 'square') {
+          cx = col * cellSize + cellSize / 2;
+          cy = row * cellSize + cellSize / 2;
+        } else {
+          const hexR = cellSize;
+          const hexH = Math.sqrt(3) * hexR;
+          const horizStep = 1.5 * hexR;
+          const yOffset = (col % 2 === 0) ? 0 : hexH / 2;
+          cx = col * horizStep + hexR;
+          cy = row * hexH + hexH / 2 + yOffset;
+        }
+
+        let wBlocked = false;
+        for (const seg of blockers) {
+          if (segmentsIntersect(src.x, src.y, cx, cy, seg.ax, seg.ay, seg.bx, seg.by)) {
+            wBlocked = true;
+            break;
+          }
+        }
+        if (!wBlocked) cleared.add(ck);
+      }
+    }
+  }
+
   return cleared;
 }

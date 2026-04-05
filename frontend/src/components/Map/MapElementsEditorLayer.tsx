@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, FormControlLabel, Popover, Stack, Switch, TextField, Typography } from '@mui/material';
 import type { MapElement, MapElementType, MapWallElement, MapDoorElement, MapWindowElement, MapLightElement, TimeOfDayIntensity } from '../../api/mapElements';
 
-export type ElementEditorTool = 'wall' | 'door' | 'window' | 'light' | 'select' | 'erase';
+export type ElementEditorTool = 'wall' | 'door' | 'window' | 'light' | 'select' | 'erase' | 'room';
 
 /**
  * MapElementsEditorLayer
@@ -57,12 +58,151 @@ const MapElementsEditorLayer: React.FC<{
     t: number;
   } | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  /** Element being edited inline via popover (id + screen anchor position). */
+  const [editingElementPopover, setEditingElementPopover] = useState<{
+    elementId: string;
+    anchorPosition: { top: number; left: number };
+  } | null>(null);
+  /** Tracks the light whose radius is being dragged. */
+  const [draggingRadiusId, setDraggingRadiusId] = useState<string | null>(null);
+  /** Wall whose endpoints are shown (mouse is hovering over it). */
+  const [hoveredWallId, setHoveredWallId] = useState<string | null>(null);
+  /** Tracks a wall endpoint being dragged: wall id + point index. */
+  const [draggingWallPt, setDraggingWallPt] = useState<{
+    wallId: string;
+    ptIndex: number;
+  } | null>(null);
+  /** Room tool drag: start and current opposite corners of the rectangle. */
+  const [roomDrag, setRoomDrag] = useState<{
+    start: { x: number; y: number };
+    current: { x: number; y: number };
+  } | null>(null);
 
   // Reset in-progress drawing when tool changes
   useEffect(() => {
     setDrawingPoints([]);
     setDrawingOnWall(null);
+    setEditingElementPopover(null);
+    setRoomDrag(null);
   }, [tool]);
+
+  /** Resolve the element currently being edited (keeps data fresh). */
+  const editingElement = useMemo(() => {
+    if (!editingElementPopover) return null;
+    return elements.find((el) => el.id === editingElementPopover.elementId) ?? null;
+  }, [editingElementPopover, elements]);
+
+  /** Close the element-edit popover. */
+  const closeElementPopover = useCallback(() => setEditingElementPopover(null), []);
+
+  /**
+   * Convert a native PointerEvent to SVG-space pixel coordinates.
+   * Used for radius drag (not normalised – we need px distance).
+   */
+  const toSvgPx = useCallback((e: PointerEvent) => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: pt.x, y: pt.y };
+  }, []);
+
+  /** Start dragging a light's radius ring. */
+  const handleRadiusDragStart = useCallback((e: React.PointerEvent, lightId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    (e.target as SVGElement).setPointerCapture(e.pointerId);
+    setDraggingRadiusId(lightId);
+  }, []);
+
+  /** While dragging, update the light radius to match pointer distance from center. */
+  const handleRadiusDragMove = useCallback((e: React.PointerEvent) => {
+    if (!draggingRadiusId) return;
+    const light = elements.find((el): el is MapLightElement => el.id === draggingRadiusId && el.type === 'light');
+    if (!light) return;
+    const W = widthPx || 1;
+    const H = heightPx || 1;
+    const svgPt = toSvgPx(e.nativeEvent);
+    const cx = light.position.x * W;
+    const cy = light.position.y * H;
+    const newRadius = Math.max(10, Math.min(2000, Math.round(Math.hypot(svgPt.x - cx, svgPt.y - cy))));
+    onUpdateElement(draggingRadiusId, { radius: newRadius } as any);
+  }, [draggingRadiusId, elements, widthPx, heightPx, toSvgPx, onUpdateElement]);
+
+  /** End radius drag. */
+  const handleRadiusDragEnd = useCallback(() => {
+    setDraggingRadiusId(null);
+  }, []);
+
+  /** Start dragging a wall endpoint. */
+  const handleWallPtDragStart = useCallback((e: React.PointerEvent, wallId: string, ptIndex: number) => {
+    e.stopPropagation();
+    e.preventDefault();
+    (e.target as SVGElement).setPointerCapture(e.pointerId);
+    setDraggingWallPt({ wallId, ptIndex });
+  }, []);
+
+  /** While dragging, update the wall point to match the pointer. */
+  const handleWallPtDragMove = useCallback((e: React.PointerEvent) => {
+    if (!draggingWallPt) return;
+    const wall = elements.find((el): el is MapWallElement => el.id === draggingWallPt.wallId && el.type === 'wall');
+    if (!wall) return;
+    const svgPt = toSvgPx(e.nativeEvent);
+    const W = widthPx || 1;
+    const H = heightPx || 1;
+    const nx = Math.max(0, Math.min(1, svgPt.x / W));
+    const ny = Math.max(0, Math.min(1, svgPt.y / H));
+
+    // Snap to nearby wall endpoint (excluding the wall being dragged)
+    const snapThreshold = 12 / Math.max(W, H);
+    let snapped = { x: nx, y: ny };
+    let bestDist = Infinity;
+    for (const el of elements) {
+      if (el.type !== 'wall' && el.type !== 'door' && el.type !== 'window') continue;
+      if (el.id === draggingWallPt.wallId) continue;
+      for (const p of el.points) {
+        const d = Math.hypot(snapped.x - p.x, snapped.y - p.y);
+        if (d < snapThreshold && d < bestDist) {
+          bestDist = d;
+          snapped = { x: p.x, y: p.y };
+        }
+      }
+    }
+
+    const newPoints = [...wall.points];
+    newPoints[draggingWallPt.ptIndex] = snapped;
+    onUpdateElement(draggingWallPt.wallId, { points: newPoints } as any);
+  }, [draggingWallPt, elements, widthPx, heightPx, toSvgPx, onUpdateElement]);
+
+  /** End wall point drag. */
+  const handleWallPtDragEnd = useCallback(() => {
+    setDraggingWallPt(null);
+  }, []);
+
+  /** Helper to open the element-edit popover anchored at a line element's midpoint. */
+  const openElementPopover = useCallback((e: React.MouseEvent, el: MapElement) => {
+    e.stopPropagation();
+    const svg = svgRef.current;
+    if (!svg) return;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const W = widthPx || 1;
+    const H = heightPx || 1;
+    let px: number, py: number;
+    if (el.type === 'light') {
+      px = el.position.x * W;
+      py = el.position.y * H;
+    } else if (el.type === 'door' || el.type === 'window') {
+      px = ((el.points[0].x + el.points[1].x) / 2) * W;
+      py = ((el.points[0].y + el.points[1].y) / 2) * H;
+    } else {
+      return;
+    }
+    const screenPt = new DOMPoint(px, py).matrixTransform(ctm);
+    setEditingElementPopover({ elementId: el.id, anchorPosition: { top: screenPt.y, left: screenPt.x } });
+    onSelectElement?.(el);
+  }, [widthPx, heightPx, onSelectElement]);
 
   /** Generate a short unique id. */
   const uid = useCallback(() => `el_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`, []);
@@ -191,7 +331,7 @@ const MapElementsEditorLayer: React.FC<{
       setDrawingOnWall(null);
       return;
     }
-  }, [tool, drawingPoints, elements, widthPx, heightPx, onAddElement, onRemoveElement, onSelectElement, toNorm, uid, newLightRadius]);
+  }, [tool, drawingPoints, drawingOnWall, elements, widthPx, heightPx, onAddElement, onRemoveElement, onSelectElement, toNorm, uid, newLightRadius]);
 
   /** Double-click has no special behaviour currently. */
   const handleDblClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
@@ -203,7 +343,43 @@ const MapElementsEditorLayer: React.FC<{
     e.preventDefault();
     if (drawingPoints.length > 0) setDrawingPoints([]);
     if (drawingOnWall) setDrawingOnWall(null);
-  }, [drawingPoints, drawingOnWall]);
+    if (roomDrag) setRoomDrag(null);
+  }, [drawingPoints, drawingOnWall, roomDrag]);
+
+  /** Handle pointer-down on the SVG canvas (room tool drag start). */
+  const handlePointerDown = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    e.stopPropagation();
+    if (tool === 'room' && e.button === 0) {
+      e.preventDefault();
+      (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+      const pt = toNorm(e);
+      const snap = findNearestWallEndpoint(pt, elements, widthPx, heightPx);
+      const start = snap ?? pt;
+      setRoomDrag({ start, current: start });
+    }
+  }, [tool, toNorm, elements, widthPx, heightPx]);
+
+  /** Handle pointer-move on the SVG canvas (room tool drag preview). */
+  const handlePointerMove = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    if (roomDrag) {
+      const pt = toNorm(e);
+      setRoomDrag((prev) => prev ? { ...prev, current: pt } : null);
+    }
+  }, [roomDrag, toNorm]);
+
+  /** Handle pointer-up on the SVG canvas (room tool creation). */
+  const handlePointerUp = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    if (roomDrag) {
+      const pt = toNorm(e);
+      const snap = findNearestWallEndpoint(pt, elements, widthPx, heightPx);
+      const finalEnd = snap ?? pt;
+      const wallSegments = computeRoomWalls(roomDrag.start, finalEnd, elements);
+      for (const [p1, p2] of wallSegments) {
+        onAddElement({ id: uid(), type: 'wall', points: [p1, p2] });
+      }
+      setRoomDrag(null);
+    }
+  }, [roomDrag, toNorm, elements, widthPx, heightPx, uid, onAddElement]);
 
   // Cursor style based on tool
   const cursor = useMemo(() => {
@@ -216,11 +392,14 @@ const MapElementsEditorLayer: React.FC<{
   const H = heightPx || 1;
 
   return (
+    <>
     <svg
       ref={svgRef}
       viewBox={`0 0 ${W} ${H}`}
       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', cursor, zIndex: 15, pointerEvents: 'auto' }}
-      onPointerDown={(e) => e.stopPropagation()}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
       onClick={handleClick}
       onDoubleClick={handleDblClick}
       onContextMenu={handleContextMenu}
@@ -229,35 +408,64 @@ const MapElementsEditorLayer: React.FC<{
       {elements.map((el) => {
         const isHovered = el.id === hoveredId;
         if (el.type === 'wall') {
+          const showHandles = tool === 'select' && (el.id === hoveredWallId || (draggingWallPt?.wallId === el.id));
           // 2-point walls render as a line; legacy polyline walls (>2 points) use polyline
           if (el.points.length <= 2) {
             return (
-              <line
-                key={el.id}
-                x1={el.points[0].x * W} y1={el.points[0].y * H}
-                x2={(el.points[1] ?? el.points[0]).x * W} y2={(el.points[1] ?? el.points[0]).y * H}
-                stroke={isHovered ? '#ff4444' : '#ffdd00'}
-                strokeWidth={isHovered ? 4 : 3}
-                strokeLinecap="round"
-                onMouseEnter={() => setHoveredId(el.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                style={{ pointerEvents: 'stroke' }}
-              />
+              <g key={el.id}>
+                <line
+                  x1={el.points[0].x * W} y1={el.points[0].y * H}
+                  x2={(el.points[1] ?? el.points[0]).x * W} y2={(el.points[1] ?? el.points[0]).y * H}
+                  stroke={isHovered ? '#ff4444' : '#ffdd00'}
+                  strokeWidth={isHovered ? 4 : 3}
+                  strokeLinecap="round"
+                  onMouseEnter={() => { setHoveredId(el.id); if (tool === 'select') setHoveredWallId(el.id); }}
+                  onMouseLeave={() => { if (!draggingWallPt || draggingWallPt.wallId !== el.id) { setHoveredId(null); setHoveredWallId(null); } }}
+                  style={{ pointerEvents: 'stroke' }}
+                />
+                {showHandles && el.points.map((p, idx) => (
+                  <circle
+                    key={`${el.id}-pt-${idx}`}
+                    cx={p.x * W} cy={p.y * H} r={7}
+                    fill="#fff"
+                    stroke="#ffdd00"
+                    strokeWidth={2}
+                    style={{ cursor: 'grab', pointerEvents: 'auto' }}
+                    onPointerDown={(e) => handleWallPtDragStart(e, el.id, idx)}
+                    onPointerMove={handleWallPtDragMove}
+                    onPointerUp={handleWallPtDragEnd}
+                  />
+                ))}
+              </g>
             );
           }
           return (
-            <polyline
-              key={el.id}
-              points={el.points.map(p => `${p.x * W},${p.y * H}`).join(' ')}
-              fill="none"
-              stroke={isHovered ? '#ff4444' : '#ffdd00'}
-              strokeWidth={isHovered ? 4 : 3}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              onMouseEnter={() => setHoveredId(el.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              style={{ pointerEvents: 'stroke' }}
-            />
+            <g key={el.id}>
+              <polyline
+                points={el.points.map(p => `${p.x * W},${p.y * H}`).join(' ')}
+                fill="none"
+                stroke={isHovered ? '#ff4444' : '#ffdd00'}
+                strokeWidth={isHovered ? 4 : 3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                onMouseEnter={() => { setHoveredId(el.id); if (tool === 'select') setHoveredWallId(el.id); }}
+                onMouseLeave={() => { if (!draggingWallPt || draggingWallPt.wallId !== el.id) { setHoveredId(null); setHoveredWallId(null); } }}
+                style={{ pointerEvents: 'stroke' }}
+              />
+              {showHandles && el.points.map((p, idx) => (
+                <circle
+                  key={`${el.id}-pt-${idx}`}
+                  cx={p.x * W} cy={p.y * H} r={7}
+                  fill="#fff"
+                  stroke="#ffdd00"
+                  strokeWidth={2}
+                  style={{ cursor: 'grab', pointerEvents: 'auto' }}
+                  onPointerDown={(e) => handleWallPtDragStart(e, el.id, idx)}
+                  onPointerMove={handleWallPtDragMove}
+                  onPointerUp={handleWallPtDragEnd}
+                />
+              ))}
+            </g>
           );
         }
         if (el.type === 'door') {
@@ -273,7 +481,8 @@ const MapElementsEditorLayer: React.FC<{
               strokeDasharray={el.isOpen ? '8,6' : 'none'}
               onMouseEnter={() => setHoveredId(el.id)}
               onMouseLeave={() => setHoveredId(null)}
-              style={{ pointerEvents: 'stroke' }}
+              style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
+              onClick={(e) => openElementPopover(e, el)}
             />
           );
         }
@@ -289,7 +498,8 @@ const MapElementsEditorLayer: React.FC<{
               strokeDasharray="4,4"
               onMouseEnter={() => setHoveredId(el.id)}
               onMouseLeave={() => setHoveredId(null)}
-              style={{ pointerEvents: 'stroke' }}
+              style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
+              onClick={(e) => openElementPopover(e, el)}
             />
           );
         }
@@ -300,15 +510,21 @@ const MapElementsEditorLayer: React.FC<{
             <g key={el.id}
               onMouseEnter={() => setHoveredId(el.id)}
               onMouseLeave={() => setHoveredId(null)}
+              style={{ cursor: 'pointer' }}
+              onClick={(e) => openElementPopover(e, el)}
             >
-              {/* Radius circle */}
+              {/* Radius circle — draggable to resize */}
               <circle
                 cx={px} cy={py} r={el.radius}
                 fill="none"
                 stroke={el.isOn ? (el.color || '#ffee55') : '#888888'}
-                strokeWidth={isHovered ? 2 : 1}
+                strokeWidth={draggingRadiusId === el.id ? 4 : isHovered ? 3 : 1}
                 strokeDasharray="6,4"
-                opacity={0.5}
+                opacity={draggingRadiusId === el.id ? 0.9 : 0.5}
+                style={{ cursor: 'ew-resize', pointerEvents: 'stroke' }}
+                onPointerDown={(e) => handleRadiusDragStart(e, el.id)}
+                onPointerMove={handleRadiusDragMove}
+                onPointerUp={handleRadiusDragEnd}
               />
               {/* Center point */}
               <circle
@@ -360,7 +576,197 @@ const MapElementsEditorLayer: React.FC<{
           pointerEvents="none"
         />
       )}
+
+      {/* Room tool: preview rectangle while dragging */}
+      {roomDrag && (
+        <rect
+          x={Math.min(roomDrag.start.x, roomDrag.current.x) * W}
+          y={Math.min(roomDrag.start.y, roomDrag.current.y) * H}
+          width={Math.abs(roomDrag.current.x - roomDrag.start.x) * W}
+          height={Math.abs(roomDrag.current.y - roomDrag.start.y) * H}
+          fill="none"
+          stroke="#00ff88"
+          strokeWidth={2}
+          strokeDasharray="8,4"
+          pointerEvents="none"
+        />
+      )}
     </svg>
+
+    {/* ─── Element-edit popover (doors, windows, lights) ─────────── */}
+    <Popover
+      open={!!editingElement}
+      anchorReference="anchorPosition"
+      anchorPosition={editingElementPopover?.anchorPosition}
+      onClose={closeElementPopover}
+      transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+      slotProps={{ paper: { sx: { p: 2, minWidth: 220 } } }}
+    >
+      {editingElement && editingElement.type === 'light' && (() => {
+        const light = editingElement as MapLightElement;
+        return (
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">Editar fuente de luz</Typography>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={light.showInPreview}
+                  onChange={(e) => onUpdateElement(light.id, { showInPreview: e.target.checked } as any)}
+                  size="small"
+                />
+              }
+              label="Visible fuera de edición"
+            />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={light.isOn}
+                  onChange={(e) => onUpdateElement(light.id, { isOn: e.target.checked } as any)}
+                  size="small"
+                />
+              }
+              label="Encendida"
+            />
+
+            <TextField
+              size="small"
+              label="Nombre"
+              value={light.label || ''}
+              onChange={(e) => onUpdateElement(light.id, { label: e.target.value } as any)}
+            />
+
+            <TextField
+              size="small"
+              type="number"
+              label="Radio de niebla (px)"
+              value={light.radius}
+              inputProps={{ min: 10, max: 2000, step: 10 }}
+              onChange={(e) => onUpdateElement(light.id, { radius: Math.max(10, Number(e.target.value || 80)) } as any)}
+            />
+
+            <Button
+              size="small"
+              color="error"
+              variant="outlined"
+              onClick={() => {
+                onRemoveElement(light.id);
+                onSelectElement?.(null);
+                closeElementPopover();
+              }}
+            >
+              Eliminar luz
+            </Button>
+          </Stack>
+        );
+      })()}
+
+      {editingElement && editingElement.type === 'door' && (() => {
+        const door = editingElement as MapDoorElement;
+        return (
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">Editar puerta</Typography>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={!!door.showInPreview}
+                  onChange={(e) => onUpdateElement(door.id, { showInPreview: e.target.checked } as any)}
+                  size="small"
+                />
+              }
+              label="Visible fuera de edición"
+            />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={door.isOpen}
+                  onChange={(e) => onUpdateElement(door.id, { isOpen: e.target.checked } as any)}
+                  size="small"
+                />
+              }
+              label="Puerta abierta"
+            />
+
+            <Button
+              size="small"
+              color="error"
+              variant="outlined"
+              onClick={() => {
+                onRemoveElement(door.id);
+                onSelectElement?.(null);
+                closeElementPopover();
+              }}
+            >
+              Eliminar puerta
+            </Button>
+          </Stack>
+        );
+      })()}
+
+      {editingElement && editingElement.type === 'window' && (() => {
+        const win = editingElement as MapWindowElement;
+        return (
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">Editar ventana</Typography>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={!!win.showInPreview}
+                  onChange={(e) => onUpdateElement(win.id, { showInPreview: e.target.checked } as any)}
+                  size="small"
+                />
+              }
+              label="Visible fuera de edición"
+            />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={!!win.covered}
+                  onChange={(e) => onUpdateElement(win.id, { covered: e.target.checked } as any)}
+                  size="small"
+                />
+              }
+              label="Ventana tapada"
+            />
+
+            <Typography variant="caption" color="text.secondary">Luz pasante por momento del día</Typography>
+            {(['dawn', 'morning', 'afternoon', 'night'] as const).map((tod) => (
+              <TextField
+                key={tod}
+                size="small"
+                type="number"
+                label={tod === 'dawn' ? 'Madrugada' : tod === 'morning' ? 'Mañana' : tod === 'afternoon' ? 'Tarde' : 'Noche'}
+                value={win.lightByTimeOfDay?.[tod] ?? 0}
+                inputProps={{ min: 0, max: 1, step: 0.1 }}
+                onChange={(e) => {
+                  const prev = win.lightByTimeOfDay || { dawn: 0.3, morning: 1, afternoon: 0.7, night: 0 };
+                  onUpdateElement(win.id, { lightByTimeOfDay: { ...prev, [tod]: Math.max(0, Math.min(1, Number(e.target.value || 0))) } } as any);
+                }}
+              />
+            ))}
+
+            <Button
+              size="small"
+              color="error"
+              variant="outlined"
+              onClick={() => {
+                onRemoveElement(win.id);
+                onSelectElement?.(null);
+                closeElementPopover();
+              }}
+            >
+              Eliminar ventana
+            </Button>
+          </Stack>
+        );
+      })()}
+    </Popover>
+    </>
   );
 };
 
@@ -486,4 +892,119 @@ function findNearestWallEndpoint(
     }
   }
   return best;
+}
+
+/**
+ * Compute wall segments needed to form a rectangular room, excluding
+ * portions already covered by existing collinear walls.
+ *
+ * @param start  One corner of the rectangle (normalised 0–1 coords).
+ * @param end    Opposite corner of the rectangle (normalised 0–1 coords).
+ * @param elements  All current map elements.
+ * @returns Array of [p1, p2] point pairs for new wall segments to create.
+ */
+function computeRoomWalls(
+  start: { x: number; y: number },
+  end: { x: number; y: number },
+  elements: MapElement[],
+): [{ x: number; y: number }, { x: number; y: number }][] {
+  if (Math.abs(end.x - start.x) < 0.005 || Math.abs(end.y - start.y) < 0.005) return [];
+
+  const a = { x: start.x, y: start.y };
+  const b = { x: end.x, y: start.y };
+  const c = { x: end.x, y: end.y };
+  const d = { x: start.x, y: end.y };
+
+  const sides: [{ x: number; y: number }, { x: number; y: number }][] = [
+    [a, b], [b, c], [c, d], [d, a],
+  ];
+
+  const existingWalls = elements.filter((el): el is MapWallElement => el.type === 'wall');
+  const result: [{ x: number; y: number }, { x: number; y: number }][] = [];
+
+  for (const [p1, p2] of sides) {
+    const uncovered = computeUncoveredIntervals(p1, p2, existingWalls);
+    for (const [t1, t2] of uncovered) {
+      result.push([
+        { x: p1.x + t1 * (p2.x - p1.x), y: p1.y + t1 * (p2.y - p1.y) },
+        { x: p1.x + t2 * (p2.x - p1.x), y: p1.y + t2 * (p2.y - p1.y) },
+      ]);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * For a desired wall segment p1→p2, find the parametric intervals NOT
+ * already covered by existing collinear walls.
+ *
+ * @returns Array of [tStart, tEnd] intervals in the 0–1 parametric range.
+ */
+function computeUncoveredIntervals(
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  walls: MapWallElement[],
+): [number, number][] {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-9) return [];
+
+  const ux = dx / len;
+  const uy = dy / len;
+  const perpThreshold = 0.008; // max perpendicular distance in normalised coords
+
+  const covered: [number, number][] = [];
+
+  for (const wall of walls) {
+    for (let i = 0; i < wall.points.length - 1; i++) {
+      const wa = wall.points[i];
+      const wb = wall.points[i + 1];
+
+      // Check collinearity via perpendicular distance to the line through p1–p2
+      const perpA = Math.abs((wa.x - p1.x) * (-uy) + (wa.y - p1.y) * ux);
+      const perpB = Math.abs((wb.x - p1.x) * (-uy) + (wb.y - p1.y) * ux);
+      if (perpA > perpThreshold || perpB > perpThreshold) continue;
+
+      // Project onto the side to get parametric t-values
+      const tA = ((wa.x - p1.x) * ux + (wa.y - p1.y) * uy) / len;
+      const tB = ((wb.x - p1.x) * ux + (wb.y - p1.y) * uy) / len;
+      const tMin = Math.max(0, Math.min(tA, tB));
+      const tMax = Math.min(1, Math.max(tA, tB));
+
+      if (tMax > tMin + 0.001) {
+        covered.push([tMin, tMax]);
+      }
+    }
+  }
+
+  if (covered.length === 0) return [[0, 1]];
+
+  // Sort and merge overlapping intervals
+  covered.sort((a, b) => a[0] - b[0]);
+  const merged: [number, number][] = [covered[0]];
+  for (let i = 1; i < covered.length; i++) {
+    const last = merged[merged.length - 1];
+    if (covered[i][0] <= last[1] + 0.001) {
+      last[1] = Math.max(last[1], covered[i][1]);
+    } else {
+      merged.push(covered[i]);
+    }
+  }
+
+  // Find uncovered gaps in [0, 1]
+  const uncovered: [number, number][] = [];
+  let cursor = 0;
+  for (const [s, e] of merged) {
+    if (s > cursor + 0.001) {
+      uncovered.push([cursor, s]);
+    }
+    cursor = Math.max(cursor, e);
+  }
+  if (cursor < 1 - 0.001) {
+    uncovered.push([cursor, 1]);
+  }
+
+  return uncovered;
 }

@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import type { ElementEditorTool } from './MapElementsEditorLayer';
-import type { MapElement, MapLightElement } from '../../api/mapElements';
+import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement } from '../../api/mapElements';
 
 /**
  * Props for the reusable MapElementsPanel.
@@ -31,9 +31,10 @@ export interface MapElementsPanelProps {
   onClearAllElements: () => void;
   newLightRadius: number;
   onSetNewLightRadius: (v: number) => void;
-  /** Lights with showInPreview=true for quick toggle. */
-  previewLights: MapLightElement[];
-  onToggleLight: (id: string) => void;
+  /** @deprecated Kept for backward compatibility — no longer rendered. */
+  previewLights?: MapLightElement[];
+  /** @deprecated Kept for backward compatibility — no longer rendered. */
+  onToggleLight?: (id: string) => void;
 }
 
 /**
@@ -66,6 +67,7 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
             <MenuItem value="window">Ventana</MenuItem>
             <MenuItem value="light">Fuente de luz</MenuItem>
             <MenuItem value="erase">Borrar</MenuItem>
+            <MenuItem value="room">Estancia</MenuItem>
           </TextField>
 
           {props.elementTool === 'light' && (
@@ -164,6 +166,15 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
 
               {props.selectedElement.type === 'window' && (
                 <>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={!!(props.selectedElement as MapElement & { covered?: boolean }).covered}
+                        onChange={(e) => props.onUpdateElement(props.selectedElement!.id, { covered: e.target.checked } as any)}
+                      />
+                    }
+                    label="Ventana tapada"
+                  />
                   <Typography variant="caption" color="text.secondary">Luz pasante por momento del día</Typography>
                   {(['dawn', 'morning', 'afternoon', 'night'] as const).map((tod) => (
                     <TextField
@@ -195,26 +206,107 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
         </>
       )}
 
-      {/* Quick light toggles (always visible if lights have showInPreview) */}
-      {props.previewLights.length > 0 && (
-        <>
-          <Divider />
-          <Typography variant="body2" color="text.secondary">Luces rápidas</Typography>
-          {props.previewLights.map((light) => (
-            <FormControlLabel
-              key={light.id}
-              control={
-                <Switch
-                  checked={light.isOn}
-                  onChange={() => props.onToggleLight(light.id)}
-                  size="small"
+      {/* ── Bulk actions (always visible) ─────────────────────────────── */}
+      {(() => {
+        const lights = props.elements.filter((el): el is MapLightElement => el.type === 'light');
+        const doors = props.elements.filter((el): el is MapDoorElement => el.type === 'door');
+        const windows = props.elements.filter((el): el is MapWindowElement => el.type === 'window');
+
+        const hasLights = lights.length > 0;
+        const hasDoors = doors.length > 0;
+        const hasWindows = windows.length > 0;
+
+        if (!hasLights && !hasDoors && !hasWindows) return null;
+
+        const allLightsVisible = hasLights && lights.every((l) => l.showInPreview);
+        const allLightsOn = hasLights && lights.every((l) => l.isOn);
+        const allDoorsVisible = hasDoors && doors.every((d) => d.showInPreview);
+        const allDoorsOpen = hasDoors && doors.every((d) => d.isOpen);
+        const allWindowsVisible = hasWindows && windows.every((w) => w.showInPreview);
+        const allWindowsCovered = hasWindows && windows.every((w) => w.covered);
+
+        return (
+          <>
+            <Divider />
+            <Typography variant="body2" color="text.secondary">Acciones masivas</Typography>
+
+            {hasLights && (
+              <>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allLightsVisible}
+                      onChange={(e) => lights.forEach((l) => props.onUpdateElement(l.id, { showInPreview: e.target.checked } as any))}
+                      size="small"
+                    />
+                  }
+                  label="Luces visibles"
                 />
-              }
-              label={light.label || `Luz ${light.id.slice(-4)}`}
-            />
-          ))}
-        </>
-      )}
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allLightsOn}
+                      onChange={(e) => lights.forEach((l) => props.onUpdateElement(l.id, { isOn: e.target.checked } as any))}
+                      size="small"
+                    />
+                  }
+                  label="Luces encendidas"
+                />
+              </>
+            )}
+
+            {hasDoors && (
+              <>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allDoorsVisible}
+                      onChange={(e) => doors.forEach((d) => props.onUpdateElement(d.id, { showInPreview: e.target.checked } as any))}
+                      size="small"
+                    />
+                  }
+                  label="Puertas visibles"
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allDoorsOpen}
+                      onChange={(e) => doors.forEach((d) => props.onUpdateElement(d.id, { isOpen: e.target.checked } as any))}
+                      size="small"
+                    />
+                  }
+                  label="Puertas abiertas"
+                />
+              </>
+            )}
+
+            {hasWindows && (
+              <>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allWindowsVisible}
+                      onChange={(e) => windows.forEach((w) => props.onUpdateElement(w.id, { showInPreview: e.target.checked } as any))}
+                      size="small"
+                    />
+                  }
+                  label="Ventanas visibles"
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allWindowsCovered}
+                      onChange={(e) => windows.forEach((w) => props.onUpdateElement(w.id, { covered: e.target.checked } as any))}
+                      size="small"
+                    />
+                  }
+                  label="Ventanas tapadas"
+                />
+              </>
+            )}
+          </>
+        );
+      })()}
     </Stack>
   );
 };

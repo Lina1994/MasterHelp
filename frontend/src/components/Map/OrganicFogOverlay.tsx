@@ -71,8 +71,10 @@ const OrganicFogOverlay: React.FC<{
       if (stroke.mode === 'reveal') {
         ctx.globalCompositeOperation = 'destination-out';
         ctx.globalAlpha = 1;
-        // Soft feathered edge for reveal strokes
-        const feather = Math.max(4, Math.round(r * 0.25));
+        // Soft feathered edge — smaller for filled polygons to keep wall precision
+        const feather = stroke.fill
+          ? Math.max(3, Math.min(14, Math.round(r * 0.035)))
+          : Math.max(4, Math.round(r * 0.25));
         ctx.filter = `blur(${feather}px)`;
       } else {
         ctx.globalCompositeOperation = 'source-over';
@@ -84,6 +86,18 @@ const OrganicFogOverlay: React.FC<{
           ctx.fillStyle = masterColor;
           ctx.globalAlpha = effectiveMasterOpacity;
         }
+      }
+
+      // ── Filled polygon (visibility polygon from lights / allies) ───────
+      if (stroke.fill && pts.length > 2) {
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x * W, pts[0].y * H);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x * W, pts[i].y * H);
+        }
+        ctx.closePath();
+        ctx.fill();
+        continue;
       }
 
       if (pts.length === 1) {
