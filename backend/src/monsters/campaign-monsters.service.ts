@@ -7,6 +7,8 @@ import { CreateCampaignMonsterDto } from './dto/create-campaign-monster.dto';
 import { UpdateCampaignMonsterDto } from './dto/update-campaign-monster.dto';
 import { ListCampaignMonstersDto } from './dto/list-campaign-monsters.dto';
 import { MonstersRepository } from './monsters.repository';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
+import { ManualsService } from '../manuals/manuals.service';
 import type { LanguageCode, MonsterDetail, MonsterIndexItem } from './monster.types';
 import * as sharp from 'sharp';
 
@@ -19,6 +21,8 @@ export class CampaignMonstersService {
     private campaignMonsterRepository: Repository<CampaignMonster>,
     @InjectRepository(Campaign)
     private campaignRepository: Repository<Campaign>,
+    private readonly customManualsService: CustomManualsService,
+    private readonly manualsService: ManualsService,
   ) {}
 
   /**
@@ -75,6 +79,7 @@ export class CampaignMonstersService {
 
     // Get manual monsters (always include, even if edited in campaign)
     for (const manualId of manualIds) {
+      if (!this.manualsService.isFileManual(manualId)) continue;
       const manualMonsters = this.monstersRepo.list(lang, manualId);
       for (const mm of manualMonsters) {
         // Include all manual monsters (originals remain visible even if edited)
@@ -85,6 +90,26 @@ export class CampaignMonstersService {
           size: mm.size,
           alignment: mm.alignment,
           challengeRating: mm.challengeRating,
+          origin: 'manual',
+          sourceManual: manualId,
+          isCustom: false,
+        });
+      }
+    }
+
+    // Get DB manual monsters
+    for (const manualId of manualIds) {
+      if (this.manualsService.isFileManual(manualId)) continue;
+      const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'monster', lang);
+      for (const entry of entries) {
+        const d = entry.data as any;
+        results.push({
+          id: `${manualId}:${entry.entryKey}`,
+          name: d.name || entry.entryKey,
+          type: d.type,
+          size: d.size,
+          alignment: d.alignment,
+          challengeRating: d.challengeRating,
           origin: 'manual',
           sourceManual: manualId,
           isCustom: false,
@@ -199,7 +224,26 @@ export class CampaignMonstersService {
       imageUrls: processedImageUrls || null,
     });
 
-    return this.campaignMonsterRepository.save(monster);
+    const saved = await this.campaignMonsterRepository.save(monster);
+
+    // If the source manual is a DB manual, also persist the monster as a ManualEntry
+    if (dto.sourceManualId && dto.customData && !this.manualsService.isFileManual(dto.sourceManualId)) {
+      const slug = (dto.customData as any).name
+        ? (dto.customData as any).name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+        : saved.id;
+      try {
+        await this.customManualsService.addEntry(dto.sourceManualId, requestingUserId, {
+          entryType: 'monster',
+          entryKey: slug,
+          lang: 'es',
+          data: dto.customData,
+        });
+      } catch {
+        // Entry may already exist (duplicate key); not a blocking error
+      }
+    }
+
+    return saved;
   }
 
   /**

@@ -5,9 +5,10 @@ import { RacesService } from './races.service';
 import { CampaignRacesService } from './campaign-races.service';
 import { CampaignRace } from './entities/campaign-race.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
+import { ManualsModule } from '../manuals/manuals.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CampaignRace, Campaign])],
+  imports: [TypeOrmModule.forFeature([CampaignRace, Campaign]), ManualsModule],
   controllers: [RacesController],
   providers: [RacesService, CampaignRacesService],
   exports: [RacesService],

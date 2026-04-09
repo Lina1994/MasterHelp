@@ -32,6 +32,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ShieldIcon from '@mui/icons-material/Shield';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import Grid from '@mui/material/Grid';
@@ -709,13 +710,22 @@ const CharacterSheetModal: React.FC<Props> = ({ charId, campaignId, open, onClos
                     <b>{t('prerequisite', 'Requisito')}:</b> {ft.prerequisite}
                   </Typography>
                 )}
-                {ft.origin && (
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    label={ft.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
-                  />
-                )}
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {ft.origin && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={ft.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
+                    />
+                  )}
+                  {(ft as any).sourceManualTitle && (
+                    <Chip
+                      size="small"
+                      icon={<MenuBookIcon />}
+                      label={(ft as any).sourceManualTitle}
+                    />
+                  )}
+                </Stack>
                 {ft.description && (
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ft.description}</Typography>
                 )}
@@ -749,6 +759,9 @@ const CharacterSheetModal: React.FC<Props> = ({ charId, campaignId, open, onClos
                   {sp.school && <Chip size="small" variant="outlined" label={sp.school} />}
                   {sp.isConcentration && <Chip size="small" color="warning" label={t('concentration', 'Concentración')} />}
                   {sp.isRitual && <Chip size="small" color="info" label={t('ritual', 'Ritual')} />}
+                  {(sp as any).sourceManualTitle && (
+                    <Chip size="small" icon={<MenuBookIcon />} label={(sp as any).sourceManualTitle} />
+                  )}
                 </Stack>
                 <Divider />
                 <SpellInfoRow label={t('casting_time', 'Tiempo de lanzamiento')} value={sp.castingTime} />

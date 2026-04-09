@@ -6,9 +6,10 @@ import { CampaignSpellsService } from './campaign-spells.service';
 import { SpellExcelService } from './spell-excel.service';
 import { CampaignSpell } from './entities/campaign-spell.entity';
 import { Campaign } from '../campaigns/entities/campaign.entity';
+import { ManualsModule } from '../manuals/manuals.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CampaignSpell, Campaign])],
+  imports: [TypeOrmModule.forFeature([CampaignSpell, Campaign]), ManualsModule],
   controllers: [SpellsController],
   providers: [SpellsService, CampaignSpellsService, SpellExcelService],
   exports: [SpellsService, CampaignSpellsService, SpellExcelService],

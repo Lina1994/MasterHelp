@@ -7,9 +7,10 @@ import { CampaignsService } from './campaigns.service';
 import { CampaignsController } from './campaigns.controller';
 import { UsersModule } from '../users/users.module';
 import { CampaignOwnerGuard } from './guards/campaign-owner.guard';
+import { ManualsModule } from '../manuals/manuals.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Campaign, CampaignPlayer, SkylineItemOverlay]), UsersModule],
+  imports: [TypeOrmModule.forFeature([Campaign, CampaignPlayer, SkylineItemOverlay]), UsersModule, ManualsModule],
   providers: [CampaignsService, CampaignOwnerGuard],
   controllers: [CampaignsController],
   exports: [CampaignsService],

@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { CampaignSpell } from './entities/campaign-spell.entity';
 import { SpellsService, SpellDetail } from './spells.service';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
+import { ManualsService } from '../manuals/manuals.service';
 import { CreateCampaignSpellDto } from './dto/create-campaign-spell.dto';
 import { UpdateCampaignSpellDto } from './dto/update-campaign-spell.dto';
 import { ListCampaignSpellsDto } from './dto/list-campaign-spells.dto';
@@ -18,6 +20,8 @@ export class CampaignSpellsService {
     @InjectRepository(Campaign)
     private campaignRepository: Repository<Campaign>,
     private spellsService: SpellsService,
+    private readonly customManualsService: CustomManualsService,
+    private readonly manualsService: ManualsService,
   ) {}
 
   /**
@@ -41,6 +45,7 @@ export class CampaignSpellsService {
     if (!campaign) throw new NotFoundException('Campaign not found');
 
     const manualIds = campaign.selectedManualIds || [];
+    const titleMap = await this.manualsService.getManualTitleMap(manualIds);
     const results: any[] = [];
 
     // Get campaign-specific spells
@@ -66,6 +71,7 @@ export class CampaignSpellsService {
           isRitual: data.ritual || false,
           origin: cs.sourceManualId ? 'manual-edited' : 'homebrew',
           sourceManual: cs.sourceManualId || null,
+          sourceManualTitle: cs.sourceManualId ? (titleMap[cs.sourceManualId] ?? null) : null,
           customOriginName: cs.customOriginName || null,
           isCustom: true,
         });
@@ -74,6 +80,7 @@ export class CampaignSpellsService {
 
     // Get manual spells (always include, even if edited in campaign)
     for (const manualId of manualIds) {
+      if (!this.manualsService.isFileManual(manualId)) continue;
       const manualSpells = this.spellsService.list(lang, {}, manualId);
       for (const ms of manualSpells) {
         // Include all manual spells (originals remain visible even if edited)
@@ -90,6 +97,32 @@ export class CampaignSpellsService {
           isRitual: ms.isRitual || false,
           origin: 'manual',
           sourceManual: manualId,
+          sourceManualTitle: titleMap[manualId] ?? null,
+          isCustom: false,
+        });
+      }
+    }
+
+    // Get DB manual spells
+    for (const manualId of manualIds) {
+      if (this.manualsService.isFileManual(manualId)) continue;
+      const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'spell', lang);
+      for (const entry of entries) {
+        const d = entry.data as any;
+        results.push({
+          id: `${manualId}:${entry.entryKey}`,
+          name: d.name || entry.entryKey,
+          level: d.level ?? 0,
+          school: d.school || '',
+          castingTime: d.castingTime || '',
+          range: d.range || '',
+          duration: d.duration || '',
+          components: d.components || '',
+          isConcentration: d.concentration || d.isConcentration || false,
+          isRitual: d.ritual || d.isRitual || false,
+          origin: 'manual',
+          sourceManual: manualId,
+          sourceManualTitle: titleMap[manualId] ?? null,
           isCustom: false,
         });
       }
@@ -117,8 +150,8 @@ export class CampaignSpellsService {
   async get(campaignId: string, spellId: string, requestingUserId: number, lang: LanguageCode = 'en') {
     await this.verifyCampaignAccess(campaignId, requestingUserId);
 
-    // Check if it's a campaign spell (UUID format)
-    if (spellId.length > 30) {
+    // Check if it's a campaign spell (UUID format) vs manual reference (manualId:spellId)
+    if (!spellId.includes(':') && spellId.length > 30) {
       const cs = await this.campaignSpellRepository.findOne({
         where: { id: spellId, campaign: { id: campaignId } },
         relations: ['campaign'],
@@ -126,11 +159,13 @@ export class CampaignSpellsService {
       if (!cs) throw new NotFoundException('Spell not found');
 
       if (cs.customData) {
+        const sourceManualTitle = cs.sourceManualId ? await this.manualsService.getManualTitle(cs.sourceManualId) : null;
         return {
           ...cs.customData,
           id: cs.id,
           origin: cs.sourceManualId ? 'manual-edited' : 'homebrew',
           sourceManual: cs.sourceManualId,
+          sourceManualTitle,
           customOriginName: cs.customOriginName,
           isCustom: true,
         };
@@ -138,11 +173,13 @@ export class CampaignSpellsService {
         // Reference only, load from manual
         const detail = this.spellsService.getById(lang, cs.sourceSpellId, cs.sourceManualId);
         if (!detail) throw new NotFoundException('Manual spell not found');
+        const sourceManualTitle = await this.manualsService.getManualTitle(cs.sourceManualId);
         return {
           ...detail,
           id: cs.id,
           origin: 'manual',
           sourceManual: cs.sourceManualId,
+          sourceManualTitle,
           isCustom: false,
         };
       }
@@ -153,14 +190,40 @@ export class CampaignSpellsService {
     const [manualId, originalSpellId] = spellId.split(':');
     if (!manualId || !originalSpellId) throw new NotFoundException('Invalid spell ID format');
 
-    const detail = this.spellsService.getById(lang, originalSpellId, manualId);
-    if (!detail) throw new NotFoundException('Spell not found in manual');
+    if (this.manualsService.isFileManual(manualId)) {
+      const detail = this.spellsService.getById(lang, originalSpellId, manualId);
+      if (!detail) throw new NotFoundException('Spell not found in manual');
+      const sourceManualTitle = await this.manualsService.getManualTitle(manualId);
+      return {
+        ...detail,
+        id: spellId,
+        origin: 'manual',
+        sourceManual: manualId,
+        sourceManualTitle,
+        isCustom: false,
+      };
+    }
 
+    const entry = await this.customManualsService.getEntry(manualId, 'spell', originalSpellId, lang);
+    const d = entry.data as any;
+    const sourceManualTitle = await this.manualsService.getManualTitle(manualId);
     return {
-      ...detail,
       id: spellId,
+      name: d.name || entry.entryKey,
+      level: d.level ?? 0,
+      school: d.school || '',
+      castingTime: d.castingTime || '',
+      range: d.range || '',
+      duration: d.duration || '',
+      components: d.components || '',
+      materials: d.materials || '',
+      concentration: d.concentration || d.isConcentration || false,
+      ritual: d.ritual || d.isRitual || false,
+      description: d.description,
+      classes: d.classes,
       origin: 'manual',
       sourceManual: manualId,
+      sourceManualTitle,
       isCustom: false,
     };
   }
@@ -187,7 +250,26 @@ export class CampaignSpellsService {
       customData: dto.customData || null,
     });
 
-    return this.campaignSpellRepository.save(spell);
+    const saved = await this.campaignSpellRepository.save(spell);
+
+    // If the source manual is a DB manual, also persist the spell as a ManualEntry
+    if (dto.sourceManualId && dto.customData && !this.manualsService.isFileManual(dto.sourceManualId)) {
+      const slug = (dto.customData as any).name
+        ? (dto.customData as any).name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+        : saved.id;
+      try {
+        await this.customManualsService.addEntry(dto.sourceManualId, requestingUserId, {
+          entryType: 'spell',
+          entryKey: slug,
+          lang: 'es',
+          data: dto.customData,
+        });
+      } catch {
+        // Entry may already exist (duplicate key); not a blocking error
+      }
+    }
+
+    return saved;
   }
 
   /**
@@ -241,8 +323,15 @@ export class CampaignSpellsService {
     if (!campaign) throw new NotFoundException('Campaign not found');
 
     // Get manual spell data
-    const manualSpell = this.spellsService.getById(lang, spellId, manualId);
-    if (!manualSpell) throw new NotFoundException('Manual spell not found');
+    let manualSpellData: any;
+    if (this.manualsService.isFileManual(manualId)) {
+      const manualSpell = this.spellsService.getById(lang, spellId, manualId);
+      if (!manualSpell) throw new NotFoundException('Manual spell not found');
+      manualSpellData = manualSpell;
+    } else {
+      const entry = await this.customManualsService.getEntry(manualId, 'spell', spellId, lang);
+      manualSpellData = entry.data as any;
+    }
 
     // Check if already copied
     const existing = await this.campaignSpellRepository.findOne({
@@ -261,7 +350,7 @@ export class CampaignSpellsService {
       campaign,
       sourceManualId: manualId,
       sourceSpellId: spellId,
-      customData: this.convertToCustomData(manualSpell),
+      customData: this.convertToCustomData(manualSpellData),
     });
 
     return this.campaignSpellRepository.save(spell);

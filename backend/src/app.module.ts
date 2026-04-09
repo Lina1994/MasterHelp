@@ -52,6 +52,8 @@ import { TraitsModule } from './traits/traits.module';
 import { CampaignTrait } from './traits/entities/campaign-trait.entity';
 import { BackgroundsModule } from './backgrounds/backgrounds.module';
 import { CampaignBackground } from './backgrounds/entities/campaign-background.entity';
+import { Manual } from './manuals/entities/manual.entity';
+import { ManualEntry } from './manuals/entities/manual-entry.entity';
 
 @Module({
   imports: [
@@ -98,6 +100,8 @@ import { CampaignBackground } from './backgrounds/entities/campaign-background.e
           CampaignRace,
           CampaignTrait,
           CampaignBackground,
+          Manual,
+          ManualEntry,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,

@@ -19,6 +19,7 @@ import {
   Avatar,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import Grid from '@mui/material/Grid';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
@@ -34,6 +35,8 @@ import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 import { listCampaignSpells, getCampaignSpell, CampaignSpellDetail } from '../api/spells/spellsApi';
 import { listCampaignTraits, getCampaignTrait, CampaignTraitDetail } from '../api/traits/traitsApi';
 import { listCampaignFeats, getCampaignFeat, CampaignFeatDetail } from '../api/feats/featsApi';
+import { listCampaignRaces, getCampaignRace } from '../api/races/racesApi';
+import { listCampaignClasses, getCampaignClass } from '../api/classes/classesApi';
 import i18n from '../i18n';
 import {
   ABILITY_KEYS, SKILL_DEFS,
@@ -181,7 +184,8 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
 
   /**
    * Opens the trait detail dialog. Searches the campaign catalogue by exact
-   * name match; if not found the dialog shows a "not in catalogue" message.
+   * name match; if not found, falls back to searching embedded race traits
+   * and class features.
    */
   const handleTraitClick = async (traitName: string) => {
     setTraitDialogName(traitName);
@@ -195,9 +199,66 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
       const res = await listCampaignTraits(cId, { q: traitName, pageSize: 50 }, lang);
       const items = res.items ?? [];
       const match = items.find((tr: { name: string }) => tr.name.toLowerCase() === traitName.toLowerCase());
-      if (!match) { setTraitDialogData(null); return; }
-      const detail = await getCampaignTrait(cId, match.id, lang);
-      setTraitDialogData(detail);
+      if (match) {
+        const detail = await getCampaignTrait(cId, match.id, lang);
+        setTraitDialogData(detail);
+        return;
+      }
+
+      /* Fallback: search embedded race traits and class features */
+      const lowerName = traitName.toLowerCase();
+
+      if (data?.race) {
+        const raceRes = await listCampaignRaces(cId, { q: data.race, pageSize: 10 }, lang);
+        const raceMatch = (raceRes.items ?? []).find(
+          (r: { name: string }) => r.name.toLowerCase() === data.race!.toLowerCase(),
+        );
+        if (raceMatch) {
+          const raceDetail = await getCampaignRace(cId, raceMatch.id, lang);
+          const raceTrait = (raceDetail.traits ?? []).find(
+            (t: { name: string }) => t.name.toLowerCase() === lowerName,
+          );
+          if (raceTrait) {
+            setTraitDialogData({
+              id: `race-trait:${raceMatch.id}:${raceTrait.id ?? raceTrait.name}`,
+              name: raceTrait.name,
+              description: raceTrait.description ?? '',
+              origin: 'manual' as const,
+              sourceManual: raceDetail.sourceManual ?? null,
+              sourceManualTitle: (raceDetail as any).sourceManualTitle ?? null,
+              isCustom: false,
+            });
+            return;
+          }
+        }
+      }
+
+      if (data?.className) {
+        const classRes = await listCampaignClasses(cId, { q: data.className, pageSize: 10 }, lang);
+        const classMatch = (classRes.items ?? []).find(
+          (c: { name: string }) => c.name.toLowerCase() === data.className!.toLowerCase(),
+        );
+        if (classMatch) {
+          const classDetail = await getCampaignClass(cId, classMatch.id, lang);
+          const feature = (classDetail.features ?? []).find(
+            (f: { name: string }) => f.name.toLowerCase() === lowerName,
+          );
+          if (feature) {
+            setTraitDialogData({
+              id: `class-feature:${classMatch.id}:${feature.id ?? feature.name}`,
+              name: feature.name,
+              description: feature.description ?? '',
+              origin: 'manual' as const,
+              sourceManual: classDetail.sourceManual ?? null,
+              sourceManualTitle: (classDetail as any).sourceManualTitle ?? null,
+              isCustom: false,
+            });
+            return;
+          }
+        }
+      }
+
+      setTraitDialogData(null);
     } catch {
       setTraitDialogData(null);
     } finally {
@@ -737,13 +798,22 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
                     <b>{t('prerequisite', 'Requisito')}:</b> {ft.prerequisite}
                   </Typography>
                 )}
-                {ft.origin && (
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    label={ft.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
-                  />
-                )}
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {ft.origin && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={ft.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
+                    />
+                  )}
+                  {(ft as any).sourceManualTitle && (
+                    <Chip
+                      size="small"
+                      icon={<MenuBookIcon />}
+                      label={(ft as any).sourceManualTitle}
+                    />
+                  )}
+                </Stack>
                 {ft.description && (
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ft.description}</Typography>
                 )}
@@ -772,13 +842,22 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
             const tr = traitDialogData;
             return (
               <Stack spacing={1}>
-                {tr.origin && (
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    label={tr.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
-                  />
-                )}
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {tr.origin && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={tr.origin === 'homebrew' ? t('homebrew', 'Homebrew') : t('manual', 'Manual')}
+                    />
+                  )}
+                  {(tr as any).sourceManualTitle && (
+                    <Chip
+                      size="small"
+                      icon={<MenuBookIcon />}
+                      label={(tr as any).sourceManualTitle}
+                    />
+                  )}
+                </Stack>
                 {tr.description && (
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{tr.description}</Typography>
                 )}
@@ -812,6 +891,9 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
                   {sp.school && <Chip size="small" variant="outlined" label={sp.school} />}
                   {sp.isConcentration && <Chip size="small" color="warning" label={t('concentration', 'Concentración')} />}
                   {sp.isRitual && <Chip size="small" color="info" label={t('ritual', 'Ritual')} />}
+                  {(sp as any).sourceManualTitle && (
+                    <Chip size="small" icon={<MenuBookIcon />} label={(sp as any).sourceManualTitle} />
+                  )}
                 </Stack>
                 <Divider />
                 <SpellInfoRow label={t('casting_time', 'Tiempo de lanzamiento')} value={sp.castingTime} />

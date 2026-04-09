@@ -30,6 +30,7 @@ import {
 } from '../api/spells/spellsApi';
 import SpellStatBlock from '../components/spells/SpellStatBlock';
 import EditSpellDialog from '../components/spells/EditSpellDialog';
+import { useManualNames } from '../hooks/useManualNames';
 
 const PAGE_SIZE = 20;
 
@@ -183,15 +184,7 @@ export default function CampaignSpellsPage() {
     }
   };
 
-  const getManualName = (manualId: string | null | undefined): string => {
-    if (!manualId) return 'Manual';
-    if (manualId === 'dnd5e-2014') return 'D&D 5e (2014)';
-    if (manualId === 'dnd5e-2024') return 'D&D 5e (2024)';
-    return manualId
-      .split('-')
-      .map(part => part.toUpperCase())
-      .join(' ');
-  };
+  const { getManualName } = useManualNames();
 
   const availableManuals = (activeCampaign?.selectedManualIds || []).map((id: string) => ({
     id,

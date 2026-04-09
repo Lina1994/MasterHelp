@@ -27,6 +27,7 @@ import {
 import MonsterStatBlock from '../components/bestiary/MonsterStatBlock';
 import EditMonsterDialog from '../components/bestiary/EditMonsterDialog';
 import CreateMonsterDialog from '../components/bestiary/CreateMonsterDialog';
+import { useManualNames } from '../hooks/useManualNames';
 
 const PAGE_SIZE = 20;
 
@@ -174,18 +175,7 @@ export default function CampaignBestiaryPage() {
     }
   };
 
-  const getManualName = (manualId: string | null | undefined): string => {
-    if (!manualId) return 'Manual';
-    // Convert manualId to readable name
-    // e.g., 'dnd5e-2014' -> 'D&D 5e (2014)'
-    if (manualId === 'dnd5e-2014') return 'D&D 5e (2014)';
-    if (manualId === 'dnd5e-2024') return 'D&D 5e (2024)';
-    // Fallback: capitalize and format
-    return manualId
-      .split('-')
-      .map(part => part.toUpperCase())
-      .join(' ');
-  };
+  const { getManualName } = useManualNames();
 
   const originLabel = (origin: string, sourceManual?: string | null, customOriginName?: string | null) => {
     switch (origin) {

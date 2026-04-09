@@ -20,6 +20,7 @@ import * as path from 'path';
 import { BattleStateDto } from './dto/battle-state.dto';
 import { FogOfWarSettingsDto } from './dto/fog-of-war-settings.dto';
 import { SoundtrackSettingsDto } from './dto/soundtrack-settings.dto';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
 
 @Injectable()
 export class CampaignsService {
@@ -29,6 +30,7 @@ export class CampaignsService {
     @InjectRepository(CampaignPlayer)
     private campaignPlayersRepository: Repository<CampaignPlayer>,
     private readonly usersService: UsersService,
+    private readonly customManualsService: CustomManualsService,
   ) {}
 
   // --- Métodos públicos requeridos por el controller ---
@@ -76,7 +78,12 @@ export class CampaignsService {
         console.warn('[CampaignsService] Could not read manuals registry, skipping manual ID validation:', e?.message);
       }
       if (registryLoaded) {
-        const unknown = ids.filter((id) => !validIds.includes(id));
+        const unknown: string[] = [];
+        for (const id of ids) {
+          if (validIds.includes(id)) continue;
+          const existsInDb = await this.customManualsService.exists(id);
+          if (!existsInDb) unknown.push(id);
+        }
         if (unknown.length) {
           throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
         }
@@ -109,7 +116,12 @@ export class CampaignsService {
           console.warn('[CampaignsService] Could not read manuals registry, skipping manual ID validation:', e?.message);
         }
         if (registryLoaded) {
-          const unknown = ids.filter((id) => !validIds.includes(id));
+          const unknown: string[] = [];
+          for (const id of ids) {
+            if (validIds.includes(id)) continue;
+            const existsInDb = await this.customManualsService.exists(id);
+            if (!existsInDb) unknown.push(id);
+          }
           if (unknown.length) {
             throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
           }
@@ -541,17 +553,26 @@ export class CampaignsService {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
     const ids = (dto.manualIds || []).map((x) => (x || '').trim()).filter(Boolean);
+
+    // Validate file-based manual IDs from registry.json
     const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
-    let validIds: string[] = [];
+    let fileManualIds: string[] = [];
     if (fs.existsSync(registryPath)) {
       try {
         const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
-        validIds = (raw?.manuals || []).map((m: any) => String(m.id));
+        fileManualIds = (raw?.manuals || []).map((m: any) => String(m.id));
       } catch {
         // ignore parse errors
       }
     }
-    const unknown = ids.filter((id) => !validIds.includes(id));
+
+    // Validate: each id must be a known file manual OR exist as a DB manual
+    const unknown: string[] = [];
+    for (const id of ids) {
+      if (fileManualIds.includes(id)) continue;
+      const existsInDb = await this.customManualsService.exists(id);
+      if (!existsInDb) unknown.push(id);
+    }
     if (unknown.length > 0) {
       throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
     }

@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { CampaignRace } from './entities/campaign-race.entity';
 import { RacesService, Race } from './races.service';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
+import { ManualsService } from '../manuals/manuals.service';
 import { CreateCampaignRaceDto } from './dto/create-campaign-race.dto';
 import { UpdateCampaignRaceDto } from './dto/update-campaign-race.dto';
 import { ListCampaignRacesDto } from './dto/list-campaign-races.dto';
@@ -21,6 +23,8 @@ export class CampaignRacesService {
     @InjectRepository(Campaign)
     private campaignRepository: Repository<Campaign>,
     private racesService: RacesService,
+    private readonly customManualsService: CustomManualsService,
+    private readonly manualsService: ManualsService,
   ) {}
 
   /**
@@ -65,8 +69,9 @@ export class CampaignRacesService {
       }
     }
 
-    // Manual races
+    // Manual races (file-based)
     for (const manualId of manualIds) {
+      if (!this.manualsService.isFileManual(manualId)) continue;
       const manualRaces = this.racesService.list(lang, manualId);
       for (const mr of manualRaces) {
         results.push({
@@ -74,6 +79,24 @@ export class CampaignRacesService {
           name: mr.name,
           size: mr.size,
           speed: mr.speed,
+          origin: 'manual',
+          sourceManual: manualId,
+          isCustom: false,
+        });
+      }
+    }
+
+    // DB manual races
+    for (const manualId of manualIds) {
+      if (this.manualsService.isFileManual(manualId)) continue;
+      const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'race', lang);
+      for (const entry of entries) {
+        const d = entry.data as any;
+        results.push({
+          id: `${manualId}:${entry.entryKey}`,
+          name: d.name || entry.entryKey,
+          size: d.size,
+          speed: d.speed,
           origin: 'manual',
           sourceManual: manualId,
           isCustom: false,
@@ -99,7 +122,7 @@ export class CampaignRacesService {
   async get(campaignId: string, raceId: string, requestingUserId: number, lang: LanguageCode = 'en') {
     await this.verifyCampaignAccess(campaignId, requestingUserId);
 
-    if (raceId.length > 30) {
+    if (!raceId.includes(':') && raceId.length > 30) {
       const cr = await this.campaignRaceRepository.findOne({
         where: { id: raceId, campaign: { id: campaignId } },
         relations: ['campaign'],

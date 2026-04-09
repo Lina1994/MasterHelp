@@ -1,15 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { CustomManualsService } from './custom-manuals.service';
 
 interface ManualSummaryDto {
   id: string;
   title: string;
+  description?: string;
   version?: string;
   licenseName?: string;
   licenseUrl?: string;
   locale?: string;
   slug?: string;
+  /** 'file' for hardcoded manuals, 'db' for user-created. */
+  source?: 'file' | 'db';
+  /** Whether the manual can be edited/deleted by the user. */
+  editable?: boolean;
+  /** Whether the manual has a cover image (DB manuals only). */
+  hasCover?: boolean;
 }
 
 @Injectable()
@@ -17,7 +25,7 @@ export class ManualsService {
   private baseDir: string;
   private cache = new Map<string, any>(); // manualId -> { toc, sections }
 
-  constructor() {
+  constructor(private readonly customManualsService: CustomManualsService) {
     // Base en tiempo de ejecución del backend: <repo>/backend como cwd
     // Apuntar a backend/data/manuals
     this.baseDir = path.resolve(process.cwd(), 'data', 'manuals');
@@ -25,27 +33,133 @@ export class ManualsService {
 
   /**
    * Devuelve el listado de manuales disponibles (fuente: backend/data/manuals/registry.json).
+   * Si se proporciona userId, también incluye los manuales personalizados del usuario.
    */
-  listManuals(): ManualSummaryDto[] {
+  listManuals(userId?: number): ManualSummaryDto[] {
+    const fileManuals = this.listFileManuals();
+    return fileManuals;
+  }
+
+  /**
+   * Devuelve el listado combinado de manuales de fichero + DB del usuario.
+   * @param userId - ID del usuario autenticado (para obtener sus manuales personalizados).
+   */
+  async listAllManuals(userId: number): Promise<ManualSummaryDto[]> {
+    const fileManuals = this.listFileManuals();
+    const dbManuals = await this.customManualsService.findAllByUser(userId);
+    const dbSummaries: ManualSummaryDto[] = dbManuals.map((m) => ({
+      id: m.id,
+      title: m.title,
+      description: m.description ?? undefined,
+      version: m.version ?? undefined,
+      source: 'db' as const,
+      editable: true,
+      hasCover: !!m.coverImageMimeType,
+    }));
+    return [...fileManuals, ...dbSummaries];
+  }
+
+  /**
+   * Returns file-based manuals from registry.json.
+   */
+  private listFileManuals(): ManualSummaryDto[] {
     const registryPath = path.join(this.baseDir, 'registry.json');
     if (!fs.existsSync(registryPath)) return [];
     const raw = fs.readFileSync(registryPath, 'utf-8');
     const registry = JSON.parse(raw);
-    return registry?.manuals || [];
+    return (registry?.manuals || []).map((m: any) => ({
+      ...m,
+      source: 'file' as const,
+      editable: false,
+    }));
+  }
+
+  /**
+   * Returns all valid file-based manual IDs (from registry.json).
+   */
+  getFileManualIds(): string[] {
+    return this.listFileManuals().map((m) => m.id);
+  }
+
+  /**
+   * Checks whether a manualId corresponds to a file-based (hardcoded) manual.
+   * @param manualId - Manual ID to check.
+   */
+  isFileManual(manualId: string): boolean {
+    return this.getFileManualIds().includes(manualId);
+  }
+
+  /**
+   * Returns the human-readable title of a manual (file-based or DB) by its ID.
+   * @param manualId - Manual ID (slug for file manuals, UUID for DB manuals).
+   * @returns The title string, or null if not found.
+   */
+  async getManualTitle(manualId: string): Promise<string | null> {
+    const fileManual = this.listFileManuals().find((m) => m.id === manualId);
+    if (fileManual) return fileManual.title;
+    return this.customManualsService.getTitleById(manualId);
+  }
+
+  /**
+   * Builds a lookup map of manual IDs → titles for a set of manual IDs.
+   * Useful for batch-resolving titles when listing campaign items.
+   * @param manualIds - Array of manual IDs to resolve.
+   * @returns A Record mapping manualId → title (missing manuals are omitted).
+   */
+  async getManualTitleMap(manualIds: string[]): Promise<Record<string, string>> {
+    const map: Record<string, string> = {};
+    const fileManuals = this.listFileManuals();
+    for (const id of manualIds) {
+      const fm = fileManuals.find((m) => m.id === id);
+      if (fm) {
+        map[id] = fm.title;
+      }
+    }
+    const dbIds = manualIds.filter((id) => !map[id]);
+    for (const id of dbIds) {
+      const title = await this.customManualsService.getTitleById(id);
+      if (title) map[id] = title;
+    }
+    return map;
   }
 
   /**
    * Obtiene el árbol de contenidos (TOC) para un manual dado.
+   * Para manuales de fichero: lee toc.json.
+   * Para manuales de DB: genera un TOC dinámico basado en entryTypes presentes.
    */
-  getToc(manualId: string) {
-    const { toc } = this.ensureManualLoaded(manualId);
-    return toc;
+  async getToc(manualId: string) {
+    if (this.isFileManual(manualId)) {
+      const { toc } = this.ensureManualLoaded(manualId);
+      return toc;
+    }
+    // DB manual → generate dynamic TOC from entry types
+    return this.buildDbManualToc(manualId);
   }
 
   /**
    * Devuelve el contenido de una sección/página identificada por nodeId dentro de un manual.
+   * Para manuales de fichero: busca en los archivos de contenido.
+   * Para manuales de DB: busca entries por entryType.
    */
-  getSection(manualId: string, nodeId: string, lang?: string) {
+  async getSection(manualId: string, nodeId: string, lang?: string) {
+    if (this.isFileManual(manualId)) {
+      return this.getFileSection(manualId, nodeId, lang);
+    }
+    // DB manual → retrieve entries of the given entryType
+    const code = (lang || 'en').toLowerCase();
+    const entries = await this.customManualsService.listEntriesWithFallback(
+      manualId,
+      nodeId as any,
+      code,
+    );
+    return entries.map((e) => ({ id: e.entryKey, lang: e.lang, ...e.data }));
+  }
+
+  /**
+   * Obtiene el contenido de una sección de un manual de fichero.
+   */
+  private getFileSection(manualId: string, nodeId: string, lang?: string) {
     const { sections } = this.ensureManualLoaded(manualId);
     const entry = sections[nodeId];
     if (!entry) throw new NotFoundException('Section not found');
@@ -63,8 +177,10 @@ export class ManualsService {
 
   /**
    * Búsqueda simple por título y texto plano en el manual especificado.
+   * Solo soporta manuales de fichero.
    */
   search(manualId: string, q: string) {
+    if (!this.isFileManual(manualId)) return [];
     const { sections } = this.ensureManualLoaded(manualId);
     const term = q.trim().toLowerCase();
     if (!term) return [];
@@ -83,6 +199,31 @@ export class ManualsService {
     if (idx === -1) return text.slice(0, 160);
     const start = Math.max(0, idx - 60);
     return (start > 0 ? '…' : '') + text.slice(start, idx + 100) + '…';
+  }
+
+  /**
+   * Builds a dynamic TOC for a DB manual based on the entry types it contains.
+   */
+  private async buildDbManualToc(manualId: string) {
+    const entries = await this.customManualsService.getEntries(manualId);
+    const types = new Set(entries.map((e) => e.entryType));
+    const tocLabels: Record<string, string> = {
+      monster: 'Bestiary',
+      spell: 'Spells',
+      class: 'Classes',
+      race: 'Races',
+      background: 'Backgrounds',
+      feat: 'Feats',
+      trait: 'Traits',
+      skill: 'Skills',
+      section: 'Content',
+    };
+    const children = Array.from(types).map((t) => ({
+      id: t,
+      title: tocLabels[t] || t,
+      children: [],
+    }));
+    return { id: 'root', title: 'Table of Contents', children };
   }
 
   private ensureManualLoaded(manualId: string) {

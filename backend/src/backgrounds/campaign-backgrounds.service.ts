@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { CampaignBackground } from './entities/campaign-background.entity';
 import { BackgroundsService, Background } from './backgrounds.service';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
+import { ManualsService } from '../manuals/manuals.service';
 import { CreateCampaignBackgroundDto } from './dto/create-campaign-background.dto';
 import { UpdateCampaignBackgroundDto } from './dto/update-campaign-background.dto';
 import { ListCampaignBackgroundsDto } from './dto/list-campaign-backgrounds.dto';
@@ -21,6 +23,8 @@ export class CampaignBackgroundsService {
     @InjectRepository(Campaign)
     private campaignRepository: Repository<Campaign>,
     private backgroundsService: BackgroundsService,
+    private readonly customManualsService: CustomManualsService,
+    private readonly manualsService: ManualsService,
   ) {}
 
   /**
@@ -64,14 +68,32 @@ export class CampaignBackgroundsService {
       }
     }
 
-    // Manual backgrounds
+    // Manual backgrounds (file-based)
     for (const manualId of manualIds) {
+      if (!this.manualsService.isFileManual(manualId)) continue;
       const manualBackgrounds = this.backgroundsService.list(lang, manualId);
       for (const mb of manualBackgrounds) {
         results.push({
           id: `${manualId}:${mb.id}`,
           name: mb.name,
           description: mb.description,
+          origin: 'manual',
+          sourceManual: manualId,
+          isCustom: false,
+        });
+      }
+    }
+
+    // DB manual backgrounds
+    for (const manualId of manualIds) {
+      if (this.manualsService.isFileManual(manualId)) continue;
+      const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'background', lang);
+      for (const entry of entries) {
+        const d = entry.data as any;
+        results.push({
+          id: `${manualId}:${entry.entryKey}`,
+          name: d.name || entry.entryKey,
+          description: d.description,
           origin: 'manual',
           sourceManual: manualId,
           isCustom: false,
@@ -97,7 +119,7 @@ export class CampaignBackgroundsService {
   async get(campaignId: string, backgroundId: string, requestingUserId: number, lang: LanguageCode = 'en') {
     await this.verifyCampaignAccess(campaignId, requestingUserId);
 
-    if (backgroundId.length > 30) {
+    if (!backgroundId.includes(':') && backgroundId.length > 30) {
       const cb = await this.campaignBackgroundRepository.findOne({
         where: { id: backgroundId, campaign: { id: campaignId } },
         relations: ['campaign'],
@@ -123,9 +145,23 @@ export class CampaignBackgroundsService {
 
     const [manualId, originalBackgroundId] = backgroundId.split(':');
     if (!manualId || !originalBackgroundId) throw new NotFoundException('Invalid background ID format');
-    const detail = this.backgroundsService.getById(lang, originalBackgroundId, manualId);
-    if (!detail) throw new NotFoundException('Background not found in manual');
-    return { ...detail, id: backgroundId, origin: 'manual', sourceManual: manualId, isCustom: false };
+
+    if (this.manualsService.isFileManual(manualId)) {
+      const detail = this.backgroundsService.getById(lang, originalBackgroundId, manualId);
+      if (!detail) throw new NotFoundException('Background not found in manual');
+      return { ...detail, id: backgroundId, origin: 'manual', sourceManual: manualId, isCustom: false };
+    }
+
+    const entry = await this.customManualsService.getEntry(manualId, 'background', originalBackgroundId, lang);
+    const d = entry.data as any;
+    return {
+      id: backgroundId,
+      name: d.name || entry.entryKey,
+      description: d.description,
+      origin: 'manual',
+      sourceManual: manualId,
+      isCustom: false,
+    };
   }
 
   /**
@@ -183,8 +219,15 @@ export class CampaignBackgroundsService {
     const campaign = await this.campaignRepository.findOne({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
 
-    const manualBackground = this.backgroundsService.getById(lang, backgroundId, manualId);
-    if (!manualBackground) throw new NotFoundException('Manual background not found');
+    let manualBackgroundData: any;
+    if (this.manualsService.isFileManual(manualId)) {
+      const manualBackground = this.backgroundsService.getById(lang, backgroundId, manualId);
+      if (!manualBackground) throw new NotFoundException('Manual background not found');
+      manualBackgroundData = manualBackground;
+    } else {
+      const entry = await this.customManualsService.getEntry(manualId, 'background', backgroundId, lang);
+      manualBackgroundData = entry.data as any;
+    }
 
     const existing = await this.campaignBackgroundRepository.findOne({
       where: { campaign: { id: campaignId }, sourceManualId: manualId, sourceBackgroundId: backgroundId },
@@ -195,7 +238,7 @@ export class CampaignBackgroundsService {
       campaign,
       sourceManualId: manualId,
       sourceBackgroundId: backgroundId,
-      customData: { ...manualBackground },
+      customData: { ...manualBackgroundData },
     });
     return this.campaignBackgroundRepository.save(background);
   }

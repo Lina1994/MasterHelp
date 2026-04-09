@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { CampaignClass } from './entities/campaign-class.entity';
 import { ClassesService, CharacterClass } from './classes.service';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
+import { ManualsService } from '../manuals/manuals.service';
 import { CreateCampaignClassDto } from './dto/create-campaign-class.dto';
 import { UpdateCampaignClassDto } from './dto/update-campaign-class.dto';
 import { ListCampaignClassesDto } from './dto/list-campaign-classes.dto';
@@ -21,6 +23,8 @@ export class CampaignClassesService {
     @InjectRepository(Campaign)
     private campaignRepository: Repository<Campaign>,
     private classesService: ClassesService,
+    private readonly customManualsService: CustomManualsService,
+    private readonly manualsService: ManualsService,
   ) {}
 
   /**
@@ -66,8 +70,9 @@ export class CampaignClassesService {
       }
     }
 
-    // Manual classes
+    // Manual classes (file-based)
     for (const manualId of manualIds) {
+      if (!this.manualsService.isFileManual(manualId)) continue;
       const manualClasses = this.classesService.list(lang, manualId);
       for (const mc of manualClasses) {
         results.push({
@@ -76,6 +81,25 @@ export class CampaignClassesService {
           hitDie: mc.hitDie,
           primaryAbilities: mc.primaryAbilities,
           savingThrows: mc.savingThrows,
+          origin: 'manual',
+          sourceManual: manualId,
+          isCustom: false,
+        });
+      }
+    }
+
+    // DB manual classes
+    for (const manualId of manualIds) {
+      if (this.manualsService.isFileManual(manualId)) continue;
+      const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'class', lang);
+      for (const entry of entries) {
+        const d = entry.data as any;
+        results.push({
+          id: `${manualId}:${entry.entryKey}`,
+          name: d.name || entry.entryKey,
+          hitDie: d.hitDie,
+          primaryAbilities: d.primaryAbilities,
+          savingThrows: d.savingThrows,
           origin: 'manual',
           sourceManual: manualId,
           isCustom: false,
@@ -101,7 +125,7 @@ export class CampaignClassesService {
   async get(campaignId: string, classId: string, requestingUserId: number, lang: LanguageCode = 'en') {
     await this.verifyCampaignAccess(campaignId, requestingUserId);
 
-    if (classId.length > 30) {
+    if (!classId.includes(':') && classId.length > 30) {
       const cc = await this.campaignClassRepository.findOne({
         where: { id: classId, campaign: { id: campaignId } },
         relations: ['campaign'],

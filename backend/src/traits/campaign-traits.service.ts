@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { CampaignTrait } from './entities/campaign-trait.entity';
 import { TraitsService, Trait } from './traits.service';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
+import { ManualsService } from '../manuals/manuals.service';
 import { CreateCampaignTraitDto } from './dto/create-campaign-trait.dto';
 import { UpdateCampaignTraitDto } from './dto/update-campaign-trait.dto';
 import { ListCampaignTraitsDto } from './dto/list-campaign-traits.dto';
@@ -21,6 +23,8 @@ export class CampaignTraitsService {
     @InjectRepository(Campaign)
     private campaignRepository: Repository<Campaign>,
     private traitsService: TraitsService,
+    private readonly customManualsService: CustomManualsService,
+    private readonly manualsService: ManualsService,
   ) {}
 
   /**
@@ -43,6 +47,7 @@ export class CampaignTraitsService {
     if (!campaign) throw new NotFoundException('Campaign not found');
 
     const manualIds = campaign.selectedManualIds || [];
+    const titleMap = await this.manualsService.getManualTitleMap(manualIds);
     const results: any[] = [];
 
     // Campaign-specific traits
@@ -60,14 +65,16 @@ export class CampaignTraitsService {
           description: data.description,
           origin: ct.sourceManualId ? 'manual-edited' : 'homebrew',
           sourceManual: ct.sourceManualId || null,
+          sourceManualTitle: ct.sourceManualId ? (titleMap[ct.sourceManualId] ?? null) : null,
           customOriginName: ct.customOriginName || null,
           isCustom: true,
         });
       }
     }
 
-    // Manual traits
+    // Manual traits (file-based)
     for (const manualId of manualIds) {
+      if (!this.manualsService.isFileManual(manualId)) continue;
       const manualTraits = this.traitsService.list(lang, manualId);
       for (const mt of manualTraits) {
         results.push({
@@ -76,6 +83,25 @@ export class CampaignTraitsService {
           description: mt.description,
           origin: 'manual',
           sourceManual: manualId,
+          sourceManualTitle: titleMap[manualId] ?? null,
+          isCustom: false,
+        });
+      }
+    }
+
+    // DB manual traits
+    for (const manualId of manualIds) {
+      if (this.manualsService.isFileManual(manualId)) continue;
+      const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'trait', lang);
+      for (const entry of entries) {
+        const d = entry.data as any;
+        results.push({
+          id: `${manualId}:${entry.entryKey}`,
+          name: d.name || entry.entryKey,
+          description: d.description,
+          origin: 'manual',
+          sourceManual: manualId,
+          sourceManualTitle: titleMap[manualId] ?? null,
           isCustom: false,
         });
       }
@@ -99,7 +125,7 @@ export class CampaignTraitsService {
   async get(campaignId: string, traitId: string, requestingUserId: number, lang: LanguageCode = 'en') {
     await this.verifyCampaignAccess(campaignId, requestingUserId);
 
-    if (traitId.length > 30) {
+    if (!traitId.includes(':') && traitId.length > 30) {
       const ct = await this.campaignTraitRepository.findOne({
         where: { id: traitId, campaign: { id: campaignId } },
         relations: ['campaign'],
@@ -107,27 +133,47 @@ export class CampaignTraitsService {
       if (!ct) throw new NotFoundException('Trait not found');
 
       if (ct.customData) {
+        const sourceManualTitle = ct.sourceManualId ? await this.manualsService.getManualTitle(ct.sourceManualId) : null;
         return {
           ...ct.customData,
           id: ct.id,
           origin: ct.sourceManualId ? 'manual-edited' : 'homebrew',
           sourceManual: ct.sourceManualId,
+          sourceManualTitle,
           customOriginName: ct.customOriginName,
           isCustom: true,
         };
       } else if (ct.sourceManualId && ct.sourceTraitId) {
         const detail = this.traitsService.getById(lang, ct.sourceTraitId, ct.sourceManualId);
         if (!detail) throw new NotFoundException('Manual trait not found');
-        return { ...detail, id: ct.id, origin: 'manual', sourceManual: ct.sourceManualId, isCustom: false };
+        const sourceManualTitle = await this.manualsService.getManualTitle(ct.sourceManualId);
+        return { ...detail, id: ct.id, origin: 'manual', sourceManual: ct.sourceManualId, sourceManualTitle, isCustom: false };
       }
       throw new NotFoundException('Trait data not found');
     }
 
     const [manualId, originalTraitId] = traitId.split(':');
     if (!manualId || !originalTraitId) throw new NotFoundException('Invalid trait ID format');
-    const detail = this.traitsService.getById(lang, originalTraitId, manualId);
-    if (!detail) throw new NotFoundException('Trait not found in manual');
-    return { ...detail, id: traitId, origin: 'manual', sourceManual: manualId, isCustom: false };
+
+    if (this.manualsService.isFileManual(manualId)) {
+      const detail = this.traitsService.getById(lang, originalTraitId, manualId);
+      if (!detail) throw new NotFoundException('Trait not found in manual');
+      const sourceManualTitle = await this.manualsService.getManualTitle(manualId);
+      return { ...detail, id: traitId, origin: 'manual', sourceManual: manualId, sourceManualTitle, isCustom: false };
+    }
+
+    const entry = await this.customManualsService.getEntry(manualId, 'trait', originalTraitId, lang);
+    const d = entry.data as any;
+    const sourceManualTitle = await this.manualsService.getManualTitle(manualId);
+    return {
+      id: traitId,
+      name: d.name || entry.entryKey,
+      description: d.description,
+      origin: 'manual',
+      sourceManual: manualId,
+      sourceManualTitle,
+      isCustom: false,
+    };
   }
 
   /**
@@ -185,8 +231,15 @@ export class CampaignTraitsService {
     const campaign = await this.campaignRepository.findOne({ where: { id: campaignId } });
     if (!campaign) throw new NotFoundException('Campaign not found');
 
-    const manualTrait = this.traitsService.getById(lang, traitId, manualId);
-    if (!manualTrait) throw new NotFoundException('Manual trait not found');
+    let manualTraitData: any;
+    if (this.manualsService.isFileManual(manualId)) {
+      const manualTrait = this.traitsService.getById(lang, traitId, manualId);
+      if (!manualTrait) throw new NotFoundException('Manual trait not found');
+      manualTraitData = manualTrait;
+    } else {
+      const entry = await this.customManualsService.getEntry(manualId, 'trait', traitId, lang);
+      manualTraitData = entry.data as any;
+    }
 
     const existing = await this.campaignTraitRepository.findOne({
       where: { campaign: { id: campaignId }, sourceManualId: manualId, sourceTraitId: traitId },
@@ -197,7 +250,7 @@ export class CampaignTraitsService {
       campaign,
       sourceManualId: manualId,
       sourceTraitId: traitId,
-      customData: { name: manualTrait.name, description: manualTrait.description },
+      customData: { name: manualTraitData.name, description: manualTraitData.description },
     });
     return this.campaignTraitRepository.save(trait);
   }
