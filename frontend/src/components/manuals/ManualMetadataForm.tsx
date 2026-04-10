@@ -30,6 +30,7 @@ export default function ManualMetadataForm({ manual, hasCover, onUpdated, onCove
   const [description, setDescription] = useState(manual.description ?? '');
   const [version, setVersion] = useState(manual.version ?? '');
   const [languages, setLanguages] = useState<string[]>(manual.languages ?? ['es']);
+  const [about, setAbout] = useState(manual.about ?? '');
   const [saving, setSaving] = useState(false);
   const [coverKey, setCoverKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +40,7 @@ export default function ManualMetadataForm({ manual, hasCover, onUpdated, onCove
     setDescription(manual.description ?? '');
     setVersion(manual.version ?? '');
     setLanguages(manual.languages ?? ['es']);
+    setAbout(manual.about ?? '');
   }, [manual]);
 
   const toggleLang = (lang: string) => {
@@ -56,6 +58,7 @@ export default function ManualMetadataForm({ manual, hasCover, onUpdated, onCove
         description: description.trim() || undefined,
         version: version.trim() || undefined,
         languages,
+        about: about.trim() || undefined,
       };
       const updated = await updateManual(manual.id, dto);
       onUpdated(updated);
@@ -173,6 +176,16 @@ export default function ManualMetadataForm({ manual, hasCover, onUpdated, onCove
         fullWidth
         multiline
         minRows={1}
+      />
+      <TextField
+        label={t('manuals_field_about', 'About (Markdown)')}
+        value={about}
+        onChange={e => setAbout(e.target.value)}
+        size="small"
+        fullWidth
+        multiline
+        minRows={3}
+        placeholder={t('manuals_field_about_placeholder', 'Write an "About" section for this manual (supports Markdown). It will be shown as the first section when browsing the manual.')}
       />
       <Stack direction="row" spacing={1} alignItems="center">
         <Typography variant="body2">{t('manuals_field_languages')}:</Typography>

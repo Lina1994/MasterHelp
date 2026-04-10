@@ -22,4 +22,8 @@ export class CreateManualDto {
   @Transform(({ value }) => (Array.isArray(value) ? value.map((v) => String(v)) : []))
   @IsString({ each: true })
   languages?: string[];
+
+  @IsOptional()
+  @IsString()
+  about?: string;
 }

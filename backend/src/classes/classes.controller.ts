@@ -19,13 +19,13 @@ export class ClassesController {
   // --- Manual (read-only) ---
 
   @Get('manuals/:manualId/classes')
-  list(@Param('manualId') manualId: string, @Query('lang') lang: 'en'|'es' = 'en') {
-    return this.classesService.list(lang, manualId);
+  async list(@Param('manualId') manualId: string, @Query('lang') lang: 'en'|'es' = 'en') {
+    return this.classesService.listAsync(lang, manualId);
   }
 
   @Get('manuals/:manualId/classes/:id')
-  get(@Param('manualId') manualId: string, @Param('id') id: string, @Query('lang') lang: 'en'|'es' = 'en') {
-    return this.classesService.getById(lang, id, manualId);
+  async get(@Param('manualId') manualId: string, @Param('id') id: string, @Query('lang') lang: 'en'|'es' = 'en') {
+    return this.classesService.getByIdAsync(lang, id, manualId);
   }
 
   // --- Campaign CRUD ---

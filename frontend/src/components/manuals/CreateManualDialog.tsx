@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 interface CreateManualDialogProps {
   open: boolean;
   onClose: () => void;
-  onSave: (data: { title: string; description?: string; version?: string; languages: string[] }) => Promise<void>;
+  onSave: (data: { title: string; description?: string; version?: string; languages: string[]; about?: string }) => Promise<void>;
 }
 
 const AVAILABLE_LANGS = ['es', 'en'];
@@ -23,6 +23,7 @@ export default function CreateManualDialog({ open, onClose, onSave }: CreateManu
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [version, setVersion] = useState('');
+  const [about, setAbout] = useState('');
   const [languages, setLanguages] = useState<string[]>(['es']);
   const [loading, setLoading] = useState(false);
 
@@ -41,6 +42,7 @@ export default function CreateManualDialog({ open, onClose, onSave }: CreateManu
         description: description.trim() || undefined,
         version: version.trim() || undefined,
         languages,
+        about: about.trim() || undefined,
       });
       resetForm();
       onClose();
@@ -53,6 +55,7 @@ export default function CreateManualDialog({ open, onClose, onSave }: CreateManu
     setTitle('');
     setDescription('');
     setVersion('');
+    setAbout('');
     setLanguages(['es']);
   };
 
@@ -95,6 +98,16 @@ export default function CreateManualDialog({ open, onClose, onSave }: CreateManu
           value={version}
           onChange={e => setVersion(e.target.value)}
           fullWidth
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          label={t('manuals_field_about', 'About (Markdown)')}
+          value={about}
+          onChange={e => setAbout(e.target.value)}
+          fullWidth
+          multiline
+          minRows={3}
+          placeholder={t('manuals_field_about_placeholder', 'Optional "About" section (supports Markdown)')}
           sx={{ mb: 2 }}
         />
         <Box>

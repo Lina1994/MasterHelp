@@ -84,11 +84,7 @@ export default function ManualsHomePage() {
             <Grid key={m.id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card variant="outlined">
                 <CardActionArea
-                  onClick={() =>
-                    editable
-                      ? navigate(`/manuals/${m.id}/edit`)
-                      : navigate(`/manuals/${m.id}`)
-                  }
+                  onClick={() => navigate(`/manuals/${m.id}`)}
                 >
                   {m.hasCover && (
                     <Box sx={{ height: 160, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.100' }}>

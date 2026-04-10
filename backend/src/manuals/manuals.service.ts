@@ -18,6 +18,8 @@ interface ManualSummaryDto {
   editable?: boolean;
   /** Whether the manual has a cover image (DB manuals only). */
   hasCover?: boolean;
+  /** Whether the manual has an "About" section. */
+  hasAbout?: boolean;
 }
 
 @Injectable()
@@ -55,6 +57,7 @@ export class ManualsService {
       source: 'db' as const,
       editable: true,
       hasCover: !!m.coverImageMimeType,
+      hasAbout: !!m.about,
     }));
     return [...fileManuals, ...dbSummaries];
   }
@@ -140,20 +143,44 @@ export class ManualsService {
   /**
    * Devuelve el contenido de una sección/página identificada por nodeId dentro de un manual.
    * Para manuales de fichero: busca en los archivos de contenido.
-   * Para manuales de DB: busca entries por entryType.
+   * Para manuales de DB: busca entries por entryType, o el campo "about" si nodeId === 'about'.
    */
   async getSection(manualId: string, nodeId: string, lang?: string) {
     if (this.isFileManual(manualId)) {
       return this.getFileSection(manualId, nodeId, lang);
     }
-    // DB manual → retrieve entries of the given entryType
+    // DB manual: "about" section → return manual.about as markdown
+    if (nodeId === 'about') {
+      return this.getDbManualAbout(manualId, lang);
+    }
+    // Reverse-map frontend nodeIds (plural) to DB entryTypes (singular)
+    const entryType = this.resolveEntryType(nodeId);
     const code = (lang || 'en').toLowerCase();
     const entries = await this.customManualsService.listEntriesWithFallback(
       manualId,
-      nodeId as any,
+      entryType as any,
       code,
     );
     return entries.map((e) => ({ id: e.entryKey, lang: e.lang, ...e.data }));
+  }
+
+  /**
+   * Maps frontend nodeIds (plural) to DB entryType (singular).
+   * Falls back to the nodeId itself if no mapping exists.
+   */
+  private resolveEntryType(nodeId: string): string {
+    const map: Record<string, string> = {
+      bestiary: 'monster',
+      spells: 'spell',
+      classes: 'class',
+      races: 'race',
+      backgrounds: 'background',
+      feats: 'feat',
+      traits: 'trait',
+      skills: 'skill',
+      sections: 'section',
+    };
+    return map[nodeId] || nodeId;
   }
 
   /**
@@ -203,10 +230,26 @@ export class ManualsService {
 
   /**
    * Builds a dynamic TOC for a DB manual based on the entry types it contains.
+   * Maps entry types to the nodeIds the frontend expects (plural/specific names).
+   * Includes an "About" node at the top if the manual has an about text.
    */
   private async buildDbManualToc(manualId: string) {
+    const manual = await this.customManualsService.findOnePublic(manualId);
     const entries = await this.customManualsService.getEntries(manualId);
     const types = new Set(entries.map((e) => e.entryType));
+
+    /** Maps DB entryType → nodeId used by the frontend ManualViewerPage. */
+    const nodeIdMap: Record<string, string> = {
+      monster: 'bestiary',
+      spell: 'spells',
+      class: 'classes',
+      race: 'races',
+      background: 'backgrounds',
+      feat: 'feats',
+      trait: 'traits',
+      skill: 'skills',
+      section: 'sections',
+    };
     const tocLabels: Record<string, string> = {
       monster: 'Bestiary',
       spell: 'Spells',
@@ -218,12 +261,35 @@ export class ManualsService {
       skill: 'Skills',
       section: 'Content',
     };
-    const children = Array.from(types).map((t) => ({
-      id: t,
-      title: tocLabels[t] || t,
-      children: [],
-    }));
+    const children: Array<{ id: string; title: string; children: any[] }> = [];
+    // Add "About" node if manual has about text
+    if (manual?.about) {
+      children.push({ id: 'about', title: 'About', children: [] });
+    }
+    for (const t of types) {
+      children.push({
+        id: nodeIdMap[t] || t,
+        title: tocLabels[t] || t,
+        children: [],
+      });
+    }
     return { id: 'root', title: 'Table of Contents', children };
+  }
+
+  /**
+   * Returns the "about" section for a DB manual as a markdown section DTO.
+   */
+  private async getDbManualAbout(manualId: string, _lang?: string) {
+    const manual = await this.customManualsService.findOnePublic(manualId);
+    if (!manual?.about) {
+      throw new NotFoundException('About section not found');
+    }
+    return {
+      id: 'about',
+      title: 'About',
+      format: 'markdown',
+      markdown: manual.about,
+    };
   }
 
   private ensureManualLoaded(manualId: string) {

@@ -135,6 +135,16 @@ export class CustomManualsService {
     return manual?.title ?? null;
   }
 
+  /**
+   * Load a manual by ID without ownership verification (public read access).
+   * Used by ManualsService when rendering manual viewer sections (e.g. "about").
+   * @param manualId - UUID of the manual.
+   * @returns The Manual entity (without cover blob), or null if not found.
+   */
+  async findOnePublic(manualId: string): Promise<Manual | null> {
+    return this.manualRepo.findOne({ where: { id: manualId } });
+  }
+
   /* ═══════════════════════════ COVER IMAGE ═══════════════════════════ */
 
   /**
@@ -344,6 +354,7 @@ export class CustomManualsService {
       description: manual.description ?? undefined,
       version: manual.version ?? undefined,
       languages: manual.languages ?? undefined,
+      about: manual.about ?? undefined,
       entries: entries.map((e) => ({
         entryType: e.entryType,
         entryKey: e.entryKey,
@@ -366,6 +377,7 @@ export class CustomManualsService {
       description: dto.description,
       version: dto.version,
       languages: dto.languages,
+      about: dto.about,
       createdByUserId: userId,
     });
     const saved = await this.manualRepo.save(manual);

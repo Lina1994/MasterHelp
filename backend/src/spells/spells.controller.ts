@@ -53,9 +53,9 @@ export class SpellsController {
 
   // Manual-aware endpoints
   @Get('manuals/:manualId/spells')
-  listForManual(@Param('manualId') manualId: string, @Query() q: GetSpellsQueryDto) {
+  async listForManual(@Param('manualId') manualId: string, @Query() q: GetSpellsQueryDto) {
     const lang = (q.lang || 'en');
-    return this.spells.listPaged(
+    return this.spells.listPagedAsync(
       lang,
       {
         search: q.search,
@@ -73,15 +73,15 @@ export class SpellsController {
   }
 
   @Get('manuals/:manualId/spells/meta/all')
-  metaForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
+  async metaForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
     const l = lang || 'en';
-    return this.spells.meta(l, manualId);
+    return this.spells.metaAsync(l, manualId);
   }
 
   @Get('manuals/:manualId/spells/:id')
-  getForManual(@Param('manualId') manualId: string, @Param('id') id: string, @Query('lang') lang?: 'en' | 'es') {
+  async getForManual(@Param('manualId') manualId: string, @Param('id') id: string, @Query('lang') lang?: 'en' | 'es') {
     const l = lang || 'en';
-    return this.spells.getById(l, id, manualId);
+    return this.spells.getByIdAsync(l, id, manualId);
   }
 
   // --- Campaign spells (CRUD with permissions) ---

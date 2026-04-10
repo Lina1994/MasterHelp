@@ -21,6 +21,8 @@ export interface ManualDetail extends ManualSummary {
   createdAt?: string;
   updatedAt?: string;
   coverImageMimeType?: string | null;
+  /** Free-form "About" text (Markdown). */
+  about?: string | null;
 }
 
 export interface ManualEntry {
@@ -50,6 +52,7 @@ export interface CreateManualDto {
   description?: string;
   version?: string;
   languages?: string[];
+  about?: string;
 }
 
 export interface UpdateManualDto {
@@ -57,6 +60,7 @@ export interface UpdateManualDto {
   description?: string;
   version?: string;
   languages?: string[];
+  about?: string;
 }
 
 export interface CreateManualEntryDto {
@@ -76,6 +80,7 @@ export interface ImportManualPayload {
   description?: string;
   version?: string;
   languages?: string[];
+  about?: string;
   entries: Array<{
     entryType: ManualEntryType;
     entryKey: string;

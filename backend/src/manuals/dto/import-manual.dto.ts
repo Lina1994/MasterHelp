@@ -66,6 +66,10 @@ export class ImportManualDto {
   @IsString({ each: true })
   languages?: string[];
 
+  @IsOptional()
+  @IsString()
+  about?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ImportManualEntryItem)

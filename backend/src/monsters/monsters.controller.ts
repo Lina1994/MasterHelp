@@ -17,10 +17,10 @@ export class MonstersController {
   // --- Manual monsters (read-only from files) ---
 
   @Get('manuals/:manualId/monsters')
-  list(@Param('manualId') manualId: string, @Query() query: ListMonstersDto) {
+  async list(@Param('manualId') manualId: string, @Query() query: ListMonstersDto) {
     const lang = (query.lang || 'en') as 'en' | 'es';
     const { q, type, size, crMin, crMax, page = 1, pageSize = 20 } = query;
-    const items = this.service.list(manualId, lang, { q, type, size, crMin, crMax });
+    const items = await this.service.listAsync(manualId, lang, { q, type, size, crMin, crMax });
 
     // Paginación en memoria (suficiente para el SRD y primera versión)
     const total = items.length;
@@ -31,8 +31,8 @@ export class MonstersController {
   }
 
   @Get('manuals/:manualId/monsters/:slug')
-  get(@Param('manualId') manualId: string, @Param('slug') slug: string, @Query('lang') lang: 'en' | 'es' = 'en') {
-    return this.service.get(manualId, lang, slug);
+  async get(@Param('manualId') manualId: string, @Param('slug') slug: string, @Query('lang') lang: 'en' | 'es' = 'en') {
+    return this.service.getAsync(manualId, lang, slug);
   }
 
   // --- Campaign monsters (CRUD with permissions) ---

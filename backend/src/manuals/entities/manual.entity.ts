@@ -50,6 +50,10 @@ export class Manual {
   @Column({ type: 'text', nullable: true })
   coverImageMimeType?: string | null;
 
+  /** Free-form "About" text (Markdown) shown in the manual viewer. */
+  @Column({ type: 'text', nullable: true })
+  about?: string | null;
+
   @OneToMany(() => ManualEntry, (entry) => entry.manual, { cascade: true })
   entries: ManualEntry[];
 

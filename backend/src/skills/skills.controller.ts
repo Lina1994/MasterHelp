@@ -16,17 +16,17 @@ export class SkillsController {
   // --- Read-only manual endpoints ---
 
   @Get('manuals/:manualId/skills')
-  listForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
-    return this.skillsService.list(lang || 'en', manualId);
+  async listForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
+    return this.skillsService.listAsync(lang || 'en', manualId);
   }
 
   @Get('manuals/:manualId/skills/:id')
-  getForManual(
+  async getForManual(
     @Param('manualId') manualId: string,
     @Param('id') id: string,
     @Query('lang') lang?: 'en' | 'es',
   ) {
-    return this.skillsService.getById(lang || 'en', id, manualId);
+    return this.skillsService.getByIdAsync(lang || 'en', id, manualId);
   }
 
   // --- Campaign skills (CRUD with permissions) ---

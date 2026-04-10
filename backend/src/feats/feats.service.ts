@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync, statSync } from 'fs';
 import { join, resolve } from 'path';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
 
 /**
  * Represents a single feat from a D&D manual.
@@ -22,6 +23,8 @@ export class FeatsService {
   /** Cache keyed by `${manualId}:${lang}` */
   private cache: Record<string, { list: Feat[]; mtime: number }> = {};
   private readonly defaultManualId = 'dnd5e-2014';
+
+  constructor(private readonly customManualsService: CustomManualsService) {}
 
   /**
    * Resolve base directory for feats dataset of a manual.
@@ -73,6 +76,54 @@ export class FeatsService {
    */
   getById(lang: 'en' | 'es', id: string, manualId?: string): Feat | undefined {
     const { list } = this.load(lang, manualId);
+    return list.find(f => f.id === id);
+  }
+
+  /* ═══════════════ Async variants with DB manual fallback ═══════════════ */
+
+  /**
+   * Loads feats from DB manual entries when no file-based data is found.
+   */
+  private async loadFromDb(lang: 'en' | 'es', manualId: string) {
+    const cacheKey = `db:${manualId}:${lang}`;
+    const cached = this.cache[cacheKey];
+    if (cached) return cached;
+
+    const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'feat', lang);
+    const list: Feat[] = entries.map((e) => ({
+      id: e.entryKey,
+      name: (e.data as any).name || e.entryKey,
+      description: (e.data as any).description ?? '',
+      prerequisite: (e.data as any).prerequisite,
+      source: (e.data as any).source,
+    }));
+    this.cache[cacheKey] = { list, mtime: Date.now() };
+    return this.cache[cacheKey];
+  }
+
+  /**
+   * Async load: tries file-based first, falls back to DB manual entries.
+   */
+  private async loadAsync(lang: 'en' | 'es', manualId?: string) {
+    const fileResult = this.load(lang, manualId);
+    if (fileResult.list.length > 0) return fileResult;
+    if (!manualId) return fileResult;
+    return this.loadFromDb(lang, manualId);
+  }
+
+  /**
+   * Async version of list() with DB manual fallback.
+   */
+  async listAsync(lang: 'en' | 'es', manualId?: string): Promise<Feat[]> {
+    const { list } = await this.loadAsync(lang, manualId);
+    return list;
+  }
+
+  /**
+   * Async version of getById() with DB manual fallback.
+   */
+  async getByIdAsync(lang: 'en' | 'es', id: string, manualId?: string): Promise<Feat | undefined> {
+    const { list } = await this.loadAsync(lang, manualId);
     return list.find(f => f.id === id);
   }
 }

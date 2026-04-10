@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync, statSync, readdirSync } from 'fs';
 import { join, resolve } from 'path';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
 
 export interface ClassSkillChoice { choose: number; from: string[] }
 export interface ClassEquipmentOption { id: string; description: string }
@@ -83,6 +84,10 @@ export class ClassesService {
   private cache: Record<string, { list: CharacterClass[]; mtime: number; fileCount?: number }> = {};
   private readonly defaultManualId = 'dnd5e-2014';
 
+  constructor(
+    private readonly customManualsService: CustomManualsService,
+  ) {}
+
   private getBaseDir(manualId?: string) {
     const safeManual = (manualId || this.defaultManualId).replace(/[^a-zA-Z0-9-_]/g, '');
     return resolve(process.cwd(), 'data', 'manuals', safeManual, 'classes');
@@ -159,6 +164,64 @@ export class ClassesService {
    */
   getById(lang: 'en' | 'es', id: string, manualId?: string): CharacterClass | undefined {
     const { list } = this.load(lang, manualId);
+    return list.find(r => r.id === id);
+  }
+
+  /* ═══════════════ Async variants with DB manual fallback ═══════════════ */
+
+  /**
+   * Loads classes from DB manual entries when no file-based data is found.
+   */
+  private async loadFromDb(lang: 'en' | 'es', manualId: string) {
+    const cacheKey = `db:${manualId}:${lang}`;
+    const cached = this.cache[cacheKey];
+    if (cached) return cached;
+
+    const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'class', lang);
+    const list: CharacterClass[] = entries.map((e) => ({
+      id: e.entryKey,
+      name: (e.data as any).name || e.entryKey,
+      hitDie: (e.data as any).hitDie ?? 8,
+      primaryAbilities: (e.data as any).primaryAbilities ?? [],
+      savingThrows: (e.data as any).savingThrows ?? [],
+      proficiencies: (e.data as any).proficiencies ?? {},
+      skills: (e.data as any).skills ?? { choose: 0, from: [] },
+      equipment: (e.data as any).equipment ?? [],
+      features: (e.data as any).features ?? [],
+      levels: (e.data as any).levels ?? [],
+      subclasses: (e.data as any).subclasses,
+      spellcasting: (e.data as any).spellcasting,
+      spells: (e.data as any).spells,
+      hitPoints: (e.data as any).hitPoints,
+      source: (e.data as any).source,
+    }));
+    this.cache[cacheKey] = { list, mtime: Date.now() };
+    return this.cache[cacheKey];
+  }
+
+  /**
+   * Async load: tries file-based first, falls back to DB manual entries.
+   */
+  private async loadAsync(lang: 'en' | 'es', manualId?: string) {
+    const fileResult = this.load(lang, manualId);
+    if (fileResult.list.length > 0) return fileResult;
+    if (!manualId) return fileResult;
+    return this.loadFromDb(lang, manualId);
+  }
+
+  /**
+   * Async version of list() with DB manual fallback.
+   */
+  async listAsync(lang: 'en' | 'es', manualId?: string): Promise<CharacterClass[]> {
+    const { list } = await this.loadAsync(lang, manualId);
+    return list;
+  }
+
+  /**
+   * Async version of getById() with DB manual fallback.
+   */
+  async getByIdAsync(lang: 'en' | 'es', id: string, manualId?: string): Promise<CharacterClass | undefined> {
+    const { list } = await this.loadAsync(lang, manualId);
     return list.find(r => r.id === id);
   }
 }

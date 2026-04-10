@@ -22,8 +22,8 @@ export class TraitsController {
    * @returns Array of traits
    */
   @Get('manuals/:manualId/traits')
-  listForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
-    return this.traitsService.list(lang || 'en', manualId);
+  async listForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
+    return this.traitsService.listAsync(lang || 'en', manualId);
   }
 
   /**
@@ -34,12 +34,12 @@ export class TraitsController {
    * @returns A single trait
    */
   @Get('manuals/:manualId/traits/:id')
-  getForManual(
+  async getForManual(
     @Param('manualId') manualId: string,
     @Param('id') id: string,
     @Query('lang') lang?: 'en' | 'es',
   ) {
-    return this.traitsService.getById(lang || 'en', id, manualId);
+    return this.traitsService.getByIdAsync(lang || 'en', id, manualId);
   }
 
   // --- Campaign traits (CRUD with permissions) ---

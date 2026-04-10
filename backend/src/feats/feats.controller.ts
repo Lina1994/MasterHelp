@@ -16,17 +16,17 @@ export class FeatsController {
   // --- Read-only manual endpoints ---
 
   @Get('manuals/:manualId/feats')
-  listForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
-    return this.featsService.list(lang || 'en', manualId);
+  async listForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
+    return this.featsService.listAsync(lang || 'en', manualId);
   }
 
   @Get('manuals/:manualId/feats/:id')
-  getForManual(
+  async getForManual(
     @Param('manualId') manualId: string,
     @Param('id') id: string,
     @Query('lang') lang?: 'en' | 'es',
   ) {
-    return this.featsService.getById(lang || 'en', id, manualId);
+    return this.featsService.getByIdAsync(lang || 'en', id, manualId);
   }
 
   // --- Campaign feats (CRUD with permissions) ---

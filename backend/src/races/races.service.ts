@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync, statSync } from 'fs';
 import { join, resolve } from 'path';
+import { CustomManualsService } from '../manuals/custom-manuals.service';
 
 export interface AbilityBonuses {
   str?: number; dex?: number; con?: number; int?: number; wis?: number; cha?: number;
@@ -62,6 +63,8 @@ export class RacesService {
   private cache: Record<string, { list: Race[]; mtime: number }> = {};
   private readonly defaultManualId = 'dnd5e-2014';
 
+  constructor(private readonly customManualsService: CustomManualsService) {}
+
   /**
    * Resolve base directory for races dataset of a manual.
    */
@@ -116,6 +119,61 @@ export class RacesService {
    */
   getById(lang: 'en' | 'es', id: string, manualId?: string): Race | undefined {
     const { list } = this.load(lang, manualId);
+    return list.find(r => r.id === id);
+  }
+
+  /* ═══════════════ Async variants with DB manual fallback ═══════════════ */
+
+  /**
+   * Loads races from DB manual entries when no file-based data is found.
+   */
+  private async loadFromDb(lang: 'en' | 'es', manualId: string) {
+    const cacheKey = `db:${manualId}:${lang}`;
+    const cached = this.cache[cacheKey];
+    if (cached) return cached;
+
+    const entries = await this.customManualsService.listEntriesWithFallback(manualId, 'race', lang);
+    const list: Race[] = entries.map((e) => ({
+      id: e.entryKey,
+      name: (e.data as any).name || e.entryKey,
+      size: (e.data as any).size ?? 'Medium',
+      speed: (e.data as any).speed ?? { walk: 30 },
+      abilityBonuses: (e.data as any).abilityBonuses,
+      age: (e.data as any).age,
+      languages: (e.data as any).languages,
+      proficiencies: (e.data as any).proficiencies,
+      senses: (e.data as any).senses,
+      traits: (e.data as any).traits,
+      subraces: (e.data as any).subraces,
+      source: (e.data as any).source,
+    }));
+    this.cache[cacheKey] = { list, mtime: Date.now() };
+    return this.cache[cacheKey];
+  }
+
+  /**
+   * Async load: tries file-based first, falls back to DB manual entries.
+   */
+  private async loadAsync(lang: 'en' | 'es', manualId?: string) {
+    const fileResult = this.load(lang, manualId);
+    if (fileResult.list.length > 0) return fileResult;
+    if (!manualId) return fileResult;
+    return this.loadFromDb(lang, manualId);
+  }
+
+  /**
+   * Async version of list() with DB manual fallback.
+   */
+  async listAsync(lang: 'en' | 'es', manualId?: string): Promise<Race[]> {
+    const { list } = await this.loadAsync(lang, manualId);
+    return list;
+  }
+
+  /**
+   * Async version of getById() with DB manual fallback.
+   */
+  async getByIdAsync(lang: 'en' | 'es', id: string, manualId?: string): Promise<Race | undefined> {
+    const { list } = await this.loadAsync(lang, manualId);
     return list.find(r => r.id === id);
   }
 }

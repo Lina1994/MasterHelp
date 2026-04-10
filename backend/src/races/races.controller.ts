@@ -25,9 +25,9 @@ export class RacesController {
    * @param lang Locale code ('en' | 'es')
    */
   @Get('manuals/:manualId/races')
-  listForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
+  async listForManual(@Param('manualId') manualId: string, @Query('lang') lang?: 'en' | 'es') {
     const l = lang || 'en';
-    return this.races.list(l, manualId);
+    return this.races.listAsync(l, manualId);
   }
 
   /**
@@ -38,13 +38,13 @@ export class RacesController {
    * @param lang Locale code ('en' | 'es')
    */
   @Get('manuals/:manualId/races/:id')
-  getForManual(
+  async getForManual(
     @Param('manualId') manualId: string,
     @Param('id') id: string,
     @Query('lang') lang?: 'en' | 'es',
   ) {
     const l = lang || 'en';
-    return this.races.getById(l, id, manualId);
+    return this.races.getByIdAsync(l, id, manualId);
   }
 
   // --- Campaign CRUD ---
