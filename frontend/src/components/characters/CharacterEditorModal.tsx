@@ -47,6 +47,10 @@ import { TraitAutocomplete } from './TraitAutocomplete';
 import { FeatAutocomplete } from './FeatAutocomplete';
 import { CharacterAutoFillPanel, OptionItem } from './CharacterAutoFillPanel';
 import CharacterRelationsSection from './CharacterRelationsSection';
+import { useManualNames } from '../../hooks/useManualNames';
+
+/** Option entry that carries the source manual for disambiguation. */
+interface LabeledOption { name: string; sourceManual?: string | null }
 
 /* ──────────────────── helpers ──────────────────── */
 
@@ -290,11 +294,12 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   const [errorText, setErrorText] = useState<string | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
   const [maps, setMaps] = useState<MapItemDto[]>([]);
-  const [classOptions, setClassOptions] = useState<string[]>([]);
+  const [classOptions, setClassOptions] = useState<LabeledOption[]>([]);
   const [classItems, setClassItems] = useState<OptionItem[]>([]);
-  const [raceOptions, setRaceOptions] = useState<string[]>([]);
+  const [raceOptions, setRaceOptions] = useState<LabeledOption[]>([]);
   const [raceItems, setRaceItems] = useState<OptionItem[]>([]);
-  const [backgroundOptions, setBackgroundOptions] = useState<string[]>([]);
+  const [backgroundOptions, setBackgroundOptions] = useState<LabeledOption[]>([]);
+  const { getManualName } = useManualNames();
 
   React.useEffect(() => {
     setDraft(initialDraft);
@@ -319,7 +324,7 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
       listCampaignClasses(cId, { pageSize: 500 }, lang)
         .then(res => {
           const items = res.items || [];
-          setClassOptions(items.map((c: any) => c.name).filter(Boolean));
+          setClassOptions(items.map((c: any) => ({ name: c.name, sourceManual: c.sourceManual ?? null })).filter((c: LabeledOption) => c.name));
           setClassItems(items.map((c: any) => ({ id: c.id, name: c.name })).filter((c: OptionItem) => c.id && c.name));
         })
         .catch(() => { setClassOptions([]); setClassItems([]); });
@@ -327,13 +332,13 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
       listCampaignRaces(cId, { pageSize: 500 }, lang)
         .then(res => {
           const items = res.items || [];
-          setRaceOptions(items.map((r: any) => r.name).filter(Boolean));
+          setRaceOptions(items.map((r: any) => ({ name: r.name, sourceManual: r.sourceManual ?? null })).filter((r: LabeledOption) => r.name));
           setRaceItems(items.map((r: any) => ({ id: r.id, name: r.name })).filter((r: OptionItem) => r.id && r.name));
         })
         .catch(() => { setRaceOptions([]); setRaceItems([]); });
       // Load background names
       listCampaignBackgrounds(cId, { pageSize: 500 }, lang)
-        .then(res => setBackgroundOptions((res.items || []).map((b: any) => b.name).filter(Boolean)))
+        .then(res => setBackgroundOptions((res.items || []).map((b: any) => ({ name: b.name, sourceManual: b.sourceManual ?? null })).filter((b: LabeledOption) => b.name)))
         .catch(() => setBackgroundOptions([]));
     } else {
       setMaps([]);
@@ -548,6 +553,13 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
               freeSolo
               size="small"
               options={classOptions}
+              getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.name}
+              isOptionEqualToValue={(opt, val) => (typeof opt === 'string' ? opt : opt.name) === (typeof val === 'string' ? val : val.name)}
+              filterOptions={(options, state) => options.filter(o => o.name.toLowerCase().includes(state.inputValue.toLowerCase()))}
+              renderOption={(props, opt) => {
+                const o = typeof opt === 'string' ? { name: opt } as LabeledOption : opt;
+                return <li {...props} key={`${o.name}-${o.sourceManual ?? ''}`}>{o.name}{o.sourceManual ? <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>({getManualName(o.sourceManual)})</Typography> : null}</li>;
+              }}
               value={draft.className || ''}
               onInputChange={(_e, val) => setDraft({ ...draft, className: val })}
               renderInput={(params) => <TextField {...params} label={t('class', 'Clase')} />}
@@ -558,6 +570,13 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
               freeSolo
               size="small"
               options={raceOptions}
+              getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.name}
+              isOptionEqualToValue={(opt, val) => (typeof opt === 'string' ? opt : opt.name) === (typeof val === 'string' ? val : val.name)}
+              filterOptions={(options, state) => options.filter(o => o.name.toLowerCase().includes(state.inputValue.toLowerCase()))}
+              renderOption={(props, opt) => {
+                const o = typeof opt === 'string' ? { name: opt } as LabeledOption : opt;
+                return <li {...props} key={`${o.name}-${o.sourceManual ?? ''}`}>{o.name}{o.sourceManual ? <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>({getManualName(o.sourceManual)})</Typography> : null}</li>;
+              }}
               value={draft.race || ''}
               onInputChange={(_e, val) => setDraft({ ...draft, race: val })}
               renderInput={(params) => <TextField {...params} label={t('race', 'Raza')} />}
@@ -567,6 +586,13 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
               freeSolo
               size="small"
               options={backgroundOptions}
+              getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.name}
+              isOptionEqualToValue={(opt, val) => (typeof opt === 'string' ? opt : opt.name) === (typeof val === 'string' ? val : val.name)}
+              filterOptions={(options, state) => options.filter(o => o.name.toLowerCase().includes(state.inputValue.toLowerCase()))}
+              renderOption={(props, opt) => {
+                const o = typeof opt === 'string' ? { name: opt } as LabeledOption : opt;
+                return <li {...props} key={`${o.name}-${o.sourceManual ?? ''}`}>{o.name}{o.sourceManual ? <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>({getManualName(o.sourceManual)})</Typography> : null}</li>;
+              }}
               value={draft.background || ''}
               onInputChange={(_e, val) => setDraft({ ...draft, background: val })}
               renderInput={(params) => <TextField {...params} label={t('background', 'Trasfondo')} />}

@@ -20,6 +20,7 @@ import {
   type CampaignTraitListItem, type CampaignTraitDetail,
 } from '../api/traits/traitsApi';
 import EditTraitDialog from '../components/traits/EditTraitDialog';
+import { useManualNames } from '../hooks/useManualNames';
 
 const PAGE_SIZE = 20;
 
@@ -135,12 +136,7 @@ export default function CampaignTraitsPage() {
     loadTraits();
   };
 
-  const getManualName = (manualId: string | null | undefined): string => {
-    if (!manualId) return 'Manual';
-    if (manualId === 'dnd5e-2014') return 'D&D 5e (2014)';
-    if (manualId === 'dnd5e-2024') return 'D&D 5e (2024)';
-    return manualId.split('-').map((p) => p.toUpperCase()).join(' ');
-  };
+  const { getManualName } = useManualNames();
 
   const originLabel = (o: string, src?: string | null, custom?: string | null) => {
     switch (o) {

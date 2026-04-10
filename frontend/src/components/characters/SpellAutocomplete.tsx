@@ -14,6 +14,7 @@ import {
   CampaignSpellListItem,
 } from '../../api/spells/spellsApi';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
+import { useManualNames } from '../../hooks/useManualNames';
 
 /* ───────────────────────── types ───────────────────────── */
 
@@ -23,6 +24,8 @@ interface SpellOption {
   label: string;
   /** School of magic (for secondary info). */
   school?: string;
+  /** Manual ID the spell comes from (for disambiguation). */
+  sourceManual?: string | null;
   /** Whether this option was typed freely by the user (not from the API). */
   isCustom?: boolean;
 }
@@ -70,6 +73,7 @@ export const SpellAutocomplete: React.FC<SpellAutocompleteProps> = ({
 }) => {
   const { i18n } = useTranslation();
   const { activeCampaign } = useActiveCampaign();
+  const { getManualName } = useManualNames();
   const campaignId = campaignIdProp || activeCampaign?.id || '';
   const [catalogueSpells, setCatalogueSpells] = useState<CampaignSpellListItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -115,6 +119,7 @@ export const SpellAutocomplete: React.FC<SpellAutocompleteProps> = ({
       catalogueSpells.map((s) => ({
         label: s.name,
         school: s.school,
+        sourceManual: s.sourceManual ?? null,
       })),
     [catalogueSpells],
   );
@@ -182,11 +187,18 @@ export const SpellAutocomplete: React.FC<SpellAutocompleteProps> = ({
             <Typography variant="body2">
               {option.isCustom ? `+ "${option.label}"` : option.label}
             </Typography>
-            {option.school && !option.isCustom && (
-              <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                {option.school}
-              </Typography>
-            )}
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+              {option.school && !option.isCustom && (
+                <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                  {option.school}
+                </Typography>
+              )}
+              {option.sourceManual && !option.isCustom && (
+                <Typography variant="caption" color="text.secondary">
+                  ({getManualName(option.sourceManual)})
+                </Typography>
+              )}
+            </Box>
           </Box>
         );
       }}

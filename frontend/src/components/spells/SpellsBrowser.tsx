@@ -155,7 +155,7 @@ export default function SpellsBrowser({ embedded, title, manualId }: SpellsBrows
               </Typography>
               <Typography variant="body2" gutterBottom>Components: {selected.components}</Typography>
               {selected.classes?.length ? (
-                <Typography variant="body2" gutterBottom>Classes: {selected.classes.join(', ')}</Typography>
+                <Typography variant="body2" gutterBottom>Classes: {Array.isArray(selected.classes) ? selected.classes.join(', ') : selected.classes}</Typography>
               ) : null}
               {selected.description && (
                 <Box sx={{ mt: 2 }}>
