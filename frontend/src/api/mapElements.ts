@@ -10,7 +10,10 @@ export interface TimeOfDayIntensity {
   night: number;
 }
 
-export type MapElementType = 'wall' | 'door' | 'window' | 'light';
+export type MapElementType = 'wall' | 'door' | 'window' | 'light' | 'sound';
+
+/** Type of soundtrack source linked to a sound-source element. */
+export type SoundSourceType = 'song' | 'playlist' | 'effect' | 'preset';
 
 /** Wall — polyline that blocks light. Points normalised 0–1. */
 export interface MapWallElement {
@@ -57,8 +60,33 @@ export interface MapLightElement {
   intensityByTimeOfDay?: TimeOfDayIntensity;
 }
 
+/**
+ * Sound-source element — emits proximity-based audio relative to allied tokens.
+ * Position normalised 0–1.
+ */
+export interface MapSoundSourceElement {
+  id: string;
+  type: 'sound';
+  position: { x: number; y: number };
+  /** Radius in pixels at the map's natural resolution (audible range). */
+  radius: number;
+  /** Whether the source is currently playing. */
+  isOn: boolean;
+  /** When true the master can toggle this source from the preview toolbar. */
+  showInPreview: boolean;
+  label?: string;
+  /** Base volume 0–1 (multiplied by distance attenuation). */
+  volume: number;
+  /** Kind of soundtrack asset linked. */
+  sourceType?: SoundSourceType;
+  /** UUID of the linked soundtrack asset. */
+  sourceId?: string;
+  /** Display name snapshot of the linked asset. */
+  sourceName?: string;
+}
+
 /** Discriminated union of all structural map elements. */
-export type MapElement = MapWallElement | MapDoorElement | MapWindowElement | MapLightElement;
+export type MapElement = MapWallElement | MapDoorElement | MapWindowElement | MapLightElement | MapSoundSourceElement;
 
 /**
  * Fetch map elements for a given map+campaign.

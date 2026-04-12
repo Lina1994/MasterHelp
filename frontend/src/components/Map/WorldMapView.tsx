@@ -36,7 +36,9 @@ import ElementsPreviewLayer from './ElementsPreviewLayer';
 import { useMapElements } from '../../hooks/useMapElements';
 import { TITLEBAR_HEIGHT } from '../TitleBar';
 import type { ElementEditorTool } from './MapElementsEditorLayer';
-import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement } from '../../api/mapElements';
+import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement, MapSoundSourceElement } from '../../api/mapElements';
+import SoundSourcePickerDialog from './SoundSourcePickerDialog';
+import type { SoundSourceSelection } from './SoundSourcePickerDialog';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -165,6 +167,9 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
   const [elementTool, setElementTool] = useState<ElementEditorTool>('select');
   const [selectedElement, setSelectedElement] = useState<MapElement | null>(null);
   const [newLightRadius, setNewLightRadius] = useState(80);
+  const [newSoundRadius, setNewSoundRadius] = useState(200);
+  const [soundPickerOpen, setSoundPickerOpen] = useState(false);
+  const [soundPickerElementId, setSoundPickerElementId] = useState<string | null>(null);
   const [elementsAnchor, setElementsAnchor] = useState<HTMLElement | null>(null);
 
   const previewLights = useMemo(
@@ -172,11 +177,11 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
     [elements],
   );
 
-  /** Elements (lights, doors, windows) visible in preview mode. */
+  /** Elements (lights, doors, windows, sounds) visible in preview mode. */
   const previewElements = useMemo(
     () => elements.filter(
-      (el): el is MapLightElement | MapDoorElement | MapWindowElement =>
-        (el.type === 'light' || el.type === 'door' || el.type === 'window') && !!(el as any).showInPreview,
+      (el): el is MapLightElement | MapDoorElement | MapWindowElement | MapSoundSourceElement =>
+        (el.type === 'light' || el.type === 'door' || el.type === 'window' || el.type === 'sound') && !!(el as any).showInPreview,
     ),
     [elements],
   );
@@ -186,6 +191,12 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
     const light = elements.find((el) => el.id === id);
     if (light && light.type === 'light') updateElement(id, { isOn: !light.isOn } as any);
   }, [elements, updateElement]);
+
+  /** Open the sound-source picker dialog for the given element. */
+  const handlePickSoundSource = useCallback((elementId: string) => {
+    setSoundPickerElementId(elementId);
+    setSoundPickerOpen(true);
+  }, []);
 
   // ─── Association lists (fetched once, passed to dialogs/detail) ──────────
   const [allMaps, setAllMaps] = useState<MapItemDto[]>([]);
@@ -449,6 +460,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
               heightPx={imageDims.h}
               elements={previewElements}
               onUpdate={updateElement}
+              onPickSoundSource={handlePickSoundSource}
             />
           )}
 
@@ -466,6 +478,8 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
               onRemoveElement={removeElement}
               onSelectElement={setSelectedElement}
               newLightRadius={newLightRadius}
+              newSoundRadius={newSoundRadius}
+              onPickSoundSource={handlePickSoundSource}
             />
           )}
 
@@ -613,6 +627,10 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
               onClearAllElements={clearAllElements}
               newLightRadius={newLightRadius}
               onSetNewLightRadius={setNewLightRadius}
+              newSoundRadius={newSoundRadius}
+              onSetNewSoundRadius={setNewSoundRadius}
+              campaignId={campaignId}
+              onPickSoundSource={(elementId) => { setSoundPickerElementId(elementId); setSoundPickerOpen(true); }}
               previewLights={previewLights}
               onToggleLight={handleToggleLight}
             />
@@ -663,6 +681,34 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
           allEncounters={allEncounters}
         />
       )}
+
+      {/* Sound source picker dialog */}
+      <SoundSourcePickerDialog
+        open={soundPickerOpen}
+        onClose={() => { setSoundPickerOpen(false); setSoundPickerElementId(null); }}
+        onSelect={(selection: SoundSourceSelection) => {
+          if (soundPickerElementId) {
+            updateElement(soundPickerElementId, {
+              sourceType: selection.sourceType,
+              sourceId: selection.sourceId,
+              sourceName: selection.sourceName,
+            } as any);
+          }
+          setSoundPickerOpen(false);
+          setSoundPickerElementId(null);
+        }}
+        campaignId={campaignId}
+        currentSourceType={
+          soundPickerElementId
+            ? (elements.find(el => el.id === soundPickerElementId) as MapSoundSourceElement | undefined)?.sourceType
+            : undefined
+        }
+        currentSourceId={
+          soundPickerElementId
+            ? (elements.find(el => el.id === soundPickerElementId) as MapSoundSourceElement | undefined)?.sourceId
+            : undefined
+        }
+      />
     </>
   );
 }

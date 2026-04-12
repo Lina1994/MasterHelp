@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, FormControlLabel, Popover, Stack, Switch, TextField, Typography } from '@mui/material';
-import type { MapElement, MapElementType, MapWallElement, MapDoorElement, MapWindowElement, MapLightElement, TimeOfDayIntensity } from '../../api/mapElements';
+import type { MapElement, MapElementType, MapWallElement, MapDoorElement, MapWindowElement, MapLightElement, MapSoundSourceElement, TimeOfDayIntensity } from '../../api/mapElements';
 
-export type ElementEditorTool = 'wall' | 'door' | 'window' | 'light' | 'select' | 'erase' | 'room';
+export type ElementEditorTool = 'wall' | 'door' | 'window' | 'light' | 'sound' | 'select' | 'erase' | 'room';
 
 /**
  * MapElementsEditorLayer
@@ -36,6 +36,9 @@ const MapElementsEditorLayer: React.FC<{
   onRemoveElement: (id: string) => void;
   onSelectElement?: (el: MapElement | null) => void;
   newLightRadius?: number;
+  newSoundRadius?: number;
+  /** Callback to open the sound-source picker for the given element. */
+  onPickSoundSource?: (elementId: string) => void;
 }> = ({
   widthPx,
   heightPx,
@@ -48,6 +51,8 @@ const MapElementsEditorLayer: React.FC<{
   onRemoveElement,
   onSelectElement,
   newLightRadius = 80,
+  newSoundRadius = 200,
+  onPickSoundSource,
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [drawingPoints, setDrawingPoints] = useState<{ x: number; y: number }[]>([]);
@@ -116,16 +121,16 @@ const MapElementsEditorLayer: React.FC<{
     setDraggingRadiusId(lightId);
   }, []);
 
-  /** While dragging, update the light radius to match pointer distance from center. */
+  /** While dragging, update the light/sound radius to match pointer distance from center. */
   const handleRadiusDragMove = useCallback((e: React.PointerEvent) => {
     if (!draggingRadiusId) return;
-    const light = elements.find((el): el is MapLightElement => el.id === draggingRadiusId && el.type === 'light');
-    if (!light) return;
+    const el = elements.find((el) => el.id === draggingRadiusId && (el.type === 'light' || el.type === 'sound'));
+    if (!el || (el.type !== 'light' && el.type !== 'sound')) return;
     const W = widthPx || 1;
     const H = heightPx || 1;
     const svgPt = toSvgPx(e.nativeEvent);
-    const cx = light.position.x * W;
-    const cy = light.position.y * H;
+    const cx = el.position.x * W;
+    const cy = el.position.y * H;
     const newRadius = Math.max(10, Math.min(2000, Math.round(Math.hypot(svgPt.x - cx, svgPt.y - cy))));
     onUpdateElement(draggingRadiusId, { radius: newRadius } as any);
   }, [draggingRadiusId, elements, widthPx, heightPx, toSvgPx, onUpdateElement]);
@@ -190,7 +195,7 @@ const MapElementsEditorLayer: React.FC<{
     const W = widthPx || 1;
     const H = heightPx || 1;
     let px: number, py: number;
-    if (el.type === 'light') {
+    if (el.type === 'light' || el.type === 'sound') {
       px = el.position.x * W;
       py = el.position.y * H;
     } else if (el.type === 'door' || el.type === 'window') {
@@ -239,6 +244,19 @@ const MapElementsEditorLayer: React.FC<{
         isOn: true,
         showInPreview: false,
         intensityByTimeOfDay: defaultIntensity,
+      });
+      return;
+    }
+
+    if (tool === 'sound') {
+      onAddElement({
+        id: uid(),
+        type: 'sound',
+        position: pt,
+        radius: newSoundRadius,
+        isOn: false,
+        showInPreview: false,
+        volume: 1,
       });
       return;
     }
@@ -548,6 +566,65 @@ const MapElementsEditorLayer: React.FC<{
             </g>
           );
         }
+        if (el.type === 'sound') {
+          const px = el.position.x * W;
+          const py = el.position.y * H;
+          const color = el.isOn ? '#bb66ff' : '#888888';
+          return (
+            <g key={el.id}
+              onMouseEnter={() => setHoveredId(el.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              style={{ cursor: 'pointer' }}
+              onClick={(e) => openElementPopover(e, el)}
+            >
+              {/* Radius circle — draggable to resize */}
+              <circle
+                cx={px} cy={py} r={el.radius}
+                fill="none"
+                stroke={color}
+                strokeWidth={draggingRadiusId === el.id ? 4 : isHovered ? 3 : 1}
+                strokeDasharray="6,4"
+                opacity={draggingRadiusId === el.id ? 0.9 : 0.5}
+                style={{ cursor: 'ew-resize', pointerEvents: 'stroke' }}
+                onPointerDown={(e) => handleRadiusDragStart(e, el.id)}
+                onPointerMove={handleRadiusDragMove}
+                onPointerUp={handleRadiusDragEnd}
+              />
+              {/* Musical note icon */}
+              <circle
+                cx={px} cy={py} r={isHovered ? 10 : 8}
+                fill={color}
+                stroke="#000"
+                strokeWidth={1}
+                opacity={0.35}
+              />
+              <text
+                x={px} y={py + 5}
+                textAnchor="middle"
+                fontSize={14}
+                fill={color}
+                stroke="#000"
+                strokeWidth={0.4}
+                paintOrder="stroke"
+                style={{ pointerEvents: 'none' }}
+              >
+                ♪
+              </text>
+              {el.label && (
+                <text
+                  x={px} y={py - 14}
+                  textAnchor="middle"
+                  fontSize={12}
+                  fill="#fff"
+                  stroke="#000"
+                  strokeWidth={0.5}
+                >
+                  {el.label}
+                </text>
+              )}
+            </g>
+          );
+        }
         return null;
       })}
 
@@ -765,6 +842,89 @@ const MapElementsEditorLayer: React.FC<{
           </Stack>
         );
       })()}
+
+      {editingElement && editingElement.type === 'sound' && (() => {
+        const snd = editingElement as MapSoundSourceElement;
+        return (
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">Editar fuente de sonido</Typography>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={snd.showInPreview}
+                  onChange={(e) => onUpdateElement(snd.id, { showInPreview: e.target.checked } as any)}
+                  size="small"
+                />
+              }
+              label="Visible fuera de edición"
+            />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={snd.isOn}
+                  onChange={(e) => onUpdateElement(snd.id, { isOn: e.target.checked } as any)}
+                  size="small"
+                />
+              }
+              label="Activada"
+            />
+
+            <TextField
+              size="small"
+              label="Nombre"
+              value={snd.label || ''}
+              onChange={(e) => onUpdateElement(snd.id, { label: e.target.value } as any)}
+            />
+
+            <TextField
+              size="small"
+              type="number"
+              label="Radio de alcance (px)"
+              value={snd.radius}
+              inputProps={{ min: 10, max: 2000, step: 10 }}
+              onChange={(e) => onUpdateElement(snd.id, { radius: Math.max(10, Number(e.target.value || 200)) } as any)}
+            />
+
+            <TextField
+              size="small"
+              type="number"
+              label="Volumen base (%)"
+              value={Math.round((snd.volume ?? 1) * 100)}
+              inputProps={{ min: 0, max: 100, step: 5 }}
+              onChange={(e) => onUpdateElement(snd.id, { volume: Math.max(0, Math.min(1, Number(e.target.value || 100) / 100)) } as any)}
+            />
+
+            {snd.sourceName && (
+              <Typography variant="caption" color="text.secondary">
+                Fuente: {snd.sourceName}
+              </Typography>
+            )}
+
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => onPickSoundSource?.(snd.id)}
+            >
+              {snd.sourceId ? 'Cambiar fuente de audio' : 'Asignar fuente de audio'}
+            </Button>
+
+            <Button
+              size="small"
+              color="error"
+              variant="outlined"
+              onClick={() => {
+                onRemoveElement(snd.id);
+                onSelectElement?.(null);
+                closeElementPopover();
+              }}
+            >
+              Eliminar fuente de sonido
+            </Button>
+          </Stack>
+        );
+      })()}
     </Popover>
     </>
   );
@@ -786,7 +946,7 @@ function findHitElement(
 
   for (const el of elements) {
     let dist = Infinity;
-    if (el.type === 'light') {
+    if (el.type === 'light' || el.type === 'sound') {
       dist = Math.hypot(pt.x - el.position.x, pt.y - el.position.y);
     } else {
       const pts = el.type === 'wall' ? el.points : el.points;

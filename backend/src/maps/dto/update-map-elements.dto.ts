@@ -26,7 +26,7 @@ class TimeOfDayIntensityDto {
  */
 class MapElementDto {
   @IsString() id: string;
-  @IsString() @IsIn(['wall', 'door', 'window', 'light']) type: 'wall' | 'door' | 'window' | 'light';
+  @IsString() @IsIn(['wall', 'door', 'window', 'light', 'sound']) type: 'wall' | 'door' | 'window' | 'light' | 'sound';
 
   // --- Wall / Door / Window ---
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => PointDto) @ArrayMaxSize(5000)
@@ -38,8 +38,9 @@ class MapElementDto {
   // --- Window ---
   @IsOptional() @ValidateNested() @Type(() => TimeOfDayIntensityDto)
   lightByTimeOfDay?: TimeOfDayIntensityDto;
+  @IsOptional() @IsBoolean() covered?: boolean;
 
-  // --- Light ---
+  // --- Light / Sound ---
   @IsOptional() @ValidateNested() @Type(() => PointDto)
   position?: PointDto;
 
@@ -51,6 +52,12 @@ class MapElementDto {
 
   @IsOptional() @ValidateNested() @Type(() => TimeOfDayIntensityDto)
   intensityByTimeOfDay?: TimeOfDayIntensityDto;
+
+  // --- Sound source ---
+  @IsOptional() @IsNumber() @Min(0) @Max(1) volume?: number;
+  @IsOptional() @IsString() @IsIn(['song', 'playlist', 'effect', 'preset']) sourceType?: string;
+  @IsOptional() @IsString() sourceId?: string;
+  @IsOptional() @IsString() sourceName?: string;
 }
 
 /**

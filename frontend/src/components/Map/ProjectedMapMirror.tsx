@@ -33,9 +33,11 @@ import MapElementsEditorLayer from './MapElementsEditorLayer';
 import type { ElementEditorTool } from './MapElementsEditorLayer';
 import ElementsPreviewLayer from './ElementsPreviewLayer';
 import { useMapElements } from '../../hooks/useMapElements';
-import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement } from '../../api/mapElements';
+import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement, MapSoundSourceElement } from '../../api/mapElements';
 import SkylineViewportContent from '../Skyline/SkylineViewportContent';
-// removed duplicate import
+import { useMapSoundPlayback } from '../../hooks/useMapSoundPlayback';
+import SoundSourcePickerDialog from './SoundSourcePickerDialog';
+import type { SoundSourceSelection } from './SoundSourcePickerDialog';
 
 const ProjectedMapMirror: React.FC<{
   fogEnabled?: boolean;
@@ -113,6 +115,9 @@ const ProjectedMapMirror: React.FC<{
   const [elementTool, setElementTool] = useState<ElementEditorTool>('select');
   const [selectedElement, setSelectedElement] = useState<MapElement | null>(null);
   const [newLightRadius, setNewLightRadius] = useState<number>(80);
+  const [newSoundRadius, setNewSoundRadius] = useState<number>(200);
+  const [soundPickerOpen, setSoundPickerOpen] = useState(false);
+  const [soundPickerElementId, setSoundPickerElementId] = useState<string | null>(null);
 
   // Token visualization settings (guide dots and cell shading)
   const [showGuideDots, setShowGuideDots] = useState<boolean>(() => {
@@ -429,14 +434,49 @@ const ProjectedMapMirror: React.FC<{
     return elements.filter((el): el is MapLightElement => el.type === 'light' && el.showInPreview);
   }, [elements]);
 
-  /** Elements (lights, doors, windows) visible in preview mode. */
+  /** Elements (lights, doors, windows, sounds) visible in preview mode. */
   const previewElements = useMemo(
     () => elements.filter(
-      (el): el is MapLightElement | MapDoorElement | MapWindowElement =>
-        (el.type === 'light' || el.type === 'door' || el.type === 'window') && !!(el as any).showInPreview,
+      (el): el is MapLightElement | MapDoorElement | MapWindowElement | MapSoundSourceElement =>
+        (el.type === 'light' || el.type === 'door' || el.type === 'window' || el.type === 'sound') && !!(el as any).showInPreview,
     ),
     [elements],
   );
+
+  // --- Sound sources: proximity-based playback ---
+  const soundSources = useMemo(
+    () => elements.filter((el): el is MapSoundSourceElement => el.type === 'sound'),
+    [elements],
+  );
+  useMapSoundPlayback({
+    soundSources,
+    tokens,
+    mapW: naturalSize?.w || 0,
+    mapH: naturalSize?.h || 0,
+    cellSize: gridSettings.cellSize,
+    gridType: gridSettings.type as 'square' | 'hex',
+    campaignId: activeCampaign?.id,
+    enabled: true,
+  });
+
+  /** Open the sound-source picker dialog for the given element. */
+  const handlePickSoundSource = useCallback((elementId: string) => {
+    setSoundPickerElementId(elementId);
+    setSoundPickerOpen(true);
+  }, []);
+
+  /** Apply the selected sound source to the target element. */
+  const handleSoundSourceSelected = useCallback((selection: SoundSourceSelection) => {
+    if (soundPickerElementId) {
+      updateElement(soundPickerElementId, {
+        sourceType: selection.sourceType,
+        sourceId: selection.sourceId,
+        sourceName: selection.sourceName,
+      } as any);
+    }
+    setSoundPickerOpen(false);
+    setSoundPickerElementId(null);
+  }, [soundPickerElementId, updateElement]);
 
   // Capa que simula la ventana secundaria: marco escalado con fondo negro
   return (
@@ -536,6 +576,10 @@ const ProjectedMapMirror: React.FC<{
           onClearAllElements={clearAllElements}
           newLightRadius={newLightRadius}
           onSetNewLightRadius={setNewLightRadius}
+          newSoundRadius={newSoundRadius}
+          onSetNewSoundRadius={setNewSoundRadius}
+          campaignId={activeCampaign?.id}
+          onPickSoundSource={handlePickSoundSource}
           previewLights={previewLights}
           onToggleLight={(id) => {
             const light = elements.find(el => el.id === id);
@@ -730,6 +774,7 @@ const ProjectedMapMirror: React.FC<{
                               heightPx={contentH}
                               elements={previewElements}
                               onUpdate={updateElement}
+                              onPickSoundSource={handlePickSoundSource}
                             />
                           )}
 
@@ -747,6 +792,8 @@ const ProjectedMapMirror: React.FC<{
                               onRemoveElement={removeElement}
                               onSelectElement={setSelectedElement}
                               newLightRadius={newLightRadius}
+                              newSoundRadius={newSoundRadius}
+                              onPickSoundSource={handlePickSoundSource}
                             />
                           )}
                         </Box>
@@ -884,6 +931,26 @@ const ProjectedMapMirror: React.FC<{
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Sound source picker dialog */}
+      {activeCampaign?.id && (
+        <SoundSourcePickerDialog
+          open={soundPickerOpen}
+          onClose={() => { setSoundPickerOpen(false); setSoundPickerElementId(null); }}
+          onSelect={handleSoundSourceSelected}
+          campaignId={activeCampaign.id}
+          currentSourceType={
+            soundPickerElementId
+              ? (elements.find(el => el.id === soundPickerElementId) as MapSoundSourceElement | undefined)?.sourceType
+              : undefined
+          }
+          currentSourceId={
+            soundPickerElementId
+              ? (elements.find(el => el.id === soundPickerElementId) as MapSoundSourceElement | undefined)?.sourceId
+              : undefined
+          }
+        />
+      )}
     </Paper>
   );
 };

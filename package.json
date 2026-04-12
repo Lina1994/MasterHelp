@@ -11,6 +11,7 @@
     "build:frontend": "npm --prefix frontend run build",
     "build:backend": "npm --prefix backend run build",
     "build:all": "npm run build:frontend && npm run build:backend",
+    "docs:generate": "node scripts/docs/generate-tech-stack.cjs && node scripts/docs/generate-file-registry.cjs && node scripts/docs/generate-hooks-registry.cjs && node scripts/docs/generate-api-endpoints.cjs && node scripts/docs/generate-components-map.cjs",
     "dist": "npm run build:all && electron-builder --win",
     "dist:mac": "npm run build:all && electron-builder --mac",
     "dist:all": "npm run build:all && electron-builder --win --mac",

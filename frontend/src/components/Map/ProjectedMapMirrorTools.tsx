@@ -112,6 +112,12 @@ export type ProjectedMapMirrorToolsProps = {
   onClearAllElements: () => void;
   newLightRadius: number;
   onSetNewLightRadius: (v: number) => void;
+  newSoundRadius: number;
+  onSetNewSoundRadius: (v: number) => void;
+  /** Campaign UUID — used for the sound-source picker. */
+  campaignId?: string;
+  /** Callback to open the sound-source picker dialog for the given element. */
+  onPickSoundSource?: (elementId: string) => void;
   /** Toggle a light on/off from the preview toolbar. */
   previewLights: MapLightElement[];
   onToggleLight: (id: string) => void;
@@ -536,6 +542,10 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
               onClearAllElements={props.onClearAllElements}
               newLightRadius={props.newLightRadius}
               onSetNewLightRadius={props.onSetNewLightRadius}
+              newSoundRadius={props.newSoundRadius}
+              onSetNewSoundRadius={props.onSetNewSoundRadius}
+              campaignId={props.campaignId}
+              onPickSoundSource={props.onPickSoundSource}
               previewLights={props.previewLights}
               onToggleLight={props.onToggleLight}
             />

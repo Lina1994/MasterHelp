@@ -1,11 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { FormControlLabel, Popover, Stack, Switch, TextField, Typography } from '@mui/material';
-import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement } from '../../api/mapElements';
+import { Button, FormControlLabel, Popover, Stack, Switch, TextField, Typography } from '@mui/material';
+import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement, MapSoundSourceElement } from '../../api/mapElements';
 
 /**
  * Subset of elements eligible for preview outside edit mode.
  */
-type PreviewElement = MapLightElement | MapDoorElement | MapWindowElement;
+type PreviewElement = MapLightElement | MapDoorElement | MapWindowElement | MapSoundSourceElement;
 
 /**
  * ElementsPreviewLayer
@@ -24,7 +24,9 @@ const ElementsPreviewLayer: React.FC<{
   heightPx: number;
   elements: PreviewElement[];
   onUpdate: (id: string, patch: Partial<MapElement>) => void;
-}> = ({ widthPx, heightPx, elements, onUpdate }) => {
+  /** Callback to open the sound-source picker for the given element. */
+  onPickSoundSource?: (elementId: string) => void;
+}> = ({ widthPx, heightPx, elements, onUpdate, onPickSoundSource }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [popover, setPopover] = useState<{
     elementId: string;
@@ -42,7 +44,7 @@ const ElementsPreviewLayer: React.FC<{
     const ctm = svg.getScreenCTM();
     if (!ctm) return;
     let px: number, py: number;
-    if (el.type === 'light') {
+    if (el.type === 'light' || el.type === 'sound') {
       px = el.position.x * (widthPx || 1);
       py = el.position.y * (heightPx || 1);
     } else {
@@ -127,6 +129,38 @@ const ElementsPreviewLayer: React.FC<{
                 style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
                 onClick={(e) => openPopover(e, el)}
               />
+            );
+          }
+
+          if (el.type === 'sound') {
+            const px = el.position.x * W;
+            const py = el.position.y * H;
+            const color = el.isOn ? '#bb66ff' : '#888888';
+            return (
+              <g
+                key={el.id}
+                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+                onClick={(e) => openPopover(e, el)}
+              >
+                <circle cx={px} cy={py} r={12} fill={color} opacity={0.25} />
+                <text
+                  x={px} y={py + 5}
+                  textAnchor="middle" fontSize={14}
+                  fill={color} stroke="#000" strokeWidth={0.4} paintOrder="stroke"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  ♪
+                </text>
+                {el.label && (
+                  <text
+                    x={px} y={py - 14}
+                    textAnchor="middle" fontSize={11}
+                    fill="#fff" stroke="#000" strokeWidth={0.4} paintOrder="stroke"
+                  >
+                    {el.label}
+                  </text>
+                )}
+              </g>
             );
           }
 
@@ -215,6 +249,40 @@ const ElementsPreviewLayer: React.FC<{
                   }}
                 />
               ))}
+            </Stack>
+          );
+        })()}
+
+        {/* ── Sound source ──────────────────────────────────── */}
+        {activeElement?.type === 'sound' && (() => {
+          const snd = activeElement as MapSoundSourceElement;
+          return (
+            <Stack spacing={0.5}>
+              <Typography variant="subtitle2">
+                {snd.label || `Sonido ${snd.id.slice(-4)}`}
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={snd.isOn}
+                    onChange={() => onUpdate(snd.id, { isOn: !snd.isOn } as any)}
+                    size="small"
+                  />
+                }
+                label={snd.isOn ? 'Activada' : 'Desactivada'}
+              />
+              {snd.sourceName && (
+                <Typography variant="caption" color="text.secondary">
+                  {snd.sourceName}
+                </Typography>
+              )}
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => onPickSoundSource?.(snd.id)}
+              >
+                {snd.sourceId ? 'Cambiar fuente de audio' : 'Asignar fuente de audio'}
+              </Button>
             </Stack>
           );
         })()}

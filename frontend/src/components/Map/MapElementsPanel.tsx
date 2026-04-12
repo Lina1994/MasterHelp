@@ -4,13 +4,14 @@ import {
   Divider,
   FormControlLabel,
   MenuItem,
+  Slider,
   Stack,
   Switch,
   TextField,
   Typography,
 } from '@mui/material';
 import type { ElementEditorTool } from './MapElementsEditorLayer';
-import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement } from '../../api/mapElements';
+import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement, MapSoundSourceElement } from '../../api/mapElements';
 
 /**
  * Props for the reusable MapElementsPanel.
@@ -31,6 +32,12 @@ export interface MapElementsPanelProps {
   onClearAllElements: () => void;
   newLightRadius: number;
   onSetNewLightRadius: (v: number) => void;
+  newSoundRadius: number;
+  onSetNewSoundRadius: (v: number) => void;
+  /** Campaign UUID — used for the sound-source picker. */
+  campaignId?: string;
+  /** Callback to open the sound-source picker dialog for the given element. */
+  onPickSoundSource?: (elementId: string) => void;
   /** @deprecated Kept for backward compatibility — no longer rendered. */
   previewLights?: MapLightElement[];
   /** @deprecated Kept for backward compatibility — no longer rendered. */
@@ -66,6 +73,7 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
             <MenuItem value="door">Puerta</MenuItem>
             <MenuItem value="window">Ventana</MenuItem>
             <MenuItem value="light">Fuente de luz</MenuItem>
+            <MenuItem value="sound">Fuente de sonido</MenuItem>
             <MenuItem value="erase">Borrar</MenuItem>
             <MenuItem value="room">Estancia</MenuItem>
           </TextField>
@@ -81,6 +89,17 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
             />
           )}
 
+          {props.elementTool === 'sound' && (
+            <TextField
+              size="small"
+              type="number"
+              label="Radio de alcance (px)"
+              value={props.newSoundRadius}
+              inputProps={{ min: 10, max: 2000, step: 10 }}
+              onChange={(e) => props.onSetNewSoundRadius(Math.max(10, Math.min(2000, Number(e.target.value || 200))))}
+            />
+          )}
+
           {/* Selected element inspector */}
           {props.selectedElement && (
             <>
@@ -89,7 +108,8 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
                 Elemento seleccionado: {
                   props.selectedElement.type === 'wall' ? 'Muro' :
                   props.selectedElement.type === 'door' ? 'Puerta' :
-                  props.selectedElement.type === 'window' ? 'Ventana' : 'Luz'
+                  props.selectedElement.type === 'window' ? 'Ventana' :
+                  props.selectedElement.type === 'sound' ? 'Fuente de sonido' : 'Luz'
                 }
               </Typography>
 
@@ -193,6 +213,70 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
                 </>
               )}
 
+              {props.selectedElement.type === 'sound' && (
+                <>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={(props.selectedElement as MapSoundSourceElement).isOn}
+                        onChange={(e) => props.onUpdateElement(props.selectedElement!.id, { isOn: e.target.checked } as any)}
+                      />
+                    }
+                    label="Activada"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={(props.selectedElement as MapSoundSourceElement).showInPreview}
+                        onChange={(e) => props.onUpdateElement(props.selectedElement!.id, { showInPreview: e.target.checked } as any)}
+                      />
+                    }
+                    label="Visible en vista previa"
+                  />
+                  <TextField
+                    size="small"
+                    label="Etiqueta"
+                    value={(props.selectedElement as MapSoundSourceElement).label || ''}
+                    onChange={(e) => props.onUpdateElement(props.selectedElement!.id, { label: e.target.value } as any)}
+                  />
+                  <TextField
+                    size="small"
+                    type="number"
+                    label="Radio de alcance (px)"
+                    value={(props.selectedElement as MapSoundSourceElement).radius}
+                    inputProps={{ min: 10, max: 2000, step: 10 }}
+                    onChange={(e) => props.onUpdateElement(props.selectedElement!.id, { radius: Math.max(10, Number(e.target.value || 200)) } as any)}
+                  />
+                  <Typography variant="caption" color="text.secondary">Volumen base</Typography>
+                  <Slider
+                    size="small"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={Math.round(((props.selectedElement as MapSoundSourceElement).volume ?? 1) * 100)}
+                    valueLabelDisplay="auto"
+                    valueLabelFormat={(v) => `${v}%`}
+                    onChange={(_, v) => props.onUpdateElement(props.selectedElement!.id, { volume: (v as number) / 100 } as any)}
+                  />
+                  {(props.selectedElement as MapSoundSourceElement).sourceName ? (
+                    <Typography variant="caption" color="text.secondary">
+                      Fuente: {(props.selectedElement as MapSoundSourceElement).sourceName}
+                    </Typography>
+                  ) : (
+                    <Typography variant="caption" color="warning.main">
+                      Sin fuente de audio asignada
+                    </Typography>
+                  )}
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => props.onPickSoundSource?.(props.selectedElement!.id)}
+                  >
+                    {(props.selectedElement as MapSoundSourceElement).sourceId ? 'Cambiar fuente de audio' : 'Asignar fuente de audio'}
+                  </Button>
+                </>
+              )}
+
               <Button size="small" color="error" variant="outlined" onClick={() => { props.onRemoveElement(props.selectedElement!.id); props.onSelectElement(null); }}>
                 Eliminar elemento
               </Button>
@@ -211,12 +295,14 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
         const lights = props.elements.filter((el): el is MapLightElement => el.type === 'light');
         const doors = props.elements.filter((el): el is MapDoorElement => el.type === 'door');
         const windows = props.elements.filter((el): el is MapWindowElement => el.type === 'window');
+        const sounds = props.elements.filter((el): el is MapSoundSourceElement => el.type === 'sound');
 
         const hasLights = lights.length > 0;
         const hasDoors = doors.length > 0;
         const hasWindows = windows.length > 0;
+        const hasSounds = sounds.length > 0;
 
-        if (!hasLights && !hasDoors && !hasWindows) return null;
+        if (!hasLights && !hasDoors && !hasWindows && !hasSounds) return null;
 
         const allLightsVisible = hasLights && lights.every((l) => l.showInPreview);
         const allLightsOn = hasLights && lights.every((l) => l.isOn);
@@ -224,6 +310,8 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
         const allDoorsOpen = hasDoors && doors.every((d) => d.isOpen);
         const allWindowsVisible = hasWindows && windows.every((w) => w.showInPreview);
         const allWindowsCovered = hasWindows && windows.every((w) => w.covered);
+        const allSoundsVisible = hasSounds && sounds.every((s) => s.showInPreview);
+        const allSoundsOn = hasSounds && sounds.every((s) => s.isOn);
 
         return (
           <>
@@ -301,6 +389,31 @@ const MapElementsPanel: React.FC<MapElementsPanelProps> = (props) => {
                     />
                   }
                   label="Ventanas tapadas"
+                />
+              </>
+            )}
+
+            {hasSounds && (
+              <>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allSoundsVisible}
+                      onChange={(e) => sounds.forEach((s) => props.onUpdateElement(s.id, { showInPreview: e.target.checked } as any))}
+                      size="small"
+                    />
+                  }
+                  label="Sonidos visibles"
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allSoundsOn}
+                      onChange={(e) => sounds.forEach((s) => props.onUpdateElement(s.id, { isOn: e.target.checked } as any))}
+                      size="small"
+                    />
+                  }
+                  label="Sonidos activados"
                 />
               </>
             )}
