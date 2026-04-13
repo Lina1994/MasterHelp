@@ -13,6 +13,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { UpdateUserPreferencesDto } from './dto/update-user-preferences.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -30,13 +31,14 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async updatePreferences(
     @Request() req,
-    @Body() body: { language?: string; theme?: string; sidebarConfig?: string | null },
+    @Body() body: UpdateUserPreferencesDto,
   ) {
     return this.usersService.updatePreferences(
       req.user.userId,
       body.language,
       body.theme,
       body.sidebarConfig,
+      body.shortcutsConfig,
     );
   }
 

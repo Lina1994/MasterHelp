@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, IsUUID, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 /**
@@ -8,7 +8,8 @@ import { Transform } from 'class-transformer';
 export class UpdateMapDto {
   @IsOptional()
   @IsString()
-  @MaxLength(200)
+  @MinLength(1, { message: 'Map name must not be empty' })
+  @MaxLength(200, { message: 'Map name must not exceed 200 characters' })
   name?: string;
 
   @IsOptional()
@@ -113,4 +114,14 @@ export class UpdateMapDto {
   })
   @IsBoolean()
   isPrepared?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined) return undefined;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value === 'true';
+    return Boolean(value);
+  })
+  @IsBoolean()
+  fogEnabledByDefault?: boolean;
 }

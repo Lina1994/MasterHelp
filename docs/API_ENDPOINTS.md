@@ -4,9 +4,9 @@ Registro de endpoints backend y funciones API frontend.
 
 ## Backend (controllers)
 
-| Modulo | Metodo | Ruta | Handler | Archivo |
+| Modulo | Metodo | Ruta | Handler | Archivo | Contrato crítico |
 | --- | --- | --- | --- | --- |
-| affinity-links | DELETE | /affinity-links/:id | remove | backend/src/characters/affinity-links.controller.ts |
+| affinity-links | DELETE | /affinity-links/:id | remove | backend/src/characters/affinity-links.controller.ts | No |
 | affinity-links | PATCH | /affinity-links/:id | update | backend/src/characters/affinity-links.controller.ts |
 | affinity-links | GET | /affinity-links | list | backend/src/characters/affinity-links.controller.ts |
 | affinity-links | POST | /affinity-links | create | backend/src/characters/affinity-links.controller.ts |
@@ -70,22 +70,22 @@ Registro de endpoints backend y funciones API frontend.
 | traits | POST | /campaigns/:campaignId/traits/copy/:manualId/:traitId | copyTraitFromManual | backend/src/traits/traits.controller.ts |
 | traits | GET | /campaigns/:campaignId/traits | listCampaignTraits | backend/src/traits/traits.controller.ts |
 | traits | POST | /campaigns/:campaignId/traits | createCampaignTrait | backend/src/traits/traits.controller.ts |
-| campaigns | GET | /campaigns/:id/active-encounter | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | PATCH | /campaigns/:id/active-encounter | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | GET | /campaigns/:id/active-map | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | PATCH | /campaigns/:id/active-map | UseGuards | backend/src/campaigns/campaigns.controller.ts |
+| campaigns | GET | /campaigns/:id/active-encounter | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
+| campaigns | PATCH | /campaigns/:id/active-encounter | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
+| campaigns | GET | /campaigns/:id/active-map | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
+| campaigns | PATCH | /campaigns/:id/active-map | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
 | campaigns | GET | /campaigns/:id/active-skyline-character | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | PATCH | /campaigns/:id/active-skyline-character | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | GET | /campaigns/:id/battle-state | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | PATCH | /campaigns/:id/battle-state | UseGuards | backend/src/campaigns/campaigns.controller.ts |
+| campaigns | GET | /campaigns/:id/battle-state | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
+| campaigns | PATCH | /campaigns/:id/battle-state | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
 | campaigns | GET | /campaigns/:id/default-skyline/exists | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | DELETE | /campaigns/:id/default-skyline | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | GET | /campaigns/:id/default-skyline | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | POST | /campaigns/:id/default-skyline | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | GET | /campaigns/:id/fog-of-war | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | PATCH | /campaigns/:id/fog-of-war | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | GET | /campaigns/:id/grid-overlay | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | PATCH | /campaigns/:id/grid-overlay | UseGuards | backend/src/campaigns/campaigns.controller.ts |
+| campaigns | GET | /campaigns/:id/fog-of-war | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
+| campaigns | PATCH | /campaigns/:id/fog-of-war | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
+| campaigns | GET | /campaigns/:id/grid-overlay | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
+| campaigns | PATCH | /campaigns/:id/grid-overlay | UseGuards | backend/src/campaigns/campaigns.controller.ts | Sí |
 | campaigns | POST | /campaigns/:id/invite | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | GET | /campaigns/:id/manuals | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | PATCH | /campaigns/:id/manuals | UseGuards | backend/src/campaigns/campaigns.controller.ts |
@@ -103,11 +103,11 @@ Registro de endpoints backend y funciones API frontend.
 | campaigns | PATCH | /campaigns/:id | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | POST | /campaigns/invitation/respond | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | GET | /campaigns/invitations/pending | UseGuards | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | GET | /campaigns/projection/:id/battle-state | getBattleStatePublic | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | GET | /campaigns/projection/:id/default-skyline/exists | hasDefaultSkylinePublic | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | GET | /campaigns/projection/:id/default-skyline | getDefaultSkylinePublic | backend/src/campaigns/campaigns.controller.ts |
+| campaigns | GET | /campaigns/projection/:id/battle-state | getBattleStatePublic | backend/src/campaigns/campaigns.controller.ts | Sí (PUBLIC) |
+| campaigns | GET | /campaigns/projection/:id/default-skyline/exists | hasDefaultSkylinePublic | backend/src/campaigns/campaigns.controller.ts | Sí (PUBLIC) |
+| campaigns | GET | /campaigns/projection/:id/default-skyline | getDefaultSkylinePublic | backend/src/campaigns/campaigns.controller.ts | Sí (PUBLIC) |
 | campaigns | GET | /campaigns/projection/:id/participant-monster-map | getParticipantMonsterMapPublic | backend/src/campaigns/campaigns.controller.ts |
-| campaigns | GET | /campaigns/projection/:id/skyline-overlay | getSkylineOverlayPublic | backend/src/campaigns/campaigns.controller.ts |
+| campaigns | GET | /campaigns/projection/:id/skyline-overlay | getSkylineOverlayPublic | backend/src/campaigns/campaigns.controller.ts | Sí (PUBLIC) |
 | campaigns | DELETE | /campaigns/skyline-items/:itemId | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | GET | /campaigns | UseGuards | backend/src/campaigns/campaigns.controller.ts |
 | campaigns | POST | /campaigns | UseGuards | backend/src/campaigns/campaigns.controller.ts |
@@ -171,7 +171,7 @@ Registro de endpoints backend y funciones API frontend.
 | maps | PATCH | /maps/:id/elements | setElements | backend/src/maps/maps.controller.ts |
 | maps | GET | /maps/:id/fog | getFog | backend/src/maps/maps.controller.ts |
 | maps | PATCH | /maps/:id/fog | setFog | backend/src/maps/maps.controller.ts |
-| maps | GET | /maps/:id/image | streamImage | backend/src/maps/maps.controller.ts |
+| maps | GET | /maps/:id/image | streamImage | backend/src/maps/maps.controller.ts | Sí |
 | maps | POST | /maps/:id/image | UseInterceptors | backend/src/maps/maps.controller.ts |
 | maps | POST | /maps/:id/import | importMap | backend/src/maps/maps.controller.ts |
 | maps | DELETE | /maps/:id/markers/:markerId | deleteMarker | backend/src/maps/maps.controller.ts |
@@ -243,7 +243,7 @@ Registro de endpoints backend y funciones API frontend.
 | soundtrack | DELETE | /soundtrack/songs/:songId/associate/:campaignId | UseGuards | backend/src/soundtrack/soundtrack.controller.ts |
 | soundtrack | POST | /soundtrack/songs/:songId/associate | UseGuards | backend/src/soundtrack/soundtrack.controller.ts |
 | soundtrack | POST | /soundtrack/songs/:songId/played | UseGuards | backend/src/soundtrack/soundtrack.controller.ts |
-| soundtrack | GET | /soundtrack/songs/:songId/stream | UseGuards | backend/src/soundtrack/soundtrack.controller.ts |
+| soundtrack | GET | /soundtrack/songs/:id/stream | UseGuards | backend/src/soundtrack/soundtrack.controller.ts | Sí (streaming) |
 | soundtrack | DELETE | /soundtrack/songs/:songId | UseGuards | backend/src/soundtrack/soundtrack.controller.ts |
 | soundtrack | PATCH | /soundtrack/songs/:songId | UseGuards | backend/src/soundtrack/soundtrack.controller.ts |
 | soundtrack | GET | /soundtrack/songs | UseGuards | backend/src/soundtrack/soundtrack.controller.ts |

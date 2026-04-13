@@ -33,6 +33,73 @@ export class CampaignsService {
     private readonly customManualsService: CustomManualsService,
   ) {}
 
+  /** Normalizes manual id arrays by trimming and removing empty values. */
+  private normalizeManualIds(ids?: string[] | null): string[] {
+    return (ids || []).map((x) => (x || '').trim()).filter(Boolean);
+  }
+
+  /**
+   * Validates manual ids against file registry and custom manuals DB.
+   * Preserves current create/update behavior: if registry cannot be loaded,
+   * validation is skipped.
+   */
+  private async validateManualIdsForCreateOrUpdate(ids: string[]): Promise<void> {
+    const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
+    let registryLoaded = false;
+    let validIds: string[] = [];
+    try {
+      const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
+      validIds = (raw?.manuals || []).map((m: any) => String(m.id));
+      registryLoaded = true;
+    } catch (e) {
+      console.warn('[CampaignsService] Could not read manuals registry, skipping manual ID validation:', e?.message);
+    }
+    if (!registryLoaded) return;
+
+    const unknown: string[] = [];
+    for (const id of ids) {
+      if (validIds.includes(id)) continue;
+      const existsInDb = await this.customManualsService.exists(id);
+      if (!existsInDb) unknown.push(id);
+    }
+    if (unknown.length) {
+      throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
+    }
+  }
+
+  /**
+   * Loads campaign with requested relations and asserts the requester is owner or player.
+   */
+  private async getCampaignForMember(
+    campaignId: string,
+    requestingUserId: number,
+    extraRelations: string[] = [],
+  ): Promise<Campaign> {
+    const relations = ['owner', 'players', 'players.user', ...extraRelations];
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations,
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    const isOwner = campaign.owner?.id === requestingUserId;
+    const isPlayer = (campaign.players || []).some((p) => p.user?.id === requestingUserId);
+    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    return campaign;
+  }
+
+  /** Loads a campaign by id and throws NotFoundException when missing. */
+  private async getCampaignByIdOrThrow(
+    campaignId: string,
+    relations: string[] = [],
+  ): Promise<Campaign> {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id: campaignId },
+      relations,
+    });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    return campaign;
+  }
+
   // --- Métodos públicos requeridos por el controller ---
   /**
    * Devuelve todas las campañas donde el usuario es owner o player.
@@ -66,28 +133,8 @@ export class CampaignsService {
     // Validate manual IDs if provided
     let validatedManualIds: string[] | undefined;
     if (createCampaignDto.selectedManualIds && createCampaignDto.selectedManualIds.length > 0) {
-      const ids = createCampaignDto.selectedManualIds.map((x) => (x || '').trim()).filter(Boolean);
-      const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
-      let registryLoaded = false;
-      let validIds: string[] = [];
-      try {
-        const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
-        validIds = (raw?.manuals || []).map((m: any) => String(m.id));
-        registryLoaded = true;
-      } catch (e) {
-        console.warn('[CampaignsService] Could not read manuals registry, skipping manual ID validation:', e?.message);
-      }
-      if (registryLoaded) {
-        const unknown: string[] = [];
-        for (const id of ids) {
-          if (validIds.includes(id)) continue;
-          const existsInDb = await this.customManualsService.exists(id);
-          if (!existsInDb) unknown.push(id);
-        }
-        if (unknown.length) {
-          throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
-        }
-      }
+      const ids = this.normalizeManualIds(createCampaignDto.selectedManualIds);
+      await this.validateManualIdsForCreateOrUpdate(ids);
       validatedManualIds = ids;
     }
     
@@ -103,29 +150,9 @@ export class CampaignsService {
   async update(id: string, updateCampaignDto: UpdateCampaignDto): Promise<Campaign> {
     // Validate manual IDs if provided
     if (updateCampaignDto.selectedManualIds !== undefined) {
-      const ids = (updateCampaignDto.selectedManualIds || []).map((x) => (x || '').trim()).filter(Boolean);
+      const ids = this.normalizeManualIds(updateCampaignDto.selectedManualIds || []);
       if (ids.length > 0) {
-        const registryPath = path.resolve(process.cwd(), 'data', 'manuals', 'registry.json');
-        let registryLoaded = false;
-        let validIds: string[] = [];
-        try {
-          const raw = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
-          validIds = (raw?.manuals || []).map((m: any) => String(m.id));
-          registryLoaded = true;
-        } catch (e) {
-          console.warn('[CampaignsService] Could not read manuals registry, skipping manual ID validation:', e?.message);
-        }
-        if (registryLoaded) {
-          const unknown: string[] = [];
-          for (const id of ids) {
-            if (validIds.includes(id)) continue;
-            const existsInDb = await this.customManualsService.exists(id);
-            if (!existsInDb) unknown.push(id);
-          }
-          if (unknown.length) {
-            throw new BadRequestException(`Unknown manual ids: ${unknown.join(', ')}`);
-          }
-        }
+        await this.validateManualIdsForCreateOrUpdate(ids);
       }
     }
     
@@ -226,14 +253,9 @@ export class CampaignsService {
 
   // --- Active Skyline Character ---
   async getActiveSkylineCharacter(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({
-      where: { id: campaignId },
-      relations: ['owner', 'players', 'players.user', 'activeSkylineCharacter'],
-    });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some((p) => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId, [
+      'activeSkylineCharacter',
+    ]);
     return { characterId: campaign.activeSkylineCharacter?.id ?? null };
   }
 
@@ -271,11 +293,7 @@ export class CampaignsService {
 
   // --- Active Map ---
   async getActiveMap(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user', 'activeMap'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId, ['activeMap']);
     return { mapId: campaign.activeMap?.id || null };
   }
 
@@ -300,11 +318,7 @@ export class CampaignsService {
 
   // --- Active Encounter ---
   async getActiveEncounter(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user', 'activeEncounter'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId, ['activeEncounter']);
     return { encounterId: (campaign as any).activeEncounter?.id || null };
   }
 
@@ -328,11 +342,7 @@ export class CampaignsService {
 
   // --- Time-of-day ---
   async getTimeOfDay(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId);
     return { timeOfDay: (campaign.timeOfDay as any) || null };
   }
 
@@ -341,8 +351,7 @@ export class CampaignsService {
     if (!timeOfDay || !allowed.includes(timeOfDay)) {
       throw new BadRequestException('Invalid timeOfDay');
     }
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
     (campaign as any).timeOfDay = timeOfDay;
     await this.campaignsRepository.save(campaign);
     return { ok: true };
@@ -350,18 +359,13 @@ export class CampaignsService {
 
   // --- GRID OVERLAY SETTINGS ---
   async getGridOverlaySettings(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId);
     const fallback = { enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 } as const;
     return { settings: campaign.gridOverlaySettings ?? fallback };
   }
 
   async setGridOverlaySettings(campaignId: string, dto: GridOverlaySettingsDto) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
     campaign.gridOverlaySettings = { ...dto } as any;
     await this.campaignsRepository.save(campaign);
     return { ok: true };
@@ -369,11 +373,7 @@ export class CampaignsService {
 
   // --- FOG OF WAR SETTINGS ---
   async getFogOfWarSettings(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId);
     const fallback = { allyClearRadius: 1, fogMode: 'grid' as const };
     const s: any = campaign.fogOfWarSettings ?? fallback;
     const settings = {
@@ -384,8 +384,7 @@ export class CampaignsService {
   }
 
   async setFogOfWarSettings(campaignId: string, dto: FogOfWarSettingsDto) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
     const fogMode = dto.fogMode === 'organic' ? 'organic' : 'grid';
     campaign.fogOfWarSettings = {
       allyClearRadius: Math.max(0, Math.min(10, Math.floor(dto.allyClearRadius))),
@@ -397,14 +396,7 @@ export class CampaignsService {
 
   // --- SOUNDTRACK SETTINGS ---
   async getSoundtrackSettings(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({
-      where: { id: campaignId },
-      relations: ['owner', 'players', 'players.user'],
-    });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId);
 
     const fallback = { mode: 'automatic' as const };
     const s: any = campaign.soundtrackSettings ?? fallback;
@@ -413,8 +405,7 @@ export class CampaignsService {
   }
 
   async setSoundtrackSettings(campaignId: string, dto: SoundtrackSettingsDto) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
     const mode = dto?.mode === 'manual' ? 'manual' : 'automatic';
     campaign.soundtrackSettings = { mode } as any;
     await this.campaignsRepository.save(campaign);
@@ -423,11 +414,7 @@ export class CampaignsService {
 
   // --- SKYLINE OVERLAY SETTINGS ---
   async getSkylineOverlaySettings(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId);
     const fallback = { showSongTitle: false, showInitiativeStrip: false, showQr: false, qrUrl: '' } as const;
     const s = campaign.skylineOverlaySettings ?? (fallback as any);
     // Ensure all expected keys exist
@@ -457,8 +444,7 @@ export class CampaignsService {
   }
 
   async setSkylineOverlaySettings(campaignId: string, dto: { showSongTitle?: boolean; showInitiativeStrip?: boolean; showQr?: boolean; qrUrl?: string }) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
     const prev = (campaign.skylineOverlaySettings || { showSongTitle: false, showInitiativeStrip: false }) as any;
     campaign.skylineOverlaySettings = { ...prev, ...dto } as any;
     await this.campaignsRepository.save(campaign);
@@ -467,11 +453,7 @@ export class CampaignsService {
 
   // --- BATTLE STATE ---
   async getBattleState(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user', 'activeEncounter'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId, ['activeEncounter']);
     const fallback = { started: false, encounterId: campaign.activeEncounter?.id || null, round: 1, turnIndex: 0, currentTurnId: null, items: [] } as const;
     const s = campaign.battleState ?? (fallback as any);
     const state = { started: !!s.started, encounterId: s.encounterId ?? (campaign.activeEncounter?.id || null), round: typeof s.round === 'number' ? s.round : 1, turnIndex: typeof s.turnIndex === 'number' ? s.turnIndex : 0, currentTurnId: typeof s.currentTurnId === 'string' || s.currentTurnId === null ? (s.currentTurnId ?? null) : null, items: Array.isArray(s.items) ? s.items : [] };
@@ -522,8 +504,7 @@ export class CampaignsService {
   }
 
   async setBattleState(campaignId: string, dto: BattleStateDto) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['activeEncounter'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId, ['activeEncounter']);
     const prev = (campaign.battleState || { started: false, encounterId: campaign.activeEncounter?.id || null, round: 1, turnIndex: 0, currentTurnId: null, items: [] }) as any;
     // Shallow merge with validation defaults
     const next = {
@@ -541,17 +522,12 @@ export class CampaignsService {
 
   // --- SELECTED MANUALS ---
   async getSelectedManuals(requestingUserId: number, campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'players', 'players.user'] });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    const isOwner = campaign.owner?.id === requestingUserId;
-    const isPlayer = (campaign.players || []).some(p => p.user?.id === requestingUserId);
-    if (!isOwner && !isPlayer) throw new ForbiddenException('Not a member of this campaign');
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId);
     return { manualIds: campaign.selectedManualIds ?? [] };
   }
 
   async setSelectedManuals(campaignId: string, dto: UpdateCampaignManualsDto) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
     const ids = (dto.manualIds || []).map((x) => (x || '').trim()).filter(Boolean);
 
     // Validate file-based manual IDs from registry.json
@@ -589,8 +565,7 @@ export class CampaignsService {
    * @param file Uploaded file buffer + metadata.
    */
   async uploadDefaultSkyline(campaignId: string, file: { buffer: Buffer; mimetype: string }) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
     campaign.defaultSkylineMimeType = file.mimetype;
     (campaign as any).defaultSkylineData = file.buffer;
     await this.campaignsRepository.save(campaign);
@@ -627,8 +602,7 @@ export class CampaignsService {
    * Delete the default skyline image for a campaign.
    */
   async deleteDefaultSkyline(campaignId: string) {
-    const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
     campaign.defaultSkylineMimeType = null;
     (campaign as any).defaultSkylineData = null;
     await this.campaignsRepository.save(campaign);

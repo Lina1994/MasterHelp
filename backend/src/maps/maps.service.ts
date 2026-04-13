@@ -30,18 +30,34 @@ export class MapsService {
   ) {}
 
   /**
+   * Validates auth context and ownership for a map and campaign pair.
+   * Used by fog/tokens/elements state endpoints to keep checks consistent.
+   */
+  private async assertOwnedMapAndCampaign(
+    user: User | any,
+    mapId: string,
+    campaignId: string,
+  ): Promise<{ authUserId: string | number; map: MapEntity; campaign: Campaign }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+
+    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
+    if (!campaign) throw new NotFoundException('Campaign not found');
+    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+
+    return { authUserId, map, campaign };
+  }
+
+  /**
    * Returns Fog of War cells for the given map+campaign scoped to owner.
    * Validates ownership and existence of referenced entities.
    */
   async getFog(user: User | any, mapId: string, campaignId: string): Promise<string[]> {
-    const authUserId = this.extractAuthUserId(user);
-    if (!authUserId) throw new ForbiddenException('Invalid auth context');
-    const map = await this.repo.findOne({ where: { id: mapId } });
-    if (!map) throw new NotFoundException('Map not found');
-    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const { authUserId } = await this.assertOwnedMapAndCampaign(user, mapId, campaignId);
     const existing = await this.fogRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
     return existing?.cells || [];
   }
@@ -51,14 +67,7 @@ export class MapsService {
    * Validates ownership and prevents unauthorized writes.
    */
   async setFog(user: User | any, mapId: string, campaignId: string, cells: string[]): Promise<{ ok: boolean }>{
-    const authUserId = this.extractAuthUserId(user);
-    if (!authUserId) throw new ForbiddenException('Invalid auth context');
-    const map = await this.repo.findOne({ where: { id: mapId } });
-    if (!map) throw new NotFoundException('Map not found');
-    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const { authUserId, map, campaign } = await this.assertOwnedMapAndCampaign(user, mapId, campaignId);
     let existing = await this.fogRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
     if (!existing) {
       existing = new MapFogState();
@@ -82,14 +91,7 @@ export class MapsService {
    * @returns Array of organic fog strokes
    */
   async getOrganicFog(user: User | any, mapId: string, campaignId: string): Promise<OrganicFogStroke[]> {
-    const authUserId = this.extractAuthUserId(user);
-    if (!authUserId) throw new ForbiddenException('Invalid auth context');
-    const map = await this.repo.findOne({ where: { id: mapId } });
-    if (!map) throw new NotFoundException('Map not found');
-    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const { authUserId } = await this.assertOwnedMapAndCampaign(user, mapId, campaignId);
     const existing = await this.fogRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
     return existing?.organicStrokes || [];
   }
@@ -103,14 +105,7 @@ export class MapsService {
    * @returns Success indicator
    */
   async setOrganicFog(user: User | any, mapId: string, campaignId: string, strokes: OrganicFogStroke[]): Promise<{ ok: boolean }> {
-    const authUserId = this.extractAuthUserId(user);
-    if (!authUserId) throw new ForbiddenException('Invalid auth context');
-    const map = await this.repo.findOne({ where: { id: mapId } });
-    if (!map) throw new NotFoundException('Map not found');
-    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const { authUserId, map, campaign } = await this.assertOwnedMapAndCampaign(user, mapId, campaignId);
     let existing = await this.fogRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
     if (!existing) {
       existing = new MapFogState();
@@ -131,14 +126,7 @@ export class MapsService {
    * Returns token items for the given map+campaign scoped to owner.
    */
   async getTokens(user: User | any, mapId: string, campaignId: string): Promise<MapTokenItem[]> {
-    const authUserId = this.extractAuthUserId(user);
-    if (!authUserId) throw new ForbiddenException('Invalid auth context');
-    const map = await this.repo.findOne({ where: { id: mapId } });
-    if (!map) throw new NotFoundException('Map not found');
-    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const { authUserId } = await this.assertOwnedMapAndCampaign(user, mapId, campaignId);
     const existing = await this.tokensRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
     return existing?.tokens || [];
   }
@@ -147,14 +135,7 @@ export class MapsService {
    * Upserts token items for the given map+campaign scoped to owner.
    */
   async setTokens(user: User | any, mapId: string, campaignId: string, tokens: MapTokenItem[]): Promise<{ ok: boolean }>{
-    const authUserId = this.extractAuthUserId(user);
-    if (!authUserId) throw new ForbiddenException('Invalid auth context');
-    const map = await this.repo.findOne({ where: { id: mapId } });
-    if (!map) throw new NotFoundException('Map not found');
-    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const { authUserId, map, campaign } = await this.assertOwnedMapAndCampaign(user, mapId, campaignId);
     let existing = await this.tokensRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
     const deduped = Array.isArray(tokens) ? Array.from(new Map(tokens.map(t => [t.id, t])).values()) : [];
     if (!existing) {
@@ -179,14 +160,7 @@ export class MapsService {
    * @returns Array of map elements.
    */
   async getElements(user: User | any, mapId: string, campaignId: string): Promise<MapElement[]> {
-    const authUserId = this.extractAuthUserId(user);
-    if (!authUserId) throw new ForbiddenException('Invalid auth context');
-    const map = await this.repo.findOne({ where: { id: mapId } });
-    if (!map) throw new NotFoundException('Map not found');
-    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const { authUserId } = await this.assertOwnedMapAndCampaign(user, mapId, campaignId);
     const existing = await this.elementsRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
     return existing?.elements || [];
   }
@@ -200,14 +174,7 @@ export class MapsService {
    * @returns Success indicator.
    */
   async setElements(user: User | any, mapId: string, campaignId: string, elements: MapElement[]): Promise<{ ok: boolean }> {
-    const authUserId = this.extractAuthUserId(user);
-    if (!authUserId) throw new ForbiddenException('Invalid auth context');
-    const map = await this.repo.findOne({ where: { id: mapId } });
-    if (!map) throw new NotFoundException('Map not found');
-    if (map.owner.id !== authUserId) throw new ForbiddenException('Not owner');
-    const campaign = await this.campaignsRepo.findOne({ where: { id: campaignId } });
-    if (!campaign) throw new NotFoundException('Campaign not found');
-    if (campaign.owner?.id !== authUserId) throw new ForbiddenException('Not campaign owner');
+    const { authUserId, map, campaign } = await this.assertOwnedMapAndCampaign(user, mapId, campaignId);
     let existing = await this.elementsRepo.findOne({ where: { owner: { id: authUserId } as any, campaign: { id: campaignId } as any, map: { id: mapId } as any } });
     const sanitised = Array.isArray(elements) ? elements : [];
     if (!existing) {
@@ -316,6 +283,7 @@ export class MapsService {
         'm.timeOfDay',
         'm.isWorldMap',
         'm.isPrepared',
+        'm.fogEnabledByDefault',
         'm.musicConfig',
         'm.sfxConfig',
         'm.transform',
@@ -356,6 +324,7 @@ export class MapsService {
       timeOfDay: (r as any).timeOfDay,
       isWorldMap: (r as any).isWorldMap ?? false,
       isPrepared: (r as any).isPrepared ?? false,
+      fogEnabledByDefault: (r as any).fogEnabledByDefault ?? false,
       musicConfig: (r as any).musicConfig,
       sfxConfig: (r as any).sfxConfig,
       transform: (r as any).transform,
@@ -396,6 +365,7 @@ export class MapsService {
     entity.group = dto.group ?? [];
     entity.timeOfDay = (dto.timeOfDay === '' ? null : dto.timeOfDay) ?? null;
     entity.isWorldMap = dto.isWorldMap ?? false;
+    (entity as any).fogEnabledByDefault = (dto as any).fogEnabledByDefault ?? false;
     entity.musicConfig = dto.musicConfig ?? null;
     entity.sfxConfig = dto.sfxConfig ?? null;
     (entity as any).transform = (dto as any).transform ?? null;
@@ -470,6 +440,7 @@ export class MapsService {
     if (dto.sfxConfig !== undefined) (entity as any).sfxConfig = dto.sfxConfig ?? null;
     if ((dto as any).transform !== undefined) (entity as any).transform = (dto as any).transform ?? null;
     if (dto.isPrepared !== undefined) (entity as any).isPrepared = dto.isPrepared;
+    if ((dto as any).fogEnabledByDefault !== undefined) (entity as any).fogEnabledByDefault = (dto as any).fogEnabledByDefault;
     if (dto.campaignId !== undefined) {
       if (!dto.campaignId) {
         entity.campaign = null;
@@ -544,6 +515,7 @@ export class MapsService {
         'm.timeOfDay',
         'm.isWorldMap',
         'm.isPrepared',
+        'm.fogEnabledByDefault',
         'm.musicConfig',
         'm.sfxConfig',
         'm.transform',
@@ -589,6 +561,7 @@ export class MapsService {
       timeOfDay: (r as any).timeOfDay,
       isWorldMap: (r as any).isWorldMap ?? false,
       isPrepared: (r as any).isPrepared ?? false,
+      fogEnabledByDefault: (r as any).fogEnabledByDefault ?? false,
       musicConfig: (r as any).musicConfig,
       sfxConfig: (r as any).sfxConfig,
       transform: (r as any).transform,

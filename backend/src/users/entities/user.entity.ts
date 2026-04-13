@@ -32,6 +32,13 @@ export class User {
   @Column({ type: 'text', nullable: true, default: null })
   sidebarConfig: string | null;
 
+  /**
+   * JSON-serialised shortcuts shell preferences.
+   * Schema: `{ showHomeSection, showSidebarPanel, showHotbar, sidebarPanelColumns }`
+   */
+  @Column({ type: 'text', nullable: true, default: null })
+  shortcutsConfig: string | null;
+
   @OneToMany(() => Campaign, (campaign) => campaign.owner)
   ownedCampaigns: Campaign[]; // Renamed from 'campaigns' to match the relation
 }

@@ -41,6 +41,8 @@ import type { SoundSourceSelection } from './SoundSourcePickerDialog';
 
 const ProjectedMapMirror: React.FC<{
   fogEnabled?: boolean;
+  /** Callback to lift fog toggle changes up to the parent. */
+  onFogEnabledChange?: (v: boolean) => void;
   highlightTokenId?: string | null;
   tokenImageResolver?: (id: string) => string | undefined;
   /** Optional: expose token preparation actions (Combat preview only). */
@@ -64,6 +66,7 @@ const ProjectedMapMirror: React.FC<{
   useCustomSizes?: boolean;
 }> = ({
   fogEnabled = false,
+  onFogEnabledChange,
   highlightTokenId = null,
   tokenImageResolver,
   onPrepareTokens,
@@ -86,6 +89,26 @@ const ProjectedMapMirror: React.FC<{
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
   const { activeCampaign } = useActiveCampaign();
   const mapId = overrideMapId || activeMapId;
+
+  // Persist per-map runtime fog toggle so the players projection window can mirror it.
+  useEffect(() => {
+    if (!activeCampaign?.id || !mapId) return;
+    const storageKey = 'app.map.fog.enabled';
+    const scopedKey = `${activeCampaign.id}:${mapId}`;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      const parsed = raw ? JSON.parse(raw) : {};
+      const next = { ...(parsed || {}), [scopedKey]: fogEnabled };
+      localStorage.setItem(storageKey, JSON.stringify(next));
+    } catch {}
+    try {
+      const bc = new BroadcastChannel('campaign-sync');
+      bc.postMessage({ type: 'fog-enabled-updated', campaignId: activeCampaign.id, mapId, fogEnabled, at: Date.now() });
+      bc.close();
+    } catch {}
+    try { (window as any).electronAPI?.projectionPoke?.({ reason: 'fog-enabled-updated', campaignId: activeCampaign.id, mapId, fogEnabled }); } catch {}
+  }, [activeCampaign?.id, mapId, fogEnabled]);
+
   const { cells, addCell, removeCell, clearAll, setAll } = useFogOfWar(activeCampaign?.id, mapId || undefined, gridSettings);
   const { strokes: organicStrokes, addStroke: addOrganicStroke, setAllStrokes: setAllOrganicStrokes, clearAll: clearAllOrganicStrokes } = useOrganicFog(activeCampaign?.id, mapId || undefined);
   const { style: fogPreviewStyle, setColor: setFogPreviewColor, setOpacity: setFogPreviewOpacity } = useMapFogPreviewStyle(mapId || undefined);
@@ -523,6 +546,7 @@ const ProjectedMapMirror: React.FC<{
           onSaveGrid={saveGrid}
 
           fogEnabled={fogEnabled}
+          onFogEnabledChange={onFogEnabledChange}
           fogEditEnabled={fogEditEnabled}
           onSetFogEditEnabled={setFogEditEnabled}
           fogMode={fogMode}

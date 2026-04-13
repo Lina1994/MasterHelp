@@ -8,6 +8,7 @@ export interface MapItemDto {
   timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
   isWorldMap?: boolean;
   isPrepared?: boolean;
+  fogEnabledByDefault?: boolean;
   musicConfig?: Record<string, any>;
   sfxConfig?: Record<string, any>;
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
@@ -31,6 +32,7 @@ export async function createMap(payload: {
   group?: string[];
   timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
   isWorldMap?: boolean;
+  fogEnabledByDefault?: boolean;
   musicConfig?: Record<string, any>;
   sfxConfig?: Record<string, any>;
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
@@ -48,6 +50,7 @@ export async function createMap(payload: {
     form.append('timeOfDay', send);
   }
   if (payload.isWorldMap !== undefined) form.append('isWorldMap', String(payload.isWorldMap));
+  if (payload.fogEnabledByDefault !== undefined) form.append('fogEnabledByDefault', String(payload.fogEnabledByDefault));
   if (payload.musicConfig) form.append('musicConfig', JSON.stringify(payload.musicConfig));
   if (payload.sfxConfig) form.append('sfxConfig', JSON.stringify(payload.sfxConfig));
   if (payload.transform) form.append('transform', JSON.stringify(payload.transform));
@@ -67,6 +70,7 @@ export async function updateMap(id: string, payload: {
   group?: string[];
   timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
   isWorldMap?: boolean;
+  fogEnabledByDefault?: boolean;
   musicConfig?: Record<string, any>;
   sfxConfig?: Record<string, any>;
   imageTimeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
@@ -85,6 +89,7 @@ export async function updateMap(id: string, payload: {
     form.append('timeOfDay', send);
   }
   if (payload.isWorldMap !== undefined) form.append('isWorldMap', String(payload.isWorldMap));
+  if (payload.fogEnabledByDefault !== undefined) form.append('fogEnabledByDefault', String(payload.fogEnabledByDefault));
   if (payload.musicConfig !== undefined) form.append('musicConfig', JSON.stringify(payload.musicConfig));
   if (payload.sfxConfig !== undefined) form.append('sfxConfig', JSON.stringify(payload.sfxConfig));
   if (payload.transform !== undefined) form.append('transform', JSON.stringify(payload.transform));

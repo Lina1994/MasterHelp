@@ -46,6 +46,8 @@ export type ProjectedMapMirrorToolsProps = {
 
   // --- Fog ---
   fogEnabled: boolean;
+  /** Callback to toggle fog on/off from the tools panel. */
+  onFogEnabledChange?: (v: boolean) => void;
   fogEditEnabled: boolean;
   onSetFogEditEnabled: (v: boolean) => void;
   /** Which fog system is active: grid (classic) or organic (brush-based). */
@@ -294,8 +296,8 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
           {openGroup === 'fog' && (
             <Stack spacing={1}>
               <FormControlLabel
-                control={<Switch checked={props.fogEnabled} disabled />}
-                label="Niebla (controlada en Combate)"
+                control={<Switch checked={props.fogEnabled} onChange={(_, v) => props.onFogEnabledChange?.(v)} />}
+                label="Niebla de guerra"
               />
 
               <TextField
@@ -406,7 +408,7 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
                 </>
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  Activa la niebla desde la cabecera de Combate para editarla aquí.
+                  Activa la niebla de guerra para poder editarla.
                 </Typography>
               )}
             </Stack>

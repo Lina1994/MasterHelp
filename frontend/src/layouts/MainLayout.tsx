@@ -41,10 +41,14 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import BoltIcon from '@mui/icons-material/Bolt';
+import { ShortcutsProvider } from '../contexts/ShortcutsContext';
+import { SidebarShortcutsPanel, ShortcutHotbar } from '../components/shortcuts/ShortcutsShell';
 
 /** Maps iconName strings (from SidebarItemDef) to actual MUI icon elements. */
 const ICON_MAP: Record<string, ReactElement> = {
   FolderSpecial: <FolderSpecialIcon />,
+  Bolt: <BoltIcon />,
   MusicNote: <MusicNoteIcon />,
   MenuBook: <MenuBookIcon />,
   Map: <MapIcon />,
@@ -296,6 +300,8 @@ const MainLayoutInner = () => {
           </Box>
         </Box>
       ) : null}
+
+      {isMaster ? <SidebarShortcutsPanel /> : null}
     </>
   );
 
@@ -303,6 +309,7 @@ const MainLayoutInner = () => {
     <GlobalPlayerProvider>
       <SfxPlayerProvider>
         <PlayerDrawerUiProvider>
+          <ShortcutsProvider>
           <Box sx={{ display: 'flex', height: `calc(100vh - ${TB}px)` }}>
             {/* ── Barra superior responsive (sólo en móvil / ventana estrecha) ── */}
             <AppBar
@@ -401,9 +408,11 @@ const MainLayoutInner = () => {
                 <InvitationsList />
               </div>
               <Outlet />
+              {isMaster ? <ShortcutHotbar /> : null}
               <SkylinePreviewOverlay />
             </Box>
           </Box>
+          </ShortcutsProvider>
         </PlayerDrawerUiProvider>
       </SfxPlayerProvider>
     </GlobalPlayerProvider>

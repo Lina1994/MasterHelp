@@ -30,6 +30,7 @@ import QuestsPage from '../pages/QuestsPage';
 import ShopsPage from '../pages/ShopsPage';
 import WorldpediaPage from '../pages/WorldpediaPage';
 import ManualEditorPage from '../pages/ManualEditorPage';
+import ShortcutsPage from '../pages/ShortcutsPage';
 
 const router = createHashRouter([
   // Ventana de proyección: ruta al margen del layout principal
@@ -57,6 +58,7 @@ const router = createHashRouter([
           { path: 'soundtrack', element: <SoundtrackPage /> },
           { path: 'soundtrack/effects', element: <SoundEffectsPage /> },
           { path: 'maps', element: <MapsPage /> },
+          { path: 'shortcuts', element: <ShortcutsPage /> },
           { path: 'combat', element: <CombatPage /> },
           { path: 'characters', element: <CharactersPage /> },
           { path: 'characters/:id', element: <CharacterDetailPage /> },

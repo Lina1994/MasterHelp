@@ -16,11 +16,14 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import PetsIcon from '@mui/icons-material/Pets';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import CampaignIcon from '@mui/icons-material/FolderSpecial';
+import BoltIcon from '@mui/icons-material/Bolt';
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { getCurrentUser } from '../utils/getCurrentUser';
+import { useShortcuts } from '../contexts/ShortcutsContext';
+import ShortcutButton from '../components/shortcuts/ShortcutButton';
 
 /** Descriptor for a single tool card. */
 interface ToolItem {
@@ -50,6 +53,7 @@ const ALL_TOOLS: ToolItem[] = [
   { labelKey: 'soundtrack',  fallback: 'Soundtrack',   icon: <MusicNoteIcon />,     route: '/soundtrack' },
   { labelKey: 'manuals',     fallback: 'Manuales',     icon: <MenuBookIcon />,      route: '/manuals' },
   { labelKey: 'maps',        fallback: 'Mapas',        icon: <MapIcon />,           route: '/maps' },
+  { labelKey: 'shortcuts',   fallback: 'Atajos',       icon: <BoltIcon />,          route: '/shortcuts',         masterOnly: true },
   { labelKey: 'combat',      fallback: 'Combate',      icon: <SportsKabaddiIcon />, route: '/combat',            requiresCampaign: true },
   { labelKey: 'characters',  fallback: 'Personajes',   icon: <PeopleIcon />,        route: '/characters',        requiresCampaign: true },
   { labelKey: 'quests',      fallback: 'Misiones',     icon: <AssignmentIcon />,    route: '/quests',            requiresCampaign: true },
@@ -67,6 +71,7 @@ const HomePage = () => {
   const { activeCampaign } = useActiveCampaign();
   const currentUserId = getCurrentUser()?.id as number | undefined;
   const isMaster = isUserMaster(activeCampaign, currentUserId);
+  const { config: shortcutsConfig, homeShortcuts, executeShortcut } = useShortcuts();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -176,6 +181,21 @@ const HomePage = () => {
           renderToolCard(item, !!item.requiresCampaign && !activeCampaign?.id),
         )}
       </Grid>
+
+      {isMaster && shortcutsConfig.showHomeSection && homeShortcuts.length > 0 ? (
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" sx={{ mb: 1.5 }}>
+            Atajos rápidos
+          </Typography>
+          <Grid container spacing={1.5}>
+            {homeShortcuts.map((shortcut) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={shortcut.id}>
+                <ShortcutButton shortcut={shortcut} onClick={executeShortcut} />
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      ) : null}
     </Box>
   );
 };

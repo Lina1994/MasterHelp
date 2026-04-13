@@ -15,6 +15,7 @@ import { useContext } from 'react';
 import ThemeContext from '../ThemeContext';
 import SidebarSettings from '../components/SidebarSettings';
 import UpdateChecker from '../components/UpdateChecker';
+import ShortcutSettings from '../components/shortcuts/ShortcutSettings';
 
 import { useState, useEffect } from 'react';
 import React from 'react';
@@ -328,6 +329,17 @@ const SettingsSection = () => {
                 </Box>
               ))}
             </Stack>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion disableGutters elevation={0} sx={{ '&::before': { display: 'none' } }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              Atajos
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ShortcutSettings />
           </AccordionDetails>
         </Accordion>
 

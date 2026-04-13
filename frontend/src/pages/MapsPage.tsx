@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Paper, Typography, MenuItem, Divider, Autocomplete, Chip } from '@mui/material';
+import { Box, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Stack, Switch, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Paper, Typography, MenuItem, Divider, Autocomplete, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
@@ -39,11 +39,25 @@ type FormState = {
   description?: string;
   group?: string[];
   isWorldMap?: boolean;
+  fogEnabledByDefault?: boolean;
   musicConfig?: MusicCfg;
   sfxConfig?: SfxCfg;
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
   file?: File | null;
 };
+
+function readRuntimeFogEnabled(campaignId: string | undefined, mapId: string | null | undefined): boolean | null {
+  if (!campaignId || !mapId) return null;
+  try {
+    const raw = localStorage.getItem('app.map.fog.enabled');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const value = parsed?.[`${campaignId}:${mapId}`];
+    return typeof value === 'boolean' ? value : null;
+  } catch {
+    return null;
+  }
+}
 
 export default function MapsPage() {
   const { activeCampaign } = useActiveCampaign();
@@ -74,6 +88,7 @@ export default function MapsPage() {
   const [bulkHover, setBulkHover] = useState(false);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [projectionReady, setProjectionReady] = useState<boolean>(false);
+  const [fogEnabled, setFogEnabled] = useState(false);
   const { activeMapId, setActiveMapId } = useActiveMap();
   const [worldMapItem, setWorldMapItem] = useState<MapItemDto | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -217,6 +232,30 @@ export default function MapsPage() {
     return () => { isMounted = false; };
   }, [campaignId]);
 
+  // Sync fog default state with the active map's fogEnabledByDefault setting
+  useEffect(() => {
+    const map = items.find((m) => m.id === activeMapId);
+    const runtime = readRuntimeFogEnabled(campaignId, activeMapId);
+    if (map?.fogEnabledByDefault) {
+      setFogEnabled(true);
+      return;
+    }
+    setFogEnabled(runtime ?? false);
+  }, [activeMapId, campaignId, items]);
+
+  const forceFogByDefault = useMemo(() => {
+    const map = items.find((m) => m.id === activeMapId);
+    return !!map?.fogEnabledByDefault;
+  }, [activeMapId, items]);
+
+  const handleFogEnabledChange = useCallback((next: boolean) => {
+    if (forceFogByDefault && !next) {
+      setFogEnabled(true);
+      return;
+    }
+    setFogEnabled(next);
+  }, [forceFogByDefault]);
+
   // Detectar disponibilidad de API Electron
   useEffect(() => {
     setProjectionReady(!!window.electronAPI?.openMapsProjection);
@@ -224,7 +263,7 @@ export default function MapsPage() {
 
   const onOpenCreate = () => {
     if (localPreview) { URL.revokeObjectURL(localPreview); setLocalPreview(null); }
-    setForm({ name: '', isWorldMap: false, group: [], musicConfig: undefined, sfxConfig: undefined, file: null });
+    setForm({ name: '', isWorldMap: false, fogEnabledByDefault: false, group: [], musicConfig: undefined, sfxConfig: undefined, file: null });
     setOpen(true);
   };
   const onOpenEdit = (it: MapItemDto) => {
@@ -235,6 +274,7 @@ export default function MapsPage() {
       description: it.description,
       group: it.group ?? [],
       isWorldMap: it.isWorldMap ?? false,
+      fogEnabledByDefault: it.fogEnabledByDefault ?? false,
       musicConfig: (it as any).musicConfig as any,
       sfxConfig: (it as any).sfxConfig as any,
       transform: (it as any).transform as any,
@@ -254,6 +294,7 @@ export default function MapsPage() {
       campaignId,
       group: form.group,
       isWorldMap: form.isWorldMap,
+      fogEnabledByDefault: form.fogEnabledByDefault,
       musicConfig: form.musicConfig,
       sfxConfig: form.sfxConfig,
       transform: form.transform,
@@ -335,7 +376,8 @@ export default function MapsPage() {
   return (
     <Box>
       <ProjectedMapMirror
-        fogEnabled
+        fogEnabled={fogEnabled}
+        onFogEnabledChange={handleFogEnabledChange}
         useCustomSizes={windowSizeMode === 'custom'}
         customPlayersSize={customSizes.players}
         customSkylineSize={customSizes.skyline}
@@ -481,6 +523,16 @@ export default function MapsPage() {
             </Stack>
             <TextField label="Nombre" value={form.name} onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))} />
             <TextField label="Descripción" value={form.description || ''} onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))} multiline rows={3} />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.fogEnabledByDefault ?? false}
+                  onChange={(_, v) => setForm((s) => ({ ...s, fogEnabledByDefault: v }))}
+                />
+              }
+              label="Niebla de guerra activada por defecto"
+            />
 
             <Autocomplete
               multiple

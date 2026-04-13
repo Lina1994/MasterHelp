@@ -92,6 +92,13 @@ export class MapEntity {
   @Column({ type: 'boolean', default: false })
   isPrepared: boolean;
 
+  /**
+   * When true, fog of war is automatically enabled whenever this map is opened
+   * in the Maps preview or Combat view. The DM can still toggle it freely per session.
+   */
+  @Column({ type: 'boolean', default: false })
+  fogEnabledByDefault: boolean;
+
   // Legacy single-image fields (kept for backward compatibility; prefer MapImage variants)
   @Column({ nullable: true })
   imageMimeType?: string | null;

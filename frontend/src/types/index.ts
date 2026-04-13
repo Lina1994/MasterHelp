@@ -6,6 +6,8 @@ export interface User {
   theme?: string;
   /** JSON-serialised sidebar config, or null for defaults. */
   sidebarConfig?: string | null;
+  /** JSON-serialised shortcuts shell config, or null for defaults. */
+  shortcutsConfig?: string | null;
 }
 
 export interface SpellSummary {

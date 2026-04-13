@@ -27,6 +27,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
+import BoltIcon from '@mui/icons-material/Bolt';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, type ReactElement } from 'react';
 import { useSidebarConfig } from '../contexts/SidebarConfigContext';
@@ -51,6 +52,7 @@ import { CSS } from '@dnd-kit/utilities';
 /** Maps iconName strings to MUI icon elements. */
 const ICON_MAP: Record<string, ReactElement> = {
   FolderSpecial: <FolderSpecialIcon fontSize="small" />,
+  Bolt: <BoltIcon fontSize="small" />,
   MusicNote: <MusicNoteIcon fontSize="small" />,
   MenuBook: <MenuBookIcon fontSize="small" />,
   Map: <MapIcon fontSize="small" />,

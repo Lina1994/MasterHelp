@@ -1,4 +1,4 @@
-import { IsArray, IsString, IsUUID, ArrayMaxSize, ValidateNested, IsNumber, IsBoolean, IsOptional, Min, Max, IsIn } from 'class-validator';
+import { IsArray, IsString, IsUUID, ArrayMaxSize, ValidateNested, IsNumber, IsBoolean, IsOptional, Min, Max, IsIn, MinLength, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -25,7 +25,10 @@ class TimeOfDayIntensityDto {
  * checks happen in the service layer.
  */
 class MapElementDto {
-  @IsString() id: string;
+  @IsString()
+  @MinLength(1, { message: 'Element id must not be empty' })
+  @MaxLength(255, { message: 'Element id must not exceed 255 characters' })
+  id: string;
   @IsString() @IsIn(['wall', 'door', 'window', 'light', 'sound']) type: 'wall' | 'door' | 'window' | 'light' | 'sound';
 
   // --- Wall / Door / Window ---
@@ -48,7 +51,7 @@ class MapElementDto {
   @IsOptional() @IsString() color?: string;
   @IsOptional() @IsBoolean() isOn?: boolean;
   @IsOptional() @IsBoolean() showInPreview?: boolean;
-  @IsOptional() @IsString() label?: string;
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(255) label?: string;
 
   @IsOptional() @ValidateNested() @Type(() => TimeOfDayIntensityDto)
   intensityByTimeOfDay?: TimeOfDayIntensityDto;
@@ -56,8 +59,8 @@ class MapElementDto {
   // --- Sound source ---
   @IsOptional() @IsNumber() @Min(0) @Max(1) volume?: number;
   @IsOptional() @IsString() @IsIn(['song', 'playlist', 'effect', 'preset']) sourceType?: string;
-  @IsOptional() @IsString() sourceId?: string;
-  @IsOptional() @IsString() sourceName?: string;
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(255) sourceId?: string;
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(255) sourceName?: string;
 }
 
 /**

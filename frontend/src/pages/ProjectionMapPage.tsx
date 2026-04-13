@@ -46,6 +46,8 @@ const ProjectionMapPage: React.FC = () => {
   const [fogMode, setFogMode] = useState<FogMode>(() => {
     try { const v = localStorage.getItem('app.map.fogMode'); return v === 'organic' ? 'organic' : 'grid'; } catch { return 'grid'; }
   });
+  const [fogEnabled, setFogEnabled] = useState<boolean>(false);
+  const [forceFogByDefault, setForceFogByDefault] = useState<boolean>(false);
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
   const { elements } = useMapElements(activeCampaign?.id, activeMapId || undefined);
   const { resolver: tokenImageResolver } = useTokenImageResolver(activeCampaign?.id, { pollMs: 5000 });
@@ -90,6 +92,10 @@ const ProjectionMapPage: React.FC = () => {
   // BroadcastChannel messages are never dropped due to a late-loading context.
   const campaignIdRef = React.useRef<string | null | undefined>(rawCampaignId);
   useEffect(() => { campaignIdRef.current = activeCampaign?.id ?? rawCampaignId; }, [activeCampaign?.id]);
+  const activeMapIdRef = React.useRef<string | null>(activeMapId);
+  useEffect(() => { activeMapIdRef.current = activeMapId; }, [activeMapId]);
+  const forceFogByDefaultRef = React.useRef<boolean>(false);
+  useEffect(() => { forceFogByDefaultRef.current = forceFogByDefault; }, [forceFogByDefault]);
   // Set to non-zero if we already have live data from localStorage or BC.
   // The server poll will NEVER override currentTurnId once this is set.
   const lastBcTurnUpdateRef = React.useRef<number>((() => {
@@ -131,12 +137,23 @@ const ProjectionMapPage: React.FC = () => {
 
   // React to radius updates from preview or other tabs; also react to initiative strip changes
   useEffect(() => {
+    const FOG_ENABLED_KEY = 'app.map.fog.enabled';
     const KEY = 'app.map.allyClearRadius';
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) {
         const n = parseInt(raw, 10);
         if (Number.isFinite(n)) setAllyClearRadius(Math.max(0, Math.min(10, n)));
+      }
+    } catch {}
+    try {
+      const cid = campaignIdRef.current;
+      const mid = activeMapIdRef.current;
+      const raw = localStorage.getItem(FOG_ENABLED_KEY);
+      if (cid && mid && raw) {
+        const obj = JSON.parse(raw);
+        const v = obj?.[`${cid}:${mid}`];
+        if (typeof v === 'boolean') setFogEnabled(v);
       }
     } catch {}
     // Also load fogMode from localStorage on mount
@@ -151,6 +168,22 @@ const ProjectionMapPage: React.FC = () => {
       }
       if (ev.key === 'app.map.fogMode' && ev.newValue) {
         if (ev.newValue === 'organic' || ev.newValue === 'grid') setFogMode(ev.newValue);
+      }
+      if (ev.key === FOG_ENABLED_KEY && ev.newValue) {
+        try {
+          const cid = campaignIdRef.current;
+          const mid = activeMapIdRef.current;
+          if (!cid || !mid) return;
+          const obj = JSON.parse(ev.newValue);
+          const v = obj?.[`${cid}:${mid}`];
+          if (typeof v === 'boolean') {
+            if (forceFogByDefaultRef.current && !v) {
+              setFogEnabled(true);
+            } else {
+              setFogEnabled(v);
+            }
+          }
+        } catch {}
       }
       // React to initiative strip written by useSkylineInitiativeSync (cross-window via storage event)
       if (ev.key === 'app.skyline.initiativeStrip' && ev.newValue) {
@@ -182,6 +215,17 @@ const ProjectionMapPage: React.FC = () => {
         }
         if (data?.type === 'fog-mode-updated') {
           if (data?.fogMode === 'organic' || data?.fogMode === 'grid') setFogMode(data.fogMode);
+        }
+        if (data?.type === 'fog-enabled-updated') {
+          const cid = campaignIdRef.current;
+          const mid = activeMapIdRef.current;
+          if (data?.campaignId === cid && data?.mapId === mid && typeof data?.fogEnabled === 'boolean') {
+            if (forceFogByDefaultRef.current && !data.fogEnabled) {
+              setFogEnabled(true);
+            } else {
+              setFogEnabled(data.fogEnabled);
+            }
+          }
         }
         // React to turn changes broadcast by useSkylineInitiativeSync / applyTurnNav
         if (data?.type === 'initiativeStripUpdated' && data?.campaignId === campaignIdRef.current) {
@@ -330,6 +374,51 @@ const ProjectionMapPage: React.FC = () => {
     })();
     return () => { cancelled = true; };
   }, [activeMapId, activeCampaign?.id]);
+
+  // Resolve fog enabled state for current map:
+  // If map has fogEnabledByDefault=true, fog is always forced ON.
+  // Otherwise runtime override from localStorage is used.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const cid = activeCampaign?.id;
+      const mid = activeMapId;
+      if (!cid || !mid) {
+        if (!cancelled) setForceFogByDefault(false);
+        if (!cancelled) setFogEnabled(false);
+        return;
+      }
+      try {
+        const maps = await listMaps({ campaignId: cid });
+        if (cancelled) return;
+        const current = maps.find((m) => m.id === mid);
+        const forceDefault = !!current?.fogEnabledByDefault;
+        setForceFogByDefault(forceDefault);
+        if (forceDefault) {
+          setFogEnabled(true);
+          return;
+        }
+      } catch {
+        if (!cancelled) setForceFogByDefault(false);
+      }
+
+      const storageKey = 'app.map.fog.enabled';
+      const scopedKey = `${cid}:${mid}`;
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const obj = JSON.parse(raw);
+          const v = obj?.[scopedKey];
+          if (typeof v === 'boolean') {
+            if (!cancelled) setFogEnabled(v);
+            return;
+          }
+        }
+      } catch {}
+      if (!cancelled) setFogEnabled(false);
+    })();
+    return () => { cancelled = true; };
+  }, [activeCampaign?.id, activeMapId]);
 
   // Reset natural size on map change so stale dimensions don't linger
   useEffect(() => { setNaturalSize(null); }, [activeMapId, timeOfDay]);
@@ -603,10 +692,10 @@ const ProjectionMapPage: React.FC = () => {
                 />
               )}
               {/* Fog overlay (players: black) above everything to truly mask hidden areas */}
-              {fogMode === 'grid' && (
+              {fogEnabled && fogMode === 'grid' && (
                 <FogOfWarOverlay mode="players" grid={gridSettings} widthPx={naturalSize?.w} heightPx={naturalSize?.h} cells={effectiveFogCells} />
               )}
-              {fogMode === 'organic' && (
+              {fogEnabled && fogMode === 'organic' && (
                 <OrganicFogOverlay mode="players" widthPx={naturalSize?.w} heightPx={naturalSize?.h} strokes={effectiveOrganicStrokes} />
               )}
 

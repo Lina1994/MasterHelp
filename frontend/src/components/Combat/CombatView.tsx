@@ -60,6 +60,19 @@ import { computeEnemyDisplayNameById, prettySkill, prettySense, stripGroupSuffix
 import type { GridSettings } from '../../components/Map/MapGridOverlay';
 import { allocateTokenCells } from '../../utils/tokenPlacement';
 
+function readRuntimeFogEnabled(campaignId: string | undefined, mapId: string | null | undefined): boolean | null {
+  if (!campaignId || !mapId) return null;
+  try {
+    const raw = localStorage.getItem('app.map.fog.enabled');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const value = parsed?.[`${campaignId}:${mapId}`];
+    return typeof value === 'boolean' ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * CombatView: vista de combate con selección de mapa/encuentro,
  * controles de música y gestión de participantes (HP, iniciativa).
@@ -104,7 +117,7 @@ export default function CombatView({
 }: CombatViewProps) {
   const { activeEncounterId, setActiveEncounterId } = useActiveEncounter();
   const [selectedMapName, setSelectedMapName] = useState<string>('Mapa activo');
-  const [fogEnabled, setFogEnabled] = useState(true);
+  const [fogEnabled, setFogEnabled] = useState(false);
   const [participantsDraft, setParticipantsDraft] = useState<EncounterSummary['participants']>([]);
   const [savingInitiative, setSavingInitiative] = useState<Record<string, boolean>>({});
   const [savingHp, setSavingHp] = useState<Record<string, boolean>>({});
@@ -704,6 +717,30 @@ export default function CombatView({
     setSelectedMapName(current?.name || 'Mapa activo');
   }, [activeMapId, maps]);
 
+  // Sync fog default with the active map's fogEnabledByDefault setting
+  useEffect(() => {
+    const map = maps.find((m) => m.id === activeMapId);
+    const runtime = readRuntimeFogEnabled(campaign?.id, activeMapId);
+    if (map?.fogEnabledByDefault) {
+      setFogEnabled(true);
+      return;
+    }
+    setFogEnabled(runtime ?? false);
+  }, [activeMapId, campaign?.id, maps]);
+
+  const forceFogByDefault = useMemo(() => {
+    const map = maps.find((m) => m.id === activeMapId);
+    return !!map?.fogEnabledByDefault;
+  }, [activeMapId, maps]);
+
+  const handleFogEnabledChange = useCallback((next: boolean) => {
+    if (forceFogByDefault && !next) {
+      setFogEnabled(true);
+      return;
+    }
+    setFogEnabled(next);
+  }, [forceFogByDefault]);
+
   useEffect(() => {
     participantsRef.current = participantsDraft;
   }, [participantsDraft]);
@@ -969,7 +1006,7 @@ export default function CombatView({
           prioritizeEncounterMusic={prioritizeEncounterMusic}
           setPrioritizeEncounterMusic={setPrioritizeEncounterMusic}
           fogEnabled={fogEnabled}
-          setFogEnabled={setFogEnabled}
+          setFogEnabled={handleFogEnabledChange}
           showInitiativeStrip={showInitiativeStrip}
           onToggleInitiativeStrip={onToggleInitiativeStrip}
         />
@@ -993,6 +1030,7 @@ export default function CombatView({
           )}
           <ProjectedMapMirror
             fogEnabled={fogEnabled}
+            onFogEnabledChange={handleFogEnabledChange}
             highlightTokenId={currentTurnId || null}
             onPrepareTokens={prepareTokens}
             tokenCandidates={tokenCandidates}

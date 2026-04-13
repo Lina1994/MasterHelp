@@ -54,6 +54,8 @@ import { BackgroundsModule } from './backgrounds/backgrounds.module';
 import { CampaignBackground } from './backgrounds/entities/campaign-background.entity';
 import { Manual } from './manuals/entities/manual.entity';
 import { ManualEntry } from './manuals/entities/manual-entry.entity';
+import { ShortcutsModule } from './shortcuts/shortcuts.module';
+import { Shortcut } from './shortcuts/entities/shortcut.entity';
 
 @Module({
   imports: [
@@ -102,6 +104,7 @@ import { ManualEntry } from './manuals/entities/manual-entry.entity';
           CampaignBackground,
           Manual,
           ManualEntry,
+          Shortcut,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -131,6 +134,7 @@ import { ManualEntry } from './manuals/entities/manual-entry.entity';
     FeatsModule,
     TraitsModule,
     BackgroundsModule,
+    ShortcutsModule,
   ],
   controllers: [],
   providers: [],

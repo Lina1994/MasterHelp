@@ -42,13 +42,18 @@ const CampaignPage = () => {
   };
 
   const handleSave = async (data: Partial<Campaign>) => {
-    if (editingCampaign) {
-      await updateCampaign(editingCampaign.id, data);
-    } else {
-      await createCampaign(data);
+    try {
+      if (editingCampaign) {
+        await updateCampaign(editingCampaign.id, data);
+      } else {
+        await createCampaign(data);
+      }
+      setFormOpen(false);
+      setEditingCampaign(undefined);
+    } catch {
+      // Validation errors are surfaced via CampaignContext error state and Alert.
+      // Keep the form open so user can correct the input.
     }
-    setFormOpen(false);
-    setEditingCampaign(undefined);
   };
 
   const handleSelectCampaign = (id: string) => {

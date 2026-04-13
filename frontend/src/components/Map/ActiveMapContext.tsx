@@ -9,6 +9,12 @@ type Ctx = {
 };
 
 const LEGACY_KEY = 'app.activeMapId';
+const PENDING_KEY_PREFIX = 'app.activeMapPending';
+
+type ActiveMapPendingMarker = {
+  targetId: string | null;
+  until: number;
+};
 
 const ActiveMapContext = createContext<Ctx | undefined>(undefined);
 
@@ -27,6 +33,43 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const getKey = () => {
     const cid = activeCampaignId || activeCampaign?.id;
     return cid ? `app.activeMapId:${cid}` : LEGACY_KEY;
+  };
+
+  const getPendingKey = (campaignId: string) => `${PENDING_KEY_PREFIX}:${campaignId}`;
+
+  const readPendingMarker = (campaignId: string): ActiveMapPendingMarker | null => {
+    const key = getPendingKey(campaignId);
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as Partial<ActiveMapPendingMarker>;
+      const targetId = parsed?.targetId ?? null;
+      const until = Number(parsed?.until ?? 0);
+      if (!Number.isFinite(until) || (targetId !== null && typeof targetId !== 'string')) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      if (Date.now() >= until) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      return { targetId, until };
+    } catch {
+      try { localStorage.removeItem(key); } catch {}
+      return null;
+    }
+  };
+
+  const writePendingMarker = (campaignId: string, targetId: string | null, until: number) => {
+    try {
+      localStorage.setItem(getPendingKey(campaignId), JSON.stringify({ targetId, until }));
+    } catch {}
+  };
+
+  const clearPendingMarker = (campaignId: string) => {
+    try {
+      localStorage.removeItem(getPendingKey(campaignId));
+    } catch {}
   };
 
   // Restore persisted selection when campaign changes (scoped key)
@@ -48,6 +91,13 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const onStorage = (e: StorageEvent) => {
       const key = getKey();
       if (e.key === key) {
+        const cid = activeCampaignId || activeCampaign?.id;
+        if (cid) {
+          const pending = readPendingMarker(cid);
+          if (pending && Date.now() < pending.until && (e.newValue || null) !== pending.targetId) {
+            return;
+          }
+        }
         const now = Date.now();
         const pendingId = pendingTargetIdRef.current;
         const pendingUntil = pendingUntilRef.current || 0;
@@ -98,6 +148,10 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       const serverId = await apiGetActiveMapId(cid);
       setActiveMapIdState(prev => {
+        const pending = readPendingMarker(cid);
+        if (pending && Date.now() < pending.until && serverId !== pending.targetId) {
+          return prev;
+        }
         const now = Date.now();
         const rc = recentChangeRef.current;
         if (rc && now < rc.until && serverId === rc.from && prev === rc.to) {
@@ -136,6 +190,10 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       try {
         const serverId = await apiGetActiveMapId(cid);
         setActiveMapIdState(prev => {
+          const pendingGlobal = readPendingMarker(cid);
+          if (pendingGlobal && Date.now() < pendingGlobal.until && serverId !== pendingGlobal.targetId) {
+            return prev;
+          }
           const now = Date.now();
           const pendingId = pendingTargetIdRef.current;
           const pendingUntil = pendingUntilRef.current || 0;
@@ -182,12 +240,14 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // Mark a pending local change to avoid poll reverting to old server value.
       pendingTargetIdRef.current = id;
       pendingUntilRef.current = Date.now() + 4000; // allow up to 4s for server to persist
+      writePendingMarker(cid, id, Date.now() + 4000);
       // eslint-disable-next-line no-console
       console.log('[ActiveMap] persisting to server', { cid, id });
       apiSetActiveMapId(cid, id)
         .then(() => {
           // Reduce pending window and notify other contexts only after server accepted the change.
           pendingUntilRef.current = Date.now() + 1000;
+          writePendingMarker(cid, id, Date.now() + 1000);
           try {
             const bc = 'BroadcastChannel' in window ? new BroadcastChannel('campaign-sync') : null;
             bc?.postMessage({ type: 'activeMapChanged', campaignId: cid });
@@ -199,6 +259,7 @@ export const ActiveMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           // On failure, clear pending and refresh from server to reconcile.
           pendingTargetIdRef.current = null;
           pendingUntilRef.current = 0;
+          clearPendingMarker(cid);
           refreshFromServer();
         });
     }

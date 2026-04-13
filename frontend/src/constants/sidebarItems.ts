@@ -30,6 +30,7 @@ export const DEFAULT_SIDEBAR_ITEMS: SidebarItemDef[] = [
   { key: 'soundtrack',       labelKey: 'soundtrack',  fallback: 'Soundtrack',  iconName: 'MusicNote',        route: '/soundtrack' },
   { key: 'manuals',          labelKey: 'manuals',     fallback: 'Manuales',    iconName: 'MenuBook',         route: '/manuals' },
   { key: 'maps',             labelKey: 'maps',        fallback: 'Mapas',       iconName: 'Map',              route: '/maps' },
+  { key: 'shortcuts',        labelKey: 'shortcuts',   fallback: 'Atajos',      iconName: 'Bolt',             route: '/shortcuts',         masterOnly: true },
   { key: 'combat',           labelKey: 'combat',      fallback: 'Combate',     iconName: 'SportsKabaddi',    route: '/combat',            requiresCampaign: true },
   { key: 'characters',       labelKey: 'characters',  fallback: 'Personajes',  iconName: 'People',           route: '/characters',        requiresCampaign: true },
   { key: 'quests',           labelKey: 'quests',      fallback: 'Misiones',    iconName: 'Assignment',       route: '/quests',            requiresCampaign: true },
