@@ -13,10 +13,16 @@ const isDev = !app.isPackaged;
 let mainWindow = null;
 let projectionWindow = null;
 let skylineWindow = null;
+let splashWindow = null;
 /** @type {import('child_process').ChildProcess | null} */
 let backendProcess = null;
 /** @type {import('http').Server | null} */
 let staticServer = null;
+
+/** Duración del fade-out del splash en milisegundos. */
+const SPLASH_FADE_OUT_MS = 180;
+/** Tiempo máximo para esperar ready-to-show de la ventana principal. */
+const MAIN_WINDOW_READY_TIMEOUT_MS = 15_000;
 
 /* ---------- Logging a archivo (solo producción) ---------- */
 
@@ -48,6 +54,159 @@ function log(...args) {
   const line = args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ');
   console.log(line);
   if (logStream) logStream.write(line + '\n');
+}
+
+/**
+ * Resuelve la ruta absoluta de un asset dentro de frontend/src/assets.
+ * En builds empaquetados funciona porque se incluye explícitamente en electron-builder.
+ * @param {string} filename
+ * @returns {string}
+ */
+function getFrontendSourceAssetPath(filename) {
+  return path.join(__dirname, 'frontend', 'src', 'assets', filename);
+}
+
+/**
+ * Resuelve el data URI del splash leyendo StartApp.png desde rutas candidatas.
+ * Si no se encuentra, devuelve null para renderizar un fallback textual.
+ * @returns {string | null}
+ */
+function getSplashImageDataUri() {
+  const candidates = [
+    path.join(__dirname, 'frontend', 'src', 'assets', 'StartApp.png'),
+    path.join(__dirname, 'frontend', 'dist', 'assets', 'StartApp.png'),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      if (!fs.existsSync(candidate)) continue;
+      const imageBuffer = fs.readFileSync(candidate);
+      const base64 = imageBuffer.toString('base64');
+      log('[splash] Using splash image:', candidate);
+      return `data:image/png;base64,${base64}`;
+    } catch (err) {
+      log('[splash] Failed reading splash image:', candidate, err?.message ?? err);
+    }
+  }
+
+  log('[splash] StartApp.png not found in expected paths');
+  return null;
+}
+
+/**
+ * Crea y muestra la ventana splash para dar feedback visual inmediato en el arranque.
+ * @returns {BrowserWindow}
+ */
+function createSplashWindow() {
+  const splashImageDataUri = getSplashImageDataUri();
+  const splashBody = splashImageDataUri
+    ? `<img src="${splashImageDataUri}" alt="MasterHelp" />`
+    : '<div class="fallback">Iniciando MasterHelp...</div>';
+
+  const splashHtml = `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: file:;" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MasterHelp Starting</title>
+    <style>
+      html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #0f1115;
+        overflow: hidden;
+      }
+      .wrap {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .fallback {
+        color: #f2f4f8;
+        font-family: Segoe UI, Tahoma, sans-serif;
+        font-size: 22px;
+        letter-spacing: 0.3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      ${splashBody}
+    </div>
+  </body>
+</html>`;
+
+  const splash = new BrowserWindow({
+    width: 960,
+    height: 540,
+    frame: false,
+    resizable: false,
+    movable: true,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    backgroundColor: '#0f1115',
+    alwaysOnTop: true,
+    center: true,
+    show: true,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  splash.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(splashHtml)}`);
+  splash.on('closed', () => {
+    splashWindow = null;
+  });
+  return splash;
+}
+
+/**
+ * Realiza un cierre suave del splash reduciendo su opacidad gradualmente.
+ * @param {BrowserWindow | null} targetSplash
+ * @param {number} durationMs
+ * @returns {Promise<void>}
+ */
+function fadeOutAndCloseSplash(targetSplash, durationMs = SPLASH_FADE_OUT_MS) {
+  return new Promise((resolve) => {
+    if (!targetSplash || targetSplash.isDestroyed()) {
+      resolve();
+      return;
+    }
+
+    const steps = 10;
+    const intervalMs = Math.max(16, Math.floor(durationMs / steps));
+    let currentStep = 0;
+
+    const interval = setInterval(() => {
+      currentStep += 1;
+      const nextOpacity = Math.max(0, 1 - (currentStep / steps));
+
+      if (!targetSplash.isDestroyed()) {
+        targetSplash.setOpacity(nextOpacity);
+      }
+
+      if (currentStep >= steps) {
+        clearInterval(interval);
+        if (!targetSplash.isDestroyed()) {
+          targetSplash.close();
+        }
+        resolve();
+      }
+    }, intervalMs);
+  });
 }
 
 /* ---------- Frontend static server (producción) ---------- */
@@ -246,6 +405,15 @@ function startBackend() {
     });
 
     let started = false;
+    let settled = false;
+
+    /** @param {Error | null} error */
+    const finish = (error = null) => {
+      if (settled) return;
+      settled = true;
+      if (error) reject(error);
+      else resolve();
+    };
 
     backendProcess.stdout.on('data', (data) => {
       const msg = data.toString();
@@ -259,7 +427,7 @@ function startBackend() {
           } else {
             log('[backend] stdout said running but health-check failed');
           }
-          resolve();
+          finish();
         });
       }
     });
@@ -270,21 +438,20 @@ function startBackend() {
 
     backendProcess.on('error', (err) => {
       log('[backend] Failed to start:', err.message);
-      if (!started) reject(err);
+      if (!started) finish(err);
     });
 
     backendProcess.on('exit', (code) => {
       log('[backend] Exited with code', String(code));
       backendProcess = null;
-      if (!started) reject(new Error(`Backend exited with code ${code}`));
+      if (!started) finish(new Error(`Backend exited with code ${code}`));
     });
 
-    // Timeout de seguridad: si en 30 s no arranca, continuar igual
+    // Timeout de seguridad: si en 30 s no arranca, reportar error de inicio.
     setTimeout(() => {
-      if (!started) {
-        started = true;
-        log('[backend] Timeout esperando arranque, continuando...');
-        resolve();
+      if (!started && !settled) {
+        log('[backend] Timeout esperando arranque');
+        finish(new Error('Timeout esperando arranque del backend (30s)'));
       }
     }, 30_000);
   });
@@ -295,12 +462,15 @@ function createWindow() {
   Menu.setApplicationMenu(null);
 
   // Crear la ventana del navegador (frameless para barra de título custom).
+  const appIconPath = getFrontendSourceAssetPath('Logo-app.ico');
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     title: 'MasterHelp',
-    icon: path.join(__dirname, 'frontend', 'src', 'assets', 'Logo-app.ico'),
+    icon: fs.existsSync(appIconPath) ? appIconPath : undefined,
     frame: false,
+    show: false,
+    backgroundColor: '#0f1115',
     webPreferences: {
       // Enlazar el script de preload para una comunicación segura
       preload: path.join(__dirname, 'preload.js'),
@@ -324,7 +494,11 @@ function createWindow() {
 
 // Este método se llamará cuando Electron haya terminado la inicialización.
 app.whenReady().then(async () => {
+  const startupStartedAt = Date.now();
   initLogFile();
+
+  splashWindow = createSplashWindow();
+  log('[startup] Splash shown at', `${Date.now() - startupStartedAt}ms`);
 
   // Arrancar el servidor estático del frontend (Acceso Web por LAN)
   staticServer = startStaticServer();
@@ -332,6 +506,7 @@ app.whenReady().then(async () => {
   // Arrancar el backend en producción antes de mostrar la ventana
   try {
     await startBackend();
+    log('[startup] Backend ready at', `${Date.now() - startupStartedAt}ms`);
   } catch (err) {
     log('[startup] No se pudo arrancar el backend:', err?.message ?? err);
     // Informar al usuario con un diálogo nativo
@@ -355,6 +530,28 @@ app.whenReady().then(async () => {
   });
 
   createWindow();
+
+  const revealMainWindow = async () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+      log('[startup] Main window ready-to-show at', `${Date.now() - startupStartedAt}ms`);
+    }
+    await fadeOutAndCloseSplash(splashWindow, SPLASH_FADE_OUT_MS);
+  };
+
+  if (mainWindow) {
+    mainWindow.once('ready-to-show', () => {
+      void revealMainWindow();
+    });
+
+    setTimeout(() => {
+      if (splashWindow && !splashWindow.isDestroyed()) {
+        log('[startup] Main window ready-to-show timeout; forcing visible window');
+        void revealMainWindow();
+      }
+    }, MAIN_WINDOW_READY_TIMEOUT_MS);
+  }
 
   // Controles de ventana personalizados (minimizar, maximizar, cerrar)
   ipcMain.on('window:minimize', () => {
@@ -591,6 +788,10 @@ app.on('window-all-closed', function () {
 
 // Limpiar proceso backend y servidor estático al salir
 app.on('before-quit', () => {
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.destroy();
+    splashWindow = null;
+  }
   if (staticServer) {
     staticServer.close();
     staticServer = null;

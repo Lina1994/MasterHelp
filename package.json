@@ -1,6 +1,6 @@
 {
   "name": "masterhelp-desktop",
-  "version": "0.26.311",
+  "version": "0.26.312",
   "description": "Desktop application for MasterHelp",
   "main": "electron.js",
   "scripts": {
@@ -42,7 +42,9 @@
     "files": [
       "electron.js",
       "preload.js",
-      "frontend/dist/**/*"
+      "frontend/dist/**/*",
+      "frontend/src/assets/StartApp.png",
+      "frontend/src/assets/Logo-app.ico"
     ],
     "extraResources": [
       {
