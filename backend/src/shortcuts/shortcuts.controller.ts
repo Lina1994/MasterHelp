@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -25,8 +26,8 @@ export class ShortcutsController {
   constructor(private readonly shortcutsService: ShortcutsService) {}
 
   @Get()
-  async findAll(@Request() req) {
-    return this.shortcutsService.findAllForOwner(req.user.userId);
+  async findAll(@Request() req, @Query('campaignId') campaignId?: string) {
+    return this.shortcutsService.findAllForOwner(req.user.userId, campaignId);
   }
 
   @Get(':id')

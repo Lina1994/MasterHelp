@@ -19,6 +19,7 @@ import MapTokensOverlay from '../components/Map/MapTokensOverlay';
 import { computeClearedFogByAllies, subtractClearedFog, computeAllyRevealStrokes, computeLightRevealStrokes, computeClearedFogByLights } from '../utils/fogHelpers';
 import { useTokenImageResolver } from '../hooks/useTokenImageResolver';
 import { useMapElements } from '../hooks/useMapElements';
+import type { ShortcutActionDefinition } from '../types/actionTypes';
 
 /** Parses campaignId from any URL form (search string or hash-router query). */
 function parseCampaignIdFromUrl(): string | null {
@@ -86,6 +87,9 @@ const ProjectionMapPage: React.FC = () => {
   const [allyClearRadius, setAllyClearRadius] = useState<number>(() => {
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
+  const [shortcutTextOverlay, setShortcutTextOverlay] = useState<{ text: string; title?: string } | null>(null);
+  const [shortcutFilterOverlay, setShortcutFilterOverlay] = useState<{ filter: string; color?: string; intensity?: number } | null>(null);
+  const shortcutTextTimeoutRef = React.useRef<number | null>(null);
 
   // Keep a ref to the effective campaign ID for use inside stable BC handler closures.
   // Initialized from the URL immediately (before activeCampaign loads from API) so that
@@ -109,6 +113,117 @@ const ProjectionMapPage: React.FC = () => {
     } catch {}
     return 0;
   })());
+
+  // Load FoW settings from server so this web window matches Electron even across origins.
+  useEffect(() => {
+    const clearShortcutTextOverlay = () => {
+      if (shortcutTextTimeoutRef.current !== null) {
+        window.clearTimeout(shortcutTextTimeoutRef.current);
+        shortcutTextTimeoutRef.current = null;
+      }
+      setShortcutTextOverlay(null);
+    };
+
+    const setTimedShortcutTextOverlay = (next: { text: string; title?: string }, durationMs?: number) => {
+      const ms = Number(durationMs);
+      const timeout = Number.isFinite(ms) && ms > 0 ? ms : 6000;
+      if (shortcutTextTimeoutRef.current !== null) {
+        window.clearTimeout(shortcutTextTimeoutRef.current);
+      }
+      setShortcutTextOverlay(next);
+      shortcutTextTimeoutRef.current = window.setTimeout(() => {
+        setShortcutTextOverlay(null);
+        shortcutTextTimeoutRef.current = null;
+      }, timeout);
+    };
+
+    const parseShortcutAction = (
+      payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
+    ): ShortcutActionDefinition | null => {
+      if (!payload) return null;
+      if ('kind' in (payload as any)) return payload as ShortcutActionDefinition;
+      return (payload as { action?: ShortcutActionDefinition }).action || null;
+    };
+
+    const handleWindowShortcutAction = (
+      payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
+    ) => {
+      const action = parseShortcutAction(payload);
+      if (!action) return;
+      if (action.kind !== 'window.showText' && action.kind !== 'window.applyFilter' && action.kind !== 'window.clearFilter') {
+        return;
+      }
+      const body = (action.payload ?? (action as any).config ?? {}) as Record<string, unknown>;
+
+      if (action.kind === 'window.clearFilter') {
+        setShortcutFilterOverlay(null);
+        return;
+      }
+
+      if (action.kind === 'window.applyFilter') {
+        const filter = typeof body.filter === 'string' ? body.filter : '';
+        if (!filter) return;
+        const color = typeof body.color === 'string' ? body.color : undefined;
+        const intensity = typeof body.intensity === 'number' ? body.intensity : undefined;
+        setShortcutFilterOverlay({ filter, color, intensity });
+        return;
+      }
+
+      const text = typeof body.text === 'string' ? body.text.trim() : '';
+      if (!text) return;
+      const title = typeof body.title === 'string' ? body.title : undefined;
+      const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+      setTimedShortcutTextOverlay({ text, title }, durationMs);
+    };
+
+    const unsubscribe = window.electronAPI?.onShortcutWindowAction?.((payload: any) => {
+      handleWindowShortcutAction(payload);
+    });
+
+    const browserEventHandler = (event: Event) => {
+      const custom = event as CustomEvent<{ action?: ShortcutActionDefinition } | ShortcutActionDefinition>;
+      handleWindowShortcutAction(custom.detail);
+    };
+    window.addEventListener('shortcut:action', browserEventHandler as EventListener);
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+      window.removeEventListener('shortcut:action', browserEventHandler as EventListener);
+      clearShortcutTextOverlay();
+    };
+  }, []);
+
+  const shortcutFilterStyle = React.useMemo(() => {
+    if (!shortcutFilterOverlay) return undefined;
+    const name = shortcutFilterOverlay.filter.toLowerCase();
+    const intensity = Math.max(0, Math.min(1, Number(shortcutFilterOverlay.intensity ?? 1)));
+    const opacity = 0.08 + (0.32 * intensity);
+    const color = shortcutFilterOverlay.color || 'transparent';
+
+    const filterMap: Record<string, string> = {
+      grayscale: `grayscale(${Math.round(intensity * 100)}%)`,
+      sepia: `sepia(${Math.round(intensity * 100)}%)`,
+      blur: `blur(${(intensity * 8).toFixed(1)}px)`,
+      brightness: `brightness(${(0.6 + intensity).toFixed(2)})`,
+      contrast: `contrast(${(1 + intensity).toFixed(2)})`,
+      saturate: `saturate(${(1 + intensity * 1.5).toFixed(2)})`,
+      hue: `hue-rotate(${Math.round(intensity * 180)}deg)`,
+      hue_rotate: `hue-rotate(${Math.round(intensity * 180)}deg)`,
+      invert: `invert(${Math.round(intensity * 100)}%)`,
+    };
+
+    const filterCss = filterMap[name] || '';
+    return {
+      position: 'absolute' as const,
+      inset: 0,
+      zIndex: 7000,
+      pointerEvents: 'none' as const,
+      backdropFilter: filterCss || undefined,
+      WebkitBackdropFilter: filterCss || undefined,
+      backgroundColor: color === 'transparent' ? `rgba(0,0,0,${opacity.toFixed(3)})` : color,
+      mixBlendMode: color === 'transparent' ? 'normal' as const : 'multiply' as const,
+    };
+  }, [shortcutFilterOverlay]);
 
   // Load FoW settings from server so this web window matches Electron even across origins.
   useEffect(() => {
@@ -756,6 +871,35 @@ const ProjectionMapPage: React.FC = () => {
               )}
             </Box>
           </Box>
+
+          {shortcutFilterStyle ? <Box sx={shortcutFilterStyle} /> : null}
+
+          {shortcutTextOverlay ? (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '10vh',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                maxWidth: '86vw',
+                px: 2,
+                py: 1.5,
+                borderRadius: 2,
+                bgcolor: 'rgba(0,0,0,0.62)',
+                color: 'white',
+                textAlign: 'center',
+                zIndex: 8000,
+                boxShadow: '0 10px 28px rgba(0,0,0,0.45)',
+              }}
+            >
+              {shortcutTextOverlay.title ? (
+                <Typography variant="h6" sx={{ mb: 0.5 }}>
+                  {shortcutTextOverlay.title}
+                </Typography>
+              ) : null}
+              <Typography variant="h5">{shortcutTextOverlay.text}</Typography>
+            </Box>
+          ) : null}
         </Box>
       ) : (
         <Typography variant="h4" color="white">Sin mapa activo</Typography>

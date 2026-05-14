@@ -23,6 +23,7 @@ import TimeOfDaySidebarControls from '../components/player/TimeOfDaySidebarContr
 import GlobalPlayerDrawerControls from '../components/player/GlobalPlayerDrawerControls';
 import SfxPlayerDrawerControls from '../components/player/SfxPlayerDrawerControls';
 import MapAudioOrchestrator from '../components/Map/MapAudioOrchestrator';
+import ShortcutRuntimeBridge from '../shortcuts/ShortcutRuntimeBridge';
 import { InvitationsList } from '../pages/InvitationsList';
 import { useSidebarConfig } from '../contexts/SidebarConfigContext';
 import { DEFAULT_SIDEBAR_ITEMS } from '../constants/sidebarItems';
@@ -310,6 +311,7 @@ const MainLayoutInner = () => {
       <SfxPlayerProvider>
         <PlayerDrawerUiProvider>
           <ShortcutsProvider>
+          <ShortcutRuntimeBridge />
           <Box sx={{ display: 'flex', height: `calc(100vh - ${TB}px)` }}>
             {/* ── Barra superior responsive (sólo en móvil / ventana estrecha) ── */}
             <AppBar

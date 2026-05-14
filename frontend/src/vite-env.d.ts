@@ -9,6 +9,9 @@ interface Window {
     onProjectionSize?: (cb: (payload: { width: number; height: number; dpr?: number }) => void) => () => void;
     projectionPoke?: (payload: any) => void;
     onProjectionPoke?: (cb: (payload: any) => void) => () => void;
+    dispatchShortcutWindowAction?: (payload: any) => Promise<{ delivered: number }>;
+    listShortcutWindows?: () => Promise<Array<{ id: string; kind: string; title: string; campaignId: string | null; webContentsId: number; createdAt: string }>>;
+    onShortcutWindowAction?: (cb: (payload: any) => void) => () => void;
     /** Minimiza la ventana principal. */
     windowMinimize?: () => void;
     /** Alterna maximizar/restaurar. */

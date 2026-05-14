@@ -9,17 +9,33 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   Max,
   MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
+import { SHORTCUT_SCHEMA_VERSION } from '../actionTypes';
 import { ShortcutActionDto } from './shortcut-action.dto';
 
 /**
  * DTO for creating a shortcut definition.
  */
 export class CreateShortcutDto {
+  @IsOptional()
+  @IsIn(['global', 'campaign'])
+  scope?: 'global' | 'campaign';
+
+  @IsOptional()
+  @IsUUID('4')
+  campaignId?: string | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  schemaVersion?: number;
+
   @IsString()
   @MaxLength(80)
   name: string;
@@ -97,4 +113,6 @@ export class CreateShortcutDto {
   @ValidateNested({ each: true })
   @Type(() => ShortcutActionDto)
   actions: ShortcutActionDto[];
+
+  static readonly CURRENT_SCHEMA_VERSION = SHORTCUT_SCHEMA_VERSION;
 }

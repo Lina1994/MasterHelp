@@ -1,13 +1,17 @@
-export type ShortcutMode = 'button' | 'toggle' | 'temporary';
-export type ShortcutActionKind = 'toggleState' | 'playSoundEffect';
+import {
+  SHORTCUT_SCHEMA_VERSION,
+  type ShortcutActionDefinition,
+  type ShortcutMode,
+  type ShortcutScope,
+} from './actionTypes';
 
-export interface ShortcutActionDefinition {
-  kind: ShortcutActionKind;
-  config: Record<string, unknown>;
-}
+export type { ShortcutActionDefinition, ShortcutMode, ShortcutScope } from './actionTypes';
 
 export interface ShortcutItem {
   id: string;
+  scope: ShortcutScope;
+  campaignId?: string | null;
+  schemaVersion?: number;
   name: string;
   description?: string | null;
   icon?: string | null;
@@ -38,6 +42,9 @@ export interface ShortcutShellConfig {
 }
 
 export interface ShortcutPayload {
+  scope?: ShortcutScope;
+  campaignId?: string | null;
+  schemaVersion?: number;
   name: string;
   description?: string | null;
   icon?: string | null;
@@ -76,6 +83,8 @@ export const DEFAULT_SHORTCUTS_CONFIG: ShortcutShellConfig = {
   showHotbar: false,
   sidebarPanelColumns: 3,
 };
+
+export const DEFAULT_SHORTCUT_SCHEMA_VERSION = SHORTCUT_SCHEMA_VERSION;
 
 export function parseShortcutsConfig(raw: string | null | undefined): ShortcutShellConfig {
   if (!raw) return DEFAULT_SHORTCUTS_CONFIG;

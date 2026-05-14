@@ -82,6 +82,7 @@ const GlobalPlayerDrawerControls: React.FC = () => {
   <MarqueeText text={current.name} />
       <audio
         ref={audioRef}
+        data-global-player-audio="true"
         src={current.objectUrl}
         controls
         loop={loop}

@@ -19,6 +19,58 @@ let backendProcess = null;
 /** @type {import('http').Server | null} */
 let staticServer = null;
 
+/**
+ * Runtime registry of app windows used by shortcut window targeting.
+ * Key format: main | splash | projection | skyline | dynamic webContents IDs.
+ * @type {Map<string, { id: string; kind: string; title: string; campaignId: string | null; webContentsId: number; createdAt: string }>} 
+ */
+const windowRegistry = new Map();
+
+/**
+ * Registers or refreshes window metadata in the runtime registry.
+ * @param {string} id
+ * @param {BrowserWindow} win
+ * @param {string} kind
+ * @param {string | null} campaignId
+ */
+function registerWindow(id, win, kind, campaignId = null) {
+  if (!win || win.isDestroyed()) return;
+  windowRegistry.set(id, {
+    id,
+    kind,
+    title: win.getTitle() || kind,
+    campaignId,
+    webContentsId: win.webContents.id,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+/**
+ * Removes a window from the runtime registry by logical id.
+ * @param {string} id
+ */
+function unregisterWindow(id) {
+  if (!id) return;
+  windowRegistry.delete(id);
+}
+
+/**
+ * Returns serializable entries for current alive windows.
+ * @returns {Array<{ id: string; kind: string; title: string; campaignId: string | null; webContentsId: number; createdAt: string }>}
+ */
+function listRegisteredWindows() {
+  const allWindows = BrowserWindow.getAllWindows().filter((win) => !win.isDestroyed());
+  const byWebContentsId = new Set(allWindows.map((win) => win.webContents.id));
+
+  for (const [id, meta] of windowRegistry.entries()) {
+    if (!byWebContentsId.has(meta.webContentsId)) {
+      windowRegistry.delete(id);
+    }
+  }
+
+  return Array.from(windowRegistry.values());
+}
+
 /** Duración del fade-out del splash en milisegundos. */
 const SPLASH_FADE_OUT_MS = 180;
 /** Tiempo máximo para esperar ready-to-show de la ventana principal. */
@@ -167,7 +219,9 @@ function createSplashWindow() {
   });
 
   splash.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(splashHtml)}`);
+  registerWindow('splash', splash, 'splash', null);
   splash.on('closed', () => {
+    unregisterWindow('splash');
     splashWindow = null;
   });
   return splash;
@@ -485,6 +539,11 @@ function createWindow() {
     : `file://${path.join(__dirname, 'frontend', 'dist', 'index.html')}`;
 
   mainWindow.loadURL(startUrl);
+  registerWindow('main', mainWindow, 'main', null);
+  mainWindow.on('closed', () => {
+    unregisterWindow('main');
+    mainWindow = null;
+  });
 
   // Abrir las DevTools en modo de desarrollo (opcional).
   // if (isDev) {
@@ -632,9 +691,13 @@ app.whenReady().then(async () => {
       ? (campaignId ? `${baseDev}?campaignId=${encodeURIComponent(campaignId)}` : baseDev)
       : (campaignId ? `${baseProd}?campaignId=${encodeURIComponent(campaignId)}` : baseProd);
     projectionWindow.loadURL(startUrl);
+    registerWindow('projection', projectionWindow, 'projection', campaignId || null);
     // Opcional: abrir devtools solo en dev
     // if (isDev) projectionWindow.webContents.openDevTools();
-    projectionWindow.on('closed', () => { projectionWindow = null; });
+    projectionWindow.on('closed', () => {
+      unregisterWindow('projection');
+      projectionWindow = null;
+    });
     return true;
   });
 
@@ -664,8 +727,16 @@ app.whenReady().then(async () => {
       ? (campaignId ? `${baseDev}?campaignId=${encodeURIComponent(campaignId)}` : baseDev)
       : (campaignId ? `${baseProd}?campaignId=${encodeURIComponent(campaignId)}` : baseProd);
     skylineWindow.loadURL(startUrl);
-    skylineWindow.on('closed', () => { skylineWindow = null; });
+    registerWindow('skyline', skylineWindow, 'skyline', campaignId || null);
+    skylineWindow.on('closed', () => {
+      unregisterWindow('skyline');
+      skylineWindow = null;
+    });
     return true;
+  });
+
+  ipcMain.handle('shortcuts:list-windows', async () => {
+    return listRegisteredWindows();
   });
 
   // Recoger tamaño de la proyección y reemitirlo a todas las ventanas
@@ -688,6 +759,47 @@ app.whenReady().then(async () => {
     for (const win of BrowserWindow.getAllWindows()) {
       try { win.webContents.send('maps:projection-poke', payload); } catch {}
     }
+  });
+
+  /**
+   * Resolves a set of windows from a shortcut action target descriptor.
+   * Supported values: main, projection, skyline, all, custom title, numeric webContents id.
+   */
+  const resolveShortcutTargetWindows = (target) => {
+    const windows = BrowserWindow.getAllWindows().filter((win) => !win.isDestroyed());
+    if (!target || target === 'all') return windows;
+    if (target === 'main') return mainWindow && !mainWindow.isDestroyed() ? [mainWindow] : [];
+    if (target === 'projection') return projectionWindow && !projectionWindow.isDestroyed() ? [projectionWindow] : [];
+    if (target === 'skyline') return skylineWindow && !skylineWindow.isDestroyed() ? [skylineWindow] : [];
+
+    const byWebContentsId = Number(target);
+    if (!Number.isNaN(byWebContentsId)) {
+      return windows.filter((win) => win.webContents.id === byWebContentsId);
+    }
+
+    const registryMatch = Array.from(windowRegistry.values()).find((meta) => meta.id === String(target));
+    if (registryMatch) {
+      return windows.filter((win) => win.webContents.id === registryMatch.webContentsId);
+    }
+
+    return windows.filter((win) => {
+      try {
+        return String(win.getTitle() || '').toLowerCase() === String(target).toLowerCase();
+      } catch {
+        return false;
+      }
+    });
+  };
+
+  ipcMain.handle('shortcuts:dispatch-window-action', async (_evt, payload) => {
+    const target = payload && typeof payload === 'object' ? payload.target : undefined;
+    const windows = resolveShortcutTargetWindows(target);
+    for (const win of windows) {
+      try {
+        win.webContents.send('shortcuts:window-action', payload);
+      } catch {}
+    }
+    return { delivered: windows.length };
   });
 
   // ── Auto-updater ──────────────────────────────────────────────────────────

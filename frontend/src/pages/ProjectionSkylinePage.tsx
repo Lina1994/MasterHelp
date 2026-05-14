@@ -8,6 +8,7 @@ import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext'
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
 import { getCharacter, CharacterPayload } from '../api/characters';
 import { getActiveSkylineCharacterId } from '../api/campaigns/activeSkylineCharacter';
+import { getCampaignMonster } from '../api/bestiary/bestiaryApi';
 import { getActiveEncounterId } from '../api/campaigns/activeEncounter';
 import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { getSkylineOverlaySettingsPublic } from '../api/campaigns/skylineOverlay';
@@ -15,6 +16,7 @@ import { getCampaignNowPlayingTitlePublic } from '../api/soundtrack/nowPlaying';
 import { getSkylineItems, SkylineItemOverlay } from '../api/campaigns/skylineItems';
 import { hasDefaultSkylinePublic, getDefaultSkylinePublicUrl } from '../api/campaigns/defaultSkyline';
 import { getCellStreamUrl } from '../api/shops';
+import type { ShortcutActionDefinition } from '../types/actionTypes';
 
 const SHOW_DAY_IN_SKYLINE_KEY = 'diary_showSelectedDayInSkyline';
 const SELECTED_DAY_KEY = 'app.diary.selectedDay';
@@ -117,12 +119,184 @@ const ProjectionSkylinePage: React.FC = () => {
   });
   const [connectionError, setConnectionError] = useState<boolean>(false);
   const [lastConnectionAttempt, setLastConnectionAttempt] = useState<number>(Date.now());
+  const [shortcutImageOverlay, setShortcutImageOverlay] = useState<{ src: string; name: string } | null>(null);
+  const [shortcutTextOverlay, setShortcutTextOverlay] = useState<{ text: string; title?: string } | null>(null);
+  const [shortcutFilterOverlay, setShortcutFilterOverlay] = useState<{ filter: string; color?: string; intensity?: number } | null>(null);
+  const shortcutImageTimeoutRef = useRef<number | null>(null);
+  const shortcutTextTimeoutRef = useRef<number | null>(null);
   // Tracks when the initiative strip was last updated via BroadcastChannel/localStorage
   // to prevent polling from overwriting with stale server data.
   const lastBroadcastStripUpdateRef = useRef<number>(0);
 
   // Sync campaignId from URL into the shared context (for other consumers like ActiveMapContext).
   // Also handles edge cases where the URL might only be available after mount.
+  useEffect(() => {
+    const clearShortcutImageOverlay = () => {
+      if (shortcutImageTimeoutRef.current !== null) {
+        window.clearTimeout(shortcutImageTimeoutRef.current);
+        shortcutImageTimeoutRef.current = null;
+      }
+      setShortcutImageOverlay(null);
+    };
+
+    const clearShortcutTextOverlay = () => {
+      if (shortcutTextTimeoutRef.current !== null) {
+        window.clearTimeout(shortcutTextTimeoutRef.current);
+        shortcutTextTimeoutRef.current = null;
+      }
+      setShortcutTextOverlay(null);
+    };
+
+    const setTimedShortcutImageOverlay = (next: { src: string; name: string }, durationMs?: number) => {
+      const ms = Number(durationMs);
+      const timeout = Number.isFinite(ms) && ms > 0 ? ms : 8000;
+      if (shortcutImageTimeoutRef.current !== null) {
+        window.clearTimeout(shortcutImageTimeoutRef.current);
+      }
+      setShortcutImageOverlay(next);
+      shortcutImageTimeoutRef.current = window.setTimeout(() => {
+        setShortcutImageOverlay(null);
+        shortcutImageTimeoutRef.current = null;
+      }, timeout);
+    };
+
+    const setTimedShortcutTextOverlay = (next: { text: string; title?: string }, durationMs?: number) => {
+      const ms = Number(durationMs);
+      const timeout = Number.isFinite(ms) && ms > 0 ? ms : 6000;
+      if (shortcutTextTimeoutRef.current !== null) {
+        window.clearTimeout(shortcutTextTimeoutRef.current);
+      }
+      setShortcutTextOverlay(next);
+      shortcutTextTimeoutRef.current = window.setTimeout(() => {
+        setShortcutTextOverlay(null);
+        shortcutTextTimeoutRef.current = null;
+      }, timeout);
+    };
+
+    const parseShortcutAction = (
+      payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
+    ): ShortcutActionDefinition | null => {
+      if (!payload) return null;
+      if ('kind' in (payload as any)) return payload as ShortcutActionDefinition;
+      return (payload as { action?: ShortcutActionDefinition }).action || null;
+    };
+
+    const handleWindowShortcutAction = async (
+      payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
+    ) => {
+      const action = parseShortcutAction(payload);
+      if (!action) return;
+      if (
+        action.kind !== 'window.showCharacterImage'
+        && action.kind !== 'window.showNpcImage'
+        && action.kind !== 'window.showMonsterImage'
+        && action.kind !== 'window.showText'
+        && action.kind !== 'window.applyFilter'
+        && action.kind !== 'window.clearFilter'
+      ) {
+        return;
+      }
+
+      const body = (action.payload ?? action.config ?? {}) as Record<string, unknown>;
+
+      if (action.kind === 'window.clearFilter') {
+        setShortcutFilterOverlay(null);
+        return;
+      }
+
+      if (action.kind === 'window.applyFilter') {
+        const filter = typeof body.filter === 'string' ? body.filter : '';
+        if (!filter) return;
+        const color = typeof body.color === 'string' ? body.color : undefined;
+        const intensity = typeof body.intensity === 'number' ? body.intensity : undefined;
+        setShortcutFilterOverlay({ filter, color, intensity });
+        return;
+      }
+
+      if (action.kind === 'window.showText') {
+        const text = typeof body.text === 'string' ? body.text.trim() : '';
+        if (!text) return;
+        const title = typeof body.title === 'string' ? body.title : undefined;
+        const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+        setTimedShortcutTextOverlay({ text, title }, durationMs);
+        return;
+      }
+
+      const entityId = typeof body.entityId === 'string' ? body.entityId : '';
+      if (!entityId) return;
+      const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+
+      try {
+        if (action.kind === 'window.showMonsterImage') {
+          const cid = activeCampaign?.id || campaignIdFromQuery || rawCampaignId;
+          if (!cid) return;
+          const monster = await getCampaignMonster(cid, entityId, 'es').catch(() => getCampaignMonster(cid, entityId, 'en'));
+          const src = monster.imageUrls?.high || monster.imageUrls?.medium || monster.imageUrls?.low || monster.tokenImageUrl;
+          if (!src) return;
+          setTimedShortcutImageOverlay({ src, name: monster.name || 'Monster' }, durationMs);
+          return;
+        }
+
+        const character = await getCharacter(entityId);
+        const src = character.characterImageUrl || character.tokenImageUrl;
+        if (!src) return;
+        const name = character.name || (action.kind === 'window.showNpcImage' ? 'NPC' : 'Character');
+        setTimedShortcutImageOverlay({ src, name }, durationMs);
+      } catch {
+        // Ignore runtime lookup failures to avoid breaking projection polling loop.
+      }
+    };
+
+    const unsubscribe = window.electronAPI?.onShortcutWindowAction?.((payload: any) => {
+      void handleWindowShortcutAction(payload);
+    });
+
+    const browserEventHandler = (event: Event) => {
+      const custom = event as CustomEvent<{ action?: ShortcutActionDefinition } | ShortcutActionDefinition>;
+      void handleWindowShortcutAction(custom.detail);
+    };
+    window.addEventListener('shortcut:action', browserEventHandler as EventListener);
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+      window.removeEventListener('shortcut:action', browserEventHandler as EventListener);
+      clearShortcutImageOverlay();
+      clearShortcutTextOverlay();
+    };
+  }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
+
+  const shortcutFilterStyle = useMemo(() => {
+    if (!shortcutFilterOverlay) return undefined;
+    const name = shortcutFilterOverlay.filter.toLowerCase();
+    const intensity = Math.max(0, Math.min(1, Number(shortcutFilterOverlay.intensity ?? 1)));
+    const opacity = 0.08 + (0.32 * intensity);
+    const color = shortcutFilterOverlay.color || 'transparent';
+
+    const filterMap: Record<string, string> = {
+      grayscale: `grayscale(${Math.round(intensity * 100)}%)`,
+      sepia: `sepia(${Math.round(intensity * 100)}%)`,
+      blur: `blur(${(intensity * 8).toFixed(1)}px)`,
+      brightness: `brightness(${(0.6 + intensity).toFixed(2)})`,
+      contrast: `contrast(${(1 + intensity).toFixed(2)})`,
+      saturate: `saturate(${(1 + intensity * 1.5).toFixed(2)})`,
+      hue: `hue-rotate(${Math.round(intensity * 180)}deg)`,
+      hue_rotate: `hue-rotate(${Math.round(intensity * 180)}deg)`,
+      invert: `invert(${Math.round(intensity * 100)}%)`,
+    };
+
+    const filterCss = filterMap[name] || '';
+    return {
+      position: 'absolute' as const,
+      inset: 0,
+      zIndex: 7000,
+      pointerEvents: 'none' as const,
+      backdropFilter: filterCss || undefined,
+      WebkitBackdropFilter: filterCss || undefined,
+      backgroundColor: color === 'transparent' ? `rgba(0,0,0,${opacity.toFixed(3)})` : color,
+      mixBlendMode: color === 'transparent' ? 'normal' as const : 'multiply' as const,
+    };
+  }, [shortcutFilterOverlay]);
+
   useEffect(() => {
     let cid = new URLSearchParams(window.location.search).get('campaignId');
     if (!cid) {
@@ -907,7 +1081,78 @@ const ProjectionSkylinePage: React.FC = () => {
         <Typography variant="h4" color="white">Sin mapa activo</Typography>
       )}
 
+      {shortcutFilterStyle ? <Box sx={shortcutFilterStyle} /> : null}
+
+      {shortcutTextOverlay ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '10vh',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            maxWidth: '86vw',
+            px: 2,
+            py: 1.5,
+            borderRadius: 2,
+            bgcolor: 'rgba(0,0,0,0.62)',
+            color: 'white',
+            textAlign: 'center',
+            zIndex: 8000,
+            boxShadow: '0 10px 28px rgba(0,0,0,0.45)',
+          }}
+        >
+          {shortcutTextOverlay.title ? (
+            <Typography variant="h6" sx={{ mb: 0.5 }}>
+              {shortcutTextOverlay.title}
+            </Typography>
+          ) : null}
+          <Typography variant="h5">{shortcutTextOverlay.text}</Typography>
+        </Box>
+      ) : null}
+
       {activeOverlay === 'character' && skylineAvatar}
+
+      {shortcutImageOverlay ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 9999,
+          }}
+        >
+          <Box
+            sx={{
+              maxWidth: '82vw',
+              maxHeight: '82vh',
+              px: 1.5,
+              py: 1,
+              bgcolor: 'rgba(0,0,0,0.55)',
+              borderRadius: 2,
+              boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+            }}
+          >
+            <AuthImage
+              src={shortcutImageOverlay.src}
+              alt={shortcutImageOverlay.name}
+              style={{
+                display: 'block',
+                width: '100%',
+                maxWidth: '82vw',
+                maxHeight: '74vh',
+                objectFit: 'contain',
+              }}
+            />
+            <Typography variant="subtitle1" color="white" sx={{ mt: 1, textAlign: 'center' }}>
+              {shortcutImageOverlay.name}
+            </Typography>
+          </Box>
+        </Box>
+      ) : null}
+
       {showSongTitle && nowPlayingTitle ? (
         <Box sx={{ position: 'absolute', top: 16, left: 16, px: 1.5, py: 0.75, bgcolor: 'rgba(0,0,0,0.6)', borderRadius: 1 }}>
           <Typography variant="subtitle1" color="white" noWrap title={nowPlayingTitle}>{nowPlayingTitle}</Typography>

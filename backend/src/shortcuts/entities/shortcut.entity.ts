@@ -6,12 +6,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Campaign } from '../../campaigns/entities/campaign.entity';
 import { User } from '../../users/entities/user.entity';
-
-export interface ShortcutActionDefinition {
-  kind: 'toggleState' | 'playSoundEffect';
-  config: Record<string, unknown>;
-}
+import { SHORTCUT_SCHEMA_VERSION, type ShortcutActionDefinition, type ShortcutScope } from '../actionTypes';
 
 /**
  * Persistent shortcut definition owned by a single user.
@@ -35,6 +32,15 @@ export class Shortcut {
 
   @Column({ type: 'text', nullable: true, default: null })
   hotkey: string | null;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  normalizedHotkey: string | null;
+
+  @Column({ type: 'text', default: 'global' })
+  scope: ShortcutScope;
+
+  @Column({ type: 'integer', default: SHORTCUT_SCHEMA_VERSION })
+  schemaVersion: number;
 
   @Column({ type: 'text', default: 'button' })
   mode: 'button' | 'toggle' | 'temporary';
@@ -83,4 +89,7 @@ export class Shortcut {
 
   @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
   owner: User;
+
+  @ManyToOne(() => Campaign, { nullable: true, onDelete: 'CASCADE', eager: false })
+  campaign: Campaign | null;
 }

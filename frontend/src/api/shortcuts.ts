@@ -2,12 +2,37 @@ import { api } from '../apiBase';
 import { getAuthHeaders } from '../utils/auth';
 import type { ShortcutItem, ShortcutPayload, SoundEffectOption } from '../types/shortcuts';
 
+interface ListShortcutsOptions {
+  campaignId?: string | null;
+}
+
+const normalizeShortcut = (raw: any): ShortcutItem => {
+  const normalizedActions = Array.isArray(raw?.actions)
+    ? raw.actions.map((action: any) => ({
+      ...action,
+      payload: action?.payload ?? action?.config ?? {},
+      config: action?.config ?? action?.payload ?? {},
+    }))
+    : [];
+
+  return {
+    ...raw,
+    scope: raw?.scope || 'global',
+    campaignId: raw?.campaignId ?? raw?.campaign?.id ?? null,
+    schemaVersion: raw?.schemaVersion ?? 2,
+    actions: normalizedActions,
+  } as ShortcutItem;
+};
+
 /**
  * Lists all shortcuts owned by the current user.
  */
-export async function listShortcuts(): Promise<ShortcutItem[]> {
-  const response = await api.get('/shortcuts', { headers: getAuthHeaders() });
-  return response.data;
+export async function listShortcuts(options?: ListShortcutsOptions): Promise<ShortcutItem[]> {
+  const response = await api.get('/shortcuts', {
+    headers: getAuthHeaders(),
+    params: options?.campaignId ? { campaignId: options.campaignId } : undefined,
+  });
+  return Array.isArray(response.data) ? response.data.map(normalizeShortcut) : [];
 }
 
 /**
@@ -15,7 +40,7 @@ export async function listShortcuts(): Promise<ShortcutItem[]> {
  */
 export async function createShortcut(payload: ShortcutPayload): Promise<ShortcutItem> {
   const response = await api.post('/shortcuts', payload, { headers: getAuthHeaders() });
-  return response.data;
+  return normalizeShortcut(response.data);
 }
 
 /**
@@ -23,7 +48,7 @@ export async function createShortcut(payload: ShortcutPayload): Promise<Shortcut
  */
 export async function updateShortcut(id: string, payload: Partial<ShortcutPayload>): Promise<ShortcutItem> {
   const response = await api.patch(`/shortcuts/${id}`, payload, { headers: getAuthHeaders() });
-  return response.data;
+  return normalizeShortcut(response.data);
 }
 
 /**
@@ -38,7 +63,7 @@ export async function deleteShortcut(id: string): Promise<void> {
  */
 export async function executeShortcut(id: string): Promise<ShortcutItem> {
   const response = await api.post(`/shortcuts/${id}/execute`, undefined, { headers: getAuthHeaders() });
-  return response.data;
+  return normalizeShortcut(response.data);
 }
 
 /**

@@ -4,9 +4,10 @@ import API_BASE_URL, { api } from '../apiBase';
 import { createShortcut, deleteShortcut, executeShortcut as executeShortcutApi, listShortcutSoundEffects, listShortcuts, updateShortcut } from '../api/shortcuts';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useSfxPlayer } from '../components/player/SfxPlayerContext';
-import { buildEffectStreamUrl, clamp01 } from '../utils/soundEffects';
+import { buildEffectStreamUrl } from '../utils/soundEffects';
 import { getAuthHeaders } from '../utils/auth';
 import { DEFAULT_SHORTCUTS_CONFIG, hotkeyFromKeyboardEvent, normalizeHotkey, parseShortcutsConfig, type ShortcutItem, type ShortcutPayload, type ShortcutShellConfig, type SoundEffectOption } from '../types/shortcuts';
+import { runShortcutActions, runShortcutDraftActions, type ShortcutActionExecutionResult } from '../shortcuts/ShortcutRunner';
 
 interface ShortcutsContextValue {
   shortcuts: ShortcutItem[];
@@ -22,6 +23,7 @@ interface ShortcutsContextValue {
   updateShortcut: (id: string, payload: Partial<ShortcutPayload>) => Promise<void>;
   deleteShortcut: (id: string) => Promise<void>;
   executeShortcut: (shortcut: ShortcutItem) => Promise<void>;
+  testShortcutDraft: (payload: ShortcutPayload) => Promise<ShortcutActionExecutionResult[]>;
 }
 
 const ShortcutsContext = createContext<ShortcutsContextValue>({
@@ -38,6 +40,7 @@ const ShortcutsContext = createContext<ShortcutsContextValue>({
   updateShortcut: async () => {},
   deleteShortcut: async () => {},
   executeShortcut: async () => {},
+  testShortcutDraft: async () => [],
 });
 
 const isEditableTarget = (target: EventTarget | null): boolean => {
@@ -59,9 +62,9 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
   const [loaded, setLoaded] = useState(false);
 
   const refreshShortcuts = useCallback(async () => {
-    const data = await listShortcuts();
+    const data = await listShortcuts({ campaignId: activeCampaign?.id });
     setShortcuts(data);
-  }, []);
+  }, [activeCampaign?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,7 +75,7 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
     }
     Promise.all([
       axios.get(`${API_BASE_URL}/users/me`, { headers: { Authorization: `Bearer ${token}` } }),
-      listShortcuts(),
+      listShortcuts({ campaignId: activeCampaign?.id }),
     ])
       .then(([userResponse, shortcutsResponse]) => {
         if (cancelled) return;
@@ -84,7 +87,7 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
         if (!cancelled) setLoaded(true);
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [activeCampaign?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,28 +127,13 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const runClientActions = useCallback(async (shortcut: ShortcutItem) => {
-    for (const action of shortcut.actions) {
-      if (action.kind === 'playSoundEffect') {
-        const effectId = typeof action.config.effectId === 'string' ? action.config.effectId : '';
-        if (!effectId) continue;
-        const effectName = soundEffects.find((effect) => effect.id === effectId)?.name || shortcut.name;
-        await playSfx(
-          { effectId, name: effectName },
-          async () => {
-            const response = await api.get(buildEffectStreamUrl(api.defaults.baseURL, effectId, activeCampaign?.id), {
-              headers: getAuthHeaders(),
-              responseType: 'blob',
-            });
-            return URL.createObjectURL(response.data);
-          },
-          {
-            volume: clamp01(Number(action.config.volume ?? 1)),
-            loopMode: (action.config.loopMode as any) || 'once',
-            uniquePerEffect: Boolean(action.config.uniquePerEffect ?? true),
-          },
-        );
-      }
-    }
+    return runShortcutActions(shortcut, {
+      campaignId: activeCampaign?.id,
+      shortcutName: shortcut.name,
+      soundEffects,
+      playSfx,
+      buildEffectUrl: (effectId, campaignId) => buildEffectStreamUrl(api.defaults.baseURL, effectId, campaignId),
+    });
   }, [activeCampaign?.id, playSfx, soundEffects]);
 
   const executeShortcut = useCallback(async (shortcut: ShortcutItem) => {
@@ -161,6 +149,16 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
       }
     }
   }, [runClientActions]);
+
+  const testShortcutDraft = useCallback(async (payload: ShortcutPayload) => {
+    return runShortcutDraftActions(payload.actions, {
+      campaignId: activeCampaign?.id,
+      shortcutName: payload.name,
+      soundEffects,
+      playSfx,
+      buildEffectUrl: (effectId, campaignId) => buildEffectStreamUrl(api.defaults.baseURL, effectId, campaignId),
+    });
+  }, [activeCampaign?.id, playSfx, soundEffects]);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -205,6 +203,7 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
         updateShortcut: updateShortcutItem,
         deleteShortcut: deleteShortcutItem,
         executeShortcut,
+        testShortcutDraft,
       }}
     >
       {children}

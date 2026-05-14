@@ -30,6 +30,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('maps:projection-poke', listener);
   },
 
+  /** Dispatches a shortcut window action to one or more target windows. */
+  dispatchShortcutWindowAction: (payload) => ipcRenderer.invoke('shortcuts:dispatch-window-action', payload),
+  /** Lists currently registered windows available as shortcut targets. */
+  listShortcutWindows: () => ipcRenderer.invoke('shortcuts:list-windows'),
+  /** Receives window-targeted shortcut actions in projection or custom windows. */
+  onShortcutWindowAction: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on('shortcuts:window-action', listener);
+    return () => ipcRenderer.removeListener('shortcuts:window-action', listener);
+  },
+
   /** Reporta el tamaño de la ventana de proyección Skyline. */
   skylineProjectionReportSize: (payload) => ipcRenderer.send('skyline:projection-size', payload),
   /** Suscripción para recibir el tamaño de la ventana Skyline (en ventanas espejo). */
