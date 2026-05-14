@@ -7,6 +7,8 @@ import {
   IconButton,
   Paper,
   Stack,
+  Tab,
+  Tabs,
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -18,7 +20,8 @@ import ShortcutEditor from '../components/shortcuts/ShortcutEditor';
 import { getCurrentUser } from '../utils/getCurrentUser';
 import { useShortcuts } from '../contexts/ShortcutsContext';
 import ShortcutButton from '../components/shortcuts/ShortcutButton';
-import { DEFAULT_SHORTCUT_SCHEMA_VERSION, type ShortcutActionDefinition, type ShortcutItem, type ShortcutPayload } from '../types/shortcuts';
+import ShortcutSettings from '../components/shortcuts/ShortcutSettings';
+import { DEFAULT_SHORTCUT_PANEL_ID, DEFAULT_SHORTCUT_SCHEMA_VERSION, type ShortcutActionDefinition, type ShortcutItem, type ShortcutPayload } from '../types/shortcuts';
 
 const EMPTY_ACTION: ShortcutActionDefinition = { kind: 'toggleState', payload: {} };
 
@@ -42,11 +45,12 @@ const defaultDraft = (): ShortcutPayload => ({
   activeColor: '#2e7d32',
   inactiveColor: '#455a64',
   showOnHome: true,
-  showInSidebarPanel: true,
+  showInSidebarPanel: false,
   showInHotbar: false,
   sortOrder: 0,
   sidebarPanelOrder: 0,
   hotbarOrder: 0,
+  panelIds: [],
   actions: [EMPTY_ACTION],
 });
 
@@ -57,10 +61,21 @@ const ShortcutsPage = () => {
   const { activeCampaign } = useActiveCampaign();
   const currentUserId = getCurrentUser()?.id as number | undefined;
   const isMaster = isUserMaster(activeCampaign, currentUserId);
-  const { shortcuts, soundEffects, createShortcut, updateShortcut, deleteShortcut, executeShortcut, testShortcutDraft } = useShortcuts();
+  const {
+    shortcuts,
+    soundEffects,
+    config,
+    createShortcut,
+    updateShortcut,
+    updateShortcutPanelMap,
+    deleteShortcut,
+    executeShortcut,
+    testShortcutDraft,
+  } = useShortcuts();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ShortcutItem | null>(null);
   const [draft, setDraft] = useState<ShortcutPayload>(defaultDraft());
+  const [tab, setTab] = useState<'list' | 'settings'>('list');
 
   const campaignId = activeCampaign?.id ?? null;
 
@@ -70,6 +85,7 @@ const ShortcutsPage = () => {
       ...defaultDraft(),
       scope: campaignId ? 'campaign' : 'global',
       campaignId,
+      panelIds: [],
     });
     setOpen(true);
   };
@@ -95,6 +111,8 @@ const ShortcutsPage = () => {
       sortOrder: shortcut.sortOrder,
       sidebarPanelOrder: shortcut.sidebarPanelOrder,
       hotbarOrder: shortcut.hotbarOrder,
+      panelIds: config.shortcutPanelMap[shortcut.id]
+        || ((shortcut.showInHotbar || shortcut.showInSidebarPanel) ? [DEFAULT_SHORTCUT_PANEL_ID] : []),
       actions: shortcut.actions.length
         ? shortcut.actions.map((action) => ({ ...action, payload: action.payload ?? action.config ?? {} }))
         : [EMPTY_ACTION],
@@ -103,8 +121,21 @@ const ShortcutsPage = () => {
   };
 
   const handleSave = async (payload: ShortcutPayload) => {
-    if (editing) await updateShortcut(editing.id, payload);
-    else await createShortcut(payload);
+    const panelIds = payload.panelIds || [];
+    const showInPanels = panelIds.length > 0;
+    const { panelIds: _, ...apiPayloadBase } = payload;
+    const apiPayload = {
+      ...apiPayloadBase,
+      showInSidebarPanel: showInPanels,
+      showInHotbar: showInPanels,
+    };
+    if (editing) {
+      const updated = await updateShortcut(editing.id, apiPayload);
+      await updateShortcutPanelMap(updated.id, panelIds);
+      return;
+    }
+    const created = await createShortcut(apiPayload);
+    await updateShortcutPanelMap(created.id, panelIds);
   };
 
   if (!isMaster) {
@@ -120,40 +151,52 @@ const ShortcutsPage = () => {
             Configura botones rápidos, macros sencillas y disparadores con teclado.
           </Typography>
         </Box>
-        <Button startIcon={<AddIcon />} variant="contained" onClick={openCreate}>
-          Nuevo atajo
-        </Button>
+        {tab === 'list' ? (
+          <Button startIcon={<AddIcon />} variant="contained" onClick={openCreate}>
+            Nuevo atajo
+          </Button>
+        ) : null}
       </Stack>
 
-      <Grid container spacing={2}>
-        {shortcuts.map((shortcut) => (
-          <Grid size={{ xs: 12, md: 6, xl: 4 }} key={shortcut.id}>
-            <Paper sx={{ p: 2 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-                <ShortcutButton shortcut={shortcut} onClick={executeShortcut} />
-                <Stack direction="row" spacing={0.5}>
-                  <IconButton onClick={() => executeShortcut(shortcut)}><PlayArrowIcon /></IconButton>
-                  <IconButton onClick={() => openEdit(shortcut)}><EditIcon /></IconButton>
-                  <IconButton color="error" onClick={() => deleteShortcut(shortcut.id)}><DeleteIcon /></IconButton>
+      <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 2 }}>
+        <Tab value="list" label="Lista" />
+        <Tab value="settings" label="Ajustes" />
+      </Tabs>
+
+      {tab === 'list' ? (
+        <Grid container spacing={2}>
+          {shortcuts.map((shortcut) => (
+            <Grid size={{ xs: 12, md: 6, xl: 4 }} key={shortcut.id}>
+              <Paper sx={{ p: 2 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
+                  <ShortcutButton shortcut={shortcut} onClick={executeShortcut} />
+                  <Stack direction="row" spacing={0.5}>
+                    <IconButton onClick={() => executeShortcut(shortcut)}><PlayArrowIcon /></IconButton>
+                    <IconButton onClick={() => openEdit(shortcut)}><EditIcon /></IconButton>
+                    <IconButton color="error" onClick={() => deleteShortcut(shortcut.id)}><DeleteIcon /></IconButton>
+                  </Stack>
                 </Stack>
-              </Stack>
-              {shortcut.description ? (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {shortcut.description}
+                {shortcut.description ? (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {shortcut.description}
+                  </Typography>
+                ) : null}
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  {shortcut.actions.map((action) => action.kind === 'playSoundEffect' ? 'Efecto de sonido' : 'Toggle').join(' + ')}
                 </Typography>
-              ) : null}
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                {shortcut.actions.map((action) => action.kind === 'playSoundEffect' ? 'Efecto de sonido' : 'Toggle').join(' + ')}
-              </Typography>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <ShortcutSettings />
+      )}
 
       <ShortcutEditor
         open={open}
         editing={editing}
         initialDraft={draft}
+        panels={config.panels}
         shortcuts={shortcuts}
         soundEffects={soundEffects}
         campaignId={campaignId}

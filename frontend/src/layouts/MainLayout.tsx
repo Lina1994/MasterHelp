@@ -401,6 +401,7 @@ const MainLayoutInner = () => {
                 height: `calc(100vh - ${TB}px)`,
                 overflow: 'auto',
                 p: 3,
+                pb: { xs: 12, sm: 13 },
                 // On xs the fixed mobile AppBar (56px) sits above the content;
                 // extra top padding prevents content from hiding behind it.
                 pt: { xs: `calc(56px + ${TB}px + 24px)`, sm: 3 },

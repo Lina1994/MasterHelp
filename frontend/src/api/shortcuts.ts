@@ -77,3 +77,31 @@ export async function listShortcutSoundEffects(campaignId?: string | null): Prom
   const response = await api.get('/soundtrack/effects', { headers: getAuthHeaders() });
   return response.data;
 }
+
+/**
+ * Uploads an image/gif and returns the public URL for shortcut icon usage.
+ */
+export async function uploadShortcutIcon(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await api.post('/shortcuts/upload-icon', formData, {
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  const rawUrl = String(response.data?.url || '');
+  if (!rawUrl) {
+    throw new Error('No se recibió URL de icono desde el backend');
+  }
+
+  if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+    return rawUrl;
+  }
+
+  const base = String(api.defaults.baseURL || '').replace(/\/$/, '');
+  const path = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+  return `${base}${path}`;
+}

@@ -5,6 +5,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as fs from 'fs';
 import { join } from 'path';
 import { json, urlencoded } from 'express';
+import * as express from 'express';
 
 async function bootstrap() {
   // Asegurar que el directorio de datos para SQLite exista.
@@ -17,7 +18,11 @@ async function bootstrap() {
     console.log(`Directorio de datos creado en: ${dataDir}`);
   }
 
+
   const app = await NestFactory.create(AppModule);
+
+  // Servir archivos estáticos de uploads/shortcuts
+  app.use('/uploads/shortcuts', express.static(join(__dirname, '..', 'uploads', 'shortcuts')));
 
   // Aumentar el límite del tamaño del payload
   app.use(json({ limit: '10mb' }));

@@ -14,6 +14,7 @@ import {
   Grid,
   IconButton,
   InputLabel,
+  ListSubheader,
   MenuItem,
   Paper,
   Select,
@@ -33,14 +34,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
-  SHORTCUT_ACTION_KIND_OPTIONS,
+  SHORTCUT_ACTION_KIND_OPTIONS_GROUPED,
   SHORTCUT_SCHEMA_VERSION,
   SHORTCUT_WINDOW_TARGET_KIND_OPTIONS,
   type ShortcutActionDefinition,
   type ShortcutActionKind,
   type ShortcutWindowTargetKind,
 } from '../../types/actionTypes';
-import { hotkeyFromKeyboardEvent, type ShortcutItem, type ShortcutMode, type ShortcutPayload } from '../../types/shortcuts';
+import { hotkeyFromKeyboardEvent, type ShortcutItem, type ShortcutMode, type ShortcutPanel, type ShortcutPayload } from '../../types/shortcuts';
 import { listShortcutWindows, type ShortcutRuntimeWindow } from '../../shortcuts/ipcActions';
 import { findHotkeyConflict, getActionPayload, validateActionForEditor } from '../../shortcuts/validators';
 import type { ShortcutActionExecutionResult } from '../../shortcuts/ShortcutRunner';
@@ -49,11 +50,13 @@ import { listPlaylists, listSongsForCampaign, type PlaylistLite, type SongLite }
 import { listSfxPresets, type SoundPresetLite } from '../../api/soundeffects';
 import { listCharacters, type CharacterPayload } from '../../api/characters';
 import { listCampaignMonsters, type CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
+import { uploadShortcutIcon } from '../../api/shortcuts';
 
 type ShortcutEditorProps = {
   open: boolean;
   editing: ShortcutItem | null;
   initialDraft: ShortcutPayload;
+  panels: ShortcutPanel[];
   shortcuts: ShortcutItem[];
   soundEffects: Array<{ id: string; name: string }>;
   campaignId?: string | null;
@@ -66,6 +69,12 @@ const EMPTY_ACTION: ShortcutActionDefinition = {
   kind: 'toggleState',
   payload: {},
 };
+
+const EMOJI_ICON_OPTIONS: string[] = [
+  '⚔️', '🛡️', '🎲', '🧙', '🐉', '🔥', '❄️', '⚡',
+  '🌙', '☀️', '🕯️', '📜', '🗺️', '🏹', '🧪', '🔮',
+  '💀', '👁️', '🎵', '🎭', '⏱️', '🚪', '🧱', '🛠️',
+];
 
 const formatHotkeyLabel = (hotkey: string): string => {
   if (!hotkey) return '';
@@ -192,6 +201,7 @@ const ShortcutEditor = ({
   open,
   editing,
   initialDraft,
+  panels,
   shortcuts,
   soundEffects,
   campaignId,
@@ -212,6 +222,9 @@ const ShortcutEditor = ({
   const [availableCharacters, setAvailableCharacters] = useState<CharacterPayload[]>([]);
   const [availableNpcs, setAvailableNpcs] = useState<CharacterPayload[]>([]);
   const [availableMonsters, setAvailableMonsters] = useState<CampaignMonsterListItem[]>([]);
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+
+  const showInPanels = Boolean((draft.panelIds || []).length > 0 || draft.showInSidebarPanel || draft.showInHotbar);
 
   useEffect(() => {
     setDraft(initialDraft);
@@ -413,6 +426,9 @@ const ShortcutEditor = ({
                 : `Prueba completada con incidencias: ${testReport.filter((r) => !r.ok).length} de ${testReport.length} acciones fallaron.`}
             </Alert>
           ) : null}
+          {isUploadingIcon ? (
+            <Alert severity="info">Subiendo icono...</Alert>
+          ) : null}
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -438,7 +454,114 @@ const ShortcutEditor = ({
             </Grid>
           </Grid>
 
+
           <TextField label="Descripción" value={draft.description} onChange={(event) => setDraft((prev) => ({ ...prev, description: event.target.value }))} fullWidth />
+
+          {/* Selector de icono (emoji o imagen/gif) */}
+          <Grid container spacing={2} alignItems="center">
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Stack spacing={1}>
+                <FormControl fullWidth>
+                  <InputLabel id="shortcut-emoji-list-label">Emoji (lista)</InputLabel>
+                  <Select
+                    labelId="shortcut-emoji-list-label"
+                    label="Emoji (lista)"
+                    value={EMOJI_ICON_OPTIONS.includes(draft.icon || '') ? (draft.icon || '') : ''}
+                    onChange={(event) => setDraft((prev) => ({ ...prev, icon: String(event.target.value), imageUrl: '' }))}
+                  >
+                    <MenuItem value="">
+                      <em>Sin emoji</em>
+                    </MenuItem>
+                    {EMOJI_ICON_OPTIONS.map((emoji) => (
+                      <MenuItem key={emoji} value={emoji}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ fontSize: 22, lineHeight: 1 }}>{emoji}</Typography>
+                          <Typography variant="body2">{emoji}</Typography>
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Emoji personalizado"
+                  value={draft.icon || ''}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, icon: event.target.value, imageUrl: '' }))}
+                  inputProps={{ maxLength: 8, style: { fontSize: 24, textAlign: 'center' } }}
+                  helperText="Puedes elegir de la lista o pegar otro emoji."
+                  fullWidth
+                />
+              </Stack>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Box>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  fullWidth
+                  disabled={isUploadingIcon}
+                  startIcon={draft.imageUrl ? <img src={draft.imageUrl} alt="icono" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} /> : null}
+                >
+                  {isUploadingIcon ? 'Subiendo...' : (draft.imageUrl ? 'Cambiar imagen/gif' : 'Subir imagen/gif')}
+                  <input
+                    type="file"
+                    accept="image/*,image/gif"
+                    hidden
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsUploadingIcon(true);
+                      setErrorMessage(null);
+                      try {
+                        const url = await uploadShortcutIcon(file);
+                        setDraft((prev) => ({ ...prev, imageUrl: url, icon: '' }));
+                      } catch {
+                        setErrorMessage('No se pudo subir la imagen/gif del icono');
+                      } finally {
+                        setIsUploadingIcon(false);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </Button>
+                {draft.imageUrl && (
+                  <Box mt={1} display="flex" alignItems="center" gap={1}>
+                    <img src={draft.imageUrl} alt="preview" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }} />
+                    <Button size="small" color="error" onClick={() => setDraft((prev) => ({ ...prev, imageUrl: '', icon: '' }))}>Quitar</Button>
+                  </Box>
+                )}
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <FormControl fullWidth>
+                <InputLabel id="reuse-icon-label">Reutilizar icono</InputLabel>
+                <Select
+                  labelId="reuse-icon-label"
+                  label="Reutilizar icono"
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.startsWith('icon:')) {
+                      setDraft((prev) => ({ ...prev, icon: val.slice(5), imageUrl: '' }));
+                    } else if (val.startsWith('img:')) {
+                      setDraft((prev) => ({ ...prev, imageUrl: val.slice(4), icon: '' }));
+                    }
+                  }}
+                  displayEmpty
+                >
+                  <MenuItem value=""><em>Selecciona...</em></MenuItem>
+                  {shortcuts
+                    .filter((s) => (s.icon || s.imageUrl) && s.id !== editing?.id)
+                    .map((s) => (
+                      s.icon ? (
+                        <MenuItem key={`icon-${s.id}`} value={`icon:${s.icon}`}>{s.icon} <span style={{ fontSize: 13, color: '#888', marginLeft: 8 }}>{s.name}</span></MenuItem>
+                      ) : (
+                        <MenuItem key={`img-${s.id}`} value={`img:${s.imageUrl}`}>{s.imageUrl ? <img src={s.imageUrl} alt="icono" style={{ width: 22, height: 22, objectFit: 'cover', borderRadius: 3, marginRight: 8 }} /> : null} <span style={{ fontSize: 13, color: '#888' }}>{s.name}</span></MenuItem>
+                      )
+                    ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -531,9 +654,12 @@ const ShortcutEditor = ({
                                       });
                                     }}
                                   >
-                                    {SHORTCUT_ACTION_KIND_OPTIONS.map((option) => (
-                                      <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-                                    ))}
+                                    {SHORTCUT_ACTION_KIND_OPTIONS_GROUPED.map((group) => [
+                                      <ListSubheader key={`group-${group.category}`}>{group.category}</ListSubheader>,
+                                      ...group.options.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+                                      )),
+                                    ]).flat()}
                                   </Select>
                                 </FormControl>
                               </Grid>
@@ -1152,24 +1278,57 @@ const ShortcutEditor = ({
           </Paper>
 
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControlLabel
                 control={<Checkbox checked={Boolean(draft.showOnHome)} onChange={(_, checked) => setDraft((prev) => ({ ...prev, showOnHome: checked }))} />}
                 label="Mostrar en Inicio"
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControlLabel
-                control={<Checkbox checked={Boolean(draft.showInSidebarPanel)} onChange={(_, checked) => setDraft((prev) => ({ ...prev, showInSidebarPanel: checked }))} />}
-                label="Mostrar en panel lateral"
+                control={(
+                  <Checkbox
+                    checked={showInPanels}
+                    onChange={(_, checked) => {
+                      setDraft((prev) => ({
+                        ...prev,
+                        panelIds: checked
+                          ? (prev.panelIds && prev.panelIds.length > 0 ? [prev.panelIds[0]] : [panels[0]?.id || 'base'])
+                          : [],
+                        showInSidebarPanel: checked,
+                        showInHotbar: checked,
+                      }));
+                    }}
+                  />
+                )}
+                label="Mostrar en paneles compartidos"
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <FormControlLabel
-                control={<Checkbox checked={Boolean(draft.showInHotbar)} onChange={(_, checked) => setDraft((prev) => ({ ...prev, showInHotbar: checked }))} />}
-                label="Mostrar en hotbar"
-              />
-            </Grid>
+            {showInPanels ? (
+              <Grid size={{ xs: 12 }}>
+                <FormControl fullWidth>
+                  <InputLabel id="panel-select-editor">Panel</InputLabel>
+                  <Select
+                    labelId="panel-select-editor"
+                    label="Panel"
+                    value={(draft.panelIds && draft.panelIds[0]) || ''}
+                    onChange={(event) => {
+                      const selected = String(event.target.value || '');
+                      setDraft((prev) => ({
+                        ...prev,
+                        panelIds: selected ? [selected] : [],
+                        showInSidebarPanel: Boolean(selected),
+                        showInHotbar: Boolean(selected),
+                      }));
+                    }}
+                  >
+                    {panels.map((panel) => (
+                      <MenuItem key={panel.id} value={panel.id}>{panel.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            ) : null}
           </Grid>
         </Stack>
       </DialogContent>
