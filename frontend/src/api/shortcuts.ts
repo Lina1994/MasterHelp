@@ -6,7 +6,7 @@ interface ListShortcutsOptions {
   campaignId?: string | null;
 }
 
-const normalizeShortcut = (raw: any): ShortcutItem => {
+export const normalizeShortcut = (raw: any): ShortcutItem => {
   const normalizedActions = Array.isArray(raw?.actions)
     ? raw.actions.map((action: any) => ({
       ...action,

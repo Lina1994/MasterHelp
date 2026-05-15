@@ -31,6 +31,7 @@ import ShopsPage from '../pages/ShopsPage';
 import WorldpediaPage from '../pages/WorldpediaPage';
 import ManualEditorPage from '../pages/ManualEditorPage';
 import ShortcutsPage from '../pages/ShortcutsPage';
+import ScenesPage from '../pages/ScenesPage';
 
 const router = createHashRouter([
   // Ventana de proyección: ruta al margen del layout principal
@@ -65,6 +66,7 @@ const router = createHashRouter([
           { path: 'diary', element: <DiaryPage /> },
           { path: 'quests', element: <QuestsPage /> },
           { path: 'shops', element: <ShopsPage /> },
+          { path: 'scenes', element: <ScenesPage /> },
           { path: 'worldpedia', element: <WorldpediaPage /> },
           { path: 'campaign-bestiary', element: <CampaignBestiaryPage /> },
           { path: 'campaign-spells', element: <CampaignSpellsPage /> },

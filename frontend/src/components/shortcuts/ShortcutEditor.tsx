@@ -52,6 +52,7 @@ import { listSfxPresets, type SoundPresetLite } from '../../api/soundeffects';
 import { listCharacters, type CharacterPayload } from '../../api/characters';
 import { listCampaignMonsters, type CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
 import { uploadShortcutIcon } from '../../api/shortcuts';
+import { listScenes, type SceneLite } from '../../api/scenes';
 import EmojiPickerDialog from './EmojiPickerDialog';
 import { recordRecentEmoji } from './emojiData';
 import ShortcutThumbnailPreview from './ShortcutThumbnailPreview';
@@ -185,6 +186,8 @@ const buildDefaultPayload = (kind: ShortcutActionKind): Record<string, unknown> 
       return { scale: 1 };
     case 'config.updateSettings':
       return { key: '', value: '' };
+    case 'runScene':
+      return { sceneId: '' };
     case 'delay.wait':
       return { durationMs: 1000 };
     default:
@@ -220,6 +223,7 @@ const ShortcutEditor = ({
   const [availableCharacters, setAvailableCharacters] = useState<CharacterPayload[]>([]);
   const [availableNpcs, setAvailableNpcs] = useState<CharacterPayload[]>([]);
   const [availableMonsters, setAvailableMonsters] = useState<CampaignMonsterListItem[]>([]);
+  const [availableScenes, setAvailableScenes] = useState<SceneLite[]>([]);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [thumbnailMenuAnchorEl, setThumbnailMenuAnchorEl] = useState<HTMLElement | null>(null);
@@ -257,6 +261,7 @@ const ShortcutEditor = ({
       setAvailableCharacters([]);
       setAvailableNpcs([]);
       setAvailableMonsters([]);
+      setAvailableScenes([]);
       return;
     }
     let cancelled = false;
@@ -267,8 +272,9 @@ const ShortcutEditor = ({
       listMaps({ campaignId }),
       listCharacters(campaignId),
       listCampaignMonsters(campaignId, { pageSize: 1000 }, 'es').catch(() => listCampaignMonsters(campaignId, { pageSize: 1000 }, 'en')),
+      listScenes({ campaignId }),
     ])
-      .then(([songsRes, playlistsRes, presetsRes, mapsRes, charsRes, monstersRes]) => {
+      .then(([songsRes, playlistsRes, presetsRes, mapsRes, charsRes, monstersRes, scenesRes]) => {
         if (cancelled) return;
         setAvailableSongs([...(songsRes.associated || []), ...(songsRes.reusable || [])]);
         setAvailablePlaylists(playlistsRes || []);
@@ -281,6 +287,7 @@ const ShortcutEditor = ({
           ? ((monstersRes as any).items as CampaignMonsterListItem[])
           : [];
         setAvailableMonsters(monsters);
+        setAvailableScenes(Array.isArray(scenesRes) ? scenesRes : []);
       })
       .catch(() => {
         if (cancelled) return;
@@ -291,6 +298,7 @@ const ShortcutEditor = ({
         setAvailableCharacters([]);
         setAvailableNpcs([]);
         setAvailableMonsters([]);
+        setAvailableScenes([]);
       });
     return () => { cancelled = true; };
   }, [open, campaignId]);
@@ -1341,6 +1349,36 @@ const ShortcutEditor = ({
                               <Typography variant="caption" color="text.secondary">
                                 Esta acción no requiere parámetros adicionales.
                               </Typography>
+                            ) : null}
+
+                            {action.kind === 'runScene' ? (
+                              <Grid container spacing={2}>
+                                <Grid size={{ xs: 12 }}>
+                                  <Autocomplete
+                                    options={availableScenes}
+                                    value={availableScenes.find((scene) => scene.id === (payload.sceneId as string)) || null}
+                                    getOptionLabel={(option) => option.name}
+                                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                                    onChange={(_, selected) => updateAction(index, {
+                                      ...action,
+                                      payload: { ...payload, sceneId: selected?.id || '' },
+                                    })}
+                                    renderOption={(props, option) => (
+                                      <Box component="li" {...props}>
+                                        <Stack spacing={0.25}>
+                                          <Typography variant="body2">{option.name}</Typography>
+                                          {option.description ? (
+                                            <Typography variant="caption" color="text.secondary">
+                                              {option.description}
+                                            </Typography>
+                                          ) : null}
+                                        </Stack>
+                                      </Box>
+                                    )}
+                                    renderInput={(params) => <TextField {...params} label="Escena" placeholder="Buscar escena" fullWidth />}
+                                  />
+                                </Grid>
+                              </Grid>
                             ) : null}
 
                             {action.kind === 'delay.wait' ? (

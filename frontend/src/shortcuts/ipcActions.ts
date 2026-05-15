@@ -1,4 +1,5 @@
 import type { ShortcutActionDefinition, ShortcutWindowTarget } from '../types/actionTypes';
+import type { SceneRuntimeCommand, SceneWindowTarget } from '../types/scenes';
 
 export type ShortcutRuntimeWindow = {
   id: string;
@@ -9,7 +10,7 @@ export type ShortcutRuntimeWindow = {
   createdAt: string;
 };
 
-const resolveElectronTarget = (target?: ShortcutWindowTarget): string | null => {
+const resolveElectronTarget = (target?: ShortcutWindowTarget | SceneWindowTarget): string | null => {
   if (!target) return null;
   if (target.kind === 'instance') return target.windowId || null;
   if (target.kind === 'custom') return target.windowType || null;
@@ -19,6 +20,14 @@ const resolveElectronTarget = (target?: ShortcutWindowTarget): string | null => 
 const emitBrowserShortcutEvent = (action: ShortcutActionDefinition): void => {
   try {
     window.dispatchEvent(new CustomEvent('shortcut:action', { detail: action }));
+  } catch {
+    // no-op in non-browser or blocked contexts
+  }
+};
+
+const emitBrowserSceneWindowEvent = (command: SceneRuntimeCommand): void => {
+  try {
+    window.dispatchEvent(new CustomEvent('scene:window-command', { detail: command }));
   } catch {
     // no-op in non-browser or blocked contexts
   }
@@ -58,6 +67,32 @@ export const dispatchWindowShortcutAction = async (
 /**
  * Returns available windows for shortcut targeting when Electron bridge is present.
  */
+export const dispatchSceneWindowCommand = async (
+  command: SceneRuntimeCommand,
+  campaignId?: string | null,
+): Promise<void> => {
+  const payload = {
+    action: {
+      kind: 'scene.runtime',
+      payload: { command },
+    },
+    campaignId: campaignId || null,
+    target: resolveElectronTarget(command.targetWindow),
+  };
+
+  try {
+    const electron = (window as any)?.electronAPI;
+    if (electron?.dispatchShortcutWindowAction) {
+      await electron.dispatchShortcutWindowAction(payload);
+      return;
+    }
+  } catch {
+    // fallback to browser event
+  }
+
+  emitBrowserSceneWindowEvent(command);
+};
+
 export const listShortcutWindows = async (): Promise<ShortcutRuntimeWindow[]> => {
   try {
     const electron = (window as any)?.electronAPI;

@@ -3,12 +3,15 @@ import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import ThemeContext from '../ThemeContext';
 import API_BASE_URL, { api } from '../apiBase';
+import { normalizeShortcut } from '../api/shortcuts';
 import { listPlaylists, listSongsForCampaign } from '../api/soundtrack';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
 import { useSfxPlayer, type SfxLoopMode } from '../components/player/SfxPlayerContext';
+import { dispatchSceneWindowCommand, dispatchWindowShortcutAction } from './ipcActions';
 import { getAuthHeaders } from '../utils/auth';
 import type { ShortcutActionDefinition } from '../types/actionTypes';
+import type { ExecuteSceneResponse, SceneRuntimeCommand } from '../types/scenes';
 
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 
@@ -27,6 +30,8 @@ const asLoopMode = (value: unknown): SfxLoopMode => {
   if (value === 'continuous' || value === 'fixed' || value === 'random' || value === 'once') return value;
   return 'once';
 };
+
+const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
 /**
  * Headless bridge that maps shortcut runtime events to concrete app actions.
@@ -120,25 +125,8 @@ const ShortcutRuntimeBridge = () => {
       }
 
       if (action.kind === 'audio.playPlaylist') {
-        if (!activeCampaign?.id) return;
         const playlistId = String(payload.playlistId || '');
-        if (!playlistId) return;
-        const playlists = await listPlaylists(activeCampaign.id);
-        const target = playlists.find((pl) => pl.id === playlistId);
-        if (!target?.songs?.length) return;
-
-        const items = target.songs.map((song) => ({ id: song.id, name: song.name }));
-        await playQueue(items, async (id: string) => {
-          await api.post(`/soundtrack/songs/${id}/played`, null, {
-            headers: getAuthHeaders(),
-            params: activeCampaign?.id ? { campaignId: activeCampaign.id } : undefined,
-          }).catch(() => {});
-          const res = await api.get(songStreamUrl(id, activeCampaign.id), {
-            headers: getAuthHeaders(),
-            responseType: 'blob',
-          });
-          return URL.createObjectURL(res.data);
-        });
+        await playPlaylistById(playlistId);
         return;
       }
 
@@ -181,6 +169,26 @@ const ShortcutRuntimeBridge = () => {
       }
 
       applyAudioControl(action);
+    };
+
+    const playPlaylistById = async (playlistId: string) => {
+      if (!activeCampaign?.id || !playlistId) return;
+      const playlists = await listPlaylists(activeCampaign.id);
+      const target = playlists.find((pl) => pl.id === playlistId);
+      if (!target?.songs?.length) return;
+
+      const items = target.songs.map((song) => ({ id: song.id, name: song.name }));
+      await playQueue(items, async (id: string) => {
+        await api.post(`/soundtrack/songs/${id}/played`, null, {
+          headers: getAuthHeaders(),
+          params: activeCampaign?.id ? { campaignId: activeCampaign.id } : undefined,
+        }).catch(() => {});
+        const res = await api.get(songStreamUrl(id, activeCampaign.id), {
+          headers: getAuthHeaders(),
+          responseType: 'blob',
+        });
+        return URL.createObjectURL(res.data);
+      });
     };
 
     const handleConfigAction = async (event: Event) => {
@@ -229,12 +237,103 @@ const ShortcutRuntimeBridge = () => {
       }
     };
 
+    const handleSceneRuntimeExecute = async (event: Event) => {
+      const custom = event as CustomEvent<ExecuteSceneResponse>;
+      const execution = custom.detail;
+      const commands = Array.isArray(execution?.commands) ? [...execution.commands] : [];
+      commands.sort((left, right) => left.issuedAtOffsetMs - right.issuedAtOffsetMs);
+
+      let previousOffset = 0;
+      for (const command of commands) {
+        const waitMs = Math.max(0, command.issuedAtOffsetMs - previousOffset);
+        previousOffset = command.issuedAtOffsetMs;
+        if (waitMs > 0) {
+          await wait(waitMs);
+        }
+
+        if (command.kind === 'audio.playMusic') {
+          const songId = typeof command.payload.songId === 'string' ? command.payload.songId : '';
+          const playlistId = typeof command.payload.playlistId === 'string' ? command.payload.playlistId : '';
+          if (songId) {
+            await playSongById(songId);
+          } else if (playlistId) {
+            await playPlaylistById(playlistId);
+          }
+          continue;
+        }
+
+        if (command.kind === 'audio.stopMusic') {
+          stop();
+          if (Boolean(command.payload.stopEffects)) {
+            stopAllSfx();
+          }
+          continue;
+        }
+
+        if (command.kind === 'audio.playSound') {
+          const effectId = typeof command.payload.effectId === 'string' ? command.payload.effectId : '';
+          if (!effectId) continue;
+          await playSfx(
+            { effectId, name: effectId },
+            async () => {
+              const req = await api.get(`${api.defaults.baseURL}/soundtrack/effects/${effectId}/stream?campaignId=${activeCampaign?.id || ''}`, {
+                headers: getAuthHeaders(),
+                responseType: 'blob',
+              });
+              return URL.createObjectURL(req.data);
+            },
+            {
+              volume: clamp01(Number(command.payload.volume ?? 1)),
+              loopMode: asLoopMode(command.payload.loopMode),
+              waitMs: typeof command.payload.waitMs === 'number' ? command.payload.waitMs : undefined,
+              randomMinMs: typeof command.payload.randomMinMs === 'number' ? command.payload.randomMinMs : undefined,
+              randomMaxMs: typeof command.payload.randomMaxMs === 'number' ? command.payload.randomMaxMs : undefined,
+            },
+          );
+          continue;
+        }
+
+        if (command.kind === 'audio.setMusicVolume') {
+          applyAudioControl({ kind: 'audio.setVolume', payload: { value: command.payload.value } } as ShortcutActionDefinition);
+          continue;
+        }
+
+        if (command.kind === 'narrative.setText') {
+          await dispatchWindowShortcutAction({
+            kind: 'window.showText',
+            payload: command.payload,
+            targetWindow: command.targetWindow as any,
+          } as ShortcutActionDefinition, activeCampaign?.id);
+          continue;
+        }
+
+        if (command.kind === 'window.applyFilter' || command.kind === 'window.clearFilter') {
+          await dispatchWindowShortcutAction({
+            kind: command.kind === 'window.applyFilter' ? 'window.applyFilter' : 'window.clearFilter',
+            payload: command.payload,
+            targetWindow: command.targetWindow as any,
+          } as ShortcutActionDefinition, activeCampaign?.id);
+          continue;
+        }
+
+        if (command.kind === 'shortcut.execute') {
+          const shortcut = normalizeShortcut(command.payload.shortcut);
+          window.dispatchEvent(new CustomEvent('scene:shortcut-command', { detail: { shortcut } }));
+          continue;
+        }
+
+        await dispatchSceneWindowCommand(command as SceneRuntimeCommand, activeCampaign?.id);
+      }
+    };
+
     window.addEventListener('shortcut:audio-action', handleAudioAction as EventListener);
     window.addEventListener('shortcut:config-action', handleConfigAction as EventListener);
+    window.addEventListener('scene:runtime-execute', handleSceneRuntimeExecute as EventListener);
 
     return () => {
       window.removeEventListener('shortcut:audio-action', handleAudioAction as EventListener);
       window.removeEventListener('shortcut:config-action', handleConfigAction as EventListener);
+      window.removeEventListener('scene:runtime-execute', handleSceneRuntimeExecute as EventListener);
     };
   }, [activeCampaign?.id, i18n, play, playQueue, playSfx, setMode, stop, stopAllSfx]);
 

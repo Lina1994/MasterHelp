@@ -45,11 +45,15 @@ describe('ShortcutsService', () => {
     remove: jest.fn(async () => undefined),
   } as unknown as jest.Mocked<ShortcutsRepository>;
 
+  const sfxMetadataServiceMock = {
+    getDurationMs: jest.fn(async () => 1000),
+  } as any;
+
   let service: ShortcutsService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new ShortcutsService(repositoryMock);
+    service = new ShortcutsService(repositoryMock, sfxMetadataServiceMock);
   });
 
   it('returns shortcuts with legacy config compatibility', async () => {

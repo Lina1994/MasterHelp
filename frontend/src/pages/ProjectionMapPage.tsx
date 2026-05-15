@@ -20,6 +20,7 @@ import { computeClearedFogByAllies, subtractClearedFog, computeAllyRevealStrokes
 import { useTokenImageResolver } from '../hooks/useTokenImageResolver';
 import { useMapElements } from '../hooks/useMapElements';
 import type { ShortcutActionDefinition } from '../types/actionTypes';
+import type { SceneRuntimeCommand } from '../types/scenes';
 
 /** Parses campaignId from any URL form (search string or hash-router query). */
 function parseCampaignIdFromUrl(): string | null {
@@ -30,6 +31,16 @@ function parseCampaignIdFromUrl(): string | null {
     if (qIdx !== -1) cid = new URLSearchParams(hash.slice(qIdx)).get('campaignId');
   }
   return cid;
+}
+
+/** Resolves relative backend media paths into absolute URLs for projection windows. */
+function resolveSceneMediaUrl(rawUrl: string): string {
+  if (!rawUrl) return rawUrl;
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+  if (rawUrl.startsWith('/')) {
+    return `${window.location.protocol}//${window.location.hostname}:3000${rawUrl}`;
+  }
+  return `${window.location.protocol}//${window.location.hostname}:3000/${rawUrl}`;
 }
 
 const ProjectionMapPage: React.FC = () => {
@@ -89,7 +100,9 @@ const ProjectionMapPage: React.FC = () => {
   });
   const [shortcutTextOverlay, setShortcutTextOverlay] = useState<{ text: string; title?: string } | null>(null);
   const [shortcutFilterOverlay, setShortcutFilterOverlay] = useState<{ filter: string; color?: string; intensity?: number } | null>(null);
+  const [shortcutVideoOverlay, setShortcutVideoOverlay] = useState<{ src: string; loop: boolean; muted: boolean } | null>(null);
   const shortcutTextTimeoutRef = React.useRef<number | null>(null);
+  const shortcutVideoTimeoutRef = React.useRef<number | null>(null);
 
   // Keep a ref to the effective campaign ID for use inside stable BC handler closures.
   // Initialized from the URL immediately (before activeCampaign loads from API) so that
@@ -124,6 +137,14 @@ const ProjectionMapPage: React.FC = () => {
       setShortcutTextOverlay(null);
     };
 
+    const clearShortcutVideoOverlay = () => {
+      if (shortcutVideoTimeoutRef.current !== null) {
+        window.clearTimeout(shortcutVideoTimeoutRef.current);
+        shortcutVideoTimeoutRef.current = null;
+      }
+      setShortcutVideoOverlay(null);
+    };
+
     const setTimedShortcutTextOverlay = (next: { text: string; title?: string }, durationMs?: number) => {
       const ms = Number(durationMs);
       const timeout = Number.isFinite(ms) && ms > 0 ? ms : 6000;
@@ -137,6 +158,25 @@ const ProjectionMapPage: React.FC = () => {
       }, timeout);
     };
 
+    const setTimedShortcutVideoOverlay = (
+      next: { src: string; loop: boolean; muted: boolean },
+      durationMs?: number,
+    ) => {
+      if (shortcutVideoTimeoutRef.current !== null) {
+        window.clearTimeout(shortcutVideoTimeoutRef.current);
+        shortcutVideoTimeoutRef.current = null;
+      }
+      setShortcutVideoOverlay(next);
+
+      const ms = Number(durationMs);
+      if (Number.isFinite(ms) && ms > 0) {
+        shortcutVideoTimeoutRef.current = window.setTimeout(() => {
+          setShortcutVideoOverlay(null);
+          shortcutVideoTimeoutRef.current = null;
+        }, ms);
+      }
+    };
+
     const parseShortcutAction = (
       payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
     ): ShortcutActionDefinition | null => {
@@ -145,9 +185,34 @@ const ProjectionMapPage: React.FC = () => {
       return (payload as { action?: ShortcutActionDefinition }).action || null;
     };
 
+    const parseSceneRuntimeCommand = (
+      payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
+    ): SceneRuntimeCommand | null => {
+      const action = parseShortcutAction(payload);
+      if (!action || action.kind !== 'scene.runtime') return null;
+      const command = (action.payload as any)?.command;
+      if (!command || typeof command !== 'object') return null;
+      return command as SceneRuntimeCommand;
+    };
+
     const handleWindowShortcutAction = (
       payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
     ) => {
+      const sceneCommand = parseSceneRuntimeCommand(payload);
+      if (sceneCommand?.kind === 'window.sendVideo') {
+        const body = (sceneCommand.payload ?? {}) as Record<string, unknown>;
+        const videoUrl = typeof body.videoUrl === 'string' ? body.videoUrl.trim() : '';
+        if (!videoUrl) {
+          clearShortcutVideoOverlay();
+          return;
+        }
+        const loop = Boolean(body.loop);
+        const muted = body.muted === undefined ? true : Boolean(body.muted);
+        const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+        setTimedShortcutVideoOverlay({ src: resolveSceneMediaUrl(videoUrl), loop, muted }, durationMs);
+        return;
+      }
+
       const action = parseShortcutAction(payload);
       if (!action) return;
       if (action.kind !== 'window.showText' && action.kind !== 'window.applyFilter' && action.kind !== 'window.clearFilter') {
@@ -190,6 +255,7 @@ const ProjectionMapPage: React.FC = () => {
       if (typeof unsubscribe === 'function') unsubscribe();
       window.removeEventListener('shortcut:action', browserEventHandler as EventListener);
       clearShortcutTextOverlay();
+      clearShortcutVideoOverlay();
     };
   }, []);
 
@@ -873,6 +939,38 @@ const ProjectionMapPage: React.FC = () => {
           </Box>
 
           {shortcutFilterStyle ? <Box sx={shortcutFilterStyle} /> : null}
+
+          {shortcutVideoOverlay ? (
+            <Box
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 7800,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'rgba(0,0,0,0.45)',
+              }}
+            >
+              <video
+                src={shortcutVideoOverlay.src}
+                autoPlay
+                controls={false}
+                muted={shortcutVideoOverlay.muted}
+                loop={shortcutVideoOverlay.loop}
+                playsInline
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                }}
+                onEnded={() => {
+                  if (!shortcutVideoOverlay.loop) setShortcutVideoOverlay(null);
+                }}
+                onError={() => setShortcutVideoOverlay(null)}
+              />
+            </Box>
+          ) : null}
 
           {shortcutTextOverlay ? (
             <Box

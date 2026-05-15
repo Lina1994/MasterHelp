@@ -28,6 +28,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import BoltIcon from '@mui/icons-material/Bolt';
+import TheaterComedyIcon from '@mui/icons-material/TheaterComedy';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, type ReactElement } from 'react';
 import { useSidebarConfig } from '../contexts/SidebarConfigContext';
@@ -64,6 +65,7 @@ const ICON_MAP: Record<string, ReactElement> = {
   EventNote: <EventNoteIcon fontSize="small" />,
   Pets: <PetsIcon fontSize="small" />,
   AutoFixHigh: <AutoFixHighIcon fontSize="small" />,
+  TheaterComedy: <TheaterComedyIcon fontSize="small" />,
 };
 
 /** Local working-copy item. */

@@ -56,6 +56,10 @@ import { Manual } from './manuals/entities/manual.entity';
 import { ManualEntry } from './manuals/entities/manual-entry.entity';
 import { ShortcutsModule } from './shortcuts/shortcuts.module';
 import { Shortcut } from './shortcuts/entities/shortcut.entity';
+import { ScenesModule } from './scenes/scenes.module';
+import { Scene } from './scenes/entities/scene.entity';
+import { SceneExecution } from './scenes/entities/scene-execution.entity';
+import { SceneVideo } from './scenes/entities/scene-video.entity';
 
 @Module({
   imports: [
@@ -105,6 +109,9 @@ import { Shortcut } from './shortcuts/entities/shortcut.entity';
           Manual,
           ManualEntry,
           Shortcut,
+          Scene,
+          SceneExecution,
+          SceneVideo,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -135,6 +142,7 @@ import { Shortcut } from './shortcuts/entities/shortcut.entity';
     TraitsModule,
     BackgroundsModule,
     ShortcutsModule,
+    ScenesModule,
   ],
   controllers: [],
   providers: [],

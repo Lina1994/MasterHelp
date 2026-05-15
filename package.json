@@ -4,8 +4,8 @@
   "description": "Desktop application for MasterHelp",
   "main": "electron.js",
   "scripts": {
-    "start:backend": "npm --prefix backend run start:dev",
-    "start:frontend": "npm --prefix frontend run dev",
+    "start:backend": "node scripts/dev/clear-dev-ports.cjs 3000 && npm --prefix backend run start:dev",
+    "start:frontend": "node scripts/dev/clear-dev-ports.cjs 5173 && npm --prefix frontend run dev",
     "start:electron": "wait-on http://localhost:5173 && .\\node_modules\\.bin\\electron electron.js",
     "start:desktop": "concurrently \"npm:start:backend\" \"npm:start:frontend\" \"npm:start:electron\"",
     "build:frontend": "npm --prefix frontend run build",

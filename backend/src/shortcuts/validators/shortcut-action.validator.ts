@@ -151,6 +151,8 @@ const normalizePayload = (kind: ShortcutActionKind, payload: unknown): Record<st
       };
     case 'delay.wait':
       return { durationMs: asNumber(body.durationMs, 'durationMs') };
+    case 'runScene':
+      return { sceneId: asString(body.sceneId, 'sceneId') };
     default:
       return body;
   }

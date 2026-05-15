@@ -181,6 +181,13 @@ export interface DelayAction extends ShortcutActionBase {
   };
 }
 
+export interface RunSceneAction extends ShortcutActionBase {
+  kind: 'runScene';
+  payload: {
+    sceneId: string;
+  };
+}
+
 export type ShortcutActionDefinition =
   | ToggleStateAction
   | PlaySoundEffectAction
@@ -203,7 +210,8 @@ export type ShortcutActionDefinition =
   | ConfigThemeAction
   | ConfigFontScaleAction
   | ConfigUpdateSettingsAction
-  | DelayAction;
+  | DelayAction
+  | RunSceneAction;
 
 export type ShortcutActionKind = ShortcutActionDefinition['kind'];
 
@@ -241,6 +249,7 @@ export const SHORTCUT_ACTION_KINDS: readonly ShortcutActionKind[] = [
   'config.setFontScale',
   'config.updateSettings',
   'delay.wait',
+  'runScene',
 ];
 
 export const SHORTCUT_WINDOW_TARGET_KINDS: readonly ShortcutWindowTargetKind[] = [

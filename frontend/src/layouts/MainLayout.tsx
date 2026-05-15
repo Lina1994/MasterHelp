@@ -43,6 +43,7 @@ import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import BoltIcon from '@mui/icons-material/Bolt';
+import TheaterComedyIcon from '@mui/icons-material/TheaterComedy';
 import { ShortcutsProvider } from '../contexts/ShortcutsContext';
 import { SidebarShortcutsPanel, ShortcutHotbar } from '../components/shortcuts/ShortcutsShell';
 
@@ -61,6 +62,7 @@ const ICON_MAP: Record<string, ReactElement> = {
   EventNote: <EventNoteIcon />,
   Pets: <PetsIcon />,
   AutoFixHigh: <AutoFixHighIcon />,
+  TheaterComedy: <TheaterComedyIcon />,
 };
 
 function isUserMaster(activeCampaign: any, userId: number | undefined): boolean {

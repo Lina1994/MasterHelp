@@ -9,6 +9,8 @@ export default defineConfig({
   ],
   server: {
     host: '0.0.0.0', // Escuchar en todas las interfaces de red
+    port: 5173,
+    strictPort: true,
     proxy: {
       '/api': {
         target: 'http://localhost:3000',

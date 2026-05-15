@@ -1,5 +1,6 @@
 import { setActiveMapId } from '../api/campaigns/activeMap';
 import { getCampaignBattleState, setCampaignBattleState } from '../api/campaigns/battleState';
+import { executeScene } from '../api/scenes';
 import { getCampaignTimeOfDay, setCampaignTimeOfDay, type TimeOfDay } from '../api/campaigns/timeOfDay';
 import { api } from '../apiBase';
 import type { SfxLoopMode, SfxPlayOptions } from '../components/player/SfxPlayerContext';
@@ -155,6 +156,18 @@ const runConfigAction = async (action: ShortcutActionDefinition): Promise<void> 
   }
 };
 
+const runSceneAction = async (action: ShortcutActionDefinition): Promise<void> => {
+  const payload = getActionPayload(action);
+  const sceneId = typeof payload.sceneId === 'string' ? payload.sceneId : '';
+  if (!sceneId) return;
+  const execution = await executeScene(sceneId);
+  try {
+    window.dispatchEvent(new CustomEvent('scene:runtime-execute', { detail: execution }));
+  } catch {
+    // no-op fallback
+  }
+};
+
 const runAction = async (action: ShortcutActionDefinition, deps: RunnerDeps): Promise<void> => {
   if (action.delayMs && action.delayMs > 0) {
     await wait(action.delayMs);
@@ -168,6 +181,10 @@ const runAction = async (action: ShortcutActionDefinition, deps: RunnerDeps): Pr
   }
 
   if (action.kind === 'toggleState') return;
+  if (action.kind === 'runScene') {
+    await runSceneAction(action);
+    return;
+  }
   if (action.kind === 'playSoundEffect' || action.kind.startsWith('audio.')) {
     await runAudioAction(action, deps);
     return;

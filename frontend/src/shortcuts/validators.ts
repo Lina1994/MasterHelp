@@ -43,6 +43,8 @@ export const validateActionForEditor = (action: ShortcutActionDefinition): strin
       return typeof payload.mapId === 'string' && payload.mapId ? null : 'window.setActiveMap requiere mapId';
     case 'delay.wait':
       return typeof payload.durationMs === 'number' && payload.durationMs >= 0 ? null : 'delay.wait requiere durationMs >= 0';
+    case 'runScene':
+      return typeof payload.sceneId === 'string' && payload.sceneId ? null : 'runScene requiere sceneId';
     default:
       return null;
   }

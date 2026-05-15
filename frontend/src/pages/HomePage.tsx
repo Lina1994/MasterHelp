@@ -17,6 +17,7 @@ import PetsIcon from '@mui/icons-material/Pets';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import CampaignIcon from '@mui/icons-material/FolderSpecial';
 import BoltIcon from '@mui/icons-material/Bolt';
+import TheaterComedyIcon from '@mui/icons-material/TheaterComedy';
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -36,6 +37,8 @@ interface ToolItem {
   requiresCampaign?: boolean;
   /** If true, only visible when the current user is master. */
   masterOnly?: boolean;
+  /** If true, keep visible (disabled) when no campaign is selected. */
+  showLockedWhenNoCampaign?: boolean;
 }
 
 /** Checks whether the current user is master of the given campaign. */
@@ -54,6 +57,7 @@ const ALL_TOOLS: ToolItem[] = [
   { labelKey: 'manuals',     fallback: 'Manuales',     icon: <MenuBookIcon />,      route: '/manuals' },
   { labelKey: 'maps',        fallback: 'Mapas',        icon: <MapIcon />,           route: '/maps' },
   { labelKey: 'shortcuts',   fallback: 'Atajos',       icon: <BoltIcon />,          route: '/shortcuts',         masterOnly: true },
+  { labelKey: 'scenes',      fallback: 'Escenas',      icon: <TheaterComedyIcon />, route: '/scenes',            requiresCampaign: true, masterOnly: true, showLockedWhenNoCampaign: true },
   { labelKey: 'combat',      fallback: 'Combate',      icon: <SportsKabaddiIcon />, route: '/combat',            requiresCampaign: true },
   { labelKey: 'characters',  fallback: 'Personajes',   icon: <PeopleIcon />,        route: '/characters',        requiresCampaign: true },
   { labelKey: 'quests',      fallback: 'Misiones',     icon: <AssignmentIcon />,    route: '/quests',            requiresCampaign: true },
@@ -130,9 +134,11 @@ const HomePage = () => {
   );
 
   /** Filters out master-only items when the user is not master. */
-  const visibleTools = ALL_TOOLS.filter(
-    (item) => !item.masterOnly || isMaster,
-  );
+  const visibleTools = ALL_TOOLS.filter((item) => {
+    if (!item.masterOnly) return true;
+    if (isMaster) return true;
+    return !activeCampaign?.id && !!item.showLockedWhenNoCampaign;
+  });
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', maxWidth: 900, mx: 'auto' }}>

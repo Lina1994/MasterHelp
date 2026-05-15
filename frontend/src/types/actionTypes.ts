@@ -63,7 +63,8 @@ export type ShortcutActionKind =
   | 'config.setTheme'
   | 'config.setFontScale'
   | 'config.updateSettings'
-  | 'delay.wait';
+  | 'delay.wait'
+  | 'runScene';
 
 export type ShortcutActionDefinition = ShortcutActionBase;
 
@@ -133,6 +134,12 @@ export const SHORTCUT_ACTION_KIND_OPTIONS_GROUPED: ActionKindGroup[] = [
       { value: 'config.setTheme', label: 'Set theme' },
       { value: 'config.setFontScale', label: 'Set font scale' },
       { value: 'config.updateSettings', label: 'Update app setting' },
+    ],
+  },
+  {
+    category: 'Scenes',
+    options: [
+      { value: 'runScene', label: 'Run scene' },
     ],
   },
   {

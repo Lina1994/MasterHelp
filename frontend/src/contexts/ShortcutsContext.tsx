@@ -7,6 +7,7 @@ import {
   executeShortcut as executeShortcutApi,
   listShortcutSoundEffects,
   listShortcuts,
+  normalizeShortcut,
   updateShortcut,
 } from '../api/shortcuts';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
@@ -292,6 +293,36 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
       buildEffectUrl: (effectId, campaignId) => buildEffectStreamUrl(api.defaults.baseURL, effectId, campaignId),
     });
   }, [activeCampaign?.id, playSfx, soundEffects]);
+
+  useEffect(() => {
+    const handleSceneShortcutCommand = (event: Event) => {
+      const custom = event as CustomEvent<{ shortcut?: unknown }>;
+      const normalized = custom.detail?.shortcut ? normalizeShortcut(custom.detail.shortcut) : null;
+      if (!normalized?.id) return;
+
+      setShortcuts((prev) => {
+        const exists = prev.some((item) => item.id === normalized.id);
+        if (!exists) return prev;
+        return prev.map((item) => (item.id === normalized.id ? normalized : item));
+      });
+
+      void runClientActions(normalized);
+
+      if (normalized.activeUntil) {
+        const remaining = new Date(normalized.activeUntil).getTime() - Date.now();
+        if (remaining > 0) {
+          window.setTimeout(() => {
+            setShortcuts((prev) => prev.map((item) => (item.id === normalized.id ? { ...item, isActive: false, activeUntil: null } : item)));
+          }, remaining);
+        }
+      }
+    };
+
+    window.addEventListener('scene:shortcut-command', handleSceneShortcutCommand as EventListener);
+    return () => {
+      window.removeEventListener('scene:shortcut-command', handleSceneShortcutCommand as EventListener);
+    };
+  }, [runClientActions]);
 
   const getShortcutPanelIds = useCallback((shortcut: ShortcutItem): string[] => {
     const mapped = config.shortcutPanelMap[shortcut.id];
