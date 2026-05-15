@@ -23,6 +23,13 @@ export interface SceneRuntimeCommand {
   kind: SceneRuntimeCommandKind;
   payload: Record<string, unknown>;
   targetWindow?: SceneWindowTarget;
+  dispatchedAtMs?: number;
+  executionId?: string;
+  scheduleVersion?: number;
+  serverNowMs?: number;
+  startAtMs?: number;
+  sequence?: number;
+  executeAtMs?: number;
   issuedAtOffsetMs: number;
 }
 
@@ -58,6 +65,12 @@ export interface SceneActionDto {
   delay?: number;
   targetWindow?: SceneWindowTarget;
   payload: Record<string, unknown>;
+}
+
+export interface SceneChromaKeySettings {
+  enabled: boolean;
+  color: string;
+  tolerance: number;
 }
 
 /** Payload for creating or updating a scene */
@@ -111,6 +124,15 @@ export interface ExecuteSceneResponse {
   executionId: string;
   status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
   scene: SceneLite;
+  scheduleVersion?: number;
+  serverNowMs?: number;
+  startAtMs?: number;
   commands: SceneRuntimeCommand[];
   summary: SceneExecutionSummary;
+}
+
+export interface SceneClockSyncResponse {
+  serverNowMs: number;
+  scheduleVersion: number;
+  leadMs: number;
 }

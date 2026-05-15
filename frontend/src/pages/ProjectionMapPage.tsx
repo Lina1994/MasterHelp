@@ -16,9 +16,11 @@ import type { FogMode } from '../api/campaigns/fogOfWar';
 import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
 import { useMapTokens } from '../hooks/useMapTokens';
 import MapTokensOverlay from '../components/Map/MapTokensOverlay';
+import ChromaKeyMedia from '../components/common/ChromaKeyMedia';
 import { computeClearedFogByAllies, subtractClearedFog, computeAllyRevealStrokes, computeLightRevealStrokes, computeClearedFogByLights } from '../utils/fogHelpers';
 import { useTokenImageResolver } from '../hooks/useTokenImageResolver';
 import { useMapElements } from '../hooks/useMapElements';
+import { useSceneClockSync } from '../hooks/useSceneClockSync';
 import type { ShortcutActionDefinition } from '../types/actionTypes';
 import type { SceneRuntimeCommand } from '../types/scenes';
 
@@ -43,6 +45,18 @@ function resolveSceneMediaUrl(rawUrl: string): string {
   return `${window.location.protocol}//${window.location.hostname}:3000/${rawUrl}`;
 }
 
+function parseChromaKey(value: unknown): { enabled: boolean; color: string; tolerance: number } | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const body = value as Record<string, unknown>;
+  const color = typeof body.color === 'string' && body.color.trim() ? body.color : '#00ff00';
+  const tolerance = Number(body.tolerance);
+  return {
+    enabled: Boolean(body.enabled),
+    color,
+    tolerance: Number.isFinite(tolerance) ? Math.max(0, Math.min(100, tolerance)) : 20,
+  };
+}
+
 const ProjectionMapPage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
@@ -63,6 +77,15 @@ const ProjectionMapPage: React.FC = () => {
   const { tokens } = useMapTokens(activeCampaign?.id, activeMapId || undefined);
   const { elements } = useMapElements(activeCampaign?.id, activeMapId || undefined);
   const { resolver: tokenImageResolver } = useTokenImageResolver(activeCampaign?.id, { pollMs: 5000 });
+  const sceneClockSync = useSceneClockSync({ enabled: true, pollMs: 60000 });
+  const sceneBaseClockOffsetRef = React.useRef<number>(0);
+  const sceneClockSyncStateRef = React.useRef(sceneClockSync);
+  useEffect(() => {
+    sceneBaseClockOffsetRef.current = sceneClockSync.clockOffsetMs;
+  }, [sceneClockSync.clockOffsetMs]);
+  useEffect(() => {
+    sceneClockSyncStateRef.current = sceneClockSync;
+  }, [sceneClockSync]);
 
   // ─── Visible markers ─────────────────────────────────────────────────
   const [visibleMarkers, setVisibleMarkers] = useState<MapMarkerDto[]>([]);
@@ -100,9 +123,39 @@ const ProjectionMapPage: React.FC = () => {
   });
   const [shortcutTextOverlay, setShortcutTextOverlay] = useState<{ text: string; title?: string } | null>(null);
   const [shortcutFilterOverlay, setShortcutFilterOverlay] = useState<{ filter: string; color?: string; intensity?: number } | null>(null);
-  const [shortcutVideoOverlay, setShortcutVideoOverlay] = useState<{ src: string; loop: boolean; muted: boolean } | null>(null);
+  const [shortcutVideoOverlay, setShortcutVideoOverlay] = useState<{
+    src: string;
+    loop: boolean;
+    muted: boolean;
+    opacity: number;
+    chromaKey?: { enabled: boolean; color: string; tolerance: number };
+    leftPct: number;
+    topPct: number;
+    widthPct: number;
+    heightPct: number;
+  } | null>(null);
   const shortcutTextTimeoutRef = React.useRef<number | null>(null);
   const shortcutVideoTimeoutRef = React.useRef<number | null>(null);
+  const sceneCommandDedupRef = React.useRef<Set<string>>(new Set());
+  const sceneCommandDedupOrderRef = React.useRef<string[]>([]);
+  const sceneClockOffsetByExecutionRef = React.useRef<Map<string, number>>(new Map());
+  const sceneExecutionOrderRef = React.useRef<string[]>([]);
+  const sceneSkewSamplesRef = React.useRef<number[]>([]);
+  const [sceneSyncDiagnosticsVisible] = useState<boolean>(() => {
+    try { return localStorage.getItem('app.sceneSync.showDiagnostics') === 'true'; } catch { return false; }
+  });
+  const [sceneSyncDiagnostics, setSceneSyncDiagnostics] = useState<{
+    samples: number;
+    p50: number;
+    p95: number;
+    late: number;
+    dropped: number;
+    lastReceiveDeltaMs: number | null;
+    baseOffsetMs: number;
+    lastSyncAtMs: number | null;
+    lastRoundTripMs: number | null;
+    syncError: boolean;
+  }>({ samples: 0, p50: 0, p95: 0, late: 0, dropped: 0, lastReceiveDeltaMs: null, baseOffsetMs: 0, lastSyncAtMs: null, lastRoundTripMs: null, syncError: false });
 
   // Keep a ref to the effective campaign ID for use inside stable BC handler closures.
   // Initialized from the URL immediately (before activeCampaign loads from API) so that
@@ -129,6 +182,173 @@ const ProjectionMapPage: React.FC = () => {
 
   // Load FoW settings from server so this web window matches Electron even across origins.
   useEffect(() => {
+    const scheduledTimerIds = new Set<number>();
+    const DEDUP_MAX_KEYS = 1200;
+    const DEDUP_KEEP_KEYS = 800;
+    const EXECUTION_OFFSET_MAX_KEYS = 256;
+    const SKEW_WARN_MS = 100;
+    const metricsRef = { late: 0, dropped: 0, lastReceiveDeltaMs: null as number | null };
+
+    const publishDiagnostics = () => {
+      if (!sceneSyncDiagnosticsVisible) return;
+      const samples = sceneSkewSamplesRef.current;
+      const sorted = [...samples].sort((a, b) => a - b);
+      const p50 = sorted.length ? sorted[Math.floor(sorted.length * 0.5)] ?? 0 : 0;
+      const p95 = sorted.length ? sorted[Math.floor(sorted.length * 0.95)] ?? 0 : 0;
+      const syncState = sceneClockSyncStateRef.current;
+      setSceneSyncDiagnostics({
+        samples: samples.length,
+        p50,
+        p95,
+        late: metricsRef.late,
+        dropped: metricsRef.dropped,
+        lastReceiveDeltaMs: metricsRef.lastReceiveDeltaMs,
+        baseOffsetMs: syncState.clockOffsetMs,
+        lastSyncAtMs: syncState.lastSyncAtMs,
+        lastRoundTripMs: syncState.lastRoundTripMs,
+        syncError: syncState.syncError,
+      });
+    };
+
+    const rememberCommandKey = (key: string): boolean => {
+      if (sceneCommandDedupRef.current.has(key)) {
+        return false;
+      }
+
+      sceneCommandDedupRef.current.add(key);
+      sceneCommandDedupOrderRef.current.push(key);
+
+      if (sceneCommandDedupOrderRef.current.length > DEDUP_MAX_KEYS) {
+        const overflow = sceneCommandDedupOrderRef.current.length - DEDUP_KEEP_KEYS;
+        const expired = sceneCommandDedupOrderRef.current.splice(0, overflow);
+        for (const staleKey of expired) {
+          sceneCommandDedupRef.current.delete(staleKey);
+        }
+      }
+
+      return true;
+    };
+
+    const commandKey = (command: SceneRuntimeCommand): string => {
+      const executionId = typeof command.executionId === 'string' ? command.executionId : 'legacy';
+      const sequence = Number.isFinite(command.sequence) ? String(command.sequence) : command.actionId;
+      return `${executionId}:${sequence}:${command.kind}`;
+    };
+
+    const getExecutionOffsetMs = (command: SceneRuntimeCommand): number => {
+      const executionId = typeof command.executionId === 'string' ? command.executionId : null;
+      const serverNowMs = Number(command.serverNowMs);
+
+      if (!executionId || !Number.isFinite(serverNowMs)) {
+        return sceneBaseClockOffsetRef.current;
+      }
+
+      if (!sceneClockOffsetByExecutionRef.current.has(executionId)) {
+        sceneClockOffsetByExecutionRef.current.set(executionId, serverNowMs - Date.now());
+        sceneExecutionOrderRef.current.push(executionId);
+
+        if (sceneExecutionOrderRef.current.length > EXECUTION_OFFSET_MAX_KEYS) {
+          const overflow = sceneExecutionOrderRef.current.length - EXECUTION_OFFSET_MAX_KEYS;
+          const expired = sceneExecutionOrderRef.current.splice(0, overflow);
+          for (const staleExecutionId of expired) {
+            sceneClockOffsetByExecutionRef.current.delete(staleExecutionId);
+          }
+        }
+      }
+
+      return sceneClockOffsetByExecutionRef.current.get(executionId) ?? sceneBaseClockOffsetRef.current;
+    };
+
+    const recordSkew = (skewMs: number) => {
+      const samples = sceneSkewSamplesRef.current;
+      samples.push(skewMs);
+      if (samples.length > 200) {
+        samples.splice(0, samples.length - 200);
+      }
+      publishDiagnostics();
+      if (import.meta.env.DEV && samples.length % 10 === 0) {
+        const sorted = [...samples].sort((a, b) => a - b);
+        const p50 = sorted[Math.floor(sorted.length * 0.5)] ?? 0;
+        const p95 = sorted[Math.floor(sorted.length * 0.95)] ?? 0;
+        console.debug('[scene-sync][map][stats]', { count: samples.length, p50, p95 });
+      }
+    };
+
+    const getLateExecutionPolicy = (command: SceneRuntimeCommand, durationMs?: number): { dropIfLateOverMs?: number } => {
+      if (command.kind === 'window.applyFilter' || command.kind === 'window.clearFilter') {
+        return {};
+      }
+
+      const fallbackDurationMs = command.kind === 'window.sendVideo' ? 6000 : 6000;
+      const effectiveDurationMs = Number.isFinite(durationMs)
+        ? Number(durationMs)
+        : fallbackDurationMs;
+
+      if (command.kind === 'window.sendVideo' || command.kind === 'narrative.setText') {
+        return { dropIfLateOverMs: Math.max(250, effectiveDurationMs) };
+      }
+
+      return {};
+    };
+
+    const scheduleSceneExecution = (
+      command: SceneRuntimeCommand,
+      executeAtMs: number | undefined,
+      run: () => void,
+      label: string,
+      options?: { dropIfLateOverMs?: number },
+    ) => {
+      if (!Number.isFinite(executeAtMs)) {
+        run();
+        return;
+      }
+
+      const target = Number(executeAtMs);
+      const offsetMs = getExecutionOffsetMs(command);
+      const adjustedNowMs = Date.now() + offsetMs;
+      const delayMs = target - adjustedNowMs;
+      const dispatchLatencyMs = Number(command.dispatchedAtMs);
+      const receiveDeltaMs = Number.isFinite(dispatchLatencyMs)
+        ? Math.max(0, Date.now() - dispatchLatencyMs)
+        : undefined;
+
+      if (Number.isFinite(receiveDeltaMs)) {
+        metricsRef.lastReceiveDeltaMs = Number(receiveDeltaMs);
+      }
+
+      if (delayMs <= 0) {
+        const skewMs = adjustedNowMs - target;
+        if (Number.isFinite(options?.dropIfLateOverMs) && skewMs > Number(options?.dropIfLateOverMs)) {
+          metricsRef.dropped += 1;
+          publishDiagnostics();
+          if (import.meta.env.DEV) {
+            console.debug('[scene-sync][map][drop-late]', label, { target, skewMs, receiveDeltaMs });
+          }
+          return;
+        }
+        if (import.meta.env.DEV && skewMs > SKEW_WARN_MS) {
+          console.debug('[scene-sync][map][late]', label, { target, skewMs, receiveDeltaMs });
+        }
+        if (skewMs > SKEW_WARN_MS) {
+          metricsRef.late += 1;
+        }
+        recordSkew(skewMs);
+        run();
+        return;
+      }
+
+      const timerId = window.setTimeout(() => {
+        scheduledTimerIds.delete(timerId);
+        const skewMs = (Date.now() + offsetMs) - target;
+        recordSkew(skewMs);
+        if (import.meta.env.DEV) {
+          console.debug('[scene-sync][map]', label, { target, skewMs, receiveDeltaMs });
+        }
+        run();
+      }, Math.max(0, delayMs));
+      scheduledTimerIds.add(timerId);
+    };
+
     const clearShortcutTextOverlay = () => {
       if (shortcutTextTimeoutRef.current !== null) {
         window.clearTimeout(shortcutTextTimeoutRef.current);
@@ -159,7 +379,17 @@ const ProjectionMapPage: React.FC = () => {
     };
 
     const setTimedShortcutVideoOverlay = (
-      next: { src: string; loop: boolean; muted: boolean },
+      next: {
+        src: string;
+        loop: boolean;
+        muted: boolean;
+        opacity: number;
+        chromaKey?: { enabled: boolean; color: string; tolerance: number };
+        leftPct: number;
+        topPct: number;
+        widthPct: number;
+        heightPct: number;
+      },
       durationMs?: number,
     ) => {
       if (shortcutVideoTimeoutRef.current !== null) {
@@ -189,16 +419,28 @@ const ProjectionMapPage: React.FC = () => {
       payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
     ): SceneRuntimeCommand | null => {
       const action = parseShortcutAction(payload);
-      if (!action || action.kind !== 'scene.runtime') return null;
+      if (!action || (action as any).kind !== 'scene.runtime') return null;
       const command = (action.payload as any)?.command;
       if (!command || typeof command !== 'object') return null;
-      return command as SceneRuntimeCommand;
+      const envelope = payload as { dispatchedAtMs?: unknown };
+      const dispatchedAtMs = Number(envelope?.dispatchedAtMs);
+      return {
+        ...(command as SceneRuntimeCommand),
+        ...(Number.isFinite(dispatchedAtMs) ? { dispatchedAtMs } : {}),
+      } as SceneRuntimeCommand;
     };
 
     const handleWindowShortcutAction = (
       payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
     ) => {
       const sceneCommand = parseSceneRuntimeCommand(payload);
+      if (sceneCommand) {
+        const key = commandKey(sceneCommand);
+        if (!rememberCommandKey(key)) {
+          return;
+        }
+      }
+
       if (sceneCommand?.kind === 'window.sendVideo') {
         const body = (sceneCommand.payload ?? {}) as Record<string, unknown>;
         const videoUrl = typeof body.videoUrl === 'string' ? body.videoUrl.trim() : '';
@@ -208,8 +450,53 @@ const ProjectionMapPage: React.FC = () => {
         }
         const loop = Boolean(body.loop);
         const muted = body.muted === undefined ? true : Boolean(body.muted);
+        const opacity = Math.max(0, Math.min(1, Number(body.opacity ?? 1)));
+        const chromaKey = parseChromaKey(body.chromaKey);
+        const leftPct = Math.max(0, Math.min(100, Number(body.leftPct ?? 10)));
+        const topPct = Math.max(0, Math.min(100, Number(body.topPct ?? 10)));
+        const widthPct = Math.max(1, Math.min(100, Number(body.widthPct ?? 80)));
+        const heightPct = Math.max(1, Math.min(100, Number(body.heightPct ?? 80)));
         const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
-        setTimedShortcutVideoOverlay({ src: resolveSceneMediaUrl(videoUrl), loop, muted }, durationMs);
+        scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
+          setTimedShortcutVideoOverlay(
+            { src: resolveSceneMediaUrl(videoUrl), loop, muted, opacity, chromaKey, leftPct, topPct, widthPct, heightPct },
+            durationMs,
+          );
+        }, 'window.sendVideo', getLateExecutionPolicy(sceneCommand, durationMs));
+        return;
+      }
+
+      if (sceneCommand?.kind === 'narrative.setText') {
+        const body = (sceneCommand.payload ?? {}) as Record<string, unknown>;
+        const text = typeof body.text === 'string' ? body.text.trim() : '';
+        if (!text) {
+          clearShortcutTextOverlay();
+          return;
+        }
+        const title = typeof body.title === 'string' ? body.title : undefined;
+        const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+        scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
+          setTimedShortcutTextOverlay({ text, title }, durationMs);
+        }, 'narrative.setText', getLateExecutionPolicy(sceneCommand, durationMs));
+        return;
+      }
+
+      if (sceneCommand?.kind === 'window.clearFilter') {
+        scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
+          setShortcutFilterOverlay(null);
+        }, 'window.clearFilter');
+        return;
+      }
+
+      if (sceneCommand?.kind === 'window.applyFilter') {
+        const body = (sceneCommand.payload ?? {}) as Record<string, unknown>;
+        const filter = typeof body.filter === 'string' ? body.filter : '';
+        if (!filter) return;
+        const color = typeof body.color === 'string' ? body.color : undefined;
+        const intensity = typeof body.intensity === 'number' ? body.intensity : undefined;
+        scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
+          setShortcutFilterOverlay({ filter, color, intensity });
+        }, 'window.applyFilter');
         return;
       }
 
@@ -254,6 +541,15 @@ const ProjectionMapPage: React.FC = () => {
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
       window.removeEventListener('shortcut:action', browserEventHandler as EventListener);
+      for (const timerId of scheduledTimerIds) {
+        window.clearTimeout(timerId);
+      }
+      scheduledTimerIds.clear();
+      sceneCommandDedupRef.current.clear();
+      sceneCommandDedupOrderRef.current = [];
+      sceneClockOffsetByExecutionRef.current.clear();
+      sceneExecutionOrderRef.current = [];
+      sceneSkewSamplesRef.current = [];
       clearShortcutTextOverlay();
       clearShortcutVideoOverlay();
     };
@@ -944,30 +1240,29 @@ const ProjectionMapPage: React.FC = () => {
             <Box
               sx={{
                 position: 'absolute',
-                inset: 0,
+                left: `${shortcutVideoOverlay.leftPct}%`,
+                top: `${shortcutVideoOverlay.topPct}%`,
+                width: `${shortcutVideoOverlay.widthPct}%`,
+                height: `${shortcutVideoOverlay.heightPct}%`,
                 zIndex: 7800,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bgcolor: 'rgba(0,0,0,0.45)',
               }}
             >
-              <video
+              <ChromaKeyMedia
+                kind="video"
                 src={shortcutVideoOverlay.src}
                 autoPlay
-                controls={false}
                 muted={shortcutVideoOverlay.muted}
                 loop={shortcutVideoOverlay.loop}
                 playsInline
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                }}
-                onEnded={() => {
+                opacity={shortcutVideoOverlay.opacity}
+                chromaKey={shortcutVideoOverlay.chromaKey}
+                onVideoEnded={() => {
                   if (!shortcutVideoOverlay.loop) setShortcutVideoOverlay(null);
                 }}
-                onError={() => setShortcutVideoOverlay(null)}
+                onMediaError={() => setShortcutVideoOverlay(null)}
               />
             </Box>
           ) : null}
@@ -996,6 +1291,44 @@ const ProjectionMapPage: React.FC = () => {
                 </Typography>
               ) : null}
               <Typography variant="h5">{shortcutTextOverlay.text}</Typography>
+            </Box>
+          ) : null}
+
+          {sceneSyncDiagnosticsVisible ? (
+            <Box
+              sx={{
+                position: 'absolute',
+                left: 12,
+                bottom: 12,
+                zIndex: 8100,
+                px: 1.2,
+                py: 0.8,
+                borderRadius: 1.5,
+                bgcolor: 'rgba(0,0,0,0.65)',
+                color: 'white',
+                fontFamily: 'monospace',
+                pointerEvents: 'none',
+                minWidth: 230,
+              }}
+            >
+              <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                scene sync map
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block' }}>
+                samples: {sceneSyncDiagnostics.samples}  p50: {Math.round(sceneSyncDiagnostics.p50)}ms  p95: {Math.round(sceneSyncDiagnostics.p95)}ms
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block' }}>
+                late: {sceneSyncDiagnostics.late}  dropped: {sceneSyncDiagnostics.dropped}
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block' }}>
+                transit: {sceneSyncDiagnostics.lastReceiveDeltaMs !== null ? `${Math.round(sceneSyncDiagnostics.lastReceiveDeltaMs)}ms` : 'n/a'}
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block' }}>
+                base: {Math.round(sceneSyncDiagnostics.baseOffsetMs)}ms  sync: {sceneSyncDiagnostics.lastSyncAtMs ? new Date(sceneSyncDiagnostics.lastSyncAtMs).toLocaleTimeString() : 'n/a'}
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block' }}>
+                rtt: {sceneSyncDiagnostics.lastRoundTripMs !== null ? `${Math.round(sceneSyncDiagnostics.lastRoundTripMs)}ms` : 'n/a'}  {sceneSyncDiagnostics.syncError ? 'sync error' : 'ok'}
+              </Typography>
             </Box>
           ) : null}
         </Box>

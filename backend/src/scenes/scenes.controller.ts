@@ -53,6 +53,14 @@ export class ScenesController {
   /**
    * Returns one owned scene.
    */
+  @Get('clock-sync')
+  getClockSync() {
+    return this.scenesService.getClockSync();
+  }
+
+  /**
+   * Returns one owned scene.
+   */
   @Get(':id')
   async findOne(@Request() req, @Param('id') id: string) {
     return this.scenesService.findOneForOwner(id, req.user.userId);

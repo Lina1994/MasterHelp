@@ -56,6 +56,18 @@ export interface SendImageToWindowSceneAction extends SceneActionBase {
   payload: {
     imageUrl: string;
     title?: string;
+    opacity?: number;
+    durationMs?: number;
+    timelineStartMs?: number;
+    chromaKey?: {
+      enabled?: boolean;
+      color?: string;
+      tolerance?: number;
+    };
+    leftPct?: number;
+    topPct?: number;
+    widthPct?: number;
+    heightPct?: number;
   };
 }
 
@@ -66,6 +78,18 @@ export interface SendVideoToWindowSceneAction extends SceneActionBase {
     videoUrl?: string;
     loop?: boolean;
     muted?: boolean;
+    opacity?: number;
+    durationMs?: number;
+    timelineStartMs?: number;
+    chromaKey?: {
+      enabled?: boolean;
+      color?: string;
+      tolerance?: number;
+    };
+    leftPct?: number;
+    topPct?: number;
+    widthPct?: number;
+    heightPct?: number;
   };
 }
 
@@ -196,8 +220,13 @@ export interface SceneRuntimeCommand {
   kind: SceneRuntimeCommandKind;
   payload: Record<string, unknown>;
   targetWindow?: SceneWindowTarget;
+  sequence?: number;
+  executeAtMs?: number;
   issuedAtOffsetMs: number;
 }
+
+export const SCENE_SCHEDULE_VERSION = 1;
+export const SCENE_SCHEDULE_LEAD_MS = 300;
 
 export interface SceneExecutionSummary {
   totalActions: number;

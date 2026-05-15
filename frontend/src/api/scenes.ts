@@ -1,6 +1,8 @@
 import { api } from '../apiBase';
 import { getAuthHeaders } from '../utils/auth';
-import type { ExecuteSceneResponse, Scene, SceneExecution, SceneLite, ScenePayload } from '../types/scenes';
+import type { ExecuteSceneResponse, Scene, SceneClockSyncResponse, SceneExecution, SceneLite, ScenePayload } from '../types/scenes';
+
+export type { SceneLite } from '../types/scenes';
 
 interface ListScenesOptions {
   campaignId?: string | null;
@@ -38,10 +40,21 @@ export async function executeScene(sceneId: string): Promise<ExecuteSceneRespons
 }
 
 /**
+ * Fetches a lightweight server clock sample for scheduler calibration.
+ */
+export async function getSceneClockSync(): Promise<SceneClockSyncResponse> {
+  const response = await api.get('/scenes/clock-sync', { headers: getAuthHeaders() });
+  return response.data as SceneClockSyncResponse;
+}
+
+/**
  * Fetches a single scene by ID with full action list.
  */
 export async function getScene(id: string): Promise<Scene> {
-  const response = await api.get(`/scenes/${id}`, { headers: getAuthHeaders() });
+  const response = await api.get(`/scenes/${id}`, {
+    headers: getAuthHeaders(),
+    params: { _t: Date.now() },
+  });
   return response.data as Scene;
 }
 

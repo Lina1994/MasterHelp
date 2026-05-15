@@ -19,7 +19,7 @@ import { ScenesService } from './scenes.service';
  */
 @Module({
   imports: [TypeOrmModule.forFeature([Scene, SceneExecution, SceneVideo, Campaign, CampaignPlayer]), ShortcutsModule],
-  controllers: [ScenesController, SceneVideosController],
+  controllers: [SceneVideosController, ScenesController],
   providers: [ScenesRepository, SceneVideosRepository, ScenesService, SceneVideosService, SceneRunnerService],
   exports: [ScenesService],
 })

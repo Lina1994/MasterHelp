@@ -92,6 +92,7 @@ export class SceneRunnerService {
         context.currentOffsetMs += action.delay;
         summary.totalDelayMs += action.delay;
       }
+      const issuedAtOffsetMs = this.resolveIssuedAtOffsetMs(action, context.currentOffsetMs);
 
       context.rootExecution.currentActionIndex = index;
       context.rootExecution.totalActions = summary.totalActions;
@@ -138,7 +139,7 @@ export class SceneRunnerService {
             shortcutId,
             shortcut,
           },
-          issuedAtOffsetMs: context.currentOffsetMs,
+          issuedAtOffsetMs,
         });
         summary.nestedShortcuts += 1;
         summary.emittedCommands += 1;
@@ -146,12 +147,24 @@ export class SceneRunnerService {
         continue;
       }
 
-      commands.push(await this.toRuntimeCommand(action, context.ownerId, context.currentOffsetMs));
+      commands.push(await this.toRuntimeCommand(action, context.ownerId, issuedAtOffsetMs));
       summary.emittedCommands += 1;
       summary.completedActions += 1;
     }
 
     return commands;
+  }
+
+  /**
+   * Resolves absolute schedule offset when an action provides timelineStartMs.
+   */
+  private resolveIssuedAtOffsetMs(action: SceneActionDefinition, fallbackOffsetMs: number): number {
+    const payload = action.payload as Record<string, unknown>;
+    const timelineStartRaw = Number(payload.timelineStartMs);
+    if (!Number.isFinite(timelineStartRaw) || timelineStartRaw < 0) {
+      return fallbackOffsetMs;
+    }
+    return Math.round(timelineStartRaw);
   }
 
   /**

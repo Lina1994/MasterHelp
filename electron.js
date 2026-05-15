@@ -793,10 +793,13 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('shortcuts:dispatch-window-action', async (_evt, payload) => {
     const target = payload && typeof payload === 'object' ? payload.target : undefined;
+    const enrichedPayload = payload && typeof payload === 'object'
+      ? { ...payload, dispatchedAtMs: Date.now() }
+      : payload;
     const windows = resolveShortcutTargetWindows(target);
     for (const win of windows) {
       try {
-        win.webContents.send('shortcuts:window-action', payload);
+        win.webContents.send('shortcuts:window-action', enrichedPayload);
       } catch {}
     }
     return { delivered: windows.length };

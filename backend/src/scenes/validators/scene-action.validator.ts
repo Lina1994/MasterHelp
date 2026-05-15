@@ -39,6 +39,17 @@ const asString = (value: unknown, field: string): string => {
   return value.trim();
 };
 
+const asOptionalNonEmptyString = (value: unknown, field: string): string | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value !== 'string') {
+    throw new BadRequestException(`Action field "${field}" must be a non-empty string`);
+  }
+  const trimmed = value.trim();
+  return trimmed || undefined;
+};
+
 const asNumber = (value: unknown, field: string): number => {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     throw new BadRequestException(`Action field "${field}" must be a number`);
@@ -51,6 +62,47 @@ const asBoolean = (value: unknown, field: string): boolean => {
     throw new BadRequestException(`Action field "${field}" must be a boolean`);
   }
   return value;
+};
+
+const asOpacity = (value: unknown, field: string): number => {
+  const opacity = asNumber(value, field);
+  if (opacity < 0 || opacity > 1) {
+    throw new BadRequestException(`Action field "${field}" must be between 0 and 1`);
+  }
+  return opacity;
+};
+
+const asPercentage = (value: unknown, field: string): number => {
+  const percentage = asNumber(value, field);
+  if (percentage < 0 || percentage > 100) {
+    throw new BadRequestException(`Action field "${field}" must be between 0 and 100`);
+  }
+  return percentage;
+};
+
+const asFreePercentage = (value: unknown, field: string, min: number, max: number): number => {
+  const percentage = asNumber(value, field);
+  if (percentage < min || percentage > max) {
+    throw new BadRequestException(`Action field "${field}" must be between ${min} and ${max}`);
+  }
+  return percentage;
+};
+
+const normalizeChromaKey = (
+  value: unknown,
+): { enabled: boolean; color: string; tolerance: number } | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  const body = asObject(value, 'chromaKey');
+  const enabled = body.enabled === undefined ? false : asBoolean(body.enabled, 'chromaKey.enabled');
+  const colorRaw = body.color === undefined ? '#00ff00' : asString(body.color, 'chromaKey.color');
+  const color = colorRaw.startsWith('#') ? colorRaw : `#${colorRaw}`;
+  if (!/^#[0-9a-fA-F]{6}$/.test(color)) {
+    throw new BadRequestException('Action field "chromaKey.color" must be a hex color like #00ff00');
+  }
+  const tolerance = body.tolerance === undefined ? 20 : asPercentage(body.tolerance, 'chromaKey.tolerance');
+  return { enabled, color: color.toLowerCase(), tolerance };
 };
 
 const normalizeDelay = (delay: unknown): number | undefined => {
@@ -125,17 +177,37 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
       return {
         imageUrl: asString(body.imageUrl, 'imageUrl'),
         title: body.title === undefined ? undefined : asString(body.title, 'title'),
+        opacity: body.opacity === undefined ? undefined : asOpacity(body.opacity, 'opacity'),
+        durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
+        timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
+        chromaKey: normalizeChromaKey(body.chromaKey),
+        leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -50, 150),
+        topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -50, 150),
+        widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 200),
+        heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 200),
       };
     case 'sendVideoToWindow':
-      if (!body.videoAssetId && !body.videoUrl) {
-        throw new BadRequestException('sendVideoToWindow requires videoAssetId or videoUrl');
+      {
+        const videoAssetId = asOptionalNonEmptyString(body.videoAssetId, 'videoAssetId');
+        const videoUrl = asOptionalNonEmptyString(body.videoUrl, 'videoUrl');
+        if (!videoAssetId && !videoUrl) {
+          throw new BadRequestException('sendVideoToWindow requires videoAssetId or videoUrl');
+        }
+        return {
+          videoAssetId,
+          videoUrl,
+          loop: body.loop === undefined ? undefined : asBoolean(body.loop, 'loop'),
+          muted: body.muted === undefined ? undefined : asBoolean(body.muted, 'muted'),
+          opacity: body.opacity === undefined ? undefined : asOpacity(body.opacity, 'opacity'),
+          durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
+          timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
+          chromaKey: normalizeChromaKey(body.chromaKey),
+          leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -50, 150),
+          topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -50, 150),
+          widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 200),
+          heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 200),
+        };
       }
-      return {
-        videoAssetId: body.videoAssetId === undefined ? undefined : asString(body.videoAssetId, 'videoAssetId'),
-        videoUrl: body.videoUrl === undefined ? undefined : asString(body.videoUrl, 'videoUrl'),
-        loop: body.loop === undefined ? undefined : asBoolean(body.loop, 'loop'),
-        muted: body.muted === undefined ? undefined : asBoolean(body.muted, 'muted'),
-      };
     case 'setWindowBackground':
       return {
         imageUrl: asString(body.imageUrl, 'imageUrl'),

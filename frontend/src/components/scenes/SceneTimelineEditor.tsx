@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Chip,
@@ -9,20 +9,50 @@ import {
 } from '@mui/material';
 import type { SceneActionDto } from '../../types/scenes';
 
-interface TimelineEntry {
+export interface TimelineEntry {
   actionId: string;
   type: string;
   label: string;
   trackKey: string;
   trackLabel: string;
+  sourceIndex: number;
+  layerOrder: number;
   startMs: number;
+  endMs: number;
   durationMs: number;
+}
+
+interface TimelineLane {
+  laneIndex: number;
+  entries: TimelineEntry[];
+}
+
+interface TimelineTrack {
+  trackKey: string;
+  trackLabel: string;
+  lanes: TimelineLane[];
 }
 
 interface SceneTimelineEditorProps {
   actions: SceneActionDto[];
   selectedActionId?: string | null;
   onSelectAction?: (actionId: string) => void;
+  onMoveActionInTime?: (actionId: string, nextStartMs: number) => void;
+  onChangeActionLayerOrder?: (actionId: string, nextLayerOrder: number) => void;
+  currentTimeMs?: number;
+  onSeekTimeMs?: (nextTimeMs: number) => void;
+}
+
+interface TimelineDragState {
+  actionId: string;
+  trackKey: string;
+  sourceLaneIndex: number;
+  trackLaneCount: number;
+  originStartMs: number;
+  startClientX: number;
+  startClientY: number;
+  previewStartMs: number;
+  previewLaneIndex: number;
 }
 
 const TRACK_ORDER = [
@@ -57,6 +87,8 @@ const ACTION_LABELS: Record<string, string> = {
   runScene: 'Run scene',
 };
 
+const SNAP_OPTIONS_MS = [100, 250, 500] as const;
+
 /**
  * Timeline-like visualization for scene actions, grouped in tracks with temporal offsets.
  */
@@ -64,12 +96,28 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
   actions,
   selectedActionId,
   onSelectAction,
+  onMoveActionInTime,
+  onChangeActionLayerOrder,
+  currentTimeMs,
+  onSeekTimeMs,
 }) => {
   const { entries, totalMs } = useMemo(() => buildTimeline(actions), [actions]);
+  const [dragState, setDragState] = useState<TimelineDragState | null>(null);
+  const [snapMs, setSnapMs] = useState<number>(250);
 
   const pxPerMs = 0.035;
+  const laneHeight = 34;
   const timelineWidth = Math.max(900, totalMs * pxPerMs + 40);
   const tickMs = chooseTickMs(totalMs);
+  const boundedCurrentTimeMs = Math.max(0, Math.min(totalMs, Number(currentTimeMs ?? 0)));
+
+  const seekFromPointer = (clientX: number, rect: DOMRect) => {
+    if (!onSeekTimeMs || rect.width <= 0) return;
+    const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+    const ratio = x / rect.width;
+    const nextTime = Math.round(totalMs * ratio);
+    onSeekTimeMs(nextTime);
+  };
 
   const tracks = useMemo(() => {
     const grouped = new Map<string, TimelineEntry[]>();
@@ -78,12 +126,73 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
       prev.push(entry);
       grouped.set(entry.trackKey, prev);
     }
-    return TRACK_ORDER.map((trackKey) => ({
-      trackKey,
-      trackLabel: grouped.get(trackKey)?.[0]?.trackLabel ?? labelForTrack(trackKey),
-      entries: grouped.get(trackKey) ?? [],
-    })).filter((track) => track.entries.length > 0);
+    return TRACK_ORDER.map((trackKey) => {
+      const trackEntries = (grouped.get(trackKey) ?? []).slice().sort((left, right) => {
+        if (left.layerOrder !== right.layerOrder) return right.layerOrder - left.layerOrder;
+        if (left.startMs !== right.startMs) return left.startMs - right.startMs;
+        if (left.endMs !== right.endMs) return left.endMs - right.endMs;
+        if (left.sourceIndex !== right.sourceIndex) return left.sourceIndex - right.sourceIndex;
+        return left.actionId.localeCompare(right.actionId);
+      });
+
+      const lanes: TimelineLane[] = trackEntries.map((entry, index) => ({
+        laneIndex: index,
+        entries: [entry],
+      }));
+
+      return {
+        trackKey,
+        trackLabel: grouped.get(trackKey)?.[0]?.trackLabel ?? labelForTrack(trackKey),
+        lanes,
+      };
+    }).filter((track) => track.lanes.length > 0);
   }, [entries]);
+
+  useEffect(() => {
+    if (!dragState) return;
+
+    const onMouseMove = (event: MouseEvent) => {
+      setDragState((current) => {
+        if (!current) return null;
+        const rawDeltaXMs = (event.clientX - current.startClientX) / pxPerMs;
+        const isFineAdjust = event.shiftKey;
+        const snappedDeltaXMs = isFineAdjust
+          ? Math.round(rawDeltaXMs)
+          : Math.round(rawDeltaXMs / snapMs) * snapMs;
+        const nextStartMs = Math.max(0, current.originStartMs + snappedDeltaXMs);
+        const laneDelta = Math.round((event.clientY - current.startClientY) / laneHeight);
+        const unclampedLaneIndex = current.sourceLaneIndex + laneDelta;
+        const maxLaneIndex = Math.max(0, current.trackLaneCount - 1);
+        const nextLaneIndex = Math.max(0, Math.min(maxLaneIndex, unclampedLaneIndex));
+        return {
+          ...current,
+          previewStartMs: nextStartMs,
+          previewLaneIndex: nextLaneIndex,
+        };
+      });
+    };
+
+    const onMouseUp = () => {
+      setDragState((current) => {
+        if (!current) return null;
+        onMoveActionInTime?.(current.actionId, current.previewStartMs);
+
+        if (current.previewLaneIndex !== current.sourceLaneIndex) {
+          const nextLayerOrder = 1000 - current.previewLaneIndex;
+          onChangeActionLayerOrder?.(current.actionId, nextLayerOrder);
+        }
+
+        return null;
+      });
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [dragState, laneHeight, onChangeActionLayerOrder, onMoveActionInTime, pxPerMs]);
 
   if (actions.length === 0) {
     return (
@@ -100,11 +209,27 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
     <Paper variant="outlined" sx={{ p: 1.5 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
         <Typography variant="subtitle2">Timeline</Typography>
-        <Chip
-          size="small"
-          label={`Duracion aprox: ${formatMs(totalMs)}`}
-          variant="outlined"
-        />
+        <Stack direction="row" spacing={0.75} alignItems="center">
+          <Typography variant="caption" color="text.secondary">
+            Snap
+          </Typography>
+          {SNAP_OPTIONS_MS.map((option) => (
+            <Chip
+              key={option}
+              size="small"
+              label={`${option}ms`}
+              clickable
+              variant={snapMs === option ? 'filled' : 'outlined'}
+              color={snapMs === option ? 'primary' : 'default'}
+              onClick={() => setSnapMs(option)}
+            />
+          ))}
+          <Chip
+            size="small"
+            label={`Duracion aprox: ${formatMs(totalMs)}`}
+            variant="outlined"
+          />
+        </Stack>
       </Stack>
 
       <Box sx={{ overflowX: 'auto', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
@@ -113,7 +238,14 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
             <Box sx={{ width: 210, pr: 1 }}>
               <Typography variant="caption" color="text.secondary">Pista</Typography>
             </Box>
-            <Box sx={{ position: 'relative', width: timelineWidth, height: 24 }}>
+            <Box
+              sx={{ position: 'relative', width: timelineWidth, height: 24, cursor: onSeekTimeMs ? 'pointer' : 'default' }}
+              onMouseDown={(event) => {
+                if (event.button !== 0) return;
+                const rect = event.currentTarget.getBoundingClientRect();
+                seekFromPointer(event.clientX, rect);
+              }}
+            >
               {renderTicks(totalMs, tickMs, pxPerMs).map((tick) => (
                 <Box
                   key={tick.ms}
@@ -129,12 +261,25 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                   </Typography>
                 </Box>
               ))}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: boundedCurrentTimeMs * pxPerMs,
+                  top: 0,
+                  bottom: 0,
+                  width: 2,
+                  bgcolor: 'error.main',
+                  opacity: 0.9,
+                  transform: 'translateX(-1px)',
+                  pointerEvents: 'none',
+                }}
+              />
             </Box>
           </Box>
 
           <Stack spacing={0.75}>
             {tracks.map((track) => (
-              <Box key={track.trackKey} sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box key={track.trackKey} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                 <Box sx={{ width: 210, pr: 1 }}>
                   <Typography variant="caption" color="text.secondary">
                     {track.trackLabel}
@@ -145,57 +290,163 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                   sx={{
                     position: 'relative',
                     width: timelineWidth,
-                    height: 34,
+                    minHeight: Math.max(laneHeight, track.lanes.length * laneHeight + 10),
                     borderRadius: 1,
                     bgcolor: 'action.hover',
-                    overflow: 'hidden',
+                    overflow: 'visible',
+                    cursor: onSeekTimeMs ? 'pointer' : 'default',
+                  }}
+                  onMouseDown={(event) => {
+                    if (event.button !== 0) return;
+                    if (dragState) return;
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    seekFromPointer(event.clientX, rect);
                   }}
                 >
-                  {track.entries.map((entry) => {
-                    const left = entry.startMs * pxPerMs;
-                    const width = Math.max(28, entry.durationMs * pxPerMs);
-                    const isSelected = selectedActionId === entry.actionId;
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      left: boundedCurrentTimeMs * pxPerMs,
+                      top: 0,
+                      bottom: 0,
+                      width: 2,
+                      bgcolor: 'error.main',
+                      opacity: 0.85,
+                      transform: 'translateX(-1px)',
+                      zIndex: 19,
+                      pointerEvents: 'none',
+                    }}
+                  />
 
-                    return (
-                      <Tooltip
-                        key={entry.actionId}
-                        title={`${entry.label} | ${formatMs(entry.startMs)} - ${formatMs(entry.startMs + entry.durationMs)}`}
-                      >
-                        <Box
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => onSelectAction?.(entry.actionId)}
-                          onKeyDown={(ev) => {
-                            if (ev.key === 'Enter' || ev.key === ' ') {
-                              ev.preventDefault();
-                              onSelectAction?.(entry.actionId);
-                            }
-                          }}
-                          sx={{
-                            position: 'absolute',
-                            left,
-                            top: 4,
-                            width,
-                            height: 26,
-                            borderRadius: 1,
-                            px: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            bgcolor: colorForTrack(entry.trackKey),
-                            color: '#fff',
-                            border: isSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.28)',
-                            boxShadow: isSelected ? '0 0 0 2px rgba(0,0,0,0.35)' : 'none',
-                            overflow: 'hidden',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <Typography variant="caption" noWrap sx={{ color: 'inherit' }}>
-                            {entry.label}
-                          </Typography>
-                        </Box>
-                      </Tooltip>
-                    );
-                  })}
+                  {dragState && dragState.trackKey === track.trackKey ? (
+                    <>
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: dragState.previewStartMs * pxPerMs,
+                          top: 0,
+                          bottom: 0,
+                          width: 2,
+                          bgcolor: 'warning.main',
+                          opacity: 0.75,
+                          zIndex: 20,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: 0,
+                          right: 0,
+                          top: dragState.previewLaneIndex * laneHeight,
+                          height: laneHeight,
+                          bgcolor: 'warning.main',
+                          opacity: 0.12,
+                          borderTop: '1px solid',
+                          borderBottom: '1px solid',
+                          borderColor: 'warning.main',
+                          zIndex: 2,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      <Chip
+                        size="small"
+                        label={`${formatMs(dragState.previewStartMs)} | L${dragState.previewLaneIndex + 1} | ${eventHintLabel(snapMs)}`}
+                        sx={{
+                          position: 'absolute',
+                          left: Math.max(0, dragState.previewStartMs * pxPerMs - 40),
+                          top: -24,
+                          zIndex: 21,
+                          bgcolor: 'warning.main',
+                          color: '#1a1a1a',
+                          fontWeight: 700,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    </>
+                  ) : null}
+
+                  {track.lanes.map((lane) => (
+                    <Box
+                      key={`${track.trackKey}-lane-${lane.laneIndex}`}
+                      sx={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        top: lane.laneIndex * laneHeight,
+                        height: laneHeight,
+                        borderTop: lane.laneIndex > 0 ? '1px dashed rgba(0,0,0,0.08)' : 'none',
+                      }}
+                    >
+                      {lane.entries.map((entry) => {
+                        const isDraggingThis = dragState?.actionId === entry.actionId && dragState.trackKey === track.trackKey;
+                        const leftMs = isDraggingThis ? dragState.previewStartMs : entry.startMs;
+                        const laneDelta = isDraggingThis ? dragState.previewLaneIndex - lane.laneIndex : 0;
+                        const left = leftMs * pxPerMs;
+                        const width = Math.max(28, entry.durationMs * pxPerMs);
+                        const isSelected = selectedActionId === entry.actionId;
+
+                        return (
+                          <Tooltip
+                            key={entry.actionId}
+                            title={`${entry.label} | ${formatMs(entry.startMs)} - ${formatMs(entry.endMs)}`}
+                          >
+                            <Box
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => onSelectAction?.(entry.actionId)}
+                              onMouseDown={(event) => {
+                                if (event.button !== 0) return;
+                                event.preventDefault();
+                                event.stopPropagation();
+                                onSelectAction?.(entry.actionId);
+                                setDragState({
+                                  actionId: entry.actionId,
+                                  trackKey: entry.trackKey,
+                                  sourceLaneIndex: lane.laneIndex,
+                                  trackLaneCount: track.lanes.length,
+                                  originStartMs: entry.startMs,
+                                  startClientX: event.clientX,
+                                  startClientY: event.clientY,
+                                  previewStartMs: entry.startMs,
+                                  previewLaneIndex: lane.laneIndex,
+                                });
+                              }}
+                              onKeyDown={(ev) => {
+                                if (ev.key === 'Enter' || ev.key === ' ') {
+                                  ev.preventDefault();
+                                  onSelectAction?.(entry.actionId);
+                                }
+                              }}
+                              sx={{
+                                position: 'absolute',
+                                left,
+                                top: 4 + laneDelta * laneHeight,
+                                width,
+                                height: 26,
+                                borderRadius: 1,
+                                px: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                bgcolor: colorForTrack(entry.trackKey),
+                                color: '#fff',
+                                border: isSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.28)',
+                                boxShadow: isSelected ? '0 0 0 2px rgba(0,0,0,0.35)' : 'none',
+                                overflow: 'hidden',
+                                cursor: 'grab',
+                                userSelect: 'none',
+                                zIndex: isDraggingThis ? 10 : 1,
+                              }}
+                            >
+                              <Typography variant="caption" noWrap sx={{ color: 'inherit' }}>
+                                {entry.label}
+                              </Typography>
+                            </Box>
+                          </Tooltip>
+                        );
+                      })}
+                    </Box>
+                  ))}
                 </Box>
               </Box>
             ))}
@@ -206,16 +457,26 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
   );
 };
 
-function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEntry[]; totalMs: number } {
+/**
+ * Builds temporal intervals for actions using the same offset rules as the scene runner.
+ */
+export function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEntry[]; totalMs: number } {
   let cursorMs = 0;
+  let maxEndMs = 0;
   const entries: TimelineEntry[] = [];
 
-  for (const action of actions) {
+  for (let index = 0; index < actions.length; index += 1) {
+    const action = actions[index];
     const preDelayMs = clampMsNumber(action.delay, 0);
     cursorMs += preDelayMs;
 
     const durationMs = inferActionDurationMs(action);
     const track = resolveTrack(action);
+    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const explicitStartMs = Number(payload.timelineStartMs);
+    const hasExplicitStart = Number.isFinite(explicitStartMs) && explicitStartMs >= 0;
+    const startMs = hasExplicitStart ? Math.round(explicitStartMs) : cursorMs;
+    const endMs = startMs + durationMs;
 
     entries.push({
       actionId: action.id,
@@ -223,14 +484,24 @@ function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEntry[]; t
       label: ACTION_LABELS[action.type] ?? action.type,
       trackKey: track.key,
       trackLabel: track.label,
-      startMs: cursorMs,
+      sourceIndex: index,
+      layerOrder: readLayerOrder(payload, index),
+      startMs,
+      endMs,
       durationMs,
     });
 
-    cursorMs += durationMs;
+    cursorMs = hasExplicitStart ? cursorMs : endMs;
+    maxEndMs = Math.max(maxEndMs, endMs);
   }
 
-  return { entries, totalMs: Math.max(cursorMs, 1000) };
+  return { entries, totalMs: Math.max(maxEndMs, cursorMs, 1000) };
+}
+
+function readLayerOrder(payload: Record<string, unknown>, fallback: number): number {
+  const n = Number(payload.layerOrder);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.round(n);
 }
 
 function inferActionDurationMs(action: SceneActionDto): number {
@@ -353,6 +624,10 @@ function formatMs(value: number): string {
   const mins = Math.floor(seconds / 60);
   const remSec = seconds % 60;
   return `${String(mins).padStart(2, '0')}:${String(remSec).padStart(2, '0')}`;
+}
+
+function eventHintLabel(snapMs: number): string {
+  return `snap ${snapMs}ms (Shift=fino)`;
 }
 
 export default SceneTimelineEditor;

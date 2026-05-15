@@ -115,12 +115,8 @@ export const ScenesList: React.FC = () => {
     setExecuteError(null);
     try {
       const result = await executeScene(scene.id);
-      // Dispatch commands to the runtime bridge (ShortcutsContext listens for this event)
-      result.commands.forEach((cmd) => {
-        window.dispatchEvent(
-          new CustomEvent('scene:shortcut-command', { detail: cmd }),
-        );
-      });
+      // Dispatch execution plan to runtime bridge for timed orchestration.
+      window.dispatchEvent(new CustomEvent('scene:runtime-execute', { detail: result }));
     } catch (err: any) {
       setExecuteError(err?.response?.data?.message ?? err?.message ?? 'Error al ejecutar.');
     } finally {

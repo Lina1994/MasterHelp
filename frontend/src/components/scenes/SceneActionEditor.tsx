@@ -39,7 +39,12 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
 
 const ACTION_TYPES = Object.keys(ACTION_TYPE_LABELS);
 
-const WINDOW_TARGET_KINDS = ['main', 'projection', 'skyline', 'custom', 'instance'] as const;
+const WINDOW_TARGET_KINDS = ['main', 'projection', 'skyline'] as const;
+const WINDOW_TARGET_LABELS: Record<(typeof WINDOW_TARGET_KINDS)[number], string> = {
+  main: 'Principal',
+  projection: 'Mapas',
+  skyline: 'Skyline',
+};
 
 interface Props {
   /** The action being edited */
@@ -56,6 +61,10 @@ interface Props {
   onRequestUploadVideo?: () => void;
   /** Highlights the action row when selected from timeline. */
   highlighted?: boolean;
+  /** Starts color picking mode for chroma on the selected layer in preview. */
+  onStartChromaColorPick?: () => void;
+  /** Indicates chroma color picking mode is active. */
+  isChromaColorPicking?: boolean;
 }
 
 /**
@@ -69,6 +78,8 @@ const SceneActionEditor: React.FC<Props> = ({
   sceneVideoAssets,
   onRequestUploadVideo,
   highlighted,
+  onStartChromaColorPick,
+  isChromaColorPicking,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: action.id });
@@ -92,8 +103,8 @@ const SceneActionEditor: React.FC<Props> = ({
     onChange({ ...action, delay: isNaN(ms) ? 0 : ms });
   };
 
-  const setTargetKind = (kind: string) => {
-    onChange({ ...action, targetWindow: { ...(action.targetWindow ?? { kind: 'main' }), kind: kind as any } });
+  const setTargetKind = (kind: (typeof WINDOW_TARGET_KINDS)[number]) => {
+    onChange({ ...action, targetWindow: { kind } });
   };
 
   const p = action.payload;
@@ -171,10 +182,10 @@ const SceneActionEditor: React.FC<Props> = ({
                 <Select
                   value={action.targetWindow?.kind ?? 'main'}
                   label="Ventana destino"
-                  onChange={(e) => setTargetKind(e.target.value)}
+                  onChange={(e) => setTargetKind(e.target.value as (typeof WINDOW_TARGET_KINDS)[number])}
                 >
                   {WINDOW_TARGET_KINDS.map((k) => (
-                    <MenuItem key={k} value={k}>{k}</MenuItem>
+                    <MenuItem key={k} value={k}>{WINDOW_TARGET_LABELS[k]}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -190,6 +201,8 @@ const SceneActionEditor: React.FC<Props> = ({
             setPayload={setPayload}
             sceneVideoAssets={sceneVideoAssets}
             onRequestUploadVideo={onRequestUploadVideo}
+            onStartChromaColorPick={onStartChromaColorPick}
+            isChromaColorPicking={isChromaColorPicking}
           />
         </Box>
 
@@ -212,6 +225,8 @@ interface PayloadFieldsProps {
   setPayload: (key: string, value: unknown) => void;
   sceneVideoAssets?: SceneVideoAsset[];
   onRequestUploadVideo?: () => void;
+  onStartChromaColorPick?: () => void;
+  isChromaColorPicking?: boolean;
 }
 
 const PayloadFields: React.FC<PayloadFieldsProps> = ({
@@ -220,10 +235,66 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
   setPayload,
   sceneVideoAssets,
   onRequestUploadVideo,
+  onStartChromaColorPick,
+  isChromaColorPicking,
 }) => {
   const str = (key: string) => String(payload[key] ?? '');
-  const num = (key: string, fallback = 0) => Number(payload[key] ?? fallback);
+  const num = (key: string, fallback = 0) => {
+    const direct = payload[key];
+    if (direct !== undefined && direct !== null && Number.isFinite(Number(direct))) {
+      return Number(direct);
+    }
+    if (key === 'leftPct') {
+      const legacy = payload.left ?? payload.xPct ?? payload.x;
+      if (legacy !== undefined && legacy !== null && Number.isFinite(Number(legacy))) {
+        const n = Number(legacy);
+        return n >= 0 && n <= 1 ? n * 100 : n;
+      }
+    }
+    if (key === 'topPct') {
+      const legacy = payload.top ?? payload.yPct ?? payload.y;
+      if (legacy !== undefined && legacy !== null && Number.isFinite(Number(legacy))) {
+        const n = Number(legacy);
+        return n >= 0 && n <= 1 ? n * 100 : n;
+      }
+    }
+    if (key === 'widthPct') {
+      const legacy = payload.width;
+      if (legacy !== undefined && legacy !== null && Number.isFinite(Number(legacy))) {
+        const n = Number(legacy);
+        return n > 0 && n <= 1 ? n * 100 : n;
+      }
+    }
+    if (key === 'heightPct') {
+      const legacy = payload.height;
+      if (legacy !== undefined && legacy !== null && Number.isFinite(Number(legacy))) {
+        const n = Number(legacy);
+        return n > 0 && n <= 1 ? n * 100 : n;
+      }
+    }
+    return fallback;
+  };
   const bool = (key: string) => Boolean(payload[key] ?? false);
+  const chroma = (() => {
+    const raw = payload.chromaKey ?? payload.chroma;
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      return { enabled: false, color: '#00ff00', tolerance: 20 };
+    }
+    const value = raw as Record<string, unknown>;
+    return {
+      enabled: Boolean(value.enabled),
+      color: typeof value.color === 'string' && value.color.trim() ? value.color : '#00ff00',
+      tolerance: Number.isFinite(Number(value.tolerance)) ? Number(value.tolerance) : 20,
+    };
+  })();
+
+  const setChroma = (patch: Partial<{ enabled: boolean; color: string; tolerance: number }>) => {
+    setPayload('chromaKey', {
+      enabled: patch.enabled ?? chroma.enabled,
+      color: patch.color ?? chroma.color,
+      tolerance: patch.tolerance ?? chroma.tolerance,
+    });
+  };
 
   switch (type) {
     case 'playMusic':
@@ -284,20 +355,79 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
         <Stack spacing={1}>
           <TextField label="URL de imagen" size="small" value={str('imageUrl')} onChange={(e) => setPayload('imageUrl', e.target.value)} />
           <TextField label="Título (opcional)" size="small" value={str('title')} onChange={(e) => setPayload('title', e.target.value)} />
+          <TextField
+            label="Opacidad (0-1)"
+            type="number"
+            size="small"
+            sx={{ width: 170 }}
+            value={num('opacity', 1)}
+            inputProps={{ min: 0, max: 1, step: 0.05 }}
+            onChange={(e) => setPayload('opacity', Number(e.target.value))}
+          />
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            <TextField label="X%" type="number" size="small" sx={{ width: 95 }} value={num('leftPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
+            <TextField label="Y%" type="number" size="small" sx={{ width: 95 }} value={num('topPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />
+            <TextField label="Ancho%" type="number" size="small" sx={{ width: 110 }} value={num('widthPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('widthPct', Number(e.target.value))} />
+            <TextField label="Alto%" type="number" size="small" sx={{ width: 100 }} value={num('heightPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('heightPct', Number(e.target.value))} />
+          </Stack>
+          <Divider />
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Croma</InputLabel>
+              <Select
+                label="Croma"
+                value={chroma.enabled ? 'si' : 'no'}
+                onChange={(e) => setChroma({ enabled: e.target.value === 'si' })}
+              >
+                <MenuItem value="si">Activo</MenuItem>
+                <MenuItem value="no">Inactivo</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Color croma"
+              size="small"
+              sx={{ width: 140 }}
+              value={chroma.color}
+              onChange={(e) => setChroma({ color: e.target.value })}
+            />
+            <TextField
+              label="Tolerancia"
+              type="number"
+              size="small"
+              sx={{ width: 120 }}
+              value={chroma.tolerance}
+              inputProps={{ min: 0, max: 100, step: 1 }}
+              onChange={(e) => setChroma({ tolerance: Number(e.target.value) })}
+            />
+            {onStartChromaColorPick ? (
+              <Button variant={isChromaColorPicking ? 'contained' : 'outlined'} size="small" onClick={onStartChromaColorPick}>
+                {isChromaColorPicking ? 'Selecciona color en preview' : 'Tomar color exacto'}
+              </Button>
+            ) : null}
+          </Stack>
         </Stack>
       );
 
     case 'sendVideoToWindow':
+      {
+        const rawVideoAssetId = str('videoAssetId');
+        const availableVideoAssetIds = new Set((sceneVideoAssets ?? []).map((asset) => asset.id));
+        const selectedVideoAssetId = availableVideoAssetIds.has(rawVideoAssetId) ? rawVideoAssetId : '';
       return (
         <Stack spacing={1}>
           <FormControl size="small" sx={{ minWidth: 260 }}>
             <InputLabel>Vídeo subido</InputLabel>
             <Select
-              value={str('videoAssetId')}
+              value={selectedVideoAssetId}
               label="Vídeo subido"
               onChange={(e) => setPayload('videoAssetId', e.target.value)}
             >
               <MenuItem value="">(ninguno)</MenuItem>
+              {rawVideoAssetId && !availableVideoAssetIds.has(rawVideoAssetId) ? (
+                <MenuItem value={rawVideoAssetId}>
+                  Vídeo no disponible ({rawVideoAssetId.slice(0, 8)}...)
+                </MenuItem>
+              ) : null}
               {(sceneVideoAssets ?? []).map((asset) => (
                 <MenuItem key={asset.id} value={asset.id}>
                   {asset.name} ({Math.round(asset.size / (1024 * 1024))}MB)
@@ -305,15 +435,13 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
               ))}
             </Select>
           </FormControl>
-          <TextField label="ID de vídeo subido (videoAssetId)" size="small" value={str('videoAssetId')} onChange={(e) => setPayload('videoAssetId', e.target.value)} />
-          <TextField label="URL de vídeo" size="small" value={str('videoUrl')} onChange={(e) => setPayload('videoUrl', e.target.value)} />
           {onRequestUploadVideo ? (
             <Button variant="outlined" size="small" onClick={onRequestUploadVideo}>
               Subir nuevo vídeo
             </Button>
           ) : null}
           <Typography variant="caption" color="text.secondary">
-            Puedes usar videoAssetId (archivo subido) o URL directa.
+            Selecciona un vídeo subido y el backend resolverá la URL firmada al ejecutar.
           </Typography>
           <Stack direction="row" spacing={1}>
             <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -330,9 +458,60 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
                 <MenuItem value="no">No</MenuItem>
               </Select>
             </FormControl>
+            <TextField
+              label="Opacidad (0-1)"
+              type="number"
+              size="small"
+              sx={{ width: 170 }}
+              value={num('opacity', 1)}
+              inputProps={{ min: 0, max: 1, step: 0.05 }}
+              onChange={(e) => setPayload('opacity', Number(e.target.value))}
+            />
+          </Stack>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            <TextField label="X%" type="number" size="small" sx={{ width: 95 }} value={num('leftPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
+            <TextField label="Y%" type="number" size="small" sx={{ width: 95 }} value={num('topPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />
+            <TextField label="Ancho%" type="number" size="small" sx={{ width: 110 }} value={num('widthPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('widthPct', Number(e.target.value))} />
+            <TextField label="Alto%" type="number" size="small" sx={{ width: 100 }} value={num('heightPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('heightPct', Number(e.target.value))} />
+          </Stack>
+          <Divider />
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Croma</InputLabel>
+              <Select
+                label="Croma"
+                value={chroma.enabled ? 'si' : 'no'}
+                onChange={(e) => setChroma({ enabled: e.target.value === 'si' })}
+              >
+                <MenuItem value="si">Activo</MenuItem>
+                <MenuItem value="no">Inactivo</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Color croma"
+              size="small"
+              sx={{ width: 140 }}
+              value={chroma.color}
+              onChange={(e) => setChroma({ color: e.target.value })}
+            />
+            <TextField
+              label="Tolerancia"
+              type="number"
+              size="small"
+              sx={{ width: 120 }}
+              value={chroma.tolerance}
+              inputProps={{ min: 0, max: 100, step: 1 }}
+              onChange={(e) => setChroma({ tolerance: Number(e.target.value) })}
+            />
+            {onStartChromaColorPick ? (
+              <Button variant={isChromaColorPicking ? 'contained' : 'outlined'} size="small" onClick={onStartChromaColorPick}>
+                {isChromaColorPicking ? 'Selecciona color en preview' : 'Tomar color exacto'}
+              </Button>
+            ) : null}
           </Stack>
         </Stack>
       );
+      }
 
     case 'setWindowBackground':
       return (

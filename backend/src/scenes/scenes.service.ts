@@ -1,5 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import {
+  SCENE_SCHEDULE_LEAD_MS,
+  SCENE_SCHEDULE_VERSION,
   SCENE_SCHEMA_VERSION,
   type SceneExecutionStatus,
   type SceneScope,
@@ -17,8 +19,17 @@ export interface SceneExecutionResponse {
   executionId: string;
   status: SceneExecutionStatus;
   scene: Scene;
+  scheduleVersion: number;
+  serverNowMs: number;
+  startAtMs: number;
   commands: SceneExecution['emittedCommands'];
   summary: SceneExecution['summary'];
+}
+
+export interface SceneClockSyncResponse {
+  serverNowMs: number;
+  scheduleVersion: number;
+  leadMs: number;
 }
 
 /**
@@ -161,11 +172,19 @@ export class ScenesService {
         triggerShortcutId: dto?.triggerShortcutId ?? null,
       });
 
+      const serverNowMs = Date.now();
+      const startAtMs = serverNowMs + SCENE_SCHEDULE_LEAD_MS;
+      const scheduledCommands = result.commands.map((command, index) => ({
+        ...command,
+        sequence: index,
+        executeAtMs: startAtMs + command.issuedAtOffsetMs,
+      }));
+
       execution.status = 'completed';
       execution.finishedAt = new Date();
       execution.currentActionIndex = Math.max(0, result.summary.completedActions - 1);
       execution.totalActions = result.summary.totalActions;
-      execution.emittedCommands = result.commands;
+      execution.emittedCommands = scheduledCommands;
       execution.summary = result.summary;
       await this.scenesRepository.saveExecution(execution);
 
@@ -173,7 +192,10 @@ export class ScenesService {
         executionId: execution.id,
         status: execution.status,
         scene,
-        commands: result.commands,
+        scheduleVersion: SCENE_SCHEDULE_VERSION,
+        serverNowMs,
+        startAtMs,
+        commands: scheduledCommands,
         summary: result.summary,
       };
     } catch (error) {
@@ -183,6 +205,17 @@ export class ScenesService {
       await this.scenesRepository.saveExecution(execution);
       throw error;
     }
+  }
+
+  /**
+   * Returns a lightweight server clock sample for client-side calibration.
+   */
+  getClockSync(): SceneClockSyncResponse {
+    return {
+      serverNowMs: Date.now(),
+      scheduleVersion: SCENE_SCHEDULE_VERSION,
+      leadMs: SCENE_SCHEDULE_LEAD_MS,
+    };
   }
 
   /**

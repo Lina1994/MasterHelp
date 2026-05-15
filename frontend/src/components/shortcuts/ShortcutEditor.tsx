@@ -38,6 +38,7 @@ import {
   SHORTCUT_ACTION_KIND_OPTIONS_GROUPED,
   SHORTCUT_SCHEMA_VERSION,
   SHORTCUT_WINDOW_TARGET_KIND_OPTIONS,
+  type ActiveStateRule,
   type ShortcutActionDefinition,
   type ShortcutActionKind,
   type ShortcutWindowTargetKind,
@@ -837,7 +838,7 @@ const ShortcutEditor = ({
                                       value={action.activeStateRule ?? 'never'}
                                       onChange={(event) => updateAction(index, {
                                         ...action,
-                                        activeStateRule: event.target.value as string || null,
+                                        activeStateRule: (event.target.value as ActiveStateRule) || null,
                                       })}
                                     >
                                       <MenuItem value="never">Nunca</MenuItem>

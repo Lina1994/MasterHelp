@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import ThemeContext from '../ThemeContext';
@@ -9,6 +9,7 @@ import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext'
 import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
 import { useSfxPlayer, type SfxLoopMode } from '../components/player/SfxPlayerContext';
 import { dispatchSceneWindowCommand, dispatchWindowShortcutAction } from './ipcActions';
+import { useSceneClockSync } from '../hooks/useSceneClockSync';
 import { getAuthHeaders } from '../utils/auth';
 import type { ShortcutActionDefinition } from '../types/actionTypes';
 import type { ExecuteSceneResponse, SceneRuntimeCommand } from '../types/scenes';
@@ -42,6 +43,12 @@ const ShortcutRuntimeBridge = () => {
   const { setMode } = useContext(ThemeContext);
   const { play, playQueue, stop } = useGlobalPlayer();
   const { playSfx, stopAllSfx } = useSfxPlayer();
+  const { clockOffsetMs: sceneClockOffsetMs } = useSceneClockSync({ enabled: true, pollMs: 60000 });
+  const sceneClockOffsetRef = useRef<number>(0);
+
+  useEffect(() => {
+    sceneClockOffsetRef.current = sceneClockOffsetMs;
+  }, [sceneClockOffsetMs]);
 
   useEffect(() => {
     try {
@@ -240,15 +247,45 @@ const ShortcutRuntimeBridge = () => {
     const handleSceneRuntimeExecute = async (event: Event) => {
       const custom = event as CustomEvent<ExecuteSceneResponse>;
       const execution = custom.detail;
-      const commands = Array.isArray(execution?.commands) ? [...execution.commands] : [];
-      commands.sort((left, right) => left.issuedAtOffsetMs - right.issuedAtOffsetMs);
+      const commands = Array.isArray(execution?.commands)
+        ? execution.commands.map((command) => ({
+          ...command,
+          executionId: execution.executionId,
+          scheduleVersion: execution.scheduleVersion,
+          serverNowMs: execution.serverNowMs,
+          startAtMs: execution.startAtMs,
+        }))
+        : [];
+      commands.sort((left, right) => {
+        if (Number.isFinite(left.sequence) && Number.isFinite(right.sequence)) {
+          return Number(left.sequence) - Number(right.sequence);
+        }
+        return left.issuedAtOffsetMs - right.issuedAtOffsetMs;
+      });
+
+      const localReceivedAtMs = Date.now();
+      const serverNowMs = Number(execution?.serverNowMs);
+      const clockOffsetMs = Number.isFinite(serverNowMs)
+        ? serverNowMs - localReceivedAtMs
+        : sceneClockOffsetRef.current;
 
       let previousOffset = 0;
       for (const command of commands) {
-        const waitMs = Math.max(0, command.issuedAtOffsetMs - previousOffset);
-        previousOffset = command.issuedAtOffsetMs;
-        if (waitMs > 0) {
-          await wait(waitMs);
+        const executeAtMs = Number(command.executeAtMs);
+        let waitMs = 0;
+        const isWindowBoundCommand = command.kind.startsWith('window.') || command.kind === 'narrative.setText';
+
+        if (!isWindowBoundCommand) {
+          if (Number.isFinite(executeAtMs)) {
+            waitMs = Math.max(0, executeAtMs - (Date.now() + clockOffsetMs));
+          } else {
+            waitMs = Math.max(0, command.issuedAtOffsetMs - previousOffset);
+            previousOffset = command.issuedAtOffsetMs;
+          }
+
+          if (waitMs > 0) {
+            await wait(waitMs);
+          }
         }
 
         if (command.kind === 'audio.playMusic') {
@@ -299,20 +336,12 @@ const ShortcutRuntimeBridge = () => {
         }
 
         if (command.kind === 'narrative.setText') {
-          await dispatchWindowShortcutAction({
-            kind: 'window.showText',
-            payload: command.payload,
-            targetWindow: command.targetWindow as any,
-          } as ShortcutActionDefinition, activeCampaign?.id);
+          await dispatchSceneWindowCommand(command as SceneRuntimeCommand, activeCampaign?.id);
           continue;
         }
 
         if (command.kind === 'window.applyFilter' || command.kind === 'window.clearFilter') {
-          await dispatchWindowShortcutAction({
-            kind: command.kind === 'window.applyFilter' ? 'window.applyFilter' : 'window.clearFilter',
-            payload: command.payload,
-            targetWindow: command.targetWindow as any,
-          } as ShortcutActionDefinition, activeCampaign?.id);
+          await dispatchSceneWindowCommand(command as SceneRuntimeCommand, activeCampaign?.id);
           continue;
         }
 
