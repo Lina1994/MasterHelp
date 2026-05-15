@@ -19,6 +19,7 @@ type RunnerDeps = {
     options?: SfxPlayOptions,
   ) => Promise<string>;
   buildEffectUrl: (effectId: string, campaignId?: string | null) => string;
+  onSfxEnded?: (effectId: string, instanceId: string) => void; // called when SFX ends
 };
 
 export type ShortcutActionExecutionResult = {
@@ -66,6 +67,7 @@ const runAudioAction = async (action: ShortcutActionDefinition, deps: RunnerDeps
         volume: clamp01(Number(payload.volume ?? 1)),
         loopMode: normalizeLoopMode(payload.loopMode),
         uniquePerEffect: Boolean(payload.uniquePerEffect ?? true),
+        onEnded: (instanceId) => deps.onSfxEnded?.(effectId, instanceId), // call when SFX ends
       },
     );
     return;

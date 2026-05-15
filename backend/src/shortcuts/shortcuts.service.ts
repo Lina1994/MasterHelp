@@ -5,13 +5,17 @@ import { SHORTCUT_SCHEMA_VERSION, type ShortcutActionDefinition, type ShortcutSc
 import { Shortcut } from './entities/shortcut.entity';
 import { ShortcutsRepository } from './shortcuts.repository';
 import { normalizeHotkey, validateAndNormalizeShortcutActions } from './validators/shortcut-action.validator';
+import { SfxMetadataService } from './services/sfx-metadata.service';
 
 /**
  * Application service for user-defined shortcuts.
  */
 @Injectable()
 export class ShortcutsService {
-  constructor(private readonly shortcutsRepository: ShortcutsRepository) {}
+  constructor(
+    private readonly shortcutsRepository: ShortcutsRepository,
+    private readonly sfxMetadataService: SfxMetadataService,
+  ) {}
 
   private withLegacyActionConfig(shortcut: Shortcut): Shortcut {
     shortcut.actions = (shortcut.actions || []).map((action) => {
@@ -200,6 +204,7 @@ export class ShortcutsService {
   async executeForOwner(id: string, ownerId: number): Promise<Shortcut> {
     const shortcut = await this.findOneForOwner(id, ownerId);
     const now = new Date();
+    
     if (shortcut.mode === 'toggle') {
       shortcut.isActive = !shortcut.isActive;
       shortcut.activeUntil = null;
@@ -207,15 +212,69 @@ export class ShortcutsService {
       const duration = shortcut.temporaryDurationMs ?? 5000;
       shortcut.isActive = true;
       shortcut.activeUntil = new Date(now.getTime() + duration);
+    } else if (shortcut.mode === 'button') {
+      // Find all SFX actions with 'temporary' activeStateRule
+      const sfxActions = shortcut.actions.filter((action) => {
+        const rule = (action as any)?.activeStateRule;
+        return action.kind === 'playSoundEffect' && rule === 'temporary';
+      });
+
+      if (sfxActions.length > 0) {
+        // Calculate total duration as sum of:
+        // 1. SFX durations (with playbackRate adjustment)
+        // 2. delays between actions (delayMs)
+        // 3. delay.wait action durations
+        let totalDurationMs = 0;
+
+        for (const action of shortcut.actions) {
+          // Add action delay (delayMs) if present
+          if (action.delayMs && action.delayMs > 0) {
+            totalDurationMs += action.delayMs;
+          }
+
+          // For SFX actions, get actual duration
+          if (action.kind === 'playSoundEffect') {
+            const payload = (action as any)?.payload || {};
+            const effectId = payload.effectId as string;
+            if (effectId) {
+              const sfxDuration = await this.sfxMetadataService.getDurationMs(effectId);
+              // Adjust for playbackRate if present (not currently supported in payload, but ready)
+              const playbackRate = payload.playbackRate as number | undefined;
+              const adjustedDuration = playbackRate ? sfxDuration / playbackRate : sfxDuration;
+              totalDurationMs += adjustedDuration;
+            }
+          }
+
+          // For delay.wait actions, add duration
+          if (action.kind === 'delay.wait') {
+            const payload = (action as any)?.payload || {};
+            const delayDurationMs = payload.durationMs as number | undefined;
+            if (delayDurationMs && delayDurationMs > 0) {
+              totalDurationMs += delayDurationMs;
+            }
+          }
+        }
+
+        // Ensure minimum duration of 500ms for safety
+        totalDurationMs = Math.max(500, Math.round(totalDurationMs));
+        
+        shortcut.isActive = true;
+        shortcut.activeUntil = new Date(now.getTime() + totalDurationMs);
+      } else {
+        shortcut.isActive = false;
+        shortcut.activeUntil = null;
+      }
     }
+    
     const saved = await this.shortcutsRepository.save(shortcut);
     const normalized = await this.normalizeTemporaryState(saved);
     return this.withLegacyActionConfig(normalized);
   }
 
   private async normalizeTemporaryState(shortcut: Shortcut): Promise<Shortcut> {
+    // Reset active state for both 'temporary' and 'button' modes if timeout expired
     if (
-      shortcut.mode === 'temporary'
+      (shortcut.mode === 'temporary' || shortcut.mode === 'button')
       && shortcut.isActive
       && shortcut.activeUntil
       && shortcut.activeUntil.getTime() <= Date.now()

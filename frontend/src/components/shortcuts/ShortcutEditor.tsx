@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Autocomplete,
   Alert,
@@ -17,6 +17,7 @@ import {
   ListSubheader,
   MenuItem,
   Paper,
+  Popover,
   Select,
   Stack,
   TextField,
@@ -51,6 +52,9 @@ import { listSfxPresets, type SoundPresetLite } from '../../api/soundeffects';
 import { listCharacters, type CharacterPayload } from '../../api/characters';
 import { listCampaignMonsters, type CampaignMonsterListItem } from '../../api/bestiary/bestiaryApi';
 import { uploadShortcutIcon } from '../../api/shortcuts';
+import EmojiPickerDialog from './EmojiPickerDialog';
+import { recordRecentEmoji } from './emojiData';
+import ShortcutThumbnailPreview from './ShortcutThumbnailPreview';
 
 type ShortcutEditorProps = {
   open: boolean;
@@ -69,12 +73,6 @@ const EMPTY_ACTION: ShortcutActionDefinition = {
   kind: 'toggleState',
   payload: {},
 };
-
-const EMOJI_ICON_OPTIONS: string[] = [
-  '⚔️', '🛡️', '🎲', '🧙', '🐉', '🔥', '❄️', '⚡',
-  '🌙', '☀️', '🕯️', '📜', '🗺️', '🏹', '🧪', '🔮',
-  '💀', '👁️', '🎵', '🎭', '⏱️', '🚪', '🧱', '🛠️',
-];
 
 const formatHotkeyLabel = (hotkey: string): string => {
   if (!hotkey) return '';
@@ -223,8 +221,13 @@ const ShortcutEditor = ({
   const [availableNpcs, setAvailableNpcs] = useState<CharacterPayload[]>([]);
   const [availableMonsters, setAvailableMonsters] = useState<CampaignMonsterListItem[]>([]);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [thumbnailMenuAnchorEl, setThumbnailMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [reuseIconValue, setReuseIconValue] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const showInPanels = Boolean((draft.panelIds || []).length > 0 || draft.showInSidebarPanel || draft.showInHotbar);
+  const thumbnailMenuOpen = Boolean(thumbnailMenuAnchorEl);
 
   useEffect(() => {
     setDraft(initialDraft);
@@ -370,7 +373,11 @@ const ShortcutEditor = ({
 
     setIsSaving(true);
     try {
-      await onSave(normalizedPayload());
+      const nextPayload = normalizedPayload();
+      await onSave(nextPayload);
+      if (nextPayload.icon) {
+        recordRecentEmoji(nextPayload.icon);
+      }
       onClose();
     } finally {
       setIsSaving(false);
@@ -413,6 +420,40 @@ const ShortcutEditor = ({
     setDraft((prev) => ({ ...prev, hotkey: nextHotkey }));
   };
 
+  const closeThumbnailMenu = () => {
+    setThumbnailMenuAnchorEl(null);
+    setReuseIconValue('');
+  };
+
+  const handleIconFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingIcon(true);
+    setErrorMessage(null);
+    try {
+      const url = await uploadShortcutIcon(file);
+      setDraft((prev) => ({ ...prev, imageUrl: url, icon: '' }));
+    } catch {
+      setErrorMessage('No se pudo subir la imagen/gif del icono');
+    } finally {
+      setIsUploadingIcon(false);
+      event.target.value = '';
+    }
+  };
+
+  const handleReuseIcon = (value: string) => {
+    if (!value) return;
+
+    if (value.startsWith('icon:')) {
+      setDraft((prev) => ({ ...prev, icon: value.slice(5), imageUrl: '' }));
+    } else if (value.startsWith('img:')) {
+      setDraft((prev) => ({ ...prev, imageUrl: value.slice(4), icon: '' }));
+    }
+
+    closeThumbnailMenu();
+  };
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>{editing ? 'Editar atajo' : 'Nuevo atajo'}</DialogTitle>
@@ -430,138 +471,161 @@ const ShortcutEditor = ({
             <Alert severity="info">Subiendo icono...</Alert>
           ) : null}
 
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField label="Nombre" value={draft.name} onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))} fullWidth />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                label="Tecla / combinación"
-                value={formatHotkeyLabel(draft.hotkey || '')}
-                onKeyDown={handleHotkeyCapture}
-                fullWidth
-                placeholder="Pulsa la combinación"
-                helperText="Ctrl+Shift+X y similares. Usa Backspace para limpiar."
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: draft.hotkey ? (
-                    <IconButton size="small" onClick={() => setDraft((prev) => ({ ...prev, hotkey: '' }))}>
-                      <BackspaceIcon fontSize="small" />
-                    </IconButton>
-                  ) : undefined,
-                }}
-              />
-            </Grid>
-          </Grid>
+          <Paper variant="outlined" sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 3 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'flex-start' }}>
+              <Box sx={{ flexShrink: 0 }}>
+                <ShortcutThumbnailPreview
+                  icon={draft.icon}
+                  imageUrl={draft.imageUrl}
+                  name={draft.name || 'Atajo'}
+                  onClick={(event) => setThumbnailMenuAnchorEl(event.currentTarget)}
+                />
+              </Box>
 
-
-          <TextField label="Descripción" value={draft.description} onChange={(event) => setDraft((prev) => ({ ...prev, description: event.target.value }))} fullWidth />
-
-          {/* Selector de icono (emoji o imagen/gif) */}
-          <Grid container spacing={2} alignItems="center">
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Stack spacing={1}>
-                <FormControl fullWidth>
-                  <InputLabel id="shortcut-emoji-list-label">Emoji (lista)</InputLabel>
-                  <Select
-                    labelId="shortcut-emoji-list-label"
-                    label="Emoji (lista)"
-                    value={EMOJI_ICON_OPTIONS.includes(draft.icon || '') ? (draft.icon || '') : ''}
-                    onChange={(event) => setDraft((prev) => ({ ...prev, icon: String(event.target.value), imageUrl: '' }))}
-                  >
-                    <MenuItem value="">
-                      <em>Sin emoji</em>
-                    </MenuItem>
-                    {EMOJI_ICON_OPTIONS.map((emoji) => (
-                      <MenuItem key={emoji} value={emoji}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography sx={{ fontSize: 22, lineHeight: 1 }}>{emoji}</Typography>
-                          <Typography variant="body2">{emoji}</Typography>
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+              <Stack spacing={1.5} sx={{ flex: 1, minWidth: 0 }}>
                 <TextField
-                  label="Emoji personalizado"
-                  value={draft.icon || ''}
-                  onChange={(event) => setDraft((prev) => ({ ...prev, icon: event.target.value, imageUrl: '' }))}
-                  inputProps={{ maxLength: 8, style: { fontSize: 24, textAlign: 'center' } }}
-                  helperText="Puedes elegir de la lista o pegar otro emoji."
+                  label="Nombre"
+                  value={draft.name}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))}
                   fullWidth
                 />
-              </Stack>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Box>
-                <Button
-                  variant="outlined"
-                  component="label"
+                <TextField
+                  label="Descripción"
+                  value={draft.description}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, description: event.target.value }))}
                   fullWidth
-                  disabled={isUploadingIcon}
-                  startIcon={draft.imageUrl ? <img src={draft.imageUrl} alt="icono" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} /> : null}
-                >
-                  {isUploadingIcon ? 'Subiendo...' : (draft.imageUrl ? 'Cambiar imagen/gif' : 'Subir imagen/gif')}
-                  <input
-                    type="file"
-                    accept="image/*,image/gif"
-                    hidden
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setIsUploadingIcon(true);
-                      setErrorMessage(null);
-                      try {
-                        const url = await uploadShortcutIcon(file);
-                        setDraft((prev) => ({ ...prev, imageUrl: url, icon: '' }));
-                      } catch {
-                        setErrorMessage('No se pudo subir la imagen/gif del icono');
-                      } finally {
-                        setIsUploadingIcon(false);
-                        e.target.value = '';
-                      }
-                    }}
-                  />
-                </Button>
-                {draft.imageUrl && (
-                  <Box mt={1} display="flex" alignItems="center" gap={1}>
-                    <img src={draft.imageUrl} alt="preview" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }} />
-                    <Button size="small" color="error" onClick={() => setDraft((prev) => ({ ...prev, imageUrl: '', icon: '' }))}>Quitar</Button>
-                  </Box>
-                )}
-              </Box>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <FormControl fullWidth>
-                <InputLabel id="reuse-icon-label">Reutilizar icono</InputLabel>
+                  multiline
+                  minRows={2}
+                />
+                <TextField
+                  label="Tecla / combinación"
+                  value={formatHotkeyLabel(draft.hotkey || '')}
+                  onKeyDown={handleHotkeyCapture}
+                  fullWidth
+                  size="small"
+                  placeholder="Pulsa la combinación"
+                  helperText="Ctrl+Shift+X y similares. Usa Backspace para limpiar."
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: draft.hotkey ? (
+                      <IconButton size="small" onClick={() => setDraft((prev) => ({ ...prev, hotkey: '' }))}>
+                        <BackspaceIcon fontSize="small" />
+                      </IconButton>
+                    ) : undefined,
+                  }}
+                />
+              </Stack>
+            </Stack>
+          </Paper>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,image/gif"
+            hidden
+            onChange={handleIconFileChange}
+          />
+
+          <Popover
+            open={thumbnailMenuOpen}
+            anchorEl={thumbnailMenuAnchorEl}
+            onClose={closeThumbnailMenu}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          >
+            <Stack spacing={1.5} sx={{ p: 2, width: { xs: 280, sm: 340 } }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                Editar miniatura
+              </Typography>
+
+              <TextField
+                label="Emoji personalizado"
+                value={draft.icon || ''}
+                onChange={(event) => setDraft((prev) => ({ ...prev, icon: event.target.value, imageUrl: '' }))}
+                inputProps={{ maxLength: 32, style: { fontSize: 22, textAlign: 'center' } }}
+                helperText="Pega un emoji o usa el selector ampliado."
+                fullWidth
+                size="small"
+              />
+
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  closeThumbnailMenu();
+                  setEmojiPickerOpen(true);
+                }}
+              >
+                {draft.icon ? 'Cambiar emoji' : 'Elegir emoji'}
+              </Button>
+
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  fileInputRef.current?.click();
+                  closeThumbnailMenu();
+                }}
+                disabled={isUploadingIcon}
+              >
+                {isUploadingIcon ? 'Subiendo...' : (draft.imageUrl ? 'Cambiar imagen/GIF' : 'Subir imagen/GIF')}
+              </Button>
+
+              <FormControl fullWidth size="small">
+                <InputLabel id="reuse-icon-label" shrink>Reutilizar icono</InputLabel>
                 <Select
                   labelId="reuse-icon-label"
                   label="Reutilizar icono"
-                  value=""
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.startsWith('icon:')) {
-                      setDraft((prev) => ({ ...prev, icon: val.slice(5), imageUrl: '' }));
-                    } else if (val.startsWith('img:')) {
-                      setDraft((prev) => ({ ...prev, imageUrl: val.slice(4), icon: '' }));
-                    }
-                  }}
+                  value={reuseIconValue}
                   displayEmpty
+                  renderValue={(selected) => {
+                    if (selected) return selected;
+                    return <Typography color="text.secondary">Selecciona un atajo...</Typography>;
+                  }}
+                  onChange={(event) => {
+                    const value = String(event.target.value);
+                    setReuseIconValue(value);
+                    handleReuseIcon(value);
+                  }}
                 >
-                  <MenuItem value=""><em>Selecciona...</em></MenuItem>
+                  <MenuItem value="" disabled>
+                    <em>Selecciona un atajo...</em>
+                  </MenuItem>
                   {shortcuts
-                    .filter((s) => (s.icon || s.imageUrl) && s.id !== editing?.id)
-                    .map((s) => (
-                      s.icon ? (
-                        <MenuItem key={`icon-${s.id}`} value={`icon:${s.icon}`}>{s.icon} <span style={{ fontSize: 13, color: '#888', marginLeft: 8 }}>{s.name}</span></MenuItem>
+                    .filter((shortcut) => (shortcut.icon || shortcut.imageUrl) && shortcut.id !== editing?.id)
+                    .map((shortcut) => (
+                      shortcut.icon ? (
+                        <MenuItem key={`icon-${shortcut.id}`} value={`icon:${shortcut.icon}`}>
+                          {shortcut.icon}
+                          <span style={{ fontSize: 13, color: '#888', marginLeft: 8 }}>{shortcut.name}</span>
+                        </MenuItem>
                       ) : (
-                        <MenuItem key={`img-${s.id}`} value={`img:${s.imageUrl}`}>{s.imageUrl ? <img src={s.imageUrl} alt="icono" style={{ width: 22, height: 22, objectFit: 'cover', borderRadius: 3, marginRight: 8 }} /> : null} <span style={{ fontSize: 13, color: '#888' }}>{s.name}</span></MenuItem>
+                        <MenuItem key={`img-${shortcut.id}`} value={`img:${shortcut.imageUrl}`}>
+                          {shortcut.imageUrl ? <img src={shortcut.imageUrl} alt="icono" style={{ width: 22, height: 22, objectFit: 'cover', borderRadius: 3, marginRight: 8 }} /> : null}
+                          <span style={{ fontSize: 13, color: '#888' }}>{shortcut.name}</span>
+                        </MenuItem>
                       )
                     ))}
                 </Select>
               </FormControl>
-            </Grid>
-          </Grid>
+
+              <Button
+                color="inherit"
+                onClick={() => {
+                  setDraft((prev) => ({ ...prev, imageUrl: '', icon: '' }));
+                  closeThumbnailMenu();
+                }}
+                disabled={!draft.icon && !draft.imageUrl}
+              >
+                Quitar miniatura
+              </Button>
+            </Stack>
+          </Popover>
+
+          <EmojiPickerDialog
+            open={emojiPickerOpen}
+            value={draft.icon || ''}
+            onClose={() => setEmojiPickerOpen(false)}
+            onSelect={(emoji) => setDraft((prev) => ({ ...prev, icon: emoji, imageUrl: '' }))}
+          />
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -752,6 +816,30 @@ const ShortcutEditor = ({
                                 })}
                                 fullWidth
                               />
+                            ) : null}
+
+                            {draft.mode === 'button' ? (
+                              <Grid container spacing={2}>
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                  <FormControl fullWidth>
+                                    <InputLabel id={`active-state-${index}`}>Estado activo de esta acción</InputLabel>
+                                    <Select
+                                      labelId={`active-state-${index}`}
+                                      label="Estado activo de esta acción"
+                                      value={action.activeStateRule ?? 'never'}
+                                      onChange={(event) => updateAction(index, {
+                                        ...action,
+                                        activeStateRule: event.target.value as string || null,
+                                      })}
+                                    >
+                                      <MenuItem value="never">Nunca</MenuItem>
+                                      <MenuItem value="temporary">Temporal (mientras se reproduce)</MenuItem>
+                                      <MenuItem value="when:status=playing">Si: status = playing</MenuItem>
+                                      <MenuItem value="when:status=paused">Si: status = paused</MenuItem>
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                              </Grid>
                             ) : null}
 
                             {action.kind === 'playSoundEffect' ? (

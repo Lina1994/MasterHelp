@@ -9,6 +9,8 @@ export interface SfxPlayOptions {
   randomMinMs?: number; // for random
   randomMaxMs?: number; // for random
   uniquePerEffect?: boolean; // if true, stop existing instances of same effectId before playing
+  // Callbacks
+  onEnded?: (instanceId: string) => void; // called when audio ends
   // Modifiers
   echoEnabled?: boolean;
   echoDelayMs?: number;
@@ -203,6 +205,9 @@ export const SfxPlayerProvider: React.FC<{ children: ReactNode }> = ({ children 
     } else {
       audio.loop = false;
       controller.endedHandler = () => {
+        // Call optional onEnded callback
+        options?.onEnded?.(instanceId);
+        
         if (controller.loopMode === 'once') {
           // remove from sidebar after one-shot ends
           destroyController(instanceId);

@@ -38,6 +38,10 @@ export class ShortcutActionDto {
   @IsObject()
   payload?: Record<string, unknown>;
 
+  @IsOptional()
+  @IsString()
+  activeStateRule?: string | null;
+
   // Backward compatibility for current frontend payload format.
   @IsOptional()
   @IsObject()

@@ -250,6 +250,20 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
       soundEffects,
       playSfx,
       buildEffectUrl: (effectId, campaignId) => buildEffectStreamUrl(api.defaults.baseURL, effectId, campaignId),
+      onSfxEnded: (effectId, instanceId) => {
+        // When SFX ends, deactivate the shortcut immediately if it has temporary activeStateRule
+        const hasSfxWithTemporaryRule = shortcut.actions.some(
+          (action) => action.kind === 'playSoundEffect' && (action as any).activeStateRule === 'temporary',
+        );
+        
+        if (hasSfxWithTemporaryRule) {
+          setShortcuts((prev) =>
+            prev.map((item) =>
+              item.id === shortcut.id ? { ...item, isActive: false, activeUntil: null } : item,
+            ),
+          );
+        }
+      },
     });
   }, [activeCampaign?.id, playSfx, soundEffects]);
 
@@ -257,7 +271,9 @@ export const ShortcutsProvider = ({ children }: { children: ReactNode }) => {
     const updated = await executeShortcutApi(shortcut.id);
     setShortcuts((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
     await runClientActions(updated);
-    if (updated.mode === 'temporary' && updated.activeUntil) {
+    
+    // Handle active state timeout for both 'temporary' mode and 'button' mode with activeStateRule
+    if (updated.activeUntil) {
       const remaining = new Date(updated.activeUntil).getTime() - Date.now();
       if (remaining > 0) {
         window.setTimeout(() => {

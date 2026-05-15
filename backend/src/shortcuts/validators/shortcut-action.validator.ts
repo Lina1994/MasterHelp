@@ -13,6 +13,7 @@ type LooseActionInput = {
   config?: unknown;
   delayMs?: unknown;
   targetWindow?: unknown;
+  activeStateRule?: unknown;
 };
 
 const MOMENTS = new Set(['dawn', 'morning', 'afternoon', 'night', 'midnight']);
@@ -177,11 +178,16 @@ export const validateAndNormalizeShortcutActions = (input: LooseActionInput[]): 
     const delayMs = normalizeDelay(raw.delayMs);
     const targetWindow = validateTargetWindow(raw.targetWindow);
 
+    // Default activeStateRule based on action kind
+    const defaultActiveStateRule = kind.startsWith('playSoundEffect') || kind.startsWith('audio.') ? 'temporary' : 'never';
+    const activeStateRuleValue = raw.activeStateRule ?? defaultActiveStateRule;
+
     return {
       kind,
       ...(payload !== undefined ? { payload } : {}),
       ...(delayMs !== undefined ? { delayMs } : {}),
       ...(targetWindow ? { targetWindow } : {}),
+      ...(activeStateRuleValue ? { activeStateRule: activeStateRuleValue } : {}),
     } as ShortcutActionDefinition;
   });
 };

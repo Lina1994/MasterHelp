@@ -12,10 +12,19 @@ export interface ShortcutWindowTarget {
   windowType?: string;
 }
 
+/**
+ * Rule for determining when a shortcut with this action should be considered "active".
+ * - 'never': this action never makes the shortcut active
+ * - 'temporary': automatically activate for the action duration (e.g., SFX playback)
+ * - 'when:<field>=<value>': activate only if payload field matches value (e.g., 'when:status=playing')
+ */
+export type ActiveStateRule = 'never' | 'temporary' | `when:${string}`;
+
 export interface ShortcutActionBase {
   kind: ShortcutActionKind;
   delayMs?: number;
   targetWindow?: ShortcutWindowTarget;
+  activeStateRule?: ActiveStateRule | null;
 }
 
 export interface ToggleStateAction extends ShortcutActionBase {

@@ -6,6 +6,14 @@ export type TimeOfDayMoment = 'dawn' | 'morning' | 'afternoon' | 'night' | 'midn
 
 export type ShortcutWindowTargetKind = 'main' | 'projection' | 'skyline' | 'custom' | 'instance';
 
+/**
+ * Rule for determining when a shortcut with this action should be considered "active".
+ * - 'never': this action never makes the shortcut active
+ * - 'temporary': automatically activate for the action duration (e.g., SFX playback)
+ * - 'when:<field>=<value>': activate only if payload field matches value (e.g., 'when:status=playing')
+ */
+export type ActiveStateRule = 'never' | 'temporary' | `when:${string}`;
+
 export interface ShortcutWindowTarget {
   kind: ShortcutWindowTargetKind;
   windowId?: string;
@@ -17,6 +25,7 @@ export interface ShortcutActionBase {
   delayMs?: number;
   targetWindow?: ShortcutWindowTarget;
   payload?: Record<string, unknown>;
+  activeStateRule?: ActiveStateRule | null;
   // Legacy compatibility while old payloads are still stored with `config`.
   config?: Record<string, unknown>;
 }
