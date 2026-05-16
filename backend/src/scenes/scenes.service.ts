@@ -12,6 +12,7 @@ import { UpdateSceneDto } from './dto/update-scene.dto';
 import { SceneExecution } from './entities/scene-execution.entity';
 import { Scene } from './entities/scene.entity';
 import { SceneRunnerService } from './scene-runner.service';
+import { SceneVideosService } from './scene-videos.service';
 import { ScenesRepository } from './scenes.repository';
 import { validateAndNormalizeSceneActions } from './validators/scene-action.validator';
 
@@ -40,13 +41,15 @@ export class ScenesService {
   constructor(
     private readonly scenesRepository: ScenesRepository,
     private readonly sceneRunnerService: SceneRunnerService,
+    private readonly sceneVideosService: SceneVideosService,
   ) {}
 
   /**
    * Lists all scenes accessible to the owner for the current scope.
    */
   async findAllForOwner(ownerId: number, campaignId?: string): Promise<Scene[]> {
-    return this.scenesRepository.findAllByOwner(ownerId, campaignId);
+    const scenes = await this.scenesRepository.findAllByOwner(ownerId, campaignId);
+    return this.enrichScenesWithVideoDurations(scenes, ownerId);
   }
 
   /**
@@ -57,7 +60,7 @@ export class ScenesService {
     if (!scene) {
       throw new NotFoundException(`Scene with ID "${id}" not found`);
     }
-    return scene;
+    return this.enrichSceneWithVideoDurations(scene, ownerId);
   }
 
   /**
@@ -66,9 +69,23 @@ export class ScenesService {
   async createForOwner(ownerId: number, dto: CreateSceneDto): Promise<Scene> {
     const scope = this.resolveScope(dto.scope, dto.campaignId ?? null);
     const campaignRef = await this.resolveCampaignReference(ownerId, scope, dto.campaignId ?? null);
+    const loopConfig = this.resolveLoopConfig(dto.loop, dto.loopDelayMs, dto.loopDelayRandomMinMs, dto.loopDelayRandomMaxMs);
+    const loopWindow = this.resolveLoopWindow(
+      loopConfig.loop,
+      dto.loopWindowStartMs,
+      dto.loopWindowEndMs,
+    );
     const scene = this.scenesRepository.createScene({
       name: dto.name.trim(),
       description: dto.description?.trim() ?? null,
+      loop: loopConfig.loop,
+      loopDelayMs: loopConfig.loopDelayMs,
+      loopDelayRandomMinMs: loopConfig.loopDelayRandomMinMs,
+      loopDelayRandomMaxMs: loopConfig.loopDelayRandomMaxMs,
+      loopWindowStartMs: loopWindow.loopWindowStartMs,
+      loopWindowEndMs: loopWindow.loopWindowEndMs,
+      icon: this.normalizeOptionalText(dto.icon),
+      imageUrl: this.normalizeOptionalText(dto.imageUrl),
       scope,
       schemaVersion: dto.schemaVersion ?? SCENE_SCHEMA_VERSION,
       actions: validateAndNormalizeSceneActions(dto.actions as unknown as Record<string, unknown>[]),
@@ -88,10 +105,29 @@ export class ScenesService {
       ? scene.campaign?.id ?? null
       : dto.campaignId;
     const campaignRef = await this.resolveCampaignReference(ownerId, scope, targetCampaignId ?? null);
+    const loopConfig = this.resolveLoopConfig(
+      dto.loop ?? scene.loop,
+      dto.loopDelayMs === undefined ? scene.loopDelayMs : dto.loopDelayMs,
+      dto.loopDelayRandomMinMs === undefined ? scene.loopDelayRandomMinMs : dto.loopDelayRandomMinMs,
+      dto.loopDelayRandomMaxMs === undefined ? scene.loopDelayRandomMaxMs : dto.loopDelayRandomMaxMs,
+    );
+    const loopWindow = this.resolveLoopWindow(
+      loopConfig.loop,
+      dto.loopWindowStartMs === undefined ? scene.loopWindowStartMs : dto.loopWindowStartMs,
+      dto.loopWindowEndMs === undefined ? scene.loopWindowEndMs : dto.loopWindowEndMs,
+    );
 
     Object.assign(scene, {
       name: dto.name?.trim() ?? scene.name,
       description: dto.description === undefined ? scene.description : dto.description?.trim() ?? null,
+      loop: loopConfig.loop,
+      loopDelayMs: loopConfig.loopDelayMs,
+      loopDelayRandomMinMs: loopConfig.loopDelayRandomMinMs,
+      loopDelayRandomMaxMs: loopConfig.loopDelayRandomMaxMs,
+      loopWindowStartMs: loopWindow.loopWindowStartMs,
+      loopWindowEndMs: loopWindow.loopWindowEndMs,
+      icon: dto.icon === undefined ? scene.icon : this.normalizeOptionalText(dto.icon),
+      imageUrl: dto.imageUrl === undefined ? scene.imageUrl : this.normalizeOptionalText(dto.imageUrl),
       scope,
       schemaVersion: dto.schemaVersion ?? scene.schemaVersion ?? SCENE_SCHEMA_VERSION,
       campaign: campaignRef.campaignId ? this.scenesRepository.createCampaignReference(campaignRef.campaignId) : null,
@@ -208,6 +244,50 @@ export class ScenesService {
   }
 
   /**
+   * Cancels one execution owned by the authenticated user.
+   */
+  async cancelExecutionForOwner(executionId: string, ownerId: number): Promise<SceneExecution> {
+    const execution = await this.findExecutionForOwner(executionId, ownerId);
+    if (execution.status === 'cancelled') {
+      return execution;
+    }
+
+    execution.cancellationRequested = true;
+    execution.status = 'cancelled';
+    execution.finishedAt = new Date();
+    return this.scenesRepository.saveExecution(execution);
+  }
+
+  /**
+   * Duplicates one owned scene preserving actions and runtime configuration.
+   */
+  async duplicateForOwner(id: string, ownerId: number, targetCampaignId?: string | null): Promise<Scene> {
+    const scene = await this.findOneForOwner(id, ownerId);
+    const scope = targetCampaignId ? 'campaign' : scene.scope;
+    const campaignRef = await this.resolveCampaignReference(ownerId, scope, targetCampaignId ?? scene.campaign?.id ?? null);
+
+    const duplicate = this.scenesRepository.createScene({
+      name: `${scene.name} (copia)`,
+      description: scene.description ?? null,
+      scope,
+      schemaVersion: scene.schemaVersion,
+      loop: scene.loop,
+      loopDelayMs: scene.loopDelayMs,
+      loopDelayRandomMinMs: scene.loopDelayRandomMinMs,
+      loopDelayRandomMaxMs: scene.loopDelayRandomMaxMs,
+      loopWindowStartMs: scene.loopWindowStartMs,
+      loopWindowEndMs: scene.loopWindowEndMs,
+      icon: scene.icon,
+      imageUrl: scene.imageUrl,
+      actions: JSON.parse(JSON.stringify(scene.actions ?? [])) as Scene['actions'],
+      owner: this.scenesRepository.createOwnerReference(ownerId),
+      campaign: campaignRef.campaignId ? this.scenesRepository.createCampaignReference(campaignRef.campaignId) : null,
+    });
+
+    return this.scenesRepository.saveScene(duplicate);
+  }
+
+  /**
    * Returns a lightweight server clock sample for client-side calibration.
    */
   getClockSync(): SceneClockSyncResponse {
@@ -252,5 +332,173 @@ export class ScenesService {
     }
 
     return { campaignId };
+  }
+
+  /**
+   * Replaces missing video durations in one scene with the persisted asset duration.
+   */
+  private async enrichSceneWithVideoDurations(scene: Scene, ownerId: number): Promise<Scene> {
+    const scenes = await this.enrichScenesWithVideoDurations([scene], ownerId);
+    return scenes[0] ?? scene;
+  }
+
+  /**
+   * Replaces missing video durations in a scene list with the persisted asset duration.
+   */
+  private async enrichScenesWithVideoDurations(scenes: Scene[], ownerId: number): Promise<Scene[]> {
+    const needsEnrichment = scenes.some((scene) =>
+      scene.actions.some((action) => {
+        if (action.type !== 'sendVideoToWindow') return false;
+        const payload = action.payload as Record<string, unknown>;
+        return typeof payload.videoAssetId === 'string' && payload.videoAssetId.trim().length > 0;
+      }),
+    );
+
+    if (!needsEnrichment) {
+      return scenes;
+    }
+
+    const videos = await this.sceneVideosService.listForOwner(ownerId);
+    const durationByVideoId = new Map<string, number>();
+
+    for (const video of videos) {
+      if (typeof video.durationMs === 'number' && Number.isFinite(video.durationMs) && video.durationMs > 0) {
+        durationByVideoId.set(video.id, Math.round(video.durationMs));
+      }
+    }
+
+    if (durationByVideoId.size === 0) {
+      return scenes;
+    }
+
+    return scenes.map((scene) => ({
+      ...scene,
+      actions: scene.actions.map((action) => {
+        if (action.type !== 'sendVideoToWindow') return action;
+
+        const payload = action.payload as Record<string, unknown>;
+        const videoAssetId = typeof payload.videoAssetId === 'string' ? payload.videoAssetId.trim() : '';
+        if (!videoAssetId) return action;
+
+        const durationMs = durationByVideoId.get(videoAssetId);
+        if (!durationMs) return action;
+
+        return {
+          ...action,
+          payload: {
+            ...payload,
+            durationMs,
+          },
+        };
+      }),
+    }));
+  }
+
+  /**
+   * Normalizes optional text values to nullable trimmed strings.
+   */
+  private normalizeOptionalText(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  /**
+   * Resolves and validates loop configuration for persisted scenes.
+   */
+  private resolveLoopConfig(
+    loopRaw: unknown,
+    loopDelayMsRaw: unknown,
+    loopDelayRandomMinMsRaw: unknown,
+    loopDelayRandomMaxMsRaw: unknown,
+  ): {
+    loop: boolean;
+    loopDelayMs: number | null;
+    loopDelayRandomMinMs: number | null;
+    loopDelayRandomMaxMs: number | null;
+  } {
+    const loop = Boolean(loopRaw);
+    const loopDelayMs = this.toNullableNonNegativeInt(loopDelayMsRaw);
+    const loopDelayRandomMinMs = this.toNullableNonNegativeInt(loopDelayRandomMinMsRaw);
+    const loopDelayRandomMaxMs = this.toNullableNonNegativeInt(loopDelayRandomMaxMsRaw);
+
+    if (!loop) {
+      return {
+        loop: false,
+        loopDelayMs: null,
+        loopDelayRandomMinMs: null,
+        loopDelayRandomMaxMs: null,
+      };
+    }
+
+    if (loopDelayRandomMinMs !== null || loopDelayRandomMaxMs !== null) {
+      if (loopDelayRandomMinMs === null || loopDelayRandomMaxMs === null) {
+        throw new BadRequestException('Both loopDelayRandomMinMs and loopDelayRandomMaxMs are required for random loop delay');
+      }
+      if (loopDelayRandomMinMs > loopDelayRandomMaxMs) {
+        throw new BadRequestException('loopDelayRandomMinMs cannot be greater than loopDelayRandomMaxMs');
+      }
+    }
+
+    return {
+      loop: true,
+      loopDelayMs,
+      loopDelayRandomMinMs,
+      loopDelayRandomMaxMs,
+    };
+  }
+
+  /**
+   * Resolves and validates scene-level loop window boundaries.
+   */
+  private resolveLoopWindow(
+    loop: boolean,
+    loopWindowStartMsRaw: unknown,
+    loopWindowEndMsRaw: unknown,
+  ): {
+    loopWindowStartMs: number | null;
+    loopWindowEndMs: number | null;
+  } {
+    if (!loop) {
+      return {
+        loopWindowStartMs: null,
+        loopWindowEndMs: null,
+      };
+    }
+
+    const loopWindowStartMs = this.toNullableNonNegativeInt(loopWindowStartMsRaw);
+    const loopWindowEndMs = this.toNullableNonNegativeInt(loopWindowEndMsRaw);
+
+    if (loopWindowStartMs === null && loopWindowEndMs === null) {
+      return {
+        loopWindowStartMs: null,
+        loopWindowEndMs: null,
+      };
+    }
+
+    if (loopWindowStartMs === null || loopWindowEndMs === null) {
+      throw new BadRequestException('loopWindowStartMs and loopWindowEndMs must both be provided for partial scene loop');
+    }
+
+    if (loopWindowStartMs >= loopWindowEndMs) {
+      throw new BadRequestException('loopWindowEndMs must be greater than loopWindowStartMs');
+    }
+
+    return {
+      loopWindowStartMs,
+      loopWindowEndMs,
+    };
+  }
+
+  /**
+   * Converts unknown values to nullable non-negative integers.
+   */
+  private toNullableNonNegativeInt(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < 0) {
+      throw new BadRequestException('Loop delay values must be non-negative numbers');
+    }
+    return Math.round(n);
   }
 }

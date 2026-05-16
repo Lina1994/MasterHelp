@@ -13,6 +13,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateSceneDto } from './dto/create-scene.dto';
+import { DuplicateSceneDto } from './dto/duplicate-scene.dto';
 import { ExecuteSceneDto } from './dto/execute-scene.dto';
 import { UpdateSceneDto } from './dto/update-scene.dto';
 import { ScenesService } from './scenes.service';
@@ -40,6 +41,14 @@ export class ScenesController {
   @Get('executions/:executionId')
   async findExecution(@Request() req, @Param('executionId') executionId: string) {
     return this.scenesService.findExecutionForOwner(executionId, req.user.userId);
+  }
+
+  /**
+   * Cancels one owned execution.
+   */
+  @Patch('executions/:executionId/cancel')
+  async cancelExecution(@Request() req, @Param('executionId') executionId: string) {
+    return this.scenesService.cancelExecutionForOwner(executionId, req.user.userId);
   }
 
   /**
@@ -97,5 +106,17 @@ export class ScenesController {
   @Post(':id/execute')
   async execute(@Request() req, @Param('id') id: string, @Body() dto: ExecuteSceneDto) {
     return this.scenesService.executeForOwner(id, req.user.userId, dto);
+  }
+
+  /**
+   * Duplicates one owned scene.
+   */
+  @Post(':id/duplicate')
+  async duplicate(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: DuplicateSceneDto,
+  ) {
+    return this.scenesService.duplicateForOwner(id, req.user.userId, dto.targetCampaignId);
   }
 }

@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  JoinColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -53,6 +54,22 @@ export class SceneVideo {
 
   @Column({ type: 'text', nullable: true, default: null })
   processingError: string | null;
+
+  @Column({ type: 'text', default: 'original' })
+  derivationType: 'original' | 'clip';
+
+  @ManyToOne(() => SceneVideo, { nullable: true, onDelete: 'SET NULL', eager: false })
+  @JoinColumn({ name: 'parentVideoId' })
+  parentVideo: SceneVideo | null;
+
+  @Column({ type: 'uuid', nullable: true, default: null })
+  parentVideoId: string | null;
+
+  @Column({ type: 'real', nullable: true, default: null })
+  sourceStartSec: number | null;
+
+  @Column({ type: 'real', nullable: true, default: null })
+  sourceEndSec: number | null;
 
   @CreateDateColumn()
   createdAt: Date;

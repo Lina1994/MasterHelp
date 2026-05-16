@@ -22,6 +22,7 @@ export class SceneVideosRepository {
     const query = this.sceneVideoRepository.createQueryBuilder('video')
       .leftJoinAndSelect('video.owner', 'owner')
       .leftJoinAndSelect('video.campaign', 'campaign')
+      .leftJoinAndSelect('video.parentVideo', 'parentVideo')
       .where('owner.id = :ownerId', { ownerId });
 
     if (campaignId) {
@@ -37,8 +38,36 @@ export class SceneVideosRepository {
   async findByIdForOwner(id: string, ownerId: number): Promise<SceneVideo | null> {
     return this.sceneVideoRepository.findOne({
       where: { id, owner: { id: ownerId } },
-      relations: { owner: true, campaign: true },
+      relations: { owner: true, campaign: true, parentVideo: true },
     });
+  }
+
+  /**
+   * Finds one video with the same name in the same owner+campaign scope.
+   */
+  async findByNameForOwnerAndScope(
+    ownerId: number,
+    name: string,
+    campaignId: string | null,
+    excludeId?: string,
+  ): Promise<SceneVideo | null> {
+    const query = this.sceneVideoRepository.createQueryBuilder('video')
+      .leftJoinAndSelect('video.owner', 'owner')
+      .leftJoinAndSelect('video.campaign', 'campaign')
+      .where('owner.id = :ownerId', { ownerId })
+      .andWhere('LOWER(video.name) = LOWER(:name)', { name: name.trim() });
+
+    if (campaignId) {
+      query.andWhere('campaign.id = :campaignId', { campaignId });
+    } else {
+      query.andWhere('campaign.id IS NULL');
+    }
+
+    if (excludeId) {
+      query.andWhere('video.id != :excludeId', { excludeId });
+    }
+
+    return query.getOne();
   }
 
   /**
@@ -60,6 +89,18 @@ export class SceneVideosRepository {
    */
   async remove(video: SceneVideo): Promise<void> {
     await this.sceneVideoRepository.remove(video);
+  }
+
+  /**
+   * Counts owned derived clips for one source video.
+   */
+  async countDerivedByParentForOwner(parentVideoId: string, ownerId: number): Promise<number> {
+    return this.sceneVideoRepository.count({
+      where: {
+        parentVideoId,
+        owner: { id: ownerId },
+      },
+    });
   }
 
   /**

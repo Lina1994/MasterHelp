@@ -4,6 +4,7 @@ import {
   Box,
   Divider,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
@@ -124,6 +125,9 @@ const SceneActionEditor: React.FC<Props> = ({
       variant="outlined"
       sx={{
         p: 1.5,
+        width: '100%',
+        minWidth: 0,
+        overflowX: 'hidden',
         borderColor: highlighted ? 'primary.main' : 'divider',
         boxShadow: highlighted ? 2 : undefined,
       }}
@@ -140,14 +144,14 @@ const SceneActionEditor: React.FC<Props> = ({
           </Box>
         </Tooltip>
 
-        <Box sx={{ flex: 1 }}>
-          <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Stack direction="row" spacing={1} alignItems="center" mb={1} sx={{ flexWrap: 'wrap', minWidth: 0 }}>
             <Typography variant="caption" color="text.secondary" sx={{ minWidth: 24 }}>
               #{index}
             </Typography>
 
             {/* Action type */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
+            <FormControl size="small" sx={{ minWidth: { xs: 0, sm: 200 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>
               <InputLabel>Tipo de acción</InputLabel>
               <Select
                 value={action.type}
@@ -167,17 +171,25 @@ const SceneActionEditor: React.FC<Props> = ({
               label="Retraso (ms)"
               type="number"
               size="small"
-              sx={{ width: 130 }}
+              sx={{ width: { xs: '100%', sm: 130 } }}
               value={action.delay ?? 0}
               inputProps={{ min: 0, max: 600000, step: 100 }}
               onChange={(e) => setDelay(Number(e.target.value))}
             />
           </Stack>
 
+          <TextField
+            label="Nombre en timeline (opcional)"
+            size="small"
+            value={String(action.payload?.displayName ?? '')}
+            onChange={(e) => setPayload('displayName', e.target.value)}
+            sx={{ mb: 1, width: '100%', minWidth: 0, maxWidth: '100%' }}
+          />
+
           {/* Window target picker — only for window-related actions */}
           {needsWindow && (
-            <Stack direction="row" spacing={1} mb={1}>
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+            <Stack direction="row" spacing={1} mb={1} sx={{ flexWrap: 'wrap' }}>
+              <FormControl size="small" sx={{ minWidth: { xs: 0, sm: 150 }, width: { xs: '100%', sm: 'auto' } }}>
                 <InputLabel>Ventana destino</InputLabel>
                 <Select
                   value={action.targetWindow?.kind ?? 'main'}
@@ -195,15 +207,29 @@ const SceneActionEditor: React.FC<Props> = ({
           <Divider sx={{ mb: 1 }} />
 
           {/* Dynamic payload fields per action type */}
-          <PayloadFields
-            type={action.type}
-            payload={p}
-            setPayload={setPayload}
-            sceneVideoAssets={sceneVideoAssets}
-            onRequestUploadVideo={onRequestUploadVideo}
-            onStartChromaColorPick={onStartChromaColorPick}
-            isChromaColorPicking={isChromaColorPicking}
-          />
+          <Box
+            sx={{
+              minWidth: 0,
+              '& .MuiFormControl-root, & .MuiTextField-root': {
+                maxWidth: '100%',
+                minWidth: 0,
+              },
+              '& .MuiStack-root': {
+                minWidth: 0,
+                flexWrap: 'wrap',
+              },
+            }}
+          >
+            <PayloadFields
+              type={action.type}
+              payload={p}
+              setPayload={setPayload}
+              sceneVideoAssets={sceneVideoAssets}
+              onRequestUploadVideo={onRequestUploadVideo}
+              onStartChromaColorPick={onStartChromaColorPick}
+              isChromaColorPicking={isChromaColorPicking}
+            />
+          </Box>
         </Box>
 
         {/* Delete button */}
@@ -468,6 +494,7 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
               onChange={(e) => setPayload('opacity', Number(e.target.value))}
             />
           </Stack>
+
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             <TextField label="X%" type="number" size="small" sx={{ width: 95 }} value={num('leftPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
             <TextField label="Y%" type="number" size="small" sx={{ width: 95 }} value={num('topPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />

@@ -3,6 +3,7 @@ export type SceneRuntimeCommandKind =
   | 'audio.stopMusic'
   | 'audio.playSound'
   | 'audio.setMusicVolume'
+  | 'scene.stopExecution'
   | 'window.sendImage'
   | 'window.sendVideo'
   | 'window.setBackground'
@@ -23,6 +24,8 @@ export interface SceneRuntimeCommand {
   kind: SceneRuntimeCommandKind;
   payload: Record<string, unknown>;
   targetWindow?: SceneWindowTarget;
+  logicalExecutionId?: string;
+  loopCycleIndex?: number;
   dispatchedAtMs?: number;
   executionId?: string;
   scheduleVersion?: number;
@@ -46,6 +49,14 @@ export interface SceneLite {
   id: string;
   name: string;
   description?: string | null;
+  icon?: string | null;
+  imageUrl?: string | null;
+  loop?: boolean;
+  loopDelayMs?: number | null;
+  loopDelayRandomMinMs?: number | null;
+  loopDelayRandomMaxMs?: number | null;
+  loopWindowStartMs?: number | null;
+  loopWindowEndMs?: number | null;
   scope?: 'global' | 'campaign';
   campaignId?: string | null;
 }
@@ -59,12 +70,22 @@ export interface Scene extends SceneLite {
 }
 
 /** Shape of a single scene action (frontend representation) */
+export interface SceneActionClipMetadata {
+  splitGroupId?: string | null;
+  splitIndex?: number | null;
+  splitTotal?: number | null;
+  parentActionId?: string | null;
+  clipInSec?: number | null;
+  clipOutSec?: number | null;
+  clipDurationMs?: number | null;
+}
+
 export interface SceneActionDto {
   id: string;
   type: string;
   delay?: number;
   targetWindow?: SceneWindowTarget;
-  payload: Record<string, unknown>;
+  payload: Record<string, unknown> & SceneActionClipMetadata;
 }
 
 export interface SceneChromaKeySettings {
@@ -77,6 +98,14 @@ export interface SceneChromaKeySettings {
 export interface ScenePayload {
   name: string;
   description?: string | null;
+  icon?: string | null;
+  imageUrl?: string | null;
+  loop?: boolean;
+  loopDelayMs?: number | null;
+  loopDelayRandomMinMs?: number | null;
+  loopDelayRandomMaxMs?: number | null;
+  loopWindowStartMs?: number | null;
+  loopWindowEndMs?: number | null;
   scope: 'global' | 'campaign';
   campaignId?: string | null;
   actions: SceneActionDto[];
@@ -109,6 +138,10 @@ export interface SceneVideoAsset {
   height?: number | null;
   processingStatus: 'pending' | 'processing' | 'ready' | 'failed';
   processingError?: string | null;
+  derivationType?: 'original' | 'clip';
+  parentVideoId?: string | null;
+  sourceStartSec?: number | null;
+  sourceEndSec?: number | null;
   campaign?: { id: string } | null;
   createdAt?: string;
   updatedAt?: string;
@@ -118,6 +151,23 @@ export interface SceneVideoAsset {
 export interface SceneVideoSignedStreamUrlResponse {
   url: string;
   expiresAt: number;
+}
+
+export interface CreateSceneVideoClipPayload {
+  startSec: number;
+  endSec: number;
+  name?: string;
+}
+
+export interface SceneVideoDerivationStatusResponse {
+  id: string;
+  processingStatus: 'pending' | 'processing' | 'ready' | 'failed';
+  processingError?: string | null;
+  derivationType: 'original' | 'clip';
+  parentVideoId?: string | null;
+  sourceStartSec?: number | null;
+  sourceEndSec?: number | null;
+  updatedAt: string;
 }
 
 export interface ExecuteSceneResponse {

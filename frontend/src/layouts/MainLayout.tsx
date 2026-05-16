@@ -46,6 +46,8 @@ import BoltIcon from '@mui/icons-material/Bolt';
 import TheaterComedyIcon from '@mui/icons-material/TheaterComedy';
 import { ShortcutsProvider } from '../contexts/ShortcutsContext';
 import { SidebarShortcutsPanel, ShortcutHotbar } from '../components/shortcuts/ShortcutsShell';
+import ActiveScenesBar from '../components/scenes/ActiveScenesBar';
+import { ActiveScenesProvider } from '../contexts/ActiveScenesContext';
 
 /** Maps iconName strings (from SidebarItemDef) to actual MUI icon elements. */
 const ICON_MAP: Record<string, ReactElement> = {
@@ -313,6 +315,7 @@ const MainLayoutInner = () => {
       <SfxPlayerProvider>
         <PlayerDrawerUiProvider>
           <ShortcutsProvider>
+            <ActiveScenesProvider>
           <ShortcutRuntimeBridge />
           <Box sx={{ display: 'flex', height: `calc(100vh - ${TB}px)` }}>
             {/* ── Barra superior responsive (sólo en móvil / ventana estrecha) ── */}
@@ -403,7 +406,7 @@ const MainLayoutInner = () => {
                 height: `calc(100vh - ${TB}px)`,
                 overflow: 'auto',
                 p: 3,
-                pb: { xs: 12, sm: 13 },
+                pb: { xs: 20, sm: 22 },
                 // On xs the fixed mobile AppBar (56px) sits above the content;
                 // extra top padding prevents content from hiding behind it.
                 pt: { xs: `calc(56px + ${TB}px + 24px)`, sm: 3 },
@@ -413,10 +416,12 @@ const MainLayoutInner = () => {
                 <InvitationsList />
               </div>
               <Outlet />
+              {isMaster ? <ActiveScenesBar /> : null}
               {isMaster ? <ShortcutHotbar /> : null}
               <SkylinePreviewOverlay />
             </Box>
           </Box>
+            </ActiveScenesProvider>
           </ShortcutsProvider>
         </PlayerDrawerUiProvider>
       </SfxPlayerProvider>

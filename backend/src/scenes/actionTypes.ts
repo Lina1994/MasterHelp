@@ -15,6 +15,19 @@ export interface SceneActionBase {
   targetWindow?: SceneWindowTarget;
 }
 
+export interface SceneSplitMetadata {
+  splitGroupId?: string;
+  splitIndex?: number;
+  splitTotal?: number;
+  parentActionId?: string;
+}
+
+export interface SceneClipTimingMetadata extends SceneSplitMetadata {
+  clipInSec?: number;
+  clipOutSec?: number;
+  clipDurationMs?: number;
+}
+
 export interface PlayMusicSceneAction extends SceneActionBase {
   type: 'playMusic';
   payload: {
@@ -22,7 +35,7 @@ export interface PlayMusicSceneAction extends SceneActionBase {
     playlistId?: string;
     loop?: boolean;
     volume?: number;
-  };
+  } & SceneClipTimingMetadata;
 }
 
 export interface StopMusicSceneAction extends SceneActionBase {
@@ -41,7 +54,7 @@ export interface PlaySoundSceneAction extends SceneActionBase {
     waitMs?: number;
     randomMinMs?: number;
     randomMaxMs?: number;
-  };
+  } & SceneClipTimingMetadata;
 }
 
 export interface SetMusicVolumeSceneAction extends SceneActionBase {
@@ -68,7 +81,7 @@ export interface SendImageToWindowSceneAction extends SceneActionBase {
     topPct?: number;
     widthPct?: number;
     heightPct?: number;
-  };
+  } & SceneClipTimingMetadata;
 }
 
 export interface SendVideoToWindowSceneAction extends SceneActionBase {
@@ -77,6 +90,10 @@ export interface SendVideoToWindowSceneAction extends SceneActionBase {
     videoAssetId?: string;
     videoUrl?: string;
     loop?: boolean;
+    loopSegmentEnabled?: boolean;
+    loopSegmentStartMs?: number;
+    loopSegmentEndMs?: number;
+    playIntroOncePerSceneExecution?: boolean;
     muted?: boolean;
     opacity?: number;
     durationMs?: number;
@@ -90,7 +107,7 @@ export interface SendVideoToWindowSceneAction extends SceneActionBase {
     topPct?: number;
     widthPct?: number;
     heightPct?: number;
-  };
+  } & SceneClipTimingMetadata;
 }
 
 export interface SetWindowBackgroundSceneAction extends SceneActionBase {

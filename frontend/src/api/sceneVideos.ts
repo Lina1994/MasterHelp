@@ -1,11 +1,21 @@
 import { api } from '../apiBase';
 import { getAuthHeaders } from '../utils/auth';
-import type { SceneVideoAsset, SceneVideoSignedStreamUrlResponse } from '../types/scenes';
+import type {
+  CreateSceneVideoClipPayload,
+  SceneVideoAsset,
+  SceneVideoDerivationStatusResponse,
+  SceneVideoSignedStreamUrlResponse,
+} from '../types/scenes';
 
 interface UploadSceneVideoOptions {
   name?: string;
   description?: string;
   campaignId?: string;
+}
+
+interface UpdateSceneVideoOptions {
+  name?: string;
+  description?: string;
 }
 
 const SCENE_VIDEOS_BASE_PATH = '/scenes/videos';
@@ -92,6 +102,42 @@ export async function createSceneVideoSignedUrl(
 }
 
 /**
+ * Requests asynchronous clip derivation from one source scene video.
+ */
+export async function createSceneVideoClip(
+  sourceVideoId: string,
+  payload: CreateSceneVideoClipPayload,
+): Promise<SceneVideoAsset> {
+  try {
+    const response = await api.post(
+      `${SCENE_VIDEOS_BASE_PATH}/${sourceVideoId}/create-clip`,
+      payload,
+      { headers: getAuthHeaders() },
+    );
+
+    return response.data as SceneVideoAsset;
+  } catch (error: any) {
+    return mapSceneVideosError(error);
+  }
+}
+
+/**
+ * Reads processing/derivation status for one scene video asset.
+ */
+export async function getSceneVideoDerivationStatus(
+  videoId: string,
+): Promise<SceneVideoDerivationStatusResponse> {
+  try {
+    const response = await api.get(`${SCENE_VIDEOS_BASE_PATH}/${videoId}/derivation-status`, {
+      headers: getAuthHeaders(),
+    });
+    return response.data as SceneVideoDerivationStatusResponse;
+  } catch (error: any) {
+    return mapSceneVideosError(error);
+  }
+}
+
+/**
  * Deletes one owned scene video asset.
  */
 export async function deleteSceneVideo(videoId: string): Promise<void> {
@@ -99,5 +145,22 @@ export async function deleteSceneVideo(videoId: string): Promise<void> {
     await api.delete(`${SCENE_VIDEOS_BASE_PATH}/${videoId}`, { headers: getAuthHeaders() });
   } catch (error: any) {
     mapSceneVideosError(error);
+  }
+}
+
+/**
+ * Updates mutable metadata of one owned scene video asset.
+ */
+export async function updateSceneVideo(
+  videoId: string,
+  options: UpdateSceneVideoOptions,
+): Promise<SceneVideoAsset> {
+  try {
+    const response = await api.patch(`${SCENE_VIDEOS_BASE_PATH}/${videoId}`, options, {
+      headers: getAuthHeaders(),
+    });
+    return response.data as SceneVideoAsset;
+  } catch (error: any) {
+    return mapSceneVideosError(error);
   }
 }

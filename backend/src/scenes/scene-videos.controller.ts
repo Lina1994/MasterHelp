@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Patch,
   Param,
   Post,
   Query,
@@ -20,8 +21,10 @@ import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateSceneVideoClipDto } from './dto/create-scene-video-clip.dto';
 import { CreateSceneVideoDto } from './dto/create-scene-video.dto';
 import { GenerateSceneVideoStreamUrlDto } from './dto/generate-scene-video-stream-url.dto';
+import { UpdateSceneVideoDto } from './dto/update-scene-video.dto';
 import { SceneVideosService } from './scene-videos.service';
 
 /**
@@ -87,6 +90,33 @@ export class SceneVideosController {
   @UseGuards(JwtAuthGuard)
   async findOne(@Req() req, @Param('id') id: string) {
     return this.sceneVideosService.findOneForOwner(id, req.user.userId);
+  }
+
+  /**
+   * Updates one owned scene video metadata record.
+   */
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  async update(@Req() req, @Param('id') id: string, @Body() dto: UpdateSceneVideoDto) {
+    return this.sceneVideosService.updateMetadataForOwner(id, req.user.userId, dto);
+  }
+
+  /**
+   * Creates one derived clip asset from an existing owned scene video.
+   */
+  @Post(':id/create-clip')
+  @UseGuards(JwtAuthGuard)
+  async createClip(@Req() req, @Param('id') id: string, @Body() dto: CreateSceneVideoClipDto) {
+    return this.sceneVideosService.createClipForOwner(id, req.user.userId, dto);
+  }
+
+  /**
+   * Returns derivation/processing state for one owned scene video.
+   */
+  @Get(':id/derivation-status')
+  @UseGuards(JwtAuthGuard)
+  async derivationStatus(@Req() req, @Param('id') id: string) {
+    return this.sceneVideosService.getDerivationStatusForOwner(id, req.user.userId);
   }
 
   /**

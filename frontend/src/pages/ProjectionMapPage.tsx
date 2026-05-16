@@ -21,6 +21,7 @@ import { computeClearedFogByAllies, subtractClearedFog, computeAllyRevealStrokes
 import { useTokenImageResolver } from '../hooks/useTokenImageResolver';
 import { useMapElements } from '../hooks/useMapElements';
 import { useSceneClockSync } from '../hooks/useSceneClockSync';
+import { useRuntimeSceneVideoWarmup } from '../hooks/useRuntimeSceneVideoWarmup';
 import type { ShortcutActionDefinition } from '../types/actionTypes';
 import type { SceneRuntimeCommand } from '../types/scenes';
 
@@ -55,6 +56,36 @@ function parseChromaKey(value: unknown): { enabled: boolean; color: string; tole
     color,
     tolerance: Number.isFinite(tolerance) ? Math.max(0, Math.min(100, tolerance)) : 20,
   };
+}
+
+function clampFreePlacement(value: unknown, fallback: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(-50, Math.min(150, n));
+}
+
+function clampFreeSize(value: unknown, fallback: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(1, Math.min(200, n));
+}
+
+interface TimedVideoOverlay {
+  key: string;
+  src: string;
+  loop: boolean;
+  startAtSec?: number;
+  loopRangeStartSec?: number;
+  loopRangeEndSec?: number;
+  muted: boolean;
+  opacity: number;
+  chromaKey?: { enabled: boolean; color: string; tolerance: number };
+  leftPct: number;
+  topPct: number;
+  widthPct: number;
+  heightPct: number;
+  layerOrder: number;
+  createdAtMs: number;
 }
 
 const ProjectionMapPage: React.FC = () => {
@@ -122,20 +153,23 @@ const ProjectionMapPage: React.FC = () => {
     try { const raw = localStorage.getItem('app.map.allyClearRadius'); const n = raw ? parseInt(raw, 10) : 1; return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 1; } catch { return 1; }
   });
   const [shortcutTextOverlay, setShortcutTextOverlay] = useState<{ text: string; title?: string } | null>(null);
+  const shortcutTextExecutionIdRef = React.useRef<string | null>(null);
   const [shortcutFilterOverlay, setShortcutFilterOverlay] = useState<{ filter: string; color?: string; intensity?: number } | null>(null);
-  const [shortcutVideoOverlay, setShortcutVideoOverlay] = useState<{
-    src: string;
-    loop: boolean;
-    muted: boolean;
-    opacity: number;
-    chromaKey?: { enabled: boolean; color: string; tolerance: number };
-    leftPct: number;
-    topPct: number;
-    widthPct: number;
-    heightPct: number;
-  } | null>(null);
+  const [shortcutVideoOverlays, setShortcutVideoOverlays] = useState<TimedVideoOverlay[]>([]);
   const shortcutTextTimeoutRef = React.useRef<number | null>(null);
-  const shortcutVideoTimeoutRef = React.useRef<number | null>(null);
+  const shortcutVideoTimeoutsRef = React.useRef<Map<string, number>>(new Map());
+  const introPlayedActionsByExecutionRef = React.useRef<Map<string, Set<string>>>(new Map());
+  const {
+    preloadVideoForOverlay,
+    resolveVideoSrc,
+    releaseOverlayVideo,
+    clearWarmupCache,
+  } = useRuntimeSceneVideoWarmup({
+    enabled: true,
+    maxItems: 2,
+    maxTotalBytes: 180 * 1024 * 1024,
+    fetchTimeoutMs: 8000,
+  });
   const sceneCommandDedupRef = React.useRef<Set<string>>(new Set());
   const sceneCommandDedupOrderRef = React.useRef<string[]>([]);
   const sceneClockOffsetByExecutionRef = React.useRef<Map<string, number>>(new Map());
@@ -183,6 +217,8 @@ const ProjectionMapPage: React.FC = () => {
   // Load FoW settings from server so this web window matches Electron even across origins.
   useEffect(() => {
     const scheduledTimerIds = new Set<number>();
+    const executionTimerIdsRef = new Map<string, Set<number>>();
+    const executionVideoOverlayKeysRef = new Map<string, Set<string>>();
     const DEDUP_MAX_KEYS = 1200;
     const DEDUP_KEEP_KEYS = 800;
     const EXECUTION_OFFSET_MAX_KEYS = 256;
@@ -339,6 +375,13 @@ const ProjectionMapPage: React.FC = () => {
 
       const timerId = window.setTimeout(() => {
         scheduledTimerIds.delete(timerId);
+        if (command.executionId) {
+          const timers = executionTimerIdsRef.get(command.executionId);
+          if (timers) {
+            timers.delete(timerId);
+            if (timers.size === 0) executionTimerIdsRef.delete(command.executionId);
+          }
+        }
         const skewMs = (Date.now() + offsetMs) - target;
         recordSkew(skewMs);
         if (import.meta.env.DEV) {
@@ -347,6 +390,52 @@ const ProjectionMapPage: React.FC = () => {
         run();
       }, Math.max(0, delayMs));
       scheduledTimerIds.add(timerId);
+      if (command.executionId) {
+        const timers = executionTimerIdsRef.get(command.executionId) ?? new Set<number>();
+        timers.add(timerId);
+        executionTimerIdsRef.set(command.executionId, timers);
+      }
+    };
+
+    const registerExecutionVideoOverlayKey = (executionId: string | undefined, overlayKey: string) => {
+      if (!executionId) return;
+      const keys = executionVideoOverlayKeysRef.get(executionId) ?? new Set<string>();
+      keys.add(overlayKey);
+      executionVideoOverlayKeysRef.set(executionId, keys);
+    };
+
+    const stopSceneExecutionRuntime = (executionId: string) => {
+      const timers = executionTimerIdsRef.get(executionId);
+      if (timers) {
+        timers.forEach((timerId) => {
+          window.clearTimeout(timerId);
+          scheduledTimerIds.delete(timerId);
+        });
+        executionTimerIdsRef.delete(executionId);
+      }
+
+      const videoKeys = executionVideoOverlayKeysRef.get(executionId);
+      if (videoKeys) {
+        videoKeys.forEach((overlayKey) => clearShortcutVideoOverlay(overlayKey));
+        executionVideoOverlayKeysRef.delete(executionId);
+      }
+
+      if (shortcutTextExecutionIdRef.current === executionId) {
+        clearShortcutTextOverlay();
+      }
+
+      introPlayedActionsByExecutionRef.current.delete(executionId);
+    };
+
+    const hasIntroBeenPlayed = (executionId: string, actionId: string): boolean => {
+      const actions = introPlayedActionsByExecutionRef.current.get(executionId);
+      return actions?.has(actionId) ?? false;
+    };
+
+    const markIntroAsPlayed = (executionId: string, actionId: string) => {
+      const actions = introPlayedActionsByExecutionRef.current.get(executionId) ?? new Set<string>();
+      actions.add(actionId);
+      introPlayedActionsByExecutionRef.current.set(executionId, actions);
     };
 
     const clearShortcutTextOverlay = () => {
@@ -354,15 +443,28 @@ const ProjectionMapPage: React.FC = () => {
         window.clearTimeout(shortcutTextTimeoutRef.current);
         shortcutTextTimeoutRef.current = null;
       }
+      shortcutTextExecutionIdRef.current = null;
       setShortcutTextOverlay(null);
     };
 
-    const clearShortcutVideoOverlay = () => {
-      if (shortcutVideoTimeoutRef.current !== null) {
-        window.clearTimeout(shortcutVideoTimeoutRef.current);
-        shortcutVideoTimeoutRef.current = null;
+    const clearShortcutVideoOverlay = (overlayKey?: string) => {
+      if (!overlayKey) {
+        shortcutVideoTimeoutsRef.current.forEach((timerId) => window.clearTimeout(timerId));
+        shortcutVideoTimeoutsRef.current.clear();
+        setShortcutVideoOverlays((current) => {
+          current.forEach((overlay) => releaseOverlayVideo(overlay.key));
+          return [];
+        });
+        return;
       }
-      setShortcutVideoOverlay(null);
+
+      const timerId = shortcutVideoTimeoutsRef.current.get(overlayKey);
+      if (timerId !== undefined) {
+        window.clearTimeout(timerId);
+        shortcutVideoTimeoutsRef.current.delete(overlayKey);
+      }
+      releaseOverlayVideo(overlayKey);
+      setShortcutVideoOverlays((current) => current.filter((overlay) => overlay.key !== overlayKey));
     };
 
     const setTimedShortcutTextOverlay = (next: { text: string; title?: string }, durationMs?: number) => {
@@ -379,31 +481,36 @@ const ProjectionMapPage: React.FC = () => {
     };
 
     const setTimedShortcutVideoOverlay = (
-      next: {
-        src: string;
-        loop: boolean;
-        muted: boolean;
-        opacity: number;
-        chromaKey?: { enabled: boolean; color: string; tolerance: number };
-        leftPct: number;
-        topPct: number;
-        widthPct: number;
-        heightPct: number;
-      },
+      overlayKey: string,
+      next: Omit<TimedVideoOverlay, 'key' | 'createdAtMs'>,
       durationMs?: number,
     ) => {
-      if (shortcutVideoTimeoutRef.current !== null) {
-        window.clearTimeout(shortcutVideoTimeoutRef.current);
-        shortcutVideoTimeoutRef.current = null;
+      const previousTimerId = shortcutVideoTimeoutsRef.current.get(overlayKey);
+      if (previousTimerId !== undefined) {
+        window.clearTimeout(previousTimerId);
+        shortcutVideoTimeoutsRef.current.delete(overlayKey);
       }
-      setShortcutVideoOverlay(next);
+
+      setShortcutVideoOverlays((current) => {
+        const withoutCurrent = current.filter((overlay) => overlay.key !== overlayKey);
+        return [
+          ...withoutCurrent,
+          {
+            ...next,
+            key: overlayKey,
+            createdAtMs: Date.now(),
+          },
+        ];
+      });
 
       const ms = Number(durationMs);
       if (Number.isFinite(ms) && ms > 0) {
-        shortcutVideoTimeoutRef.current = window.setTimeout(() => {
-          setShortcutVideoOverlay(null);
-          shortcutVideoTimeoutRef.current = null;
+        const timeoutId = window.setTimeout(() => {
+          releaseOverlayVideo(overlayKey);
+          setShortcutVideoOverlays((current) => current.filter((overlay) => overlay.key !== overlayKey));
+          shortcutVideoTimeoutsRef.current.delete(overlayKey);
         }, ms);
+        shortcutVideoTimeoutsRef.current.set(overlayKey, timeoutId);
       }
     };
 
@@ -448,21 +555,116 @@ const ProjectionMapPage: React.FC = () => {
           clearShortcutVideoOverlay();
           return;
         }
+        const overlayKey = sceneCommand.actionId || commandKey(sceneCommand);
+        registerExecutionVideoOverlayKey(sceneCommand.executionId, overlayKey);
         const loop = Boolean(body.loop);
         const muted = body.muted === undefined ? true : Boolean(body.muted);
         const opacity = Math.max(0, Math.min(1, Number(body.opacity ?? 1)));
         const chromaKey = parseChromaKey(body.chromaKey);
-        const leftPct = Math.max(0, Math.min(100, Number(body.leftPct ?? 10)));
-        const topPct = Math.max(0, Math.min(100, Number(body.topPct ?? 10)));
-        const widthPct = Math.max(1, Math.min(100, Number(body.widthPct ?? 80)));
-        const heightPct = Math.max(1, Math.min(100, Number(body.heightPct ?? 80)));
+        const leftPct = clampFreePlacement(body.leftPct ?? 10, 10);
+        const topPct = clampFreePlacement(body.topPct ?? 10, 10);
+        const widthPct = clampFreeSize(body.widthPct ?? 80, 80);
+        const heightPct = clampFreeSize(body.heightPct ?? 80, 80);
+        const layerOrder = Number.isFinite(Number(body.layerOrder)) ? Math.round(Number(body.layerOrder)) : 0;
         const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+        const explicitStartAtSec = Number(body.startAtSec);
+        const clipInSecRaw = Number(body.clipInSec);
+        const clipOutSecRaw = Number(body.clipOutSec);
+        const hasClipInSec = Number.isFinite(clipInSecRaw) && clipInSecRaw >= 0;
+        const hasClipOutSec = Number.isFinite(clipOutSecRaw) && clipOutSecRaw > (hasClipInSec ? clipInSecRaw : 0);
+        const clipInSec = hasClipInSec ? clipInSecRaw : undefined;
+        const clipOutSec = hasClipOutSec ? clipOutSecRaw : undefined;
+        const loopSegmentEnabled = Boolean(body.loopSegmentEnabled);
+        const loopSegmentStartMs = Number(body.loopSegmentStartMs);
+        const loopSegmentEndMs = Number(body.loopSegmentEndMs);
+        const hasLoopSegmentStart = Number.isFinite(loopSegmentStartMs) && loopSegmentStartMs >= 0;
+        const hasLoopSegmentEnd = Number.isFinite(loopSegmentEndMs) && loopSegmentEndMs > loopSegmentStartMs;
+        const hasLoopSegment = loopSegmentEnabled && hasLoopSegmentStart;
+        const playIntroOncePerSceneExecution = body.playIntroOncePerSceneExecution !== false;
+        const logicalExecutionId = typeof sceneCommand.logicalExecutionId === 'string' && sceneCommand.logicalExecutionId
+          ? sceneCommand.logicalExecutionId
+          : sceneCommand.executionId;
+        const introActionId = sceneCommand.actionId;
+        const shouldTrackIntro = Boolean(hasLoopSegment && playIntroOncePerSceneExecution && logicalExecutionId && introActionId);
+        const introAlreadyPlayed = shouldTrackIntro
+          ? hasIntroBeenPlayed(logicalExecutionId as string, introActionId)
+          : false;
+        const resolvedVideoUrl = resolveSceneMediaUrl(videoUrl);
+        preloadVideoForOverlay(overlayKey, resolvedVideoUrl);
         scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
+          if (shouldTrackIntro && !introAlreadyPlayed) {
+            markIntroAsPlayed(logicalExecutionId as string, introActionId);
+          }
+
+          const loopSegmentStartSec = hasLoopSegment ? loopSegmentStartMs / 1000 : undefined;
+          const loopSegmentEndSec = hasLoopSegment && hasLoopSegmentEnd ? loopSegmentEndMs / 1000 : undefined;
+
+          let resolvedLoopRangeStartSec = loopSegmentStartSec;
+          if (resolvedLoopRangeStartSec === undefined && loop && clipInSec !== undefined) {
+            resolvedLoopRangeStartSec = clipInSec;
+          }
+          if (resolvedLoopRangeStartSec !== undefined && clipInSec !== undefined) {
+            resolvedLoopRangeStartSec = Math.max(resolvedLoopRangeStartSec, clipInSec);
+          }
+
+          let resolvedLoopRangeEndSec = loopSegmentEndSec;
+          if (resolvedLoopRangeEndSec === undefined && loop && clipOutSec !== undefined) {
+            resolvedLoopRangeEndSec = clipOutSec;
+          }
+          if (resolvedLoopRangeEndSec !== undefined && clipOutSec !== undefined) {
+            resolvedLoopRangeEndSec = Math.min(resolvedLoopRangeEndSec, clipOutSec);
+          }
+          if (
+            resolvedLoopRangeStartSec !== undefined
+            && resolvedLoopRangeEndSec !== undefined
+            && resolvedLoopRangeEndSec <= resolvedLoopRangeStartSec
+          ) {
+            resolvedLoopRangeEndSec = undefined;
+          }
+
+          let resolvedStartAtSec = hasLoopSegment && introAlreadyPlayed
+            ? loopSegmentStartSec
+            : (Number.isFinite(explicitStartAtSec) && explicitStartAtSec >= 0 ? explicitStartAtSec : clipInSec);
+          if (resolvedStartAtSec !== undefined && clipInSec !== undefined) {
+            resolvedStartAtSec = Math.max(resolvedStartAtSec, clipInSec);
+          }
+          if (resolvedStartAtSec !== undefined && clipOutSec !== undefined && resolvedStartAtSec >= clipOutSec) {
+            resolvedStartAtSec = clipInSec;
+          }
+
           setTimedShortcutVideoOverlay(
-            { src: resolveSceneMediaUrl(videoUrl), loop, muted, opacity, chromaKey, leftPct, topPct, widthPct, heightPct },
-            durationMs,
+            overlayKey,
+            {
+              src: resolvedVideoUrl,
+              loop,
+              ...(resolvedLoopRangeStartSec !== undefined ? { loopRangeStartSec: resolvedLoopRangeStartSec } : {}),
+              ...(resolvedLoopRangeEndSec !== undefined ? { loopRangeEndSec: resolvedLoopRangeEndSec } : {}),
+              ...(resolvedStartAtSec !== undefined ? { startAtSec: resolvedStartAtSec } : {}),
+              muted,
+              opacity,
+              chromaKey,
+              leftPct,
+              topPct,
+              widthPct,
+              heightPct,
+              layerOrder,
+            },
+            loop ? undefined : durationMs,
           );
         }, 'window.sendVideo', getLateExecutionPolicy(sceneCommand, durationMs));
+        return;
+      }
+
+      if (sceneCommand?.kind === 'scene.stopExecution') {
+        const stopExecutionId = typeof sceneCommand.payload?.executionId === 'string'
+          ? sceneCommand.payload.executionId
+          : sceneCommand.executionId;
+        if (stopExecutionId) {
+          stopSceneExecutionRuntime(stopExecutionId);
+        } else {
+          clearShortcutVideoOverlay();
+          clearShortcutTextOverlay();
+        }
         return;
       }
 
@@ -476,6 +678,7 @@ const ProjectionMapPage: React.FC = () => {
         const title = typeof body.title === 'string' ? body.title : undefined;
         const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
         scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
+          shortcutTextExecutionIdRef.current = sceneCommand.executionId ?? null;
           setTimedShortcutTextOverlay({ text, title }, durationMs);
         }, 'narrative.setText', getLateExecutionPolicy(sceneCommand, durationMs));
         return;
@@ -545,6 +748,9 @@ const ProjectionMapPage: React.FC = () => {
         window.clearTimeout(timerId);
       }
       scheduledTimerIds.clear();
+      executionTimerIdsRef.clear();
+      executionVideoOverlayKeysRef.clear();
+      introPlayedActionsByExecutionRef.current.clear();
       sceneCommandDedupRef.current.clear();
       sceneCommandDedupOrderRef.current = [];
       sceneClockOffsetByExecutionRef.current.clear();
@@ -552,8 +758,11 @@ const ProjectionMapPage: React.FC = () => {
       sceneSkewSamplesRef.current = [];
       clearShortcutTextOverlay();
       clearShortcutVideoOverlay();
+      shortcutVideoTimeoutsRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      shortcutVideoTimeoutsRef.current.clear();
+      clearWarmupCache();
     };
-  }, []);
+  }, [clearWarmupCache, preloadVideoForOverlay, releaseOverlayVideo]);
 
   const shortcutFilterStyle = React.useMemo(() => {
     if (!shortcutFilterOverlay) return undefined;
@@ -1236,36 +1445,59 @@ const ProjectionMapPage: React.FC = () => {
 
           {shortcutFilterStyle ? <Box sx={shortcutFilterStyle} /> : null}
 
-          {shortcutVideoOverlay ? (
-            <Box
-              sx={{
-                position: 'absolute',
-                left: `${shortcutVideoOverlay.leftPct}%`,
-                top: `${shortcutVideoOverlay.topPct}%`,
-                width: `${shortcutVideoOverlay.widthPct}%`,
-                height: `${shortcutVideoOverlay.heightPct}%`,
-                zIndex: 7800,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ChromaKeyMedia
-                kind="video"
-                src={shortcutVideoOverlay.src}
-                autoPlay
-                muted={shortcutVideoOverlay.muted}
-                loop={shortcutVideoOverlay.loop}
-                playsInline
-                opacity={shortcutVideoOverlay.opacity}
-                chromaKey={shortcutVideoOverlay.chromaKey}
-                onVideoEnded={() => {
-                  if (!shortcutVideoOverlay.loop) setShortcutVideoOverlay(null);
+          {shortcutVideoOverlays
+            .slice()
+            .sort((a, b) => a.layerOrder - b.layerOrder || a.createdAtMs - b.createdAtMs)
+            .map((overlay, index) => (
+              <Box
+                key={overlay.key}
+                sx={{
+                  position: 'absolute',
+                  left: `${overlay.leftPct}%`,
+                  top: `${overlay.topPct}%`,
+                  width: `${overlay.widthPct}%`,
+                  height: `${overlay.heightPct}%`,
+                  zIndex: 7800 + index,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
-                onMediaError={() => setShortcutVideoOverlay(null)}
-              />
-            </Box>
-          ) : null}
+              >
+                <ChromaKeyMedia
+                  kind="video"
+                  src={resolveVideoSrc(overlay.key, overlay.src)}
+                  autoPlay
+                  muted={overlay.muted}
+                  loop={overlay.loop}
+                  startAtSec={overlay.startAtSec}
+                  loopRangeStartSec={overlay.loopRangeStartSec}
+                  loopRangeEndSec={overlay.loopRangeEndSec}
+                  playsInline
+                  opacity={overlay.opacity}
+                  chromaKey={overlay.chromaKey}
+                  onVideoEnded={() => {
+                    if (!overlay.loop) {
+                      const timerId = shortcutVideoTimeoutsRef.current.get(overlay.key);
+                      if (timerId !== undefined) {
+                        window.clearTimeout(timerId);
+                        shortcutVideoTimeoutsRef.current.delete(overlay.key);
+                      }
+                      releaseOverlayVideo(overlay.key);
+                      setShortcutVideoOverlays((current) => current.filter((item) => item.key !== overlay.key));
+                    }
+                  }}
+                  onMediaError={() => {
+                    const timerId = shortcutVideoTimeoutsRef.current.get(overlay.key);
+                    if (timerId !== undefined) {
+                      window.clearTimeout(timerId);
+                      shortcutVideoTimeoutsRef.current.delete(overlay.key);
+                    }
+                    releaseOverlayVideo(overlay.key);
+                    setShortcutVideoOverlays((current) => current.filter((item) => item.key !== overlay.key));
+                  }}
+                />
+              </Box>
+            ))}
 
           {shortcutTextOverlay ? (
             <Box

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Avatar,
   Box,
   Button,
   Card,
@@ -20,7 +21,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import HistoryIcon from '@mui/icons-material/History';
 import TheaterComedyIcon from '@mui/icons-material/TheaterComedy';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
+  duplicateScene,
   listScenes,
   getScene,
   createScene,
@@ -55,6 +58,7 @@ export const ScenesList: React.FC = () => {
 
   // Execution
   const [executingId, setExecutingId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [executeError, setExecuteError] = useState<string | null>(null);
 
   // History panel
@@ -121,6 +125,19 @@ export const ScenesList: React.FC = () => {
       setExecuteError(err?.response?.data?.message ?? err?.message ?? 'Error al ejecutar.');
     } finally {
       setExecutingId(null);
+    }
+  };
+
+  const handleDuplicate = async (scene: SceneLite) => {
+    setDuplicatingId(scene.id);
+    setExecuteError(null);
+    try {
+      await duplicateScene(scene.id, campaignId ?? undefined);
+      await load();
+    } catch (err: any) {
+      setExecuteError(err?.response?.data?.message ?? err?.message ?? 'Error al duplicar.');
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -191,9 +208,11 @@ export const ScenesList: React.FC = () => {
               <SceneCard
                 scene={scene}
                 executing={executingId === scene.id}
+                duplicating={duplicatingId === scene.id}
                 onEdit={() => handleOpenEdit(scene)}
                 onDelete={() => setDeleteTarget(scene)}
                 onExecute={() => handleExecute(scene)}
+                onDuplicate={() => handleDuplicate(scene)}
               />
             </Box>
           ))}
@@ -234,31 +253,62 @@ export const ScenesList: React.FC = () => {
 interface SceneCardProps {
   scene: SceneLite;
   executing: boolean;
+  duplicating: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onExecute: () => void;
+  onDuplicate: () => void;
 }
 
-const SceneCard: React.FC<SceneCardProps> = ({ scene, executing, onEdit, onDelete, onExecute }) => (
+const SceneCard: React.FC<SceneCardProps> = ({
+  scene,
+  executing,
+  duplicating,
+  onEdit,
+  onDelete,
+  onExecute,
+  onDuplicate,
+}) => (
   <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
     <CardHeader
-      avatar={<TheaterComedyIcon color="action" />}
+      avatar={(
+        <Avatar
+          src={scene.imageUrl ?? undefined}
+          sx={{ bgcolor: scene.imageUrl ? 'transparent' : 'action.selected' }}
+        >
+          {scene.imageUrl ? null : (scene.icon || <TheaterComedyIcon color="action" />)}
+        </Avatar>
+      )}
       title={
         <Typography variant="subtitle1" fontWeight={600} noWrap>
           {scene.name}
         </Typography>
       }
       subheader={
-        <Chip
-          label={scene.scope === 'global' ? 'Global' : 'Campaña'}
-          size="small"
-          color={scene.scope === 'global' ? 'default' : 'primary'}
-          variant="outlined"
-          sx={{ mt: 0.5 }}
-        />
+        <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+          <Chip
+            label={scene.scope === 'global' ? 'Global' : 'Campaña'}
+            size="small"
+            color={scene.scope === 'global' ? 'default' : 'primary'}
+            variant="outlined"
+          />
+          <Chip
+            label={scene.loop ? 'Bucle' : 'Una vez'}
+            size="small"
+            color={scene.loop ? 'secondary' : 'default'}
+            variant={scene.loop ? 'filled' : 'outlined'}
+          />
+        </Stack>
       }
       action={
         <Stack direction="row">
+          <Tooltip title="Duplicar">
+            <span>
+              <IconButton size="small" onClick={onDuplicate} disabled={duplicating}>
+                <ContentCopyIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip title="Editar">
             <IconButton size="small" onClick={onEdit}>
               <EditIcon fontSize="small" />

@@ -2,10 +2,12 @@ import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsIn,
   IsInt,
   IsOptional,
   IsString,
+  IsUrl,
   IsUUID,
   MaxLength,
   Min,
@@ -40,6 +42,49 @@ export class CreateSceneDto {
   @IsString()
   @MaxLength(500)
   description?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  loop?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  loopDelayMs?: number | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  loopDelayRandomMinMs?: number | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  loopDelayRandomMaxMs?: number | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  loopWindowStartMs?: number | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  loopWindowEndMs?: number | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(8)
+  icon?: string | null;
+
+  @IsOptional()
+  @IsUrl({ require_tld: false })
+  imageUrl?: string | null;
 
   @IsArray()
   @ArrayMaxSize(SCENE_MAX_ACTIONS)

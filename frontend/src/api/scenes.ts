@@ -12,6 +12,14 @@ const normalizeScene = (raw: any): SceneLite => ({
   id: String(raw?.id || ''),
   name: String(raw?.name || ''),
   description: raw?.description ?? null,
+  icon: typeof raw?.icon === 'string' ? raw.icon : null,
+  imageUrl: typeof raw?.imageUrl === 'string' ? raw.imageUrl : null,
+  loop: Boolean(raw?.loop),
+  loopDelayMs: typeof raw?.loopDelayMs === 'number' ? raw.loopDelayMs : null,
+  loopDelayRandomMinMs: typeof raw?.loopDelayRandomMinMs === 'number' ? raw.loopDelayRandomMinMs : null,
+  loopDelayRandomMaxMs: typeof raw?.loopDelayRandomMaxMs === 'number' ? raw.loopDelayRandomMaxMs : null,
+  loopWindowStartMs: typeof raw?.loopWindowStartMs === 'number' ? raw.loopWindowStartMs : null,
+  loopWindowEndMs: typeof raw?.loopWindowEndMs === 'number' ? raw.loopWindowEndMs : null,
   scope: raw?.scope || 'global',
   campaignId: raw?.campaignId ?? raw?.campaign?.id ?? null,
 });
@@ -37,6 +45,24 @@ export async function executeScene(sceneId: string): Promise<ExecuteSceneRespons
     scene: normalizeScene(response.data?.scene),
     commands: Array.isArray(response.data?.commands) ? response.data.commands : [],
   } as ExecuteSceneResponse;
+}
+
+/**
+ * Requests cancellation of one scene execution.
+ */
+export async function cancelSceneExecution(executionId: string): Promise<SceneExecution> {
+  const response = await api.patch(`/scenes/executions/${executionId}/cancel`, {}, { headers: getAuthHeaders() });
+  return response.data as SceneExecution;
+}
+
+/**
+ * Duplicates one scene, optionally targeting a campaign scope.
+ */
+export async function duplicateScene(sceneId: string, targetCampaignId?: string | null): Promise<Scene> {
+  const response = await api.post(`/scenes/${sceneId}/duplicate`, {
+    ...(targetCampaignId ? { targetCampaignId } : {}),
+  }, { headers: getAuthHeaders() });
+  return response.data as Scene;
 }
 
 /**

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ThemeContext from '../ThemeContext';
 import API_BASE_URL, { api } from '../apiBase';
 import { normalizeShortcut } from '../api/shortcuts';
+import { executeScene } from '../api/scenes';
 import { listPlaylists, listSongsForCampaign } from '../api/soundtrack';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
@@ -32,7 +33,81 @@ const asLoopMode = (value: unknown): SfxLoopMode => {
   return 'once';
 };
 
-const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
+const inferCommandDurationMs = (command: SceneRuntimeCommand): number => {
+  const payload = command.payload ?? {};
+  const durationMs = Number(payload.durationMs);
+  if (Number.isFinite(durationMs) && durationMs > 0) return Math.round(durationMs);
+
+  if (command.kind === 'window.sendVideo') {
+    const isLoop = Boolean(payload.loop);
+    return isLoop ? 6000 : 4000;
+  }
+  if (command.kind === 'window.sendImage') return 4000;
+  if (command.kind === 'narrative.setText') return 3500;
+  if (command.kind.startsWith('audio.')) return 1200;
+  if (command.kind === 'shortcut.execute') return 1000;
+  return 900;
+};
+
+const inferExecutionDurationMs = (commands: SceneRuntimeCommand[]): number => {
+  if (!commands.length) return 0;
+  let maxEnd = 0;
+  for (const command of commands) {
+    const start = Number.isFinite(command.issuedAtOffsetMs) ? command.issuedAtOffsetMs : 0;
+    const end = start + inferCommandDurationMs(command);
+    if (end > maxEnd) maxEnd = end;
+  }
+  return Math.max(0, Math.round(maxEnd));
+};
+
+const resolveLoopDelayMs = (scene: ExecuteSceneResponse['scene'] | undefined): number => {
+  if (!scene?.loop) return 0;
+
+  const minMs = Number(scene.loopDelayRandomMinMs);
+  const maxMs = Number(scene.loopDelayRandomMaxMs);
+  if (Number.isFinite(minMs) && Number.isFinite(maxMs) && minMs >= 0 && maxMs >= minMs) {
+    const range = maxMs - minMs;
+    if (range <= 0) return Math.round(minMs);
+    return Math.round(minMs + Math.random() * range);
+  }
+
+  const fixedMs = Number(scene.loopDelayMs);
+  if (Number.isFinite(fixedMs) && fixedMs > 0) {
+    return Math.round(fixedMs);
+  }
+
+  return 0;
+};
+
+const resolveSceneLoopWindow = (
+  scene: ExecuteSceneResponse['scene'] | undefined,
+  fallbackDurationMs: number,
+): { startMs: number; endMs: number; durationMs: number } | null => {
+  if (!scene?.loop) return null;
+
+  const startMsRaw = Number(scene.loopWindowStartMs);
+  const endMsRaw = Number(scene.loopWindowEndMs);
+  if (!Number.isFinite(startMsRaw) || !Number.isFinite(endMsRaw)) return null;
+
+  const roundedStartMs = Math.max(0, Math.round(startMsRaw));
+  const roundedEndMs = Math.max(roundedStartMs + 1, Math.round(endMsRaw));
+  const boundedStartMs = fallbackDurationMs > 0
+    ? Math.min(Math.max(0, fallbackDurationMs - 1), roundedStartMs)
+    : roundedStartMs;
+  const boundedEndMs = Math.max(boundedStartMs + 1, roundedEndMs);
+  if (boundedEndMs <= boundedStartMs) return null;
+
+  return {
+    startMs: boundedStartMs,
+    endMs: boundedEndMs,
+    durationMs: boundedEndMs - boundedStartMs,
+  };
+};
+
+interface ActiveSceneExecutionController {
+  stopped: boolean;
+  timerId: number | null;
+}
 
 /**
  * Headless bridge that maps shortcut runtime events to concrete app actions.
@@ -45,6 +120,7 @@ const ShortcutRuntimeBridge = () => {
   const { playSfx, stopAllSfx } = useSfxPlayer();
   const { clockOffsetMs: sceneClockOffsetMs } = useSceneClockSync({ enabled: true, pollMs: 60000 });
   const sceneClockOffsetRef = useRef<number>(0);
+  const activeSceneExecutionsRef = useRef<Map<string, ActiveSceneExecutionController>>(new Map());
 
   useEffect(() => {
     sceneClockOffsetRef.current = sceneClockOffsetMs;
@@ -65,6 +141,52 @@ const ShortcutRuntimeBridge = () => {
   }, []);
 
   useEffect(() => {
+    const stopSceneExecution = (executionId: string) => {
+      const controller = activeSceneExecutionsRef.current.get(executionId);
+      if (!controller) return;
+      controller.stopped = true;
+      if (controller.timerId !== null) {
+        window.clearTimeout(controller.timerId);
+        controller.timerId = null;
+      }
+    };
+
+    const broadcastSceneStopCommand = async (executionId: string) => {
+      const baseCommand: SceneRuntimeCommand = {
+        actionId: `scene-stop:${executionId}:${Date.now()}`,
+        kind: 'scene.stopExecution',
+        payload: { executionId },
+        executionId,
+        issuedAtOffsetMs: 0,
+      };
+
+      const targets: Array<SceneRuntimeCommand['targetWindow'] | undefined> = [
+        undefined,
+        { kind: 'projection' },
+        { kind: 'skyline' },
+      ];
+
+      await Promise.all(targets.map((targetWindow) => dispatchSceneWindowCommand(
+        targetWindow ? { ...baseCommand, targetWindow } : baseCommand,
+        activeCampaign?.id,
+      )));
+    };
+
+    const waitWithController = (controller: ActiveSceneExecutionController, ms: number): Promise<boolean> => {
+      if (controller.stopped) return Promise.resolve(false);
+      if (!Number.isFinite(ms) || ms <= 0) return Promise.resolve(true);
+
+      return new Promise((resolve) => {
+        const timerId = window.setTimeout(() => {
+          if (controller.timerId === timerId) {
+            controller.timerId = null;
+          }
+          resolve(!controller.stopped);
+        }, ms);
+        controller.timerId = timerId;
+      });
+    };
+
     const applyAudioControl = (action: ShortcutActionDefinition) => {
       const payload = getPayload(action);
       const audioEl = document.querySelector('audio[data-global-player-audio="true"]') as HTMLAudioElement | null;
@@ -244,18 +366,24 @@ const ShortcutRuntimeBridge = () => {
       }
     };
 
-    const handleSceneRuntimeExecute = async (event: Event) => {
-      const custom = event as CustomEvent<ExecuteSceneResponse>;
-      const execution = custom.detail;
+    const executeCommandPlan = async (
+      execution: ExecuteSceneResponse,
+      controller: ActiveSceneExecutionController,
+      logicalExecutionId: string,
+      loopCycleIndex: number,
+    ): Promise<boolean> => {
       const commands = Array.isArray(execution?.commands)
         ? execution.commands.map((command) => ({
           ...command,
+          logicalExecutionId,
+          loopCycleIndex,
           executionId: execution.executionId,
           scheduleVersion: execution.scheduleVersion,
           serverNowMs: execution.serverNowMs,
           startAtMs: execution.startAtMs,
         }))
         : [];
+
       commands.sort((left, right) => {
         if (Number.isFinite(left.sequence) && Number.isFinite(right.sequence)) {
           return Number(left.sequence) - Number(right.sequence);
@@ -263,19 +391,75 @@ const ShortcutRuntimeBridge = () => {
         return left.issuedAtOffsetMs - right.issuedAtOffsetMs;
       });
 
+      const cycleStartedAtMs = Date.now();
       const localReceivedAtMs = Date.now();
       const serverNowMs = Number(execution?.serverNowMs);
       const clockOffsetMs = Number.isFinite(serverNowMs)
         ? serverNowMs - localReceivedAtMs
         : sceneClockOffsetRef.current;
 
+      const fullCycleDurationMs = inferExecutionDurationMs(commands);
+      const loopWindow = loopCycleIndex > 0
+        ? resolveSceneLoopWindow(execution.scene, fullCycleDurationMs)
+        : null;
+
+      const cycleStartExecuteAtMs = Date.now() + clockOffsetMs;
+      const plannedCommandsFromWindow: SceneRuntimeCommand[] = loopWindow
+        ? commands
+          .filter((command) => {
+            const commandStartMs = Number.isFinite(command.issuedAtOffsetMs) ? command.issuedAtOffsetMs : 0;
+            const commandEndMs = commandStartMs + inferCommandDurationMs(command);
+            return commandStartMs < loopWindow.endMs && commandEndMs > loopWindow.startMs;
+          })
+          .map((command) => {
+            const originalOffsetMs = Number.isFinite(command.issuedAtOffsetMs) ? command.issuedAtOffsetMs : 0;
+            const shiftedOffsetMs = Math.max(0, Math.round(originalOffsetMs - loopWindow.startMs));
+
+            if (command.kind === 'window.sendVideo' && originalOffsetMs < loopWindow.startMs) {
+              const startDeltaSec = Math.max(0, (loopWindow.startMs - originalOffsetMs) / 1000);
+              const currentStartAtSec = Number((command.payload as Record<string, unknown>).startAtSec);
+              const resolvedStartAtSec = Number.isFinite(currentStartAtSec) && currentStartAtSec >= 0
+                ? Math.max(currentStartAtSec, startDeltaSec)
+                : startDeltaSec;
+
+              return {
+                ...command,
+                payload: {
+                  ...command.payload,
+                  startAtSec: resolvedStartAtSec,
+                },
+                issuedAtOffsetMs: shiftedOffsetMs,
+                executeAtMs: cycleStartExecuteAtMs + shiftedOffsetMs,
+              };
+            }
+
+            return {
+              ...command,
+              issuedAtOffsetMs: shiftedOffsetMs,
+              executeAtMs: cycleStartExecuteAtMs + shiftedOffsetMs,
+            };
+          })
+        : [];
+
+      const hasWindowCommands = Boolean(loopWindow && plannedCommandsFromWindow.length > 0);
+      const plannedCommands = loopWindow
+        ? (hasWindowCommands ? plannedCommandsFromWindow : commands)
+        : commands;
+
+      const plannedDurationMs = inferExecutionDurationMs(plannedCommands);
+      const cycleDurationMs = loopWindow
+        ? (hasWindowCommands ? loopWindow.durationMs : plannedDurationMs)
+        : plannedDurationMs;
+
       let previousOffset = 0;
-      for (const command of commands) {
+      for (const command of plannedCommands) {
+        if (controller.stopped) return false;
+
         const executeAtMs = Number(command.executeAtMs);
-        let waitMs = 0;
         const isWindowBoundCommand = command.kind.startsWith('window.') || command.kind === 'narrative.setText';
 
         if (!isWindowBoundCommand) {
+          let waitMs = 0;
           if (Number.isFinite(executeAtMs)) {
             waitMs = Math.max(0, executeAtMs - (Date.now() + clockOffsetMs));
           } else {
@@ -284,7 +468,8 @@ const ShortcutRuntimeBridge = () => {
           }
 
           if (waitMs > 0) {
-            await wait(waitMs);
+            const shouldContinue = await waitWithController(controller, waitMs);
+            if (!shouldContinue) return false;
           }
         }
 
@@ -335,16 +520,6 @@ const ShortcutRuntimeBridge = () => {
           continue;
         }
 
-        if (command.kind === 'narrative.setText') {
-          await dispatchSceneWindowCommand(command as SceneRuntimeCommand, activeCampaign?.id);
-          continue;
-        }
-
-        if (command.kind === 'window.applyFilter' || command.kind === 'window.clearFilter') {
-          await dispatchSceneWindowCommand(command as SceneRuntimeCommand, activeCampaign?.id);
-          continue;
-        }
-
         if (command.kind === 'shortcut.execute') {
           const shortcut = normalizeShortcut(command.payload.shortcut);
           window.dispatchEvent(new CustomEvent('scene:shortcut-command', { detail: { shortcut } }));
@@ -353,16 +528,107 @@ const ShortcutRuntimeBridge = () => {
 
         await dispatchSceneWindowCommand(command as SceneRuntimeCommand, activeCampaign?.id);
       }
+
+      const elapsedMs = Date.now() - cycleStartedAtMs;
+      const remainingMs = Math.max(0, cycleDurationMs - elapsedMs);
+      if (remainingMs > 0) {
+        const shouldContinue = await waitWithController(controller, remainingMs);
+        if (!shouldContinue) return false;
+      }
+
+      return !controller.stopped;
+    };
+
+    const handleSceneRuntimeExecute = async (event: Event) => {
+      const custom = event as CustomEvent<ExecuteSceneResponse>;
+      const initialExecution = custom.detail;
+      const logicalExecutionId = String(initialExecution?.executionId || '');
+      if (!logicalExecutionId) return;
+
+      stopSceneExecution(logicalExecutionId);
+
+      const controller: ActiveSceneExecutionController = { stopped: false, timerId: null };
+      activeSceneExecutionsRef.current.set(logicalExecutionId, controller);
+
+      window.dispatchEvent(new CustomEvent('scene:execution-started', {
+        detail: {
+          executionId: logicalExecutionId,
+          sceneId: initialExecution.scene?.id,
+          sceneName: initialExecution.scene?.name,
+          icon: initialExecution.scene?.icon ?? null,
+          imageUrl: initialExecution.scene?.imageUrl ?? null,
+          loop: Boolean(initialExecution.scene?.loop),
+          startedAtMs: Date.now(),
+        },
+      }));
+
+      let currentExecution: ExecuteSceneResponse | null = initialExecution;
+      let loopCycleIndex = 0;
+
+      try {
+        while (currentExecution && !controller.stopped) {
+          const cycleCompleted = await executeCommandPlan(
+            currentExecution,
+            controller,
+            logicalExecutionId,
+            loopCycleIndex,
+          );
+          if (!cycleCompleted || controller.stopped) break;
+
+          if (!currentExecution.scene?.loop) {
+            break;
+          }
+
+          const delayMs = resolveLoopDelayMs(currentExecution.scene);
+          if (delayMs > 0) {
+            const shouldContinue = await waitWithController(controller, delayMs);
+            if (!shouldContinue) break;
+          }
+
+          if (!currentExecution.scene?.id) break;
+          currentExecution = await executeScene(currentExecution.scene.id);
+          loopCycleIndex += 1;
+        }
+      } catch {
+        // Execution failures are surfaced by normal error UX and should not break bridge subscriptions.
+      } finally {
+        const wasStopped = controller.stopped;
+        activeSceneExecutionsRef.current.delete(logicalExecutionId);
+        window.dispatchEvent(new CustomEvent(wasStopped ? 'scene:execution-stopped' : 'scene:execution-completed', {
+          detail: {
+            executionId: logicalExecutionId,
+            sceneId: initialExecution.scene?.id,
+          },
+        }));
+      }
+    };
+
+    const handleStopRequest = (event: Event) => {
+      const custom = event as CustomEvent<{ executionId?: string }>;
+      const executionId = String(custom.detail?.executionId || '');
+      if (!executionId) return;
+      stopSceneExecution(executionId);
+      void broadcastSceneStopCommand(executionId);
     };
 
     window.addEventListener('shortcut:audio-action', handleAudioAction as EventListener);
     window.addEventListener('shortcut:config-action', handleConfigAction as EventListener);
     window.addEventListener('scene:runtime-execute', handleSceneRuntimeExecute as EventListener);
+    window.addEventListener('scene:execution-stop-request', handleStopRequest as EventListener);
 
     return () => {
       window.removeEventListener('shortcut:audio-action', handleAudioAction as EventListener);
       window.removeEventListener('shortcut:config-action', handleConfigAction as EventListener);
       window.removeEventListener('scene:runtime-execute', handleSceneRuntimeExecute as EventListener);
+      window.removeEventListener('scene:execution-stop-request', handleStopRequest as EventListener);
+      activeSceneExecutionsRef.current.forEach((controller) => {
+        controller.stopped = true;
+        if (controller.timerId !== null) {
+          window.clearTimeout(controller.timerId);
+          controller.timerId = null;
+        }
+      });
+      activeSceneExecutionsRef.current.clear();
     };
   }, [activeCampaign?.id, i18n, play, playQueue, playSfx, setMode, stop, stopAllSfx]);
 

@@ -28,6 +28,30 @@ export class Scene {
   @Column({ type: 'text', nullable: true, default: null })
   description: string | null;
 
+  @Column({ default: false })
+  loop: boolean;
+
+  @Column({ type: 'integer', nullable: true, default: null })
+  loopDelayMs: number | null;
+
+  @Column({ type: 'integer', nullable: true, default: null })
+  loopDelayRandomMinMs: number | null;
+
+  @Column({ type: 'integer', nullable: true, default: null })
+  loopDelayRandomMaxMs: number | null;
+
+  @Column({ type: 'integer', nullable: true, default: null })
+  loopWindowStartMs: number | null;
+
+  @Column({ type: 'integer', nullable: true, default: null })
+  loopWindowEndMs: number | null;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  icon: string | null;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  imageUrl: string | null;
+
   @Column({ type: 'text', default: 'global' })
   scope: SceneScope;
 

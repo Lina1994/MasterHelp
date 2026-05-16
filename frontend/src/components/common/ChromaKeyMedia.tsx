@@ -26,6 +26,9 @@ interface ChromaKeyMediaProps {
   isPlaying?: boolean;
   seekTimeSec?: number;
   seekVersion?: number;
+  startAtSec?: number;
+  loopRangeStartSec?: number;
+  loopRangeEndSec?: number;
 }
 
 function parseHexColor(hex: string): { r: number; g: number; b: number } | null {
@@ -97,6 +100,9 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
   isPlaying = true,
   seekTimeSec,
   seekVersion,
+  startAtSec,
+  loopRangeStartSec,
+  loopRangeEndSec,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -105,8 +111,23 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
   const rafIdRef = useRef<number | null>(null);
   const lastDrawTimeRef = useRef<number>(0);
   const lastAppliedSeekVersionRef = useRef<number | null>(null);
+  const lastStartTokenRef = useRef<string | null>(null);
   const chroma = useMemo(() => normalizeChroma(chromaKey), [chromaKey]);
   const [canvasUnavailable, setCanvasUnavailable] = useState(false);
+
+  const customLoopRange = useMemo(() => {
+    const rangeStartSec = Number(loopRangeStartSec);
+    const rangeEndSec = Number(loopRangeEndSec);
+    const hasRangeStart = Number.isFinite(rangeStartSec) && rangeStartSec >= 0;
+    const hasRangeEnd = Number.isFinite(rangeEndSec) && rangeEndSec > rangeStartSec;
+    return {
+      hasRangeStart,
+      rangeStartSec: hasRangeStart ? rangeStartSec : undefined,
+      rangeEndSec: hasRangeEnd ? rangeEndSec : undefined,
+    };
+  }, [loopRangeEndSec, loopRangeStartSec]);
+
+  const nativeLoopEnabled = loop && !customLoopRange.hasRangeStart;
 
   const needsCanvas = !canvasUnavailable && (chroma.enabled || pickColorEnabled);
 
@@ -125,8 +146,53 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
       lastAppliedSeekVersionRef.current = seekVersion;
     }
 
+    const startToken = Number.isFinite(startAtSec) ? `${src}::${Number(startAtSec).toFixed(3)}` : null;
+    if (startToken && lastStartTokenRef.current !== startToken) {
+      const safeStartAtSec = Math.max(0, Number(startAtSec));
+      const applyStartSeek = () => {
+        if (!Number.isFinite(safeStartAtSec) || video.seeking) return;
+        try {
+          video.currentTime = safeStartAtSec;
+          lastStartTokenRef.current = startToken;
+        } catch {
+          // Ignore seek errors for non-seekable segments.
+        }
+      };
+
+      if (video.readyState >= 1) {
+        applyStartSeek();
+      } else {
+        const onLoadedMetadata = () => {
+          video.removeEventListener('loadedmetadata', onLoadedMetadata);
+          applyStartSeek();
+        };
+        video.addEventListener('loadedmetadata', onLoadedMetadata, { once: true });
+      }
+    }
+
     if (Number.isFinite(seekTimeSec)) {
-      const safeSeek = Math.max(0, Number(seekTimeSec));
+      let safeSeek = Math.max(0, Number(seekTimeSec));
+
+      const rangeStartSec = Number(loopRangeStartSec);
+      const rangeEndSec = Number(loopRangeEndSec);
+      const hasRangeStart = Number.isFinite(rangeStartSec) && rangeStartSec >= 0;
+      const effectiveRangeEndSec = Number.isFinite(rangeEndSec) && rangeEndSec > rangeStartSec
+        ? rangeEndSec
+        : (Number.isFinite(video.duration) && video.duration > rangeStartSec ? video.duration : null);
+
+      if (hasRangeStart && Number.isFinite(effectiveRangeEndSec) && effectiveRangeEndSec && safeSeek >= effectiveRangeEndSec) {
+        const rangeDurationSec = effectiveRangeEndSec - rangeStartSec;
+        if (rangeDurationSec > 0) {
+          safeSeek = rangeStartSec + ((safeSeek - rangeStartSec) % rangeDurationSec);
+        } else {
+          safeSeek = rangeStartSec;
+        }
+      }
+
+      if (Number.isFinite(video.duration) && video.duration > 0) {
+        safeSeek = Math.min(safeSeek, Math.max(0, video.duration - 0.03));
+      }
+
       const driftSec = Math.abs(video.currentTime - safeSeek);
       const shouldSeek = hasExplicitSeekJump || (!isPlaying && driftSec > (1 / 60));
       if (shouldSeek && !video.seeking) {
@@ -158,7 +224,61 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
     } else {
       video.pause();
     }
-  }, [kind, isPlaying, seekTimeSec, seekVersion, src, needsCanvas]);
+  }, [kind, isPlaying, seekTimeSec, seekVersion, src, needsCanvas, startAtSec]);
+
+  useEffect(() => {
+    if (kind !== 'video') return;
+
+    const video = hiddenVideoRef.current ?? inlineVideoRef.current;
+    if (!video) return;
+
+    const rangeStartSec = customLoopRange.rangeStartSec;
+    if (!loop || rangeStartSec === undefined) return;
+
+    const getLoopEndSec = () => {
+      if (customLoopRange.rangeEndSec !== undefined) {
+        const rangeEndSec = customLoopRange.rangeEndSec;
+        return rangeEndSec;
+      }
+      if (Number.isFinite(video.duration) && video.duration > rangeStartSec) {
+        return video.duration;
+      }
+      return null;
+    };
+
+    const onTimeUpdate = () => {
+      const effectiveEndSec = getLoopEndSec();
+      if (!effectiveEndSec) return;
+      if (video.seeking) return;
+      if (video.currentTime < effectiveEndSec - 0.03) return;
+      try {
+        video.currentTime = rangeStartSec;
+      } catch {
+        // Ignore seek errors while media is transitioning.
+      }
+    };
+
+    const onEnded = () => {
+      try {
+        video.currentTime = rangeStartSec;
+        if (isPlaying) {
+          const maybePromise = video.play();
+          if (maybePromise && typeof maybePromise.catch === 'function') {
+            maybePromise.catch(() => undefined);
+          }
+        }
+      } catch {
+        // Ignore seek/play errors while media is transitioning.
+      }
+    };
+
+    video.addEventListener('timeupdate', onTimeUpdate);
+    video.addEventListener('ended', onEnded);
+    return () => {
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      video.removeEventListener('ended', onEnded);
+    };
+  }, [kind, loop, src, customLoopRange, isPlaying]);
 
   useEffect(() => {
     if (!needsCanvas || !src) return;
@@ -265,10 +385,30 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
       onMediaError?.();
     };
     const onEnded = () => onVideoEnded?.();
+    const drawStillFrame = () => {
+      if (!hiddenVideoRef.current) return;
+      const currentVideo = hiddenVideoRef.current;
+      if (currentVideo.readyState < 2) return;
+      try {
+        drawFrame(currentVideo, currentVideo.videoWidth || 1, currentVideo.videoHeight || 1);
+      } catch {
+        markCanvasUnavailable();
+      }
+    };
+    const onSeeked = () => {
+      if (!video.paused) return;
+      drawStillFrame();
+    };
+    const onLoadedMetadata = () => {
+      if (!video.paused) return;
+      drawStillFrame();
+    };
 
     video.addEventListener('loadeddata', onLoadedData);
+    video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.addEventListener('play', startLoop);
     video.addEventListener('pause', stopLoop);
+    video.addEventListener('seeked', onSeeked);
     video.addEventListener('error', onError);
     video.addEventListener('ended', onEnded);
 
@@ -276,8 +416,10 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
 
     return () => {
       video.removeEventListener('loadeddata', onLoadedData);
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);
       video.removeEventListener('play', startLoop);
       video.removeEventListener('pause', stopLoop);
+      video.removeEventListener('seeked', onSeeked);
       video.removeEventListener('error', onError);
       video.removeEventListener('ended', onEnded);
       stopLoop();
@@ -332,7 +474,7 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
         src={src}
         preload="auto"
         autoPlay={autoPlay}
-        loop={loop}
+        loop={nativeLoopEnabled}
         muted={muted}
         playsInline={playsInline}
         controls={false}
@@ -351,7 +493,7 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
           src={src}
           preload="auto"
           autoPlay={autoPlay}
-          loop={loop}
+          loop={nativeLoopEnabled}
           muted={muted}
           playsInline={playsInline}
           crossOrigin="anonymous"

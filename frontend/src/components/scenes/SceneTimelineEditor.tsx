@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Chip,
@@ -41,6 +41,10 @@ interface SceneTimelineEditorProps {
   onChangeActionLayerOrder?: (actionId: string, nextLayerOrder: number) => void;
   currentTimeMs?: number;
   onSeekTimeMs?: (nextTimeMs: number) => void;
+  loopEnabled?: boolean;
+  loopWindowStartMs?: number | null;
+  loopWindowEndMs?: number | null;
+  onSetLoopWindow?: (nextStartMs: number, nextEndMs: number) => void;
 }
 
 interface TimelineDragState {
@@ -53,6 +57,15 @@ interface TimelineDragState {
   startClientY: number;
   previewStartMs: number;
   previewLaneIndex: number;
+}
+
+interface LoopWindowDragState {
+  mode: 'start' | 'end';
+  startClientX: number;
+  originStartMs: number;
+  originEndMs: number;
+  previewStartMs: number;
+  previewEndMs: number;
 }
 
 const TRACK_ORDER = [
@@ -100,21 +113,53 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
   onChangeActionLayerOrder,
   currentTimeMs,
   onSeekTimeMs,
+  loopEnabled = false,
+  loopWindowStartMs,
+  loopWindowEndMs,
+  onSetLoopWindow,
 }) => {
   const { entries, totalMs } = useMemo(() => buildTimeline(actions), [actions]);
   const [dragState, setDragState] = useState<TimelineDragState | null>(null);
+  const [loopWindowDragState, setLoopWindowDragState] = useState<LoopWindowDragState | null>(null);
   const [snapMs, setSnapMs] = useState<number>(250);
+  const timelineScrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const pxPerMs = 0.035;
   const laneHeight = 34;
   const timelineWidth = Math.max(900, totalMs * pxPerMs + 40);
   const tickMs = chooseTickMs(totalMs);
   const boundedCurrentTimeMs = Math.max(0, Math.min(totalMs, Number(currentTimeMs ?? 0)));
+  const normalizedLoopWindow = useMemo(() => {
+    const startRaw = Number(loopWindowStartMs);
+    const endRaw = Number(loopWindowEndMs);
+    const hasValidStart = Number.isFinite(startRaw) && startRaw >= 0;
+    const hasValidEnd = Number.isFinite(endRaw) && endRaw > 0;
+
+    if (!loopEnabled) {
+      return {
+        hasLoopWindow: false,
+        startMs: 0,
+        endMs: totalMs,
+      };
+    }
+
+    const fallbackStart = 0;
+    const fallbackEnd = totalMs;
+    const startMs = hasValidStart ? Math.max(0, Math.min(totalMs - 1, Math.round(startRaw))) : fallbackStart;
+    const endCandidate = hasValidEnd ? Math.round(endRaw) : fallbackEnd;
+    const endMs = Math.max(startMs + 1, Math.min(totalMs, endCandidate));
+
+    return {
+      hasLoopWindow: true,
+      startMs,
+      endMs,
+    };
+  }, [loopEnabled, loopWindowEndMs, loopWindowStartMs, totalMs]);
 
   const seekFromPointer = (clientX: number, rect: DOMRect) => {
     if (!onSeekTimeMs || rect.width <= 0) return;
-    const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
-    const ratio = x / rect.width;
+    const x = Math.max(0, Math.min(timelineWidth, clientX - rect.left));
+    const ratio = x / timelineWidth;
     const nextTime = Math.round(totalMs * ratio);
     onSeekTimeMs(nextTime);
   };
@@ -173,17 +218,15 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
     };
 
     const onMouseUp = () => {
-      setDragState((current) => {
-        if (!current) return null;
-        onMoveActionInTime?.(current.actionId, current.previewStartMs);
+      const current = dragState;
+      onMoveActionInTime?.(current.actionId, current.previewStartMs);
 
-        if (current.previewLaneIndex !== current.sourceLaneIndex) {
-          const nextLayerOrder = 1000 - current.previewLaneIndex;
-          onChangeActionLayerOrder?.(current.actionId, nextLayerOrder);
-        }
+      if (current.previewLaneIndex !== current.sourceLaneIndex) {
+        const nextLayerOrder = 1000 - current.previewLaneIndex;
+        onChangeActionLayerOrder?.(current.actionId, nextLayerOrder);
+      }
 
-        return null;
-      });
+      setDragState(null);
     };
 
     window.addEventListener('mousemove', onMouseMove);
@@ -193,6 +236,51 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
       window.removeEventListener('mouseup', onMouseUp);
     };
   }, [dragState, laneHeight, onChangeActionLayerOrder, onMoveActionInTime, pxPerMs]);
+
+  useEffect(() => {
+    if (!loopWindowDragState || !normalizedLoopWindow.hasLoopWindow || !onSetLoopWindow) return;
+
+    const onMouseMove = (event: MouseEvent) => {
+      setLoopWindowDragState((current) => {
+        if (!current) return null;
+
+        const rawDeltaXMs = (event.clientX - current.startClientX) / pxPerMs;
+        const snappedDeltaXMs = event.shiftKey
+          ? Math.round(rawDeltaXMs)
+          : Math.round(rawDeltaXMs / snapMs) * snapMs;
+
+        if (current.mode === 'start') {
+          const nextStartMs = Math.max(0, Math.min(current.originEndMs - 1, current.originStartMs + snappedDeltaXMs));
+          return {
+            ...current,
+            previewStartMs: nextStartMs,
+          };
+        }
+
+        const nextEndMs = Math.max(current.originStartMs + 1, Math.min(totalMs, current.originEndMs + snappedDeltaXMs));
+        return {
+          ...current,
+          previewEndMs: nextEndMs,
+        };
+      });
+    };
+
+    const onMouseUp = () => {
+      const current = loopWindowDragState;
+      onSetLoopWindow(
+        Math.max(0, Math.round(current.previewStartMs)),
+        Math.max(1, Math.round(current.previewEndMs)),
+      );
+      setLoopWindowDragState(null);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [loopWindowDragState, normalizedLoopWindow.hasLoopWindow, onSetLoopWindow, pxPerMs, snapMs, totalMs]);
 
   if (actions.length === 0) {
     return (
@@ -232,7 +320,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
         </Stack>
       </Stack>
 
-      <Box sx={{ overflowX: 'auto', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+      <Box ref={timelineScrollContainerRef} sx={{ overflowX: 'auto', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ width: timelineWidth + 220, p: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Box sx={{ width: 210, pr: 1 }}>
@@ -278,7 +366,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
           </Box>
 
           <Stack spacing={0.75}>
-            {tracks.map((track) => (
+            {tracks.map((track, trackIndex) => (
               <Box key={track.trackKey} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                 <Box sx={{ width: 210, pr: 1 }}>
                   <Typography variant="caption" color="text.secondary">
@@ -303,6 +391,104 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                     seekFromPointer(event.clientX, rect);
                   }}
                 >
+                  {normalizedLoopWindow.hasLoopWindow ? (
+                    <>
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: (loopWindowDragState?.previewStartMs ?? normalizedLoopWindow.startMs) * pxPerMs,
+                          width: ((loopWindowDragState?.previewEndMs ?? normalizedLoopWindow.endMs) - (loopWindowDragState?.previewStartMs ?? normalizedLoopWindow.startMs)) * pxPerMs,
+                          top: 0,
+                          bottom: 0,
+                          bgcolor: 'primary.main',
+                          opacity: 0.1,
+                          border: '1px solid',
+                          borderColor: 'primary.main',
+                          borderStyle: 'dashed',
+                          zIndex: 0,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      {trackIndex === 0 && onSetLoopWindow ? (
+                        <>
+                          <Box
+                            role="button"
+                            tabIndex={0}
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              const currentStartMs = loopWindowDragState?.previewStartMs ?? normalizedLoopWindow.startMs;
+                              const currentEndMs = loopWindowDragState?.previewEndMs ?? normalizedLoopWindow.endMs;
+                              setLoopWindowDragState({
+                                mode: 'start',
+                                startClientX: event.clientX,
+                                originStartMs: currentStartMs,
+                                originEndMs: currentEndMs,
+                                previewStartMs: currentStartMs,
+                                previewEndMs: currentEndMs,
+                              });
+                            }}
+                            sx={{
+                              position: 'absolute',
+                              left: (loopWindowDragState?.previewStartMs ?? normalizedLoopWindow.startMs) * pxPerMs - 4,
+                              top: 0,
+                              bottom: 0,
+                              width: 8,
+                              bgcolor: 'primary.main',
+                              opacity: 0.85,
+                              borderRadius: 0.5,
+                              cursor: 'ew-resize',
+                              zIndex: 22,
+                            }}
+                          />
+                          <Box
+                            role="button"
+                            tabIndex={0}
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              const currentStartMs = loopWindowDragState?.previewStartMs ?? normalizedLoopWindow.startMs;
+                              const currentEndMs = loopWindowDragState?.previewEndMs ?? normalizedLoopWindow.endMs;
+                              setLoopWindowDragState({
+                                mode: 'end',
+                                startClientX: event.clientX,
+                                originStartMs: currentStartMs,
+                                originEndMs: currentEndMs,
+                                previewStartMs: currentStartMs,
+                                previewEndMs: currentEndMs,
+                              });
+                            }}
+                            sx={{
+                              position: 'absolute',
+                              left: (loopWindowDragState?.previewEndMs ?? normalizedLoopWindow.endMs) * pxPerMs - 4,
+                              top: 0,
+                              bottom: 0,
+                              width: 8,
+                              bgcolor: 'primary.main',
+                              opacity: 0.85,
+                              borderRadius: 0.5,
+                              cursor: 'ew-resize',
+                              zIndex: 22,
+                            }}
+                          />
+                          <Chip
+                            size="small"
+                            label={`Loop parcial: ${formatMs(loopWindowDragState?.previewStartMs ?? normalizedLoopWindow.startMs)} - ${formatMs(loopWindowDragState?.previewEndMs ?? normalizedLoopWindow.endMs)}`}
+                            sx={{
+                              position: 'absolute',
+                              left: (loopWindowDragState?.previewStartMs ?? normalizedLoopWindow.startMs) * pxPerMs,
+                              top: -24,
+                              zIndex: 23,
+                              bgcolor: 'primary.main',
+                              color: '#fff',
+                              pointerEvents: 'none',
+                            }}
+                          />
+                        </>
+                      ) : null}
+                    </>
+                  ) : null}
+
                   <Box
                     sx={{
                       position: 'absolute',
@@ -481,7 +667,7 @@ export function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEnt
     entries.push({
       actionId: action.id,
       type: action.type,
-      label: ACTION_LABELS[action.type] ?? action.type,
+      label: inferTimelineLabel(action),
       trackKey: track.key,
       trackLabel: track.label,
       sourceIndex: index,
@@ -496,6 +682,58 @@ export function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEnt
   }
 
   return { entries, totalMs: Math.max(maxEndMs, cursorMs, 1000) };
+}
+
+function inferTimelineLabel(action: SceneActionDto): string {
+  const payload = (action.payload ?? {}) as Record<string, unknown>;
+  const manualName = typeof payload.displayName === 'string' ? payload.displayName.trim() : '';
+  if (manualName) return manualName;
+
+  if (action.type === 'sendVideoToWindow') {
+    const assetName = typeof payload.videoAssetName === 'string' ? payload.videoAssetName.trim() : '';
+    if (assetName) return `Video: ${assetName}`;
+    const assetId = typeof payload.videoAssetId === 'string' ? payload.videoAssetId.trim() : '';
+    if (assetId) return `Video: ${assetId.slice(0, 8)}`;
+  }
+
+  if (action.type === 'sendImageToWindow') {
+    const title = typeof payload.title === 'string' ? payload.title.trim() : '';
+    if (title) return `Image: ${title}`;
+    const imageUrl = typeof payload.imageUrl === 'string' ? payload.imageUrl.trim() : '';
+    if (imageUrl) {
+      const filename = imageUrl.split('/').pop()?.split('?')[0] ?? imageUrl;
+      return `Image: ${filename}`;
+    }
+  }
+
+  if (action.type === 'setNarrativeText') {
+    const title = typeof payload.title === 'string' ? payload.title.trim() : '';
+    if (title) return `Narrative: ${title}`;
+  }
+
+  if (action.type === 'playMusic') {
+    const songId = typeof payload.songId === 'string' ? payload.songId.trim() : '';
+    const playlistId = typeof payload.playlistId === 'string' ? payload.playlistId.trim() : '';
+    if (songId) return `Music: ${songId}`;
+    if (playlistId) return `Playlist: ${playlistId}`;
+  }
+
+  if (action.type === 'playSound') {
+    const effectId = typeof payload.effectId === 'string' ? payload.effectId.trim() : '';
+    if (effectId) return `SFX: ${effectId}`;
+  }
+
+  if (action.type === 'runScene') {
+    const sceneId = typeof payload.sceneId === 'string' ? payload.sceneId.trim() : '';
+    if (sceneId) return `Run scene: ${sceneId.slice(0, 8)}`;
+  }
+
+  if (action.type === 'runShortcut') {
+    const shortcutId = typeof payload.shortcutId === 'string' ? payload.shortcutId.trim() : '';
+    if (shortcutId) return `Shortcut: ${shortcutId.slice(0, 8)}`;
+  }
+
+  return ACTION_LABELS[action.type] ?? action.type;
 }
 
 function readLayerOrder(payload: Record<string, unknown>, fallback: number): number {
