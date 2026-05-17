@@ -5,12 +5,13 @@ type ShortcutThumbnailPreviewProps = {
   imageUrl?: string | null;
   name: string;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  hideLabel?: boolean;
 };
 
 /**
  * Compact thumbnail preview used by the shortcut editor header.
  */
-const ShortcutThumbnailPreview = ({ icon, imageUrl, name, onClick }: ShortcutThumbnailPreviewProps) => {
+const ShortcutThumbnailPreview = ({ icon, imageUrl, name, onClick, hideLabel }: ShortcutThumbnailPreviewProps) => {
   const fallbackLabel = name.trim().slice(0, 1).toUpperCase() || '?';
   const statusLabel = imageUrl ? 'Imagen/GIF' : icon ? 'Emoji' : 'Sin miniatura';
 
@@ -59,9 +60,11 @@ const ShortcutThumbnailPreview = ({ icon, imageUrl, name, onClick }: ShortcutThu
           </Avatar>
         )}
       </Paper>
-      <Typography variant="caption" color="text.secondary">
-        {statusLabel} · Pulsa para editar
-      </Typography>
+      {!hideLabel && (
+        <Typography variant="caption" color="text.secondary">
+          {statusLabel} · Pulsa para editar
+        </Typography>
+      )}
     </Stack>
   );
 };

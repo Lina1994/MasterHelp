@@ -42,6 +42,7 @@ interface SceneTimelineEditorProps {
   onSelectAction?: (actionId: string) => void;
   onMoveActionInTime?: (actionId: string, nextStartMs: number) => void;
   onChangeActionLayerOrder?: (actionId: string, nextLayerOrder: number) => void;
+  onChangeActionDuration?: (actionId: string, nextDurationMs: number, nextStartMs?: number) => void;
   currentTimeMs?: number;
   onSeekTimeMs?: (nextTimeMs: number) => void;
   loopEnabled?: boolean;
@@ -60,6 +61,16 @@ interface TimelineDragState {
   startClientY: number;
   previewStartMs: number;
   previewLaneIndex: number;
+}
+
+interface TimelineResizeState {
+  actionId: string;
+  edge: 'left' | 'right';
+  originStartMs: number;
+  originDurationMs: number;
+  startClientX: number;
+  previewStartMs: number;
+  previewDurationMs: number;
 }
 
 interface LoopWindowDragState {
@@ -115,6 +126,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
   onSelectAction,
   onMoveActionInTime,
   onChangeActionLayerOrder,
+  onChangeActionDuration,
   currentTimeMs,
   onSeekTimeMs,
   loopEnabled = false,
@@ -124,6 +136,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
 }) => {
   const { entries, totalMs } = useMemo(() => buildTimeline(actions), [actions]);
   const [dragState, setDragState] = useState<TimelineDragState | null>(null);
+  const [resizeState, setResizeState] = useState<TimelineResizeState | null>(null);
   const [loopWindowDragState, setLoopWindowDragState] = useState<LoopWindowDragState | null>(null);
   const [snapMs, setSnapMs] = useState<number>(250);
   const timelineScrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -133,6 +146,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
   const timelineWidth = Math.max(900, totalMs * pxPerMs + 40);
   const tickMs = chooseTickMs(totalMs);
   const boundedCurrentTimeMs = Math.max(0, Math.min(totalMs, Number(currentTimeMs ?? 0)));
+
   const normalizedLoopWindow = useMemo(() => {
     const startRaw = Number(loopWindowStartMs);
     const endRaw = Number(loopWindowEndMs);
@@ -162,8 +176,9 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
 
   const seekFromPointer = (clientX: number, rect: DOMRect) => {
     if (!onSeekTimeMs || rect.width <= 0) return;
-    const x = Math.max(0, Math.min(timelineWidth, clientX - rect.left));
-    const ratio = x / timelineWidth;
+    const activeWidth = totalMs * pxPerMs;
+    const x = Math.max(0, Math.min(activeWidth, clientX - rect.left));
+    const ratio = activeWidth > 0 ? x / activeWidth : 0;
     const nextTime = Math.round(totalMs * ratio);
     onSeekTimeMs(nextTime);
   };
@@ -197,6 +212,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
     }).filter((track) => track.lanes.length > 0);
   }, [entries]);
 
+  // DRAGGING ACTIONS
   useEffect(() => {
     if (!dragState) return;
 
@@ -226,8 +242,43 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
       onMoveActionInTime?.(current.actionId, current.previewStartMs);
 
       if (current.previewLaneIndex !== current.sourceLaneIndex) {
-        const nextLayerOrder = 1000 - current.previewLaneIndex;
-        onChangeActionLayerOrder?.(current.actionId, nextLayerOrder);
+        const track = tracks.find((t) => t.trackKey === current.trackKey);
+        if (track) {
+          const trackEntries = track.lanes.flatMap((l) => l.entries);
+          const orderedActionIds = trackEntries.map((e) => e.actionId);
+
+          const [draggedId] = orderedActionIds.splice(current.sourceLaneIndex, 1);
+          orderedActionIds.splice(current.previewLaneIndex, 0, draggedId);
+
+          const draggedIndex = current.previewLaneIndex;
+
+          const aboveEntry = draggedIndex > 0
+            ? trackEntries.find((e) => e.actionId === orderedActionIds[draggedIndex - 1])
+            : undefined;
+          const belowEntry = draggedIndex < orderedActionIds.length - 1
+            ? trackEntries.find((e) => e.actionId === orderedActionIds[draggedIndex + 1])
+            : undefined;
+
+          const aboveOrder = aboveEntry?.layerOrder;
+          const belowOrder = belowEntry?.layerOrder;
+
+          let nextLayerOrder = 100;
+          if (aboveOrder !== undefined && belowOrder !== undefined) {
+            nextLayerOrder = Math.round((aboveOrder + belowOrder) / 2);
+            if (nextLayerOrder === aboveOrder || nextLayerOrder === belowOrder) {
+              nextLayerOrder = aboveOrder - 1;
+            }
+          } else if (belowOrder !== undefined) {
+            nextLayerOrder = belowOrder + 10;
+          } else if (aboveOrder !== undefined) {
+            nextLayerOrder = Math.max(0, aboveOrder - 10);
+            if (nextLayerOrder === aboveOrder) {
+              nextLayerOrder = Math.max(0, aboveOrder - 1);
+            }
+          }
+
+          onChangeActionLayerOrder?.(current.actionId, nextLayerOrder);
+        }
       }
 
       setDragState(null);
@@ -239,8 +290,59 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [dragState, laneHeight, onChangeActionLayerOrder, onMoveActionInTime, pxPerMs]);
+  }, [dragState, laneHeight, onChangeActionLayerOrder, onMoveActionInTime, pxPerMs, tracks]);
 
+  // RESIZING ACTIONS
+  useEffect(() => {
+    if (!resizeState) return;
+
+    const onMouseMove = (event: MouseEvent) => {
+      setResizeState((current) => {
+        if (!current) return null;
+        const rawDeltaXMs = (event.clientX - current.startClientX) / pxPerMs;
+        const isFineAdjust = event.shiftKey;
+        const snappedDeltaXMs = isFineAdjust
+          ? Math.round(rawDeltaXMs)
+          : Math.round(rawDeltaXMs / snapMs) * snapMs;
+
+        if (current.edge === 'right') {
+          // Adjust duration, keep startMs
+          const nextDurationMs = Math.max(200, current.originDurationMs + snappedDeltaXMs);
+          return {
+            ...current,
+            previewDurationMs: nextDurationMs,
+          };
+        } else {
+          // Adjust startMs and duration (keeping endMs constant)
+          const originEndMs = current.originStartMs + current.originDurationMs;
+          const nextStartMs = Math.max(0, Math.min(originEndMs - 200, current.originStartMs + snappedDeltaXMs));
+          const nextDurationMs = originEndMs - nextStartMs;
+          return {
+            ...current,
+            previewStartMs: nextStartMs,
+            previewDurationMs: nextDurationMs,
+          };
+        }
+      });
+    };
+
+    const onMouseUp = () => {
+      const current = resizeState;
+      if (current) {
+        onChangeActionDuration?.(current.actionId, current.previewDurationMs, current.previewStartMs);
+      }
+      setResizeState(null);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [resizeState, onChangeActionDuration, pxPerMs, snapMs]);
+
+  // DRAGGING LOOP WINDOW
   useEffect(() => {
     if (!loopWindowDragState || !normalizedLoopWindow.hasLoopWindow || !onSetLoopWindow) return;
 
@@ -390,7 +492,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                   }}
                   onMouseDown={(event) => {
                     if (event.button !== 0) return;
-                    if (dragState) return;
+                    if (dragState || resizeState) return;
                     const rect = event.currentTarget.getBoundingClientRect();
                     seekFromPointer(event.clientX, rect);
                   }}
@@ -508,6 +610,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                     }}
                   />
 
+                  {/* DRAG PREVIEW GUIDES */}
                   {dragState && dragState.trackKey === track.trackKey ? (
                     <>
                       <Box
@@ -556,6 +659,52 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                     </>
                   ) : null}
 
+                  {/* RESIZE PREVIEW GUIDES */}
+                  {resizeState && (
+                    <>
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: resizeState.previewStartMs * pxPerMs,
+                          top: 0,
+                          bottom: 0,
+                          width: 2,
+                          bgcolor: 'info.main',
+                          opacity: 0.75,
+                          zIndex: 20,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          left: (resizeState.previewStartMs + resizeState.previewDurationMs) * pxPerMs,
+                          top: 0,
+                          bottom: 0,
+                          width: 2,
+                          bgcolor: 'info.main',
+                          opacity: 0.75,
+                          zIndex: 20,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      <Chip
+                        size="small"
+                        label={`Duración: ${formatMs(resizeState.previewDurationMs)} | Inicio: ${formatMs(resizeState.previewStartMs)}`}
+                        sx={{
+                          position: 'absolute',
+                          left: Math.max(0, resizeState.previewStartMs * pxPerMs),
+                          top: -24,
+                          zIndex: 21,
+                          bgcolor: 'info.main',
+                          color: '#fff',
+                          fontWeight: 700,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    </>
+                  )}
+
                   {track.lanes.map((lane) => (
                     <Box
                       key={`${track.trackKey}-lane-${lane.laneIndex}`}
@@ -570,17 +719,28 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                     >
                       {lane.entries.map((entry) => {
                         const isDraggingThis = dragState?.actionId === entry.actionId && dragState.trackKey === track.trackKey;
-                        const leftMs = isDraggingThis ? dragState.previewStartMs : entry.startMs;
-                        const laneDelta = isDraggingThis ? dragState.previewLaneIndex - lane.laneIndex : 0;
+                        const isResizingThis = resizeState?.actionId === entry.actionId;
+
+                        const leftMs = isResizingThis
+                          ? resizeState.previewStartMs
+                          : isDraggingThis
+                            ? dragState.previewStartMs
+                            : entry.startMs;
+
+                        const durationMs = isResizingThis
+                          ? resizeState.previewDurationMs
+                          : entry.durationMs;
+
                         const left = leftMs * pxPerMs;
-                        const width = Math.max(28, entry.durationMs * pxPerMs);
+                        const width = Math.max(28, durationMs * pxPerMs);
                         const isSelected = selectedActionId === entry.actionId;
                         const isNarrativeEditing = narrativeEditingActionId === entry.actionId;
+                        const isResizable = entry.type === 'setNarrativeText' || entry.type === 'sendImageToWindow';
 
                         return (
                           <Tooltip
                             key={entry.actionId}
-                            title={`${entry.label} | ${formatMs(entry.startMs)} - ${formatMs(entry.endMs)}${entry.type === 'setNarrativeText' ? ` | ${entry.narrativeHasRichText ? 'rich' : 'plain'}${entry.narrativeHasStyleOverrides ? ' + style' : ''}${isNarrativeEditing ? ' | editando' : ''}` : ''}`}
+                            title={`${entry.label} | ${formatMs(leftMs)} - ${formatMs(leftMs + durationMs)}${entry.type === 'setNarrativeText' ? ` | ${entry.narrativeHasRichText ? 'rich' : 'plain'}${entry.narrativeHasStyleOverrides ? ' + style' : ''}${isNarrativeEditing ? ' | editando' : ''}` : ''}`}
                           >
                             <Box
                               role="button"
@@ -612,11 +772,11 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                               sx={{
                                 position: 'absolute',
                                 left,
-                                top: 4 + laneDelta * laneHeight,
+                                top: 4,
                                 width,
                                 height: 26,
                                 borderRadius: 1,
-                                px: 1,
+                                px: 0.75,
                                 display: 'flex',
                                 alignItems: 'center',
                                 bgcolor: colorForTrack(entry.trackKey),
@@ -630,23 +790,94 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                                 overflow: 'hidden',
                                 cursor: 'grab',
                                 userSelect: 'none',
-                                zIndex: isDraggingThis ? 10 : 1,
+                                zIndex: isDraggingThis || isResizingThis ? 10 : 1,
                               }}
                             >
-                              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ width: '100%', minWidth: 0 }}>
+                              {/* Left Resize Handle */}
+                              {isResizable && (
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: 6,
+                                    cursor: 'ew-resize',
+                                    zIndex: 3,
+                                    borderTopLeftRadius: 'inherit',
+                                    borderBottomLeftRadius: 'inherit',
+                                    transition: 'background-color 0.15s',
+                                    '&:hover': {
+                                      bgcolor: 'rgba(255, 255, 255, 0.35)',
+                                    }
+                                  }}
+                                  onMouseDown={(event) => {
+                                    if (event.button !== 0) return;
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    setResizeState({
+                                      actionId: entry.actionId,
+                                      edge: 'left',
+                                      originStartMs: entry.startMs,
+                                      originDurationMs: entry.durationMs,
+                                      startClientX: event.clientX,
+                                      previewStartMs: entry.startMs,
+                                      previewDurationMs: entry.durationMs,
+                                    });
+                                  }}
+                                />
+                              )}
+
+                              {/* Box Label Content */}
+                              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ width: '100%', minWidth: 0, px: 0.5 }}>
                                 <Typography variant="caption" noWrap sx={{ color: 'inherit', flex: 1, minWidth: 0 }}>
                                   {entry.label}
                                 </Typography>
                                 {entry.type === 'setNarrativeText' && entry.narrativeHasRichText ? (
-                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.92)' }} />
+                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.92)', flexShrink: 0 }} />
                                 ) : null}
                                 {entry.type === 'setNarrativeText' && entry.narrativeHasStyleOverrides ? (
-                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'rgba(173, 216, 230, 0.92)' }} />
+                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'rgba(173, 216, 230, 0.92)', flexShrink: 0 }} />
                                 ) : null}
                                 {isNarrativeEditing ? (
-                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'warning.light' }} />
+                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'warning.light', flexShrink: 0 }} />
                                 ) : null}
                               </Stack>
+
+                              {/* Right Resize Handle */}
+                              {isResizable && (
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: 6,
+                                    cursor: 'ew-resize',
+                                    zIndex: 3,
+                                    borderTopRightRadius: 'inherit',
+                                    borderBottomRightRadius: 'inherit',
+                                    transition: 'background-color 0.15s',
+                                    '&:hover': {
+                                      bgcolor: 'rgba(255, 255, 255, 0.35)',
+                                    }
+                                  }}
+                                  onMouseDown={(event) => {
+                                    if (event.button !== 0) return;
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    setResizeState({
+                                      actionId: entry.actionId,
+                                      edge: 'right',
+                                      originStartMs: entry.startMs,
+                                      originDurationMs: entry.durationMs,
+                                      startClientX: event.clientX,
+                                      previewStartMs: entry.startMs,
+                                      previewDurationMs: entry.durationMs,
+                                    });
+                                  }}
+                                />
+                              )}
                             </Box>
                           </Tooltip>
                         );
@@ -697,9 +928,9 @@ export function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEnt
       durationMs,
       ...(action.type === 'setNarrativeText'
         ? {
-            narrativeHasRichText: hasNarrativeRichTextDoc(payload),
-            narrativeHasStyleOverrides: hasNarrativeStyleOverrides(payload),
-          }
+          narrativeHasRichText: hasNarrativeRichTextDoc(payload),
+          narrativeHasStyleOverrides: hasNarrativeStyleOverrides(payload),
+        }
         : {}),
     });
 
@@ -831,10 +1062,11 @@ function resolveTrack(action: SceneActionDto): { key: string; label: string } {
     'setWindowBackground',
     'applyWindowFilter',
     'clearWindowFilter',
+    'setNarrativeText',
   ]);
 
   if (windowActionTypes.has(action.type)) {
-    const target = action.targetWindow?.kind ?? 'main';
+    const target = action.targetWindow?.kind ?? (action.type === 'setNarrativeText' ? 'projection' : 'main');
     return { key: `window.${target}`, label: `Window: ${target}` };
   }
 
@@ -844,10 +1076,6 @@ function resolveTrack(action: SceneActionDto): { key: string; label: string } {
 
   if (action.type === 'playSound') {
     return { key: 'fx', label: 'Sound FX' };
-  }
-
-  if (action.type === 'setNarrativeText') {
-    return { key: 'narrative', label: 'Narrative' };
   }
 
   if (action.type === 'setWeather') {

@@ -14,34 +14,51 @@ import {
   Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import UploadIcon from '@mui/icons-material/Upload';
 import { EMOJI_CATEGORIES, readRecentEmojis, recordRecentEmoji } from './emojiData';
 
 type EmojiPickerDialogProps = {
   open: boolean;
   value: string;
+  imageUrl?: string | null;
   onClose: () => void;
   onSelect: (emoji: string) => void;
+  onUploadImage?: () => void;
+  isUploadingImage?: boolean;
 };
 
 const RECENT_TAB_ID = 'recent';
+const IMAGE_TAB_ID = 'custom-image';
 
 /**
- * Emoji picker dialog with categorized grids and a recent-emojis row.
+ * Emoji and custom image picker dialog with categorized grids and a recent-emojis row.
  */
-const EmojiPickerDialog = ({ open, value, onClose, onSelect }: EmojiPickerDialogProps) => {
+const EmojiPickerDialog = ({
+  open,
+  value,
+  imageUrl,
+  onClose,
+  onSelect,
+  onUploadImage,
+  isUploadingImage,
+}: EmojiPickerDialogProps) => {
   const [activeTab, setActiveTab] = useState<string>(RECENT_TAB_ID);
   const [recentEmojis, setRecentEmojis] = useState<string[]>(() => readRecentEmojis());
 
   useEffect(() => {
     if (!open) return;
 
-    const activeCategory = EMOJI_CATEGORIES.find((category) => category.emojis.includes(value));
-    setActiveTab(activeCategory?.id || (recentEmojis.length > 0 ? RECENT_TAB_ID : EMOJI_CATEGORIES[0]?.id || RECENT_TAB_ID));
+    if (imageUrl) {
+      setActiveTab(IMAGE_TAB_ID);
+    } else {
+      const activeCategory = EMOJI_CATEGORIES.find((category) => category.emojis.includes(value));
+      setActiveTab(activeCategory?.id || (recentEmojis.length > 0 ? RECENT_TAB_ID : EMOJI_CATEGORIES[0]?.id || RECENT_TAB_ID));
+    }
     setRecentEmojis(readRecentEmojis());
-  }, [open, recentEmojis.length, value]);
+  }, [open, recentEmojis.length, value, imageUrl]);
 
   const currentCategory = useMemo(() => {
-    if (activeTab === RECENT_TAB_ID) return null;
+    if (activeTab === RECENT_TAB_ID || activeTab === IMAGE_TAB_ID) return null;
     return EMOJI_CATEGORIES.find((category) => category.id === activeTab) || EMOJI_CATEGORIES[0] || null;
   }, [activeTab]);
 
@@ -67,9 +84,9 @@ const EmojiPickerDialog = ({ open, value, onClose, onSelect }: EmojiPickerDialog
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle sx={{ pr: 6 }}>
-        Selector de emojis
+        Selector de iconos
         <IconButton
-          aria-label="Cerrar selector de emojis"
+          aria-label="Cerrar selector de iconos"
           onClick={onClose}
           size="small"
           sx={{ position: 'absolute', right: 12, top: 12 }}
@@ -81,7 +98,7 @@ const EmojiPickerDialog = ({ open, value, onClose, onSelect }: EmojiPickerDialog
         <Stack spacing={2}>
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Elige un emoji con categorías y usa la pestaña de recientes cuando quieras volver a los últimos usados.
+              Elige un emoji de las categorías o sube una imagen personalizada para el icono.
             </Typography>
           </Box>
 
@@ -95,6 +112,7 @@ const EmojiPickerDialog = ({ open, value, onClose, onSelect }: EmojiPickerDialog
               sx={{ minHeight: 42 }}
             >
               {recentEmojis.length > 0 ? <Tab value={RECENT_TAB_ID} label="Recientes" /> : null}
+              {onUploadImage ? <Tab value={IMAGE_TAB_ID} label="Imagen" /> : null}
               {EMOJI_CATEGORIES.map((category) => (
                 <Tab key={category.id} value={category.id} label={category.label} />
               ))}
@@ -102,7 +120,72 @@ const EmojiPickerDialog = ({ open, value, onClose, onSelect }: EmojiPickerDialog
           </Box>
 
           <Box sx={{ maxHeight: '46vh', overflowY: 'auto', pr: 0.5 }}>
-            {currentEmojis.length > 0 ? (
+            {activeTab === IMAGE_TAB_ID ? (
+              <Stack alignItems="center" justifyContent="center" spacing={2} sx={{ py: 4, minHeight: 200 }}>
+                {imageUrl ? (
+                  <Stack alignItems="center" spacing={2}>
+                    <Box
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        border: '2px solid',
+                        borderColor: 'primary.main',
+                        boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
+                      }}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt="Icono subido"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Esta imagen está seleccionada como icono.
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={onUploadImage}
+                      disabled={isUploadingImage}
+                    >
+                      {isUploadingImage ? 'Subiendo...' : 'Cambiar imagen'}
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Stack
+                    alignItems="center"
+                    justifyContent="center"
+                    spacing={2}
+                    onClick={isUploadingImage ? undefined : onUploadImage}
+                    sx={{
+                      width: '100%',
+                      maxWidth: 400,
+                      p: 4,
+                      borderRadius: 3,
+                      border: '2px dashed',
+                      borderColor: 'divider',
+                      cursor: isUploadingImage ? 'default' : 'pointer',
+                      transition: 'all 0.2s ease',
+                      mx: 'auto',
+                      '&:hover': {
+                        borderColor: isUploadingImage ? 'divider' : 'primary.main',
+                        bgcolor: isUploadingImage ? 'transparent' : 'action.hover',
+                      },
+                    }}
+                  >
+                    <UploadIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {isUploadingImage ? 'Subiendo archivo...' : 'Sube una imagen o GIF'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" textAlign="center">
+                      Haz clic aquí para seleccionar una foto de tu ordenador.
+                    </Typography>
+                  </Stack>
+                )}
+              </Stack>
+            ) : currentEmojis.length > 0 ? (
               <Stack spacing={1.25}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                   {currentTitle}
@@ -155,9 +238,9 @@ const EmojiPickerDialog = ({ open, value, onClose, onSelect }: EmojiPickerDialog
           </Box>
         </Stack>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ justifyContent: 'space-between' }}>
         <Button onClick={handleClear} color="inherit">
-          Quitar emoji
+          Limpiar icono
         </Button>
         <Button onClick={onClose} variant="contained">
           Cerrar

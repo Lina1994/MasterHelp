@@ -631,6 +631,9 @@ const ProjectionMapPage: React.FC = () => {
       payload: { action?: ShortcutActionDefinition } | ShortcutActionDefinition,
     ) => {
       const sceneCommand = parseSceneRuntimeCommand(payload);
+      if (sceneCommand?.targetWindow && sceneCommand.targetWindow.kind !== 'projection') {
+        return;
+      }
       if (sceneCommand) {
         const key = commandKey(sceneCommand);
         if (!rememberCommandKey(key)) {
@@ -1606,7 +1609,7 @@ const ProjectionMapPage: React.FC = () => {
                   top: `${overlay.topPct}%`,
                   width: `${overlay.widthPct}%`,
                   height: `${overlay.heightPct}%`,
-                  zIndex: 7800 + index,
+                  zIndex: 9000 + (overlay.layerOrder ?? 100),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1656,7 +1659,7 @@ const ProjectionMapPage: React.FC = () => {
                 top: `${shortcutTextOverlay.topPct}%`,
                 width: `${shortcutTextOverlay.widthPct}%`,
                 height: `${shortcutTextOverlay.heightPct}%`,
-                zIndex: 8000 + shortcutTextOverlay.layerOrder,
+                zIndex: 9000 + (shortcutTextOverlay.layerOrder ?? 100),
                 opacity: shortcutTextOverlay.opacity,
                 pointerEvents: 'none',
                 boxSizing: 'border-box',

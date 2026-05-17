@@ -1,94 +1,151 @@
 import React from 'react';
 import {
-  Button,
-  Box,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  IconButton,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
   Stack,
-  Switch,
-  TextField,
-  Tooltip,
+  Box,
   Typography,
+  IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  Divider,
+  Button,
+  FormControlLabel,
+  Switch,
+  Alert,
+  Tabs,
+  Tab,
+  Chip,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FormatBoldIcon from '@mui/icons-material/FormatBold';
-import FormatItalicIcon from '@mui/icons-material/FormatItalic';
-import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { SceneActionDto, SceneVideoAsset } from '../../types/scenes';
 
-const ACTION_TYPE_LABELS: Record<string, string> = {
+export type SceneActionType =
+  | 'sendVideoToWindow'
+  | 'sendImageToWindow'
+  | 'setWindowBackground'
+  | 'applyWindowFilter'
+  | 'clearWindow'
+  | 'playMusic'
+  | 'stopMusic'
+  | 'setMusicVolume'
+  | 'playSound'
+  | 'stopSound'
+  | 'setSoundVolume'
+  | 'delay'
+  | 'runShortcut'
+  | 'runScene'
+  | 'setNarrativeText'
+  | 'setWeather'
+  | 'hideWeather';
+
+const ACTION_TYPES: SceneActionType[] = [
+  'sendVideoToWindow',
+  'sendImageToWindow',
+  'setWindowBackground',
+  'applyWindowFilter',
+  'clearWindow',
+  'playMusic',
+  'stopMusic',
+  'setMusicVolume',
+  'playSound',
+  'stopSound',
+  'setSoundVolume',
+  'delay',
+  'runShortcut',
+  'runScene',
+  'setNarrativeText',
+  'setWeather',
+  'hideWeather',
+];
+
+const ACTION_TYPE_LABELS: Record<SceneActionType, string> = {
+  sendVideoToWindow: '📹 Enviar vídeo a ventana',
+  sendImageToWindow: '🖼️ Enviar imagen a ventana',
+  setWindowBackground: '🖼️ Establecer fondo de ventana',
+  applyWindowFilter: '🎨 Aplicar filtro de ventana',
+  clearWindow: '🧹 Limpiar ventana',
   playMusic: '🎵 Reproducir música',
-  stopMusic: '⏹ Detener música',
+  stopMusic: '🔇 Detener música',
+  setMusicVolume: '🔊 Ajustar volumen música',
   playSound: '🔊 Reproducir sonido',
-  setMusicVolume: '🔉 Volumen de música',
-  sendImageToWindow: '🖼 Enviar imagen a ventana',
-  sendVideoToWindow: '🎬 Enviar vídeo a ventana',
-  setWindowBackground: '🖼 Fondo de ventana',
-  applyWindowFilter: '🎨 Aplicar filtro',
-  clearWindowFilter: '🚫 Limpiar filtro',
-  setWeather: '🌦 Establecer clima',
+  stopSound: '🔇 Detener sonido',
+  setSoundVolume: '🔊 Ajustar volumen sonido',
+  delay: '⏳ Pausa (Delay)',
+  runShortcut: '⚡ Atajo rápido',
+  runScene: '🎬 Cambiar a escena',
   setNarrativeText: '📜 Texto narrativo',
-  runShortcut: '⚡ Ejecutar atajo',
-  delay: '⏱ Pausa',
-  runScene: '🎭 Ejecutar escena',
+  setWeather: '⛈️ Tiempo atmosférico',
+  hideWeather: '☀️ Ocultar tiempo atmosférico',
 };
 
-const ACTION_TYPES = Object.keys(ACTION_TYPE_LABELS);
-
-const WINDOW_TARGET_KINDS = ['main', 'projection', 'skyline'] as const;
-const WINDOW_TARGET_LABELS: Record<(typeof WINDOW_TARGET_KINDS)[number], string> = {
-  main: 'Principal',
-  projection: 'Mapas',
-  skyline: 'Skyline',
+const DEST_WINDOW_LABELS: Record<string, string> = {
+  main: 'Ventana principal (Director)',
+  projection: 'Proyección (Jugadores / Mapa)',
+  skyline: 'Skyline (Detalle)',
 };
 
-interface Props {
-  /** The action being edited */
-  action: SceneActionDto;
-  /** Index in the parent list (1-based for display) */
+interface SceneAction {
+  id: string;
+  type: string;
+  delay?: number;
+  targetWindow?: {
+    kind: 'main' | 'projection' | 'skyline' | 'custom' | 'instance';
+    instanceId?: string;
+    customWindowId?: string;
+  };
+  payload?: Record<string, any>;
+}
+
+interface SceneVideoAsset {
+  id: string;
+  name: string;
+  originalFilename: string;
+  size: number;
+}
+
+interface SceneActionEditorProps {
+  action: SceneAction;
   index: number;
-  /** Called whenever this action's fields change */
-  onChange: (updated: SceneActionDto) => void;
-  /** Called to remove this action */
-  onRemove: () => void;
-  /** Available uploaded scene videos for quick selection in video actions. */
-  sceneVideoAssets?: SceneVideoAsset[];
-  /** Triggers video upload flow from the parent editor. */
-  onRequestUploadVideo?: () => void;
-  /** Highlights the action row when selected from timeline. */
   highlighted?: boolean;
-  /** Starts color picking mode for chroma on the selected layer in preview. */
+  onChange: (updatedAction: any) => void;
+  onRemove: () => void;
+  sceneVideoAssets?: SceneVideoAsset[];
+  onRequestUploadVideo?: () => void;
   onStartChromaColorPick?: () => void;
-  /** Indicates chroma color picking mode is active. */
   isChromaColorPicking?: boolean;
 }
 
-/**
- * Renders a single draggable action row with type selector and dynamic payload fields.
- */
-const SceneActionEditor: React.FC<Props> = ({
+const toNonNegativeMs = (val: unknown): number | undefined => {
+  if (val === undefined || val === null || val === '') return undefined;
+  const n = Number(val);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n) : undefined;
+};
+
+const toNonNegativeSec = (val: unknown): number | undefined => {
+  if (val === undefined || val === null || val === '') return undefined;
+  const n = Number(val);
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
+};
+
+const SceneActionEditor: React.FC<SceneActionEditorProps> = ({
   action,
   index,
+  highlighted,
   onChange,
   onRemove,
   sceneVideoAssets,
   onRequestUploadVideo,
-  highlighted,
   onStartChromaColorPick,
   isChromaColorPicking,
 }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: action.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: action.id,
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -98,34 +155,58 @@ const SceneActionEditor: React.FC<Props> = ({
   };
 
   const setPayload = (key: string, value: unknown) => {
-    onChange({ ...action, payload: { ...action.payload, [key]: value } });
+    onChange({
+      ...action,
+      payload: {
+        ...(action.payload ?? {}),
+        [key]: value,
+      },
+    });
   };
 
   const setPayloadPatch = (patch: Record<string, unknown>) => {
-    onChange({ ...action, payload: { ...action.payload, ...patch } });
+    onChange({
+      ...action,
+      payload: {
+        ...(action.payload ?? {}),
+        ...patch,
+      },
+    });
   };
 
-  const setType = (newType: string) => {
-    onChange({ ...action, type: newType, payload: {} });
+  const setType = (type: string) => {
+    // Si establecemos texto narrativo, inicializamos por defecto en skyline si no tiene ventana destino
+    const extraDefaults = type === 'setNarrativeText' ? {
+      targetWindow: { kind: 'skyline' as const },
+      payload: {
+        ...(action.payload ?? {}),
+        displayName: action.payload?.displayName ?? 'Texto Narrativo',
+      }
+    } : {};
+
+    onChange({
+      ...action,
+      type,
+      ...extraDefaults,
+    });
   };
 
-  const setDelay = (ms: number) => {
-    onChange({ ...action, delay: isNaN(ms) ? 0 : ms });
+  const setDelay = (delay: number) => {
+    onChange({
+      ...action,
+      delay,
+    });
   };
 
-  const setTargetKind = (kind: (typeof WINDOW_TARGET_KINDS)[number]) => {
-    onChange({ ...action, targetWindow: { kind } });
+  const setTargetWindowKind = (kind: 'main' | 'projection' | 'skyline' | 'custom' | 'instance') => {
+    onChange({
+      ...action,
+      targetWindow: {
+        ...(action.targetWindow ?? {}),
+        kind,
+      },
+    });
   };
-
-  const p = action.payload;
-
-  const needsWindow = [
-    'sendImageToWindow',
-    'sendVideoToWindow',
-    'setWindowBackground',
-    'applyWindowFilter',
-    'clearWindowFilter',
-  ].includes(action.type);
 
   return (
     <Paper
@@ -134,104 +215,89 @@ const SceneActionEditor: React.FC<Props> = ({
       variant="outlined"
       sx={{
         p: 1.5,
-        width: '100%',
+        width: 'auto', // Ajustado a auto para que encaje perfectamente dentro de la zona visible y no se desborde bajo el scrollbar
         minWidth: 0,
         overflowX: 'hidden',
         borderColor: highlighted ? 'primary.main' : 'divider',
         boxShadow: highlighted ? 2 : undefined,
       }}
     >
-      <Stack direction="row" alignItems="flex-start" spacing={1}>
-        {/* Drag handle */}
-        <Tooltip title="Arrastrar para reordenar">
-          <Box
+      <Stack spacing={1.5}>
+        <Stack direction="row" alignItems="flex-start" spacing={1}>
+          {/* Grab handle */}
+          <IconButton
+            size="small"
+            sx={{ cursor: 'grab', p: 0.25, mt: 0.5 }}
             {...attributes}
             {...listeners}
-            sx={{ cursor: 'grab', display: 'flex', alignItems: 'center', pt: 0.5, color: 'text.disabled' }}
           >
             <DragIndicatorIcon fontSize="small" />
-          </Box>
-        </Tooltip>
+          </IconButton>
 
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Stack direction="row" spacing={1} alignItems="center" mb={1} sx={{ flexWrap: 'wrap', minWidth: 0 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ minWidth: 24 }}>
-              #{index}
-            </Typography>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            {/* Header: index, type, delay */}
+            <Stack direction="row" spacing={1} alignItems="center" mb={1.25} sx={{ flexWrap: 'wrap', minWidth: 0, rowGap: 1 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 20 }}>
+                #{index}
+              </Typography>
 
-            {/* Action type */}
-            <FormControl size="small" sx={{ minWidth: { xs: 0, sm: 200 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>
-              <InputLabel>Tipo de acción</InputLabel>
-              <Select
-                value={action.type}
-                label="Tipo de acción"
-                onChange={(e) => setType(e.target.value)}
-              >
-                {ACTION_TYPES.map((t) => (
-                  <MenuItem key={t} value={t}>
-                    {ACTION_TYPE_LABELS[t] ?? t}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              {/* Action type */}
+              <FormControl size="small" sx={{ flex: '1 1 150px', minWidth: 0 }}>
+                <InputLabel>Tipo de acción</InputLabel>
+                <Select
+                  value={action.type}
+                  label="Tipo de acción"
+                  onChange={(e) => setType(e.target.value)}
+                >
+                  {ACTION_TYPES.map((t) => (
+                    <MenuItem key={t} value={t}>
+                      {ACTION_TYPE_LABELS[t] ?? t}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            {/* Delay */}
+              {/* Delay */}
+              <TextField
+                label="Retraso (ms)"
+                type="number"
+                size="small"
+                sx={{ flex: '1 1 100px', minWidth: 0 }}
+                value={action.delay ?? 0}
+                inputProps={{ min: 0, max: 600000, step: 100 }}
+                onChange={(e) => setDelay(Number(e.target.value))}
+              />
+            </Stack>
+
+            {/* Timeline label */}
             <TextField
-              label="Retraso (ms)"
-              type="number"
+              label="Nombre en timeline (opcional)"
               size="small"
-              sx={{ width: { xs: '100%', sm: 130 } }}
-              value={action.delay ?? 0}
-              inputProps={{ min: 0, max: 600000, step: 100 }}
-              onChange={(e) => setDelay(Number(e.target.value))}
+              value={String(action.payload?.displayName ?? '')}
+              onChange={(e) => setPayload('displayName', e.target.value)}
+              sx={{ mb: 1.25, width: '100%', minWidth: 0, maxWidth: '100%' }}
             />
-          </Stack>
 
-          <TextField
-            label="Nombre en timeline (opcional)"
-            size="small"
-            value={String(action.payload?.displayName ?? '')}
-            onChange={(e) => setPayload('displayName', e.target.value)}
-            sx={{ mb: 1, width: '100%', minWidth: 0, maxWidth: '100%' }}
-          />
-
-          {/* Window target picker — only for window-related actions */}
-          {needsWindow && (
-            <Stack direction="row" spacing={1} mb={1} sx={{ flexWrap: 'wrap' }}>
-              <FormControl size="small" sx={{ minWidth: { xs: 0, sm: 150 }, width: { xs: '100%', sm: 'auto' } }}>
+            {/* Window destination */}
+            {['sendVideoToWindow', 'sendImageToWindow', 'setWindowBackground', 'applyWindowFilter', 'clearWindow', 'setNarrativeText'].includes(action.type) ? (
+              <FormControl size="small" fullWidth sx={{ mb: 1.25 }}>
                 <InputLabel>Ventana destino</InputLabel>
                 <Select
                   value={action.targetWindow?.kind ?? 'main'}
                   label="Ventana destino"
-                  onChange={(e) => setTargetKind(e.target.value as (typeof WINDOW_TARGET_KINDS)[number])}
+                  onChange={(e) => setTargetWindowKind(e.target.value as any)}
                 >
-                  {WINDOW_TARGET_KINDS.map((k) => (
-                    <MenuItem key={k} value={k}>{WINDOW_TARGET_LABELS[k]}</MenuItem>
-                  ))}
+                  <MenuItem value="main">{DEST_WINDOW_LABELS.main}</MenuItem>
+                  <MenuItem value="projection">{DEST_WINDOW_LABELS.projection}</MenuItem>
+                  <MenuItem value="skyline">{DEST_WINDOW_LABELS.skyline}</MenuItem>
                 </Select>
               </FormControl>
-            </Stack>
-          )}
+            ) : null}
 
-          <Divider sx={{ mb: 1 }} />
-
-          {/* Dynamic payload fields per action type */}
-          <Box
-            sx={{
-              minWidth: 0,
-              '& .MuiFormControl-root, & .MuiTextField-root': {
-                maxWidth: '100%',
-                minWidth: 0,
-              },
-              '& .MuiStack-root': {
-                minWidth: 0,
-                flexWrap: 'wrap',
-              },
-            }}
-          >
+            {/* Render subfields based on action type */}
             <PayloadFields
               type={action.type}
-              payload={p}
+              payload={action.payload ?? {}}
               setPayload={setPayload}
               setPayloadPatch={setPayloadPatch}
               sceneVideoAssets={sceneVideoAssets}
@@ -240,19 +306,19 @@ const SceneActionEditor: React.FC<Props> = ({
               isChromaColorPicking={isChromaColorPicking}
             />
           </Box>
-        </Box>
 
-        {/* Delete button */}
-        <IconButton size="small" color="error" onClick={onRemove}>
-          <DeleteIcon fontSize="small" />
-        </IconButton>
+          {/* Delete action */}
+          <IconButton size="small" color="error" onClick={onRemove}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Stack>
       </Stack>
     </Paper>
   );
 };
 
 // ---------------------------------------------------------------------------
-// Payload field sub-renderer
+// Sub-renderer for specific payload fields
 // ---------------------------------------------------------------------------
 
 interface PayloadFieldsProps {
@@ -282,7 +348,7 @@ const NARRATIVE_FONT_OPTIONS = [
 const NARRATIVE_STYLE_PRESETS: Array<{ id: string; label: string; patch: Record<string, unknown> }> = [
   {
     id: 'narrador',
-    label: 'Narrador clásico',
+    label: 'Narrador',
     patch: {
       fontFamily: 'Merriweather',
       fontSizePx: 28,
@@ -379,8 +445,7 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
     fontFamily?: string;
   };
 
-  const [narrativeEditorMode, setNarrativeEditorMode] = React.useState<'basic' | 'advanced'>('basic');
-  const [narrativeInspectorSection, setNarrativeInspectorSection] = React.useState<'text' | 'typography' | 'background' | 'layout' | 'segments'>('text');
+  const [narrativeTab, setNarrativeTab] = React.useState<'content' | 'style' | 'position'>('content');
   const [showSegmentEditor, setShowSegmentEditor] = React.useState<boolean>(false);
   const [showCustomFontInput, setShowCustomFontInput] = React.useState<boolean>(false);
 
@@ -504,22 +569,26 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
         <Stack spacing={1}>
           <TextField label="ID de canción (songId)" size="small" value={str('songId')} onChange={(e) => setPayload('songId', e.target.value)} />
           <TextField label="ID de playlist (playlistId)" size="small" value={str('playlistId')} onChange={(e) => setPayload('playlistId', e.target.value)} />
-          <Stack direction="row" spacing={1}>
-            <TextField label="Volumen (0-100)" type="number" size="small" sx={{ width: 150 }} value={num('volume', 80)} inputProps={{ min: 0, max: 100 }} onChange={(e) => setPayload('volume', Number(e.target.value))} />
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Loop</InputLabel>
-              <Select value={bool('loop') ? 'si' : 'no'} label="Loop" onChange={(e) => setPayload('loop', e.target.value === 'si')}>
-                <MenuItem value="si">Sí</MenuItem>
-                <MenuItem value="no">No</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField label="Volumen (0-100)" type="number" size="small" fullWidth value={num('volume', 80)} inputProps={{ min: 0, max: 100 }} onChange={(e) => setPayload('volume', Number(e.target.value))} />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Loop</InputLabel>
+                <Select value={bool('loop') ? 'si' : 'no'} label="Loop" onChange={(e) => setPayload('loop', e.target.value === 'si')}>
+                  <MenuItem value="si">Sí</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
         </Stack>
       );
 
     case 'stopMusic':
       return (
-        <FormControl size="small" sx={{ minWidth: 180 }}>
+        <FormControl size="small" fullWidth>
           <InputLabel>Detener efectos</InputLabel>
           <Select value={bool('stopEffects') ? 'si' : 'no'} label="Detener efectos" onChange={(e) => setPayload('stopEffects', e.target.value === 'si')}>
             <MenuItem value="si">Sí</MenuItem>
@@ -532,24 +601,29 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
       return (
         <Stack spacing={1}>
           <TextField label="ID de efecto (effectId)" size="small" value={str('effectId')} onChange={(e) => setPayload('effectId', e.target.value)} />
-          <Stack direction="row" spacing={1}>
-            <TextField label="Volumen (0-100)" type="number" size="small" sx={{ width: 150 }} value={num('volume', 80)} inputProps={{ min: 0, max: 100 }} onChange={(e) => setPayload('volume', Number(e.target.value))} />
-            <FormControl size="small" sx={{ minWidth: 160 }}>
-              <InputLabel>Modo loop</InputLabel>
-              <Select value={str('loopMode') || 'once'} label="Modo loop" onChange={(e) => setPayload('loopMode', e.target.value)}>
-                <MenuItem value="once">once</MenuItem>
-                <MenuItem value="continuous">continuous</MenuItem>
-                <MenuItem value="fixed">fixed</MenuItem>
-                <MenuItem value="random">random</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField label="Volumen (0-100)" type="number" size="small" fullWidth value={num('volume', 80)} inputProps={{ min: 0, max: 100 }} onChange={(e) => setPayload('volume', Number(e.target.value))} />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Modo loop</InputLabel>
+                <Select value={str('loopMode') || 'once'} label="Modo loop" onChange={(e) => setPayload('loopMode', e.target.value)}>
+                  <MenuItem value="once">once</MenuItem>
+                  <MenuItem value="continuous">continuous</MenuItem>
+                  <MenuItem value="fixed">fixed</MenuItem>
+                  <MenuItem value="random">random</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
         </Stack>
       );
 
     case 'setMusicVolume':
+    case 'setSoundVolume':
       return (
-        <TextField label="Volumen (0-100)" type="number" size="small" sx={{ width: 150 }} value={num('value', 80)} inputProps={{ min: 0, max: 100 }} onChange={(e) => setPayload('value', Number(e.target.value))} />
+        <TextField label="Volumen (0-100)" type="number" size="small" sx={{ width: '100%' }} value={num('value', 80)} inputProps={{ min: 0, max: 100 }} onChange={(e) => setPayload('value', Number(e.target.value))} />
       );
 
     case 'sendImageToWindow':
@@ -561,52 +635,77 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
             label="Opacidad (0-1)"
             type="number"
             size="small"
-            sx={{ width: 170 }}
+            fullWidth
             value={num('opacity', 1)}
             inputProps={{ min: 0, max: 1, step: 0.05 }}
             onChange={(e) => setPayload('opacity', Number(e.target.value))}
           />
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <TextField label="X%" type="number" size="small" sx={{ width: 95 }} value={num('leftPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
-            <TextField label="Y%" type="number" size="small" sx={{ width: 95 }} value={num('topPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />
-            <TextField label="Ancho%" type="number" size="small" sx={{ width: 110 }} value={num('widthPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('widthPct', Number(e.target.value))} />
-            <TextField label="Alto%" type="number" size="small" sx={{ width: 100 }} value={num('heightPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('heightPct', Number(e.target.value))} />
-          </Stack>
-          <Divider />
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
-            <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Croma</InputLabel>
-              <Select
-                label="Croma"
-                value={chroma.enabled ? 'si' : 'no'}
-                onChange={(e) => setChroma({ enabled: e.target.value === 'si' })}
-              >
-                <MenuItem value="si">Activo</MenuItem>
-                <MenuItem value="no">Inactivo</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Color croma"
-              size="small"
-              sx={{ width: 140 }}
-              value={chroma.color}
-              onChange={(e) => setChroma({ color: e.target.value })}
-            />
-            <TextField
-              label="Tolerancia"
-              type="number"
-              size="small"
-              sx={{ width: 120 }}
-              value={chroma.tolerance}
-              inputProps={{ min: 0, max: 100, step: 1 }}
-              onChange={(e) => setChroma({ tolerance: Number(e.target.value) })}
-            />
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+            <Box sx={{ gridColumn: 'span 4' }}>
+              <TextField label="X (%)" type="number" size="small" fullWidth value={num('leftPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
+            </Box>
+            <Box sx={{ gridColumn: 'span 4' }}>
+              <TextField label="Y (%)" type="number" size="small" fullWidth value={num('topPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />
+            </Box>
+            <Box sx={{ gridColumn: 'span 4' }}>
+              <TextField label="Capa" type="number" size="small" fullWidth value={num('layerOrder', 100)} onChange={(e) => setPayload('layerOrder', Number(e.target.value))} />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField label="Ancho (%)" type="number" size="small" fullWidth value={num('widthPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('widthPct', Number(e.target.value))} />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField label="Alto (%)" type="number" size="small" fullWidth value={num('heightPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('heightPct', Number(e.target.value))} />
+            </Box>
+          </Box>
+          <Divider sx={{ my: 0.5 }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Croma</InputLabel>
+                <Select
+                  label="Croma"
+                  value={chroma.enabled ? 'si' : 'no'}
+                  onChange={(e) => setChroma({ enabled: e.target.value === 'si' })}
+                >
+                  <MenuItem value="si">Activo</MenuItem>
+                  <MenuItem value="no">Inactivo</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Color croma"
+                size="small"
+                fullWidth
+                value={chroma.color}
+                onChange={(e) => setChroma({ color: e.target.value })}
+              />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Tolerancia"
+                type="number"
+                size="small"
+                fullWidth
+                value={chroma.tolerance}
+                inputProps={{ min: 0, max: 100, step: 1 }}
+                onChange={(e) => setChroma({ tolerance: Number(e.target.value) })}
+              />
+            </Box>
             {onStartChromaColorPick ? (
-              <Button variant={isChromaColorPicking ? 'contained' : 'outlined'} size="small" onClick={onStartChromaColorPick}>
-                {isChromaColorPicking ? 'Selecciona color en preview' : 'Tomar color exacto'}
-              </Button>
+              <Box sx={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center' }}>
+                <Button
+                  variant={isChromaColorPicking ? 'contained' : 'outlined'}
+                  size="small"
+                  fullWidth
+                  onClick={onStartChromaColorPick}
+                  sx={{ textTransform: 'none', height: '100%', py: 1, fontSize: '0.72rem' }}
+                >
+                  {isChromaColorPicking ? 'Capturando...' : 'Color exacto'}
+                </Button>
+              </Box>
             ) : null}
-          </Stack>
+          </Box>
         </Stack>
       );
 
@@ -615,112 +714,143 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
         const rawVideoAssetId = str('videoAssetId');
         const availableVideoAssetIds = new Set((sceneVideoAssets ?? []).map((asset) => asset.id));
         const selectedVideoAssetId = availableVideoAssetIds.has(rawVideoAssetId) ? rawVideoAssetId : '';
-      return (
-        <Stack spacing={1}>
-          <FormControl size="small" sx={{ minWidth: 260 }}>
-            <InputLabel>Vídeo subido</InputLabel>
-            <Select
-              value={selectedVideoAssetId}
-              label="Vídeo subido"
-              onChange={(e) => setPayload('videoAssetId', e.target.value)}
-            >
-              <MenuItem value="">(ninguno)</MenuItem>
-              {rawVideoAssetId && !availableVideoAssetIds.has(rawVideoAssetId) ? (
-                <MenuItem value={rawVideoAssetId}>
-                  Vídeo no disponible ({rawVideoAssetId.slice(0, 8)}...)
-                </MenuItem>
-              ) : null}
-              {(sceneVideoAssets ?? []).map((asset) => (
-                <MenuItem key={asset.id} value={asset.id}>
-                  {asset.name} ({Math.round(asset.size / (1024 * 1024))}MB)
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          {onRequestUploadVideo ? (
-            <Button variant="outlined" size="small" onClick={onRequestUploadVideo}>
-              Subir nuevo vídeo
-            </Button>
-          ) : null}
-          <Typography variant="caption" color="text.secondary">
-            Selecciona un vídeo subido y el backend resolverá la URL firmada al ejecutar.
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Loop</InputLabel>
-              <Select value={bool('loop') ? 'si' : 'no'} label="Loop" onChange={(e) => setPayload('loop', e.target.value === 'si')}>
-                <MenuItem value="si">Sí</MenuItem>
-                <MenuItem value="no">No</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Sin audio</InputLabel>
-              <Select value={bool('muted') ? 'si' : 'no'} label="Sin audio" onChange={(e) => setPayload('muted', e.target.value === 'si')}>
-                <MenuItem value="si">Sí</MenuItem>
-                <MenuItem value="no">No</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Opacidad (0-1)"
-              type="number"
-              size="small"
-              sx={{ width: 170 }}
-              value={num('opacity', 1)}
-              inputProps={{ min: 0, max: 1, step: 0.05 }}
-              onChange={(e) => setPayload('opacity', Number(e.target.value))}
-            />
-          </Stack>
-
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <TextField label="X%" type="number" size="small" sx={{ width: 95 }} value={num('leftPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
-            <TextField label="Y%" type="number" size="small" sx={{ width: 95 }} value={num('topPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />
-            <TextField label="Ancho%" type="number" size="small" sx={{ width: 110 }} value={num('widthPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('widthPct', Number(e.target.value))} />
-            <TextField label="Alto%" type="number" size="small" sx={{ width: 100 }} value={num('heightPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('heightPct', Number(e.target.value))} />
-          </Stack>
-          <Divider />
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
-            <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Croma</InputLabel>
+        return (
+          <Stack spacing={1}>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Vídeo subido</InputLabel>
               <Select
-                label="Croma"
-                value={chroma.enabled ? 'si' : 'no'}
-                onChange={(e) => setChroma({ enabled: e.target.value === 'si' })}
+                value={selectedVideoAssetId}
+                label="Vídeo subido"
+                onChange={(e) => setPayload('videoAssetId', e.target.value)}
               >
-                <MenuItem value="si">Activo</MenuItem>
-                <MenuItem value="no">Inactivo</MenuItem>
+                <MenuItem value="">(ninguno)</MenuItem>
+                {rawVideoAssetId && !availableVideoAssetIds.has(rawVideoAssetId) ? (
+                  <MenuItem value={rawVideoAssetId}>
+                    Vídeo no disponible ({rawVideoAssetId.slice(0, 8)}...)
+                  </MenuItem>
+                ) : null}
+                {(sceneVideoAssets ?? []).map((asset) => (
+                  <MenuItem key={asset.id} value={asset.id}>
+                    {asset.name} ({Math.round(asset.size / (1024 * 1024))}MB)
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
-            <TextField
-              label="Color croma"
-              size="small"
-              sx={{ width: 140 }}
-              value={chroma.color}
-              onChange={(e) => setChroma({ color: e.target.value })}
-            />
-            <TextField
-              label="Tolerancia"
-              type="number"
-              size="small"
-              sx={{ width: 120 }}
-              value={chroma.tolerance}
-              inputProps={{ min: 0, max: 100, step: 1 }}
-              onChange={(e) => setChroma({ tolerance: Number(e.target.value) })}
-            />
-            {onStartChromaColorPick ? (
-              <Button variant={isChromaColorPicking ? 'contained' : 'outlined'} size="small" onClick={onStartChromaColorPick}>
-                {isChromaColorPicking ? 'Selecciona color en preview' : 'Tomar color exacto'}
+            {onRequestUploadVideo ? (
+              <Button variant="outlined" size="small" fullWidth onClick={onRequestUploadVideo}>
+                Subir nuevo vídeo
               </Button>
             ) : null}
+            <Typography variant="caption" color="text.secondary">
+              Selecciona un vídeo subido y el backend resolverá la URL firmada al ejecutar.
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+              <Box sx={{ gridColumn: 'span 4' }}>
+                <FormControl size="small" fullWidth>
+                  <InputLabel>Loop</InputLabel>
+                  <Select value={bool('loop') ? 'si' : 'no'} label="Loop" onChange={(e) => setPayload('loop', e.target.value === 'si')}>
+                    <MenuItem value="si">Sí</MenuItem>
+                    <MenuItem value="no">No</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box sx={{ gridColumn: 'span 4' }}>
+                <FormControl size="small" fullWidth>
+                  <InputLabel>Sin audio</InputLabel>
+                  <Select value={bool('muted') ? 'si' : 'no'} label="Sin audio" onChange={(e) => setPayload('muted', e.target.value === 'si')}>
+                    <MenuItem value="si">Sí</MenuItem>
+                    <MenuItem value="no">No</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box sx={{ gridColumn: 'span 4' }}>
+                <TextField
+                  label="Opacidad"
+                  type="number"
+                  size="small"
+                  fullWidth
+                  value={num('opacity', 1)}
+                  inputProps={{ min: 0, max: 1, step: 0.05 }}
+                  onChange={(e) => setPayload('opacity', Number(e.target.value))}
+                />
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+              <Box sx={{ gridColumn: 'span 4' }}>
+                <TextField label="X (%)" type="number" size="small" fullWidth value={num('leftPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
+              </Box>
+              <Box sx={{ gridColumn: 'span 4' }}>
+                <TextField label="Y (%)" type="number" size="small" fullWidth value={num('topPct', 10)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />
+              </Box>
+              <Box sx={{ gridColumn: 'span 4' }}>
+                <TextField label="Capa" type="number" size="small" fullWidth value={num('layerOrder', 100)} onChange={(e) => setPayload('layerOrder', Number(e.target.value))} />
+              </Box>
+              <Box sx={{ gridColumn: 'span 6' }}>
+                <TextField label="Ancho (%)" type="number" size="small" fullWidth value={num('widthPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('widthPct', Number(e.target.value))} />
+              </Box>
+              <Box sx={{ gridColumn: 'span 6' }}>
+                <TextField label="Alto (%)" type="number" size="small" fullWidth value={num('heightPct', 80)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('heightPct', Number(e.target.value))} />
+              </Box>
+            </Box>
+            <Divider sx={{ my: 0.5 }} />
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+              <Box sx={{ gridColumn: 'span 6' }}>
+                <FormControl size="small" fullWidth>
+                  <InputLabel>Croma</InputLabel>
+                  <Select
+                    label="Croma"
+                    value={chroma.enabled ? 'si' : 'no'}
+                    onChange={(e) => setChroma({ enabled: e.target.value === 'si' })}
+                  >
+                    <MenuItem value="si">Activo</MenuItem>
+                    <MenuItem value="no">Inactivo</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box sx={{ gridColumn: 'span 6' }}>
+                <TextField
+                  label="Color croma"
+                  size="small"
+                  fullWidth
+                  value={chroma.color}
+                  onChange={(e) => setChroma({ color: e.target.value })}
+                />
+              </Box>
+              <Box sx={{ gridColumn: 'span 6' }}>
+                <TextField
+                  label="Tolerancia"
+                  type="number"
+                  size="small"
+                  fullWidth
+                  value={chroma.tolerance}
+                  inputProps={{ min: 0, max: 100, step: 1 }}
+                  onChange={(e) => setChroma({ tolerance: Number(e.target.value) })}
+                />
+              </Box>
+              {onStartChromaColorPick ? (
+                <Box sx={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center' }}>
+                  <Button
+                    variant={isChromaColorPicking ? 'contained' : 'outlined'}
+                    size="small"
+                    fullWidth
+                    onClick={onStartChromaColorPick}
+                    sx={{ textTransform: 'none', height: '100%', py: 1, fontSize: '0.72rem' }}
+                  >
+                    {isChromaColorPicking ? 'Capturando...' : 'Color exacto'}
+                  </Button>
+                </Box>
+              ) : null}
+            </Box>
           </Stack>
-        </Stack>
-      );
+        );
       }
 
     case 'setWindowBackground':
       return (
         <Stack spacing={1}>
           <TextField label="URL de imagen" size="small" value={str('imageUrl')} onChange={(e) => setPayload('imageUrl', e.target.value)} />
-          <FormControl size="small" sx={{ minWidth: 160 }}>
+          <FormControl size="small" fullWidth>
             <InputLabel>Ajuste</InputLabel>
             <Select value={str('sizing') || 'cover'} label="Ajuste" onChange={(e) => setPayload('sizing', e.target.value)}>
               <MenuItem value="cover">cover</MenuItem>
@@ -735,424 +865,645 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
       return (
         <Stack spacing={1}>
           <TextField label="Filtro (ej. blur, sepia)" size="small" value={str('filter')} onChange={(e) => setPayload('filter', e.target.value)} />
-          <Stack direction="row" spacing={1}>
-            <TextField label="Intensidad (0-1)" type="number" size="small" sx={{ width: 160 }} value={num('intensity', 0.5)} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => setPayload('intensity', Number(e.target.value))} />
-            <TextField label="Color (hex, opcional)" size="small" value={str('color')} onChange={(e) => setPayload('color', e.target.value)} />
-          </Stack>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField label="Intensidad (0-1)" type="number" size="small" fullWidth value={num('intensity', 0.5)} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => setPayload('intensity', Number(e.target.value))} />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField label="Color (hex, opcional)" size="small" fullWidth value={str('color')} onChange={(e) => setPayload('color', e.target.value)} />
+            </Box>
+          </Box>
         </Stack>
       );
-
-    case 'clearWindowFilter':
-      return <Typography variant="caption" color="text.secondary">Sin opciones configurables.</Typography>;
 
     case 'setWeather':
       return (
         <Stack spacing={1}>
           <TextField label="Preset de clima (ej. rain, snow)" size="small" value={str('preset')} onChange={(e) => setPayload('preset', e.target.value)} />
-          <Stack direction="row" spacing={1}>
-            <TextField label="Intensidad (0-1)" type="number" size="small" sx={{ width: 160 }} value={num('intensity', 0.5)} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => setPayload('intensity', Number(e.target.value))} />
-            <TextField label="Duración (ms)" type="number" size="small" sx={{ width: 150 }} value={num('durationMs', 0)} inputProps={{ min: 0 }} onChange={(e) => setPayload('durationMs', Number(e.target.value))} />
-          </Stack>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField label="Intensidad (0-1)" type="number" size="small" fullWidth value={num('intensity', 0.5)} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => setPayload('intensity', Number(e.target.value))} />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField label="Duración (ms)" type="number" size="small" fullWidth value={num('durationMs', 0)} inputProps={{ min: 0 }} onChange={(e) => setPayload('durationMs', Number(e.target.value))} />
+            </Box>
+          </Box>
         </Stack>
+      );
+
+    case 'hideWeather':
+      return (
+        <TextField label="Duración (ms)" type="number" size="small" fullWidth value={num('durationMs', 0)} inputProps={{ min: 0 }} onChange={(e) => setPayload('durationMs', Number(e.target.value))} />
       );
 
     case 'setNarrativeText':
       {
-        const narrativeSegments = getNarrativeEditorSegments();
+        const currentSegments = getNarrativeEditorSegments();
+        const availableFonts = NARRATIVE_FONT_OPTIONS;
         const selectedFont = str('fontFamily') || 'Merriweather';
-        const hasCuratedFont = NARRATIVE_FONT_OPTIONS.includes(selectedFont as (typeof NARRATIVE_FONT_OPTIONS)[number]);
-        const appliedPresetId = str('stylePresetId');
-        const applyPreset = (presetId: string) => {
-          const preset = NARRATIVE_STYLE_PRESETS.find((item) => item.id === presetId);
-          if (!preset) return;
-          setPayloadPatch({ ...preset.patch, stylePresetId: preset.id });
-          const presetFont = String(preset.patch.fontFamily ?? '');
-          setShowCustomFontInput(!NARRATIVE_FONT_OPTIONS.includes(presetFont as (typeof NARRATIVE_FONT_OPTIONS)[number]));
-        };
-        const narrativeSectionSx = {
-          p: 1,
-          borderRadius: 1,
-          border: '1px solid',
-          borderColor: 'divider',
-        } as const;
+        const hasCuratedFont = availableFonts.includes(selectedFont as any);
 
-      return (
-          <Stack spacing={1}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.8 }}>
-            <Typography variant="caption" color="text.secondary">Modo editor</Typography>
-            <Button
-              size="small"
-              variant={narrativeEditorMode === 'basic' ? 'contained' : 'outlined'}
-              onClick={() => setNarrativeEditorMode('basic')}
-            >
-              Basico
-            </Button>
-            <Button
-              size="small"
-              variant={narrativeEditorMode === 'advanced' ? 'contained' : 'outlined'}
-              onClick={() => {
-                setNarrativeEditorMode('advanced');
-                if (narrativeInspectorSection === 'text') {
-                  setNarrativeInspectorSection('typography');
-                }
+        return (
+          <Stack spacing={1.5}>
+            {/* Presets section */}
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
+                Estilos rápidos:
+              </Typography>
+              <Stack direction="row" spacing={0.6} flexWrap="wrap" useFlexGap>
+                {NARRATIVE_STYLE_PRESETS.map((preset) => (
+                  <Chip
+                    key={preset.id}
+                    label={preset.label}
+                    size="small"
+                    clickable
+                    variant="outlined"
+                    onClick={() => setPayloadPatch(preset.patch)}
+                    sx={{ fontSize: '0.72rem' }}
+                  />
+                ))}
+              </Stack>
+            </Box>
+
+            {/* Navigation Tabs */}
+            <Tabs
+              value={narrativeTab}
+              onChange={(_, value) => setNarrativeTab(value)}
+              variant="fullWidth"
+              sx={{
+                minHeight: 32,
+                height: 32,
+                '& .MuiTab-root': {
+                  py: 0.5,
+                  minHeight: 32,
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                },
               }}
             >
-              Avanzado
-            </Button>
-          </Stack>
+              <Tab value="content" label="Contenido" />
+              <Tab value="style" label="Diseño" />
+              <Tab value="position" label="Posición" />
+            </Tabs>
 
-          <Stack direction="row" spacing={0.7} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.7 }}>
-            <Typography variant="caption" color="text.secondary">Sección</Typography>
-            <Button size="small" variant={narrativeInspectorSection === 'text' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('text')}>Texto</Button>
-            <Button size="small" variant={narrativeInspectorSection === 'typography' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('typography')}>Tipografía</Button>
-            <Button size="small" variant={narrativeInspectorSection === 'background' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('background')}>Fondo</Button>
-            <Button size="small" variant={narrativeInspectorSection === 'layout' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('layout')}>Posición</Button>
-            <Button size="small" variant={narrativeInspectorSection === 'segments' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('segments')}>Segmentos</Button>
-          </Stack>
-
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.8 }}>
-            <FormControl size="small" sx={{ minWidth: 210 }}>
-              <InputLabel>Preset narrativo</InputLabel>
-              <Select
-                label="Preset narrativo"
-                value={appliedPresetId}
-                onChange={(e) => applyPreset(e.target.value)}
-              >
-                <MenuItem value="">(sin preset)</MenuItem>
-                {NARRATIVE_STYLE_PRESETS.map((preset) => (
-                  <MenuItem key={preset.id} value={preset.id}>{preset.label}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            {appliedPresetId ? (
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => setPayload('stylePresetId', '')}
-              >
-                Quitar preset
-              </Button>
-            ) : null}
-          </Stack>
-
-          <TextField label="Texto narrativo" size="small" multiline rows={2} value={str('text')} onChange={(e) => setPayload('text', e.target.value)} />
-          <Stack direction="row" spacing={1}>
-            <TextField label="Título (opcional)" size="small" value={str('title')} onChange={(e) => setPayload('title', e.target.value)} />
-            <TextField label="Duración (ms, 0=manual)" type="number" size="small" sx={{ width: 180 }} value={num('durationMs', 0)} inputProps={{ min: 0 }} onChange={(e) => setPayload('durationMs', Number(e.target.value))} />
-          </Stack>
-
-          {narrativeInspectorSection === 'text' || narrativeInspectorSection === 'typography' ? (
-          <Paper variant="outlined" sx={narrativeSectionSx}>
-            <Stack spacing={0.8}>
-              <Typography variant="caption" color="text.secondary">Apariencia rapida</Typography>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-                <FormControl size="small" sx={{ minWidth: 220 }}>
-                  <InputLabel>Fuente</InputLabel>
-                  <Select
-                    label="Fuente"
-                    value={hasCuratedFont ? selectedFont : ''}
-                    onChange={(e) => {
-                      setPayload('fontFamily', e.target.value);
-                      setShowCustomFontInput(false);
-                    }}
-                  >
-                    {NARRATIVE_FONT_OPTIONS.map((font) => (
-                      <MenuItem key={font} value={font}>{font}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControlLabel
-                  control={(
-                    <Switch
-                      checked={showCustomFontInput || !hasCuratedFont}
-                      onChange={(_, checked) => setShowCustomFontInput(checked)}
+            {/* TAB 1: CONTENT */}
+            {narrativeTab === 'content' && (
+              <Stack spacing={1.5}>
+                {/* Title and Duration Grid */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1.5 }}>
+                  <Box sx={{ gridColumn: 'span 7' }}>
+                    <TextField
+                      label="Título (opcional)"
+                      size="small"
+                      value={str('title')}
+                      onChange={(e) => setPayload('title', e.target.value)}
+                      fullWidth
                     />
-                  )}
-                  label="Fuente manual"
-                />
-                {showCustomFontInput || !hasCuratedFont ? (
-                  <TextField
-                    label="Fuente personalizada"
-                    size="small"
-                    sx={{ minWidth: 220 }}
-                    value={selectedFont}
-                    onChange={(e) => setPayload('fontFamily', e.target.value)}
-                  />
-                ) : null}
-                <TextField label="Tamaño px" type="number" size="small" sx={{ width: 120 }} value={num('fontSizePx', 28)} inputProps={{ min: 8, max: 220, step: 1 }} onChange={(e) => setPayload('fontSizePx', Number(e.target.value))} />
-                <TextField label="Color" size="small" sx={{ width: 130 }} value={str('fontColor') || '#ffffff'} onChange={(e) => setPayload('fontColor', e.target.value)} />
-                <FormControl size="small" sx={{ minWidth: 130 }}>
-                  <InputLabel>Alineación</InputLabel>
-                  <Select value={str('textAlign') || 'left'} label="Alineación" onChange={(e) => setPayload('textAlign', e.target.value)}>
-                    <MenuItem value="left">left</MenuItem>
-                    <MenuItem value="center">center</MenuItem>
-                    <MenuItem value="right">right</MenuItem>
-                    <MenuItem value="justify">justify</MenuItem>
-                  </Select>
-                </FormControl>
-              </Stack>
-            </Stack>
-          </Paper>
-          ) : null}
+                  </Box>
+                  <Box sx={{ gridColumn: 'span 5' }}>
+                    <TextField
+                      label="Duración (ms)"
+                      placeholder="0 = manual"
+                      type="number"
+                      size="small"
+                      value={num('durationMs', 0)}
+                      inputProps={{ min: 0 }}
+                      onChange={(e) => setPayload('durationMs', Number(e.target.value))}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Box>
+                </Box>
 
-          {narrativeInspectorSection === 'background' ? (
-          <Paper variant="outlined" sx={narrativeSectionSx}>
-            <Stack spacing={0.8}>
-              <Typography variant="caption" color="text.secondary">Caja</Typography>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-                <FormControl size="small" sx={{ minWidth: 130 }}>
-                  <InputLabel>Modo</InputLabel>
-                  <Select value={str('backgroundMode') || 'rect'} label="Modo" onChange={(e) => setPayload('backgroundMode', e.target.value)}>
-                    <MenuItem value="none">none</MenuItem>
-                    <MenuItem value="rect">rect</MenuItem>
-                    <MenuItem value="capsule">capsule</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField label="Color" size="small" sx={{ width: 130 }} value={str('backgroundColor') || '#000000'} onChange={(e) => setPayload('backgroundColor', e.target.value)} />
-                <TextField label="Opacidad" type="number" size="small" sx={{ width: 120 }} value={num('backgroundOpacity', 0.58)} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => setPayload('backgroundOpacity', Number(e.target.value))} />
-              </Stack>
-            </Stack>
-          </Paper>
-          ) : null}
-
-          {narrativeEditorMode === 'advanced' ? (
-            <>
-              {narrativeInspectorSection === 'layout' ? (
-              <Paper variant="outlined" sx={narrativeSectionSx}>
-                <Stack spacing={0.8}>
-                  <Typography variant="caption" color="text.secondary">Capa y posición fina</Typography>
-                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-                    <TextField label="Left %" type="number" size="small" sx={{ width: 110 }} value={num('leftPct', 8)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
-                    <TextField label="Top %" type="number" size="small" sx={{ width: 110 }} value={num('topPct', 68)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />
-                    <TextField label="Width %" type="number" size="small" sx={{ width: 120 }} value={num('widthPct', 84)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('widthPct', Number(e.target.value))} />
-                    <TextField label="Height %" type="number" size="small" sx={{ width: 120 }} value={num('heightPct', 22)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('heightPct', Number(e.target.value))} />
-                    <TextField label="Opacity" type="number" size="small" sx={{ width: 120 }} value={num('opacity', 1)} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => setPayload('opacity', Number(e.target.value))} />
-                    <TextField label="Layer" type="number" size="small" sx={{ width: 110 }} value={num('layerOrder', 100)} onChange={(e) => setPayload('layerOrder', Number(e.target.value))} />
+                {/* Legacy text vs Segment editor */}
+                {!showSegmentEditor ? (
+                  <Stack spacing={1}>
+                    <TextField
+                      label="Texto principal"
+                      multiline
+                      rows={3}
+                      size="small"
+                      value={str('text')}
+                      onChange={(e) => setPayload('text', e.target.value)}
+                      fullWidth
+                    />
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setShowSegmentEditor(true)}
+                      sx={{ textTransform: 'none', py: 0.5, fontSize: '0.72rem' }}
+                    >
+                      Convertir a editor enriquecido (colores/estilos)
+                    </Button>
                   </Stack>
-                </Stack>
-              </Paper>
-              ) : null}
-
-              {narrativeInspectorSection === 'typography' ? (
-              <Paper variant="outlined" sx={narrativeSectionSx}>
-                <Stack spacing={0.8}>
-                  <Typography variant="caption" color="text.secondary">Tipografía avanzada</Typography>
-                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-                    <TextField label="Line height" type="number" size="small" sx={{ width: 130 }} value={num('lineHeight', 1.35)} inputProps={{ min: 0.8, max: 3, step: 0.05 }} onChange={(e) => setPayload('lineHeight', Number(e.target.value))} />
-                    <TextField label="Espaciado letras" type="number" size="small" sx={{ width: 150 }} value={num('letterSpacingPx', 0)} inputProps={{ min: -8, max: 20, step: 0.25 }} onChange={(e) => setPayload('letterSpacingPx', Number(e.target.value))} />
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                      <InputLabel>Peso</InputLabel>
-                      <Select value={str('fontWeight') || 'normal'} label="Peso" onChange={(e) => setPayload('fontWeight', e.target.value)}>
-                        <MenuItem value="normal">normal</MenuItem>
-                        <MenuItem value="bold">bold</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                      <InputLabel>Estilo</InputLabel>
-                      <Select value={str('fontStyle') || 'normal'} label="Estilo" onChange={(e) => setPayload('fontStyle', e.target.value)}>
-                        <MenuItem value="normal">normal</MenuItem>
-                        <MenuItem value="italic">italic</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <FormControl size="small" sx={{ minWidth: 150 }}>
-                      <InputLabel>Decoración</InputLabel>
-                      <Select value={str('textDecoration') || 'none'} label="Decoración" onChange={(e) => setPayload('textDecoration', e.target.value)}>
-                        <MenuItem value="none">none</MenuItem>
-                        <MenuItem value="underline">underline</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                </Stack>
-              </Paper>
-              ) : null}
-
-              {narrativeInspectorSection === 'background' ? (
-              <Paper variant="outlined" sx={narrativeSectionSx}>
-                <Stack spacing={0.8}>
-                  <Typography variant="caption" color="text.secondary">Caja avanzada</Typography>
-                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-                    <TextField label="Radio px" type="number" size="small" sx={{ width: 120 }} value={num('borderRadiusPx', 12)} inputProps={{ min: 0, max: 128, step: 1 }} onChange={(e) => setPayload('borderRadiusPx', Number(e.target.value))} />
-                    <TextField label="Padding px" type="number" size="small" sx={{ width: 120 }} value={num('paddingPx', 16)} inputProps={{ min: 0, max: 64, step: 1 }} onChange={(e) => setPayload('paddingPx', Number(e.target.value))} />
-                  </Stack>
-                </Stack>
-              </Paper>
-              ) : null}
-            </>
-          ) : null}
-
-          {narrativeInspectorSection === 'segments' ? (
-            <>
-              <Divider flexItem />
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
-                <Typography variant="caption" color="text.secondary">Texto enriquecido por segmentos</Typography>
-                <Button
-                  size="small"
-                  variant={showSegmentEditor ? 'contained' : 'outlined'}
-                  onClick={() => setShowSegmentEditor((current) => !current)}
-                >
-                  {showSegmentEditor ? 'Ocultar segmentos' : 'Editar por segmentos'}
-                </Button>
-              </Stack>
-            </>
-          ) : null}
-
-          {narrativeInspectorSection === 'segments' && showSegmentEditor ? (
-            <>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
-                <Typography variant="caption" color="text.secondary">Segmentos activos: {narrativeSegments.filter((segment) => segment.text.trim()).length}</Typography>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={() => {
-                    setNarrativeEditorSegments([
-                      ...narrativeSegments,
-                      { text: '', fontSizePx: num('fontSizePx', 28), color: str('fontColor') || '#ffffff', fontFamily: selectedFont || 'Merriweather' },
-                    ]);
-                  }}
-                >
-                  Añadir segmento
-                </Button>
-              </Stack>
-              <Stack spacing={0.8}>
-                {narrativeSegments.map((segment, segmentIndex) => (
-                  <Paper key={`narrative-segment-${segmentIndex}`} variant="outlined" sx={{ p: 1 }}>
-                    <Stack spacing={0.8}>
-                      <TextField
-                        label={`Segmento ${segmentIndex + 1}`}
+                ) : (
+                  <Stack spacing={1}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                        Editor de segmentos (enriquecido)
+                      </Typography>
+                      <Button
                         size="small"
-                        multiline
-                        rows={2}
-                        value={segment.text}
-                        onChange={(e) => {
-                          const next = [...narrativeSegments];
-                          next[segmentIndex] = { ...next[segmentIndex], text: e.target.value };
-                          setNarrativeEditorSegments(next);
+                        color="warning"
+                        onClick={() => {
+                          if (confirm('¿Volver a texto plano? Perderás los formatos individuales de color/tamaño de cada palabra.')) {
+                            const combined = currentSegments.map((s) => s.text).join(' ');
+                            setPayload('text', combined);
+                            setPayload('richTextDoc', undefined);
+                            setShowSegmentEditor(false);
+                          }
                         }}
-                      />
-                      <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.75 }}>
-                        <Tooltip title="Negrita">
-                          <IconButton
-                            size="small"
-                            color={segment.bold ? 'primary' : 'default'}
-                            onClick={() => {
-                              const next = [...narrativeSegments];
-                              next[segmentIndex] = { ...next[segmentIndex], bold: !next[segmentIndex].bold };
-                              setNarrativeEditorSegments(next);
-                            }}
-                          >
-                            <FormatBoldIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Cursiva">
-                          <IconButton
-                            size="small"
-                            color={segment.italic ? 'primary' : 'default'}
-                            onClick={() => {
-                              const next = [...narrativeSegments];
-                              next[segmentIndex] = { ...next[segmentIndex], italic: !next[segmentIndex].italic };
-                              setNarrativeEditorSegments(next);
-                            }}
-                          >
-                            <FormatItalicIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Subrayado">
-                          <IconButton
-                            size="small"
-                            color={segment.underline ? 'primary' : 'default'}
-                            onClick={() => {
-                              const next = [...narrativeSegments];
-                              next[segmentIndex] = { ...next[segmentIndex], underline: !next[segmentIndex].underline };
-                              setNarrativeEditorSegments(next);
-                            }}
-                          >
-                            <FormatUnderlinedIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <TextField
-                          label="Tamaño"
-                          type="number"
-                          size="small"
-                          sx={{ width: 110 }}
-                          value={Number.isFinite(Number(segment.fontSizePx)) ? Number(segment.fontSizePx) : ''}
-                          inputProps={{ min: 8, max: 220, step: 1 }}
-                          onChange={(e) => {
-                            const raw = e.target.value;
-                            const next = [...narrativeSegments];
-                            next[segmentIndex] = {
-                              ...next[segmentIndex],
-                              ...(raw.trim() ? { fontSizePx: Number(raw) } : { fontSizePx: undefined }),
-                            };
-                            setNarrativeEditorSegments(next);
-                          }}
-                        />
-                        <TextField
-                          label="Color"
-                          type="color"
-                          size="small"
-                          sx={{ width: 90 }}
-                          value={segment.color || '#ffffff'}
-                          onChange={(e) => {
-                            const next = [...narrativeSegments];
-                            next[segmentIndex] = { ...next[segmentIndex], color: e.target.value };
-                            setNarrativeEditorSegments(next);
-                          }}
-                        />
-                        <TextField
+                        sx={{ textTransform: 'none', fontSize: '0.68rem', py: 0 }}
+                      >
+                        Texto plano
+                      </Button>
+                    </Stack>
+
+                    <Alert severity="info" sx={{ p: 0.5, '& .MuiAlert-message': { fontSize: '0.7rem' } }}>
+                      💡 Consejo: Es más cómodo hacer doble clic sobre el texto en el previsualizador para editarlo de forma visual en pantalla completa.
+                    </Alert>
+
+                    {/* Segment rows */}
+                    <Stack spacing={1} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
+                      {currentSegments.map((segment, segIndex) => (
+                        <Paper key={`seg-row-${segIndex}`} variant="outlined" sx={{ p: 1, position: 'relative' }}>
+                          <Stack spacing={1}>
+                            <TextField
+                              label={`Segmento #${segIndex + 1}`}
+                              size="small"
+                              multiline
+                              rows={1}
+                              value={segment.text}
+                              onChange={(e) => {
+                                const next = [...currentSegments];
+                                next[segIndex] = { ...next[segIndex], text: e.target.value };
+                                setNarrativeEditorSegments(next);
+                              }}
+                              fullWidth
+                            />
+
+                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                              <Box sx={{ gridColumn: 'span 4' }}>
+                                <FormControlLabel
+                                  control={(
+                                    <Switch
+                                      checked={Boolean(segment.bold)}
+                                      onChange={(e) => {
+                                        const next = [...currentSegments];
+                                        next[segIndex] = { ...next[segIndex], bold: e.target.checked };
+                                        setNarrativeEditorSegments(next);
+                                      }}
+                                      size="small"
+                                    />
+                                  )}
+                                  label="Negrita"
+                                  sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.7rem' } }}
+                                />
+                              </Box>
+                              <Box sx={{ gridColumn: 'span 4' }}>
+                                <FormControlLabel
+                                  control={(
+                                    <Switch
+                                      checked={Boolean(segment.italic)}
+                                      onChange={(e) => {
+                                        const next = [...currentSegments];
+                                        next[segIndex] = { ...next[segIndex], italic: e.target.checked };
+                                        setNarrativeEditorSegments(next);
+                                      }}
+                                      size="small"
+                                    />
+                                  )}
+                                  label="Cursiva"
+                                  sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.7rem' } }}
+                                />
+                              </Box>
+                              <Box sx={{ gridColumn: 'span 4' }}>
+                                <FormControlLabel
+                                  control={(
+                                    <Switch
+                                      checked={Boolean(segment.underline)}
+                                      onChange={(e) => {
+                                        const next = [...currentSegments];
+                                        next[segIndex] = { ...next[segIndex], underline: e.target.checked };
+                                        setNarrativeEditorSegments(next);
+                                      }}
+                                      size="small"
+                                    />
+                                  )}
+                                  label="Subrayado"
+                                  sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.7rem' } }}
+                                />
+                              </Box>
+
+                              <Box sx={{ gridColumn: 'span 6' }}>
+                                <TextField
+                                  label="Tamaño (px)"
+                                  type="number"
+                                  size="small"
+                                  fullWidth
+                                  value={segment.fontSizePx ?? ''}
+                                  placeholder="Predeterminado"
+                                  onChange={(e) => {
+                                    const next = [...currentSegments];
+                                    const val = e.target.value.trim() ? Number(e.target.value) : undefined;
+                                    next[segIndex] = { ...next[segIndex], fontSizePx: val };
+                                    setNarrativeEditorSegments(next);
+                                  }}
+                                  InputLabelProps={{ shrink: true }}
+                                />
+                              </Box>
+                              <Box sx={{ gridColumn: 'span 6' }}>
+                                <TextField
+                                  label="Color"
+                                  size="small"
+                                  fullWidth
+                                  value={segment.color ?? ''}
+                                  placeholder="Predeterminado"
+                                  onChange={(e) => {
+                                    const next = [...currentSegments];
+                                    next[segIndex] = { ...next[segIndex], color: e.target.value.trim() || undefined };
+                                    setNarrativeEditorSegments(next);
+                                  }}
+                                  InputLabelProps={{ shrink: true }}
+                                />
+                              </Box>
+                            </Box>
+                          </Stack>
+
+                          {currentSegments.length > 1 ? (
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                const next = currentSegments.filter((_, idx) => idx !== segIndex);
+                                setNarrativeEditorSegments(next);
+                              }}
+                              sx={{ position: 'absolute', top: 4, right: 4 }}
+                            >
+                              <DeleteIcon fontSize="inherit" />
+                            </IconButton>
+                          ) : null}
+                        </Paper>
+                      ))}
+                    </Stack>
+
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={() => {
+                        const next = [...currentSegments, { text: 'Nuevo texto' }];
+                        setNarrativeEditorSegments(next);
+                      }}
+                      sx={{ textTransform: 'none', py: 0.5, fontSize: '0.72rem' }}
+                    >
+                      Añadir nuevo fragmento
+                    </Button>
+                  </Stack>
+                )}
+              </Stack>
+            )}
+
+            {/* TAB 2: STYLE & DESIGN */}
+            {narrativeTab === 'style' && (
+              <Stack spacing={2}>
+                {/* Section A: Typography */}
+                <Box>
+                  <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600, display: 'block', mb: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Tipografía y Formato
+                  </Typography>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                    <Box sx={{ gridColumn: 'span 7' }}>
+                      <FormControl size="small" fullWidth>
+                        <InputLabel>Fuente</InputLabel>
+                        <Select
                           label="Fuente"
-                          size="small"
-                          sx={{ minWidth: 160 }}
-                          value={segment.fontFamily || ''}
+                          value={hasCuratedFont ? selectedFont : ''}
                           onChange={(e) => {
-                            const next = [...narrativeSegments];
-                            next[segmentIndex] = {
-                              ...next[segmentIndex],
-                              ...(e.target.value.trim() ? { fontFamily: e.target.value } : { fontFamily: undefined }),
-                            };
-                            setNarrativeEditorSegments(next);
-                          }}
-                        />
-                        <Button
-                          size="small"
-                          color="error"
-                          variant="text"
-                          startIcon={<DeleteIcon fontSize="small" />}
-                          onClick={() => {
-                            const next = narrativeSegments.filter((_, idx) => idx !== segmentIndex);
-                            setNarrativeEditorSegments(next);
+                            setPayload('fontFamily', e.target.value);
+                            setShowCustomFontInput(false);
                           }}
                         >
-                          Quitar
-                        </Button>
-                      </Stack>
-                    </Stack>
-                  </Paper>
-                ))}
+                          {NARRATIVE_FONT_OPTIONS.map((font) => (
+                            <MenuItem key={font} value={font}>{font}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+                    <Box sx={{ gridColumn: 'span 5', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={showCustomFontInput || !hasCuratedFont}
+                            onChange={(_, checked) => setShowCustomFontInput(checked)}
+                            size="small"
+                          />
+                        )}
+                        label="Manual"
+                        sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.72rem' } }}
+                      />
+                    </Box>
+
+                    {showCustomFontInput || !hasCuratedFont ? (
+                      <Box sx={{ gridColumn: 'span 12' }}>
+                        <TextField
+                          label="Nombre de fuente personalizada"
+                          size="small"
+                          fullWidth
+                          value={str('fontFamily')}
+                          onChange={(e) => setPayload('fontFamily', e.target.value)}
+                        />
+                      </Box>
+                    ) : null}
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Tamaño (px)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('fontSizePx', 28)}
+                        inputProps={{ min: 8, max: 220, step: 1 }}
+                        onChange={(e) => setPayload('fontSizePx', Number(e.target.value))}
+                      />
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Color"
+                        size="small"
+                        fullWidth
+                        value={str('fontColor') || '#ffffff'}
+                        onChange={(e) => setPayload('fontColor', e.target.value)}
+                      />
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Interlineado"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('lineHeight', 1.35)}
+                        inputProps={{ min: 0.5, max: 3, step: 0.05 }}
+                        onChange={(e) => setPayload('lineHeight', Number(e.target.value))}
+                      />
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Espacio (px)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('letterSpacingPx', 0)}
+                        inputProps={{ min: -8, max: 20, step: 0.5 }}
+                        onChange={(e) => setPayload('letterSpacingPx', Number(e.target.value))}
+                      />
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <FormControl size="small" fullWidth>
+                        <InputLabel>Alineación</InputLabel>
+                        <Select
+                          label="Alineación"
+                          value={str('textAlign') || 'left'}
+                          onChange={(e) => setPayload('textAlign', e.target.value)}
+                        >
+                          <MenuItem value="left">Izquierda</MenuItem>
+                          <MenuItem value="center">Centro</MenuItem>
+                          <MenuItem value="right">Derecha</MenuItem>
+                          <MenuItem value="justify">Justificado</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6', display: 'flex', gap: 1 }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={str('fontWeight') === 'bold'}
+                            onChange={(e) => setPayload('fontWeight', e.target.checked ? 'bold' : 'normal')}
+                            size="small"
+                          />
+                        )}
+                        label="B"
+                        sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.72rem', fontWeight: 'bold' } }}
+                      />
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={str('fontStyle') === 'italic'}
+                            onChange={(e) => setPayload('fontStyle', e.target.checked ? 'italic' : 'normal')}
+                            size="small"
+                          />
+                        )}
+                        label="I"
+                        sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.72rem', fontStyle: 'italic' } }}
+                      />
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={str('textDecoration') === 'underline'}
+                            onChange={(e) => setPayload('textDecoration', e.target.checked ? 'underline' : 'none')}
+                            size="small"
+                          />
+                        )}
+                        label="U"
+                        sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.72rem', textDecoration: 'underline' } }}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+
+                <Divider />
+
+                {/* Section B: Box and Background */}
+                <Box>
+                  <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600, display: 'block', mb: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Caja y Fondo
+                  </Typography>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <FormControl size="small" fullWidth>
+                        <InputLabel>Modo fondo</InputLabel>
+                        <Select
+                          label="Modo fondo"
+                          value={str('backgroundMode') || 'rect'}
+                          onChange={(e) => setPayload('backgroundMode', e.target.value)}
+                        >
+                          <MenuItem value="none">Sin fondo</MenuItem>
+                          <MenuItem value="rect">Rectángulo</MenuItem>
+                          <MenuItem value="capsule">Cápsula</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Color fondo"
+                        size="small"
+                        fullWidth
+                        value={str('backgroundColor') || '#000000'}
+                        disabled={str('backgroundMode') === 'none'}
+                        onChange={(e) => setPayload('backgroundColor', e.target.value)}
+                      />
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Opacidad"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('backgroundOpacity', 0.58)}
+                        disabled={str('backgroundMode') === 'none'}
+                        inputProps={{ min: 0, max: 1, step: 0.05 }}
+                        onChange={(e) => setPayload('backgroundOpacity', Number(e.target.value))}
+                      />
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Redondeado (px)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('borderRadiusPx', 12)}
+                        disabled={str('backgroundMode') !== 'rect'}
+                        inputProps={{ min: 0, max: 128 }}
+                        onChange={(e) => setPayload('borderRadiusPx', Number(e.target.value))}
+                      />
+                    </Box>
+
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Padding (px)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('paddingPx', 16)}
+                        inputProps={{ min: 0, max: 64 }}
+                        onChange={(e) => setPayload('paddingPx', Number(e.target.value))}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
               </Stack>
-            </>
-          ) : narrativeInspectorSection === 'segments' ? (
-            <Typography variant="caption" color="text.secondary">
-              Usa Editar por segmentos para mezclar estilos en una misma caja de texto.
-            </Typography>
-          ) : null}
-        </Stack>
-      );
+            )}
+
+            {/* TAB 3: POSITION */}
+            {narrativeTab === 'position' && (
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600, display: 'block', mb: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Posicionamiento en Pantalla
+                  </Typography>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Izquierda (X %)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('leftPct', 10)}
+                        inputProps={{ min: -50, max: 150, step: 1 }}
+                        onChange={(e) => setPayload('leftPct', Number(e.target.value))}
+                      />
+                    </Box>
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Superior (Y %)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('topPct', 10)}
+                        inputProps={{ min: -50, max: 150, step: 1 }}
+                        onChange={(e) => setPayload('topPct', Number(e.target.value))}
+                      />
+                    </Box>
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Ancho (%)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('widthPct', 80)}
+                        inputProps={{ min: 1, max: 200, step: 1 }}
+                        onChange={(e) => setPayload('widthPct', Number(e.target.value))}
+                      />
+                    </Box>
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Alto (%)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('heightPct', 22)}
+                        inputProps={{ min: 1, max: 200, step: 1 }}
+                        onChange={(e) => setPayload('heightPct', Number(e.target.value))}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+
+                <Divider />
+
+                {/* Layer properties */}
+                <Box>
+                  <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600, display: 'block', mb: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Propiedades de Capa
+                  </Typography>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Opacidad (0-1)"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('opacity', 1)}
+                        inputProps={{ min: 0, max: 1, step: 0.05 }}
+                        onChange={(e) => setPayload('opacity', Number(e.target.value))}
+                      />
+                    </Box>
+                    <Box sx={{ gridColumn: 'span 6' }}>
+                      <TextField
+                        label="Orden de Capa"
+                        type="number"
+                        size="small"
+                        fullWidth
+                        value={num('layerOrder', 100)}
+                        onChange={(e) => setPayload('layerOrder', Number(e.target.value))}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2.5, fontStyle: 'italic', bgcolor: 'rgba(0, 0, 0, 0.015)', p: 1, borderRadius: 1 }}>
+                    💡 Consejo: También puedes ordenar las capas arrastrando los bloques verticalmente en la pista del timeline.
+                  </Typography>
+                </Box>
+              </Stack>
+            )}
+          </Stack>
+        );
       }
 
     case 'runShortcut':
       return (
-        <TextField label="ID del atajo (shortcutId)" size="small" value={str('shortcutId')} onChange={(e) => setPayload('shortcutId', e.target.value)} />
+        <TextField label="ID del atajo (shortcutId)" size="small" fullWidth value={str('shortcutId')} onChange={(e) => setPayload('shortcutId', e.target.value)} />
       );
 
     case 'delay':
       return (
-        <TextField label="Duración (ms)" type="number" size="small" sx={{ width: 180 }} value={num('durationMs', 1000)} inputProps={{ min: 0, max: 1800000 }} onChange={(e) => setPayload('durationMs', Number(e.target.value))} />
+        <TextField label="Duración (ms)" type="number" size="small" fullWidth value={num('durationMs', 1000)} inputProps={{ min: 0, max: 1800000 }} onChange={(e) => setPayload('durationMs', Number(e.target.value))} />
       );
 
     case 'runScene':
       return (
-        <TextField label="ID de escena (sceneId)" size="small" value={str('sceneId')} onChange={(e) => setPayload('sceneId', e.target.value)} />
+        <TextField label="ID de escena (sceneId)" size="small" fullWidth value={str('sceneId')} onChange={(e) => setPayload('sceneId', e.target.value)} />
       );
 
     default:

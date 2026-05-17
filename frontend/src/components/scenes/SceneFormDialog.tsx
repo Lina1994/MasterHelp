@@ -41,6 +41,11 @@ import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import ContentCutIcon from '@mui/icons-material/ContentCut';
 import SearchIcon from '@mui/icons-material/Search';
+import ImageIcon from '@mui/icons-material/Image';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { DndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import UploadIcon from '@mui/icons-material/Upload';
@@ -76,6 +81,7 @@ const WINDOW_ACTION_TYPES = new Set([
   'setWindowBackground',
   'applyWindowFilter',
   'clearWindowFilter',
+  'setNarrativeText',
 ]);
 
 const SPLITTABLE_ACTION_TYPES = new Set([
@@ -116,90 +122,90 @@ const NARRATIVE_TOOL_STYLE_PRESETS: Array<{
   subtitle: string;
   patch: Record<string, unknown>;
 }> = [
-  {
-    id: 'title-cinematic',
-    label: 'Titulo cinematografico',
-    subtitle: 'Grande y centrado',
-    patch: {
-      title: 'Titulo',
-      text: 'Escribe aqui tu narracion...',
-      stylePresetId: 'cinematicTitle',
-      leftPct: 12,
-      topPct: 60,
-      widthPct: 76,
-      heightPct: 24,
-      textAlign: 'center',
-      fontFamily: 'Cinzel',
-      fontSizePx: 42,
-      fontWeight: 'bold',
-      backgroundMode: 'none',
-      backgroundOpacity: 0,
+    {
+      id: 'title-cinematic',
+      label: 'Titulo cinematografico',
+      subtitle: 'Grande y centrado',
+      patch: {
+        title: 'Titulo',
+        text: 'Escribe aqui tu narracion...',
+        stylePresetId: 'cinematicTitle',
+        leftPct: 12,
+        topPct: 60,
+        widthPct: 76,
+        heightPct: 24,
+        textAlign: 'center',
+        fontFamily: 'Cinzel',
+        fontSizePx: 42,
+        fontWeight: 'bold',
+        backgroundMode: 'none',
+        backgroundOpacity: 0,
+      },
     },
-  },
-  {
-    id: 'subtitle-card',
-    label: 'Subtitulo',
-    subtitle: 'Lectura limpia',
-    patch: {
-      title: '',
-      text: 'Texto de apoyo o descripcion breve.',
-      stylePresetId: 'subtitleCard',
-      leftPct: 8,
-      topPct: 70,
-      widthPct: 84,
-      heightPct: 20,
-      textAlign: 'left',
-      fontFamily: 'Merriweather',
-      fontSizePx: 28,
-      lineHeight: 1.45,
-      backgroundMode: 'rect',
-      backgroundColor: '#111111',
-      backgroundOpacity: 0.62,
+    {
+      id: 'subtitle-card',
+      label: 'Subtitulo',
+      subtitle: 'Lectura limpia',
+      patch: {
+        title: '',
+        text: 'Texto de apoyo o descripcion breve.',
+        stylePresetId: 'subtitleCard',
+        leftPct: 8,
+        topPct: 70,
+        widthPct: 84,
+        heightPct: 20,
+        textAlign: 'left',
+        fontFamily: 'Merriweather',
+        fontSizePx: 28,
+        lineHeight: 1.45,
+        backgroundMode: 'rect',
+        backgroundColor: '#111111',
+        backgroundOpacity: 0.62,
+      },
     },
-  },
-  {
-    id: 'lower-third',
-    label: 'Lower third',
-    subtitle: 'Etiqueta inferior',
-    patch: {
-      title: 'Ubicacion',
-      text: 'Detalle contextual',
-      stylePresetId: 'lowerThird',
-      leftPct: 6,
-      topPct: 78,
-      widthPct: 58,
-      heightPct: 16,
-      textAlign: 'left',
-      fontFamily: 'Montserrat',
-      fontSizePx: 24,
-      fontWeight: 'bold',
-      backgroundMode: 'capsule',
-      backgroundColor: '#0b1f3a',
-      backgroundOpacity: 0.74,
-      borderRadiusPx: 18,
+    {
+      id: 'lower-third',
+      label: 'Lower third',
+      subtitle: 'Etiqueta inferior',
+      patch: {
+        title: 'Ubicacion',
+        text: 'Detalle contextual',
+        stylePresetId: 'lowerThird',
+        leftPct: 6,
+        topPct: 78,
+        widthPct: 58,
+        heightPct: 16,
+        textAlign: 'left',
+        fontFamily: 'Montserrat',
+        fontSizePx: 24,
+        fontWeight: 'bold',
+        backgroundMode: 'capsule',
+        backgroundColor: '#0b1f3a',
+        backgroundOpacity: 0.74,
+        borderRadiusPx: 18,
+      },
     },
-  },
-  {
-    id: 'minimal-note',
-    label: 'Nota minimal',
-    subtitle: 'Sin fondo',
-    patch: {
-      title: '',
-      text: 'Nota breve',
-      stylePresetId: 'minimalNote',
-      leftPct: 68,
-      topPct: 12,
-      widthPct: 26,
-      heightPct: 14,
-      textAlign: 'right',
-      fontFamily: 'Lato',
-      fontSizePx: 22,
-      fontStyle: 'italic',
-      backgroundMode: 'none',
-      backgroundOpacity: 0,
+    {
+      id: 'minimal-note',
+      label: 'Nota minimal',
+      subtitle: 'Sin fondo',
+      patch: {
+        title: '',
+        text: 'Nota breve',
+        stylePresetId: 'minimalNote',
+        leftPct: 68,
+        topPct: 12,
+        widthPct: 26,
+        heightPct: 14,
+        textAlign: 'right',
+        fontFamily: 'Lato',
+        fontSizePx: 22,
+        fontStyle: 'italic',
+        backgroundMode: 'none',
+        backgroundOpacity: 0,
+      },
     },
-  },
-];
+  ];
 
 function toPositiveDurationMs(value: unknown): number | undefined {
   const n = Number(value);
@@ -274,9 +280,9 @@ function omitClipMetadata(payload: Record<string, unknown>): Record<string, unkn
 
 function emptyPayload(type: string): Record<string, unknown> {
   switch (type) {
-    case 'playMusic':      return { songId: '', loop: false, volume: 80 };
-    case 'stopMusic':      return { stopEffects: false };
-    case 'playSound':      return { effectId: '', volume: 80, loopMode: 'once' };
+    case 'playMusic': return { songId: '', loop: false, volume: 80 };
+    case 'stopMusic': return { stopEffects: false };
+    case 'playSound': return { effectId: '', volume: 80, loopMode: 'once' };
     case 'setMusicVolume': return { value: 80 };
     case 'sendImageToWindow': return { imageUrl: '', title: '', opacity: 1, leftPct: 10, topPct: 10, widthPct: 80, heightPct: 80 };
     case 'sendVideoToWindow': return {
@@ -293,7 +299,7 @@ function emptyPayload(type: string): Record<string, unknown> {
     case 'setWindowBackground': return { imageUrl: '', sizing: 'cover' };
     case 'applyWindowFilter': return { filter: 'blur', intensity: 0.5, color: '' };
     case 'clearWindowFilter': return {};
-    case 'setWeather':     return { preset: 'rain', intensity: 0.5, durationMs: 0 };
+    case 'setWeather': return { preset: 'rain', intensity: 0.5, durationMs: 0 };
     case 'setNarrativeText': return {
       text: '',
       title: '',
@@ -319,10 +325,10 @@ function emptyPayload(type: string): Record<string, unknown> {
       borderRadiusPx: 12,
       paddingPx: 16,
     };
-    case 'runShortcut':    return { shortcutId: '' };
-    case 'delay':          return { durationMs: 1000 };
-    case 'runScene':       return { sceneId: '' };
-    default:               return {};
+    case 'runShortcut': return { shortcutId: '' };
+    case 'delay': return { durationMs: 1000 };
+    case 'runScene': return { sceneId: '' };
+    default: return {};
   }
 }
 
@@ -1385,7 +1391,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     setDraft((d) => ({
       ...d,
       icon: emoji || null,
-      imageUrl: emoji ? null : d.imageUrl,
+      imageUrl: null,
     }));
   };
 
@@ -1719,11 +1725,6 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   }, [open, draft.actions, previewMediaUrlsByActionId]);
 
   const createActionByDroppingVideoAsset = (assetId: string) => {
-    if (selectedAction && selectedAction.type === 'sendVideoToWindow' && selectedActionIndex >= 0) {
-      updateAction(selectedActionIndex, assignVideoAssetToAction(selectedAction, assetId));
-      return;
-    }
-
     if (draft.actions.length >= SCENE_MAX_ACTIONS) return;
     const next = createVideoActionFromAsset(assetId);
     setDraft((d) => ({ ...d, actions: [...d.actions, next] }));
@@ -2097,6 +2098,23 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     }));
   };
 
+  const changeActionDurationInTimeline = (actionId: string, nextDurationMs: number, nextStartMs?: number) => {
+    const snappedDurationMs = Math.max(200, Math.round(nextDurationMs / 100) * 100);
+    updateActionById(actionId, (action) => {
+      const payload: Record<string, any> = {
+        ...(action.payload ?? {}),
+        durationMs: snappedDurationMs,
+      };
+      if (nextStartMs !== undefined) {
+        payload.timelineStartMs = Math.max(0, Math.round(nextStartMs / 100) * 100);
+      }
+      return {
+        ...action,
+        payload,
+      };
+    });
+  };
+
   const setActionLayerOrder = (actionId: string, nextLayerOrder: number) => {
     const normalized = Math.round(nextLayerOrder);
     updateActionById(actionId, (action) => ({
@@ -2304,10 +2322,9 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     const isActive = currentTimelineTimeMs >= timelineEntry.startMs && currentTimelineTimeMs < timelineEntry.endMs;
     if (!isActive) return false;
 
-    if (action.type === 'setNarrativeText') return true;
     if (!WINDOW_ACTION_TYPES.has(action.type)) return false;
 
-    const targetKind = action.targetWindow?.kind ?? 'main';
+    const targetKind = action.targetWindow?.kind ?? (action.type === 'setNarrativeText' ? 'projection' : 'main');
     return targetKind === previewWindowKind;
   });
 
@@ -2397,10 +2414,59 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
         },
       }}
     >
-      <DialogTitle>{editing ? 'Editar escena' : 'Nueva escena'}</DialogTitle>
+      <DialogTitle sx={{ py: 1.5, px: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Stack direction="row" spacing={2.5} alignItems="center">
+          <Box sx={{ flexShrink: 0 }}>
+            <ShortcutThumbnailPreview
+              icon={draft.icon}
+              imageUrl={draft.imageUrl}
+              name={draft.name || 'Escena'}
+              onClick={() => setIconPickerOpen(true)}
+              hideLabel={true}
+            />
+          </Box>
+          <Stack spacing={1.25} sx={{ flex: 1 }}>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <TextField
+                label="Nombre *"
+                size="small"
+                value={draft.name}
+                onChange={(e) => set('name', e.target.value)}
+                inputProps={{ maxLength: 80 }}
+                sx={{ flex: 1 }}
+              />
+              <FormControl size="small" sx={{ width: 150 }}>
+                <InputLabel>Alcance</InputLabel>
+                <Select
+                  value={draft.scope}
+                  label="Alcance"
+                  onChange={(e) => set('scope', e.target.value as 'global' | 'campaign')}
+                >
+                  <MenuItem value="campaign">Campaña</MenuItem>
+                  <MenuItem value="global">Global</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+            <TextField
+              label="Descripción"
+              size="small"
+              placeholder="Descripción breve de la escena..."
+              value={draft.description ?? ''}
+              onChange={(e) => set('description', e.target.value)}
+              inputProps={{ maxLength: 500 }}
+              fullWidth
+            />
+          </Stack>
+          {uploadingIcon ? (
+            <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', ml: 1 }}>
+              Subiendo…
+            </Typography>
+          ) : null}
+        </Stack>
+      </DialogTitle>
 
       <DialogContent dividers>
-        <Stack spacing={1.5} sx={{ height: '100%' }}>
+        <Stack spacing={1.25} sx={{ height: '100%' }}>
           <input
             ref={fileInputRef}
             type="file"
@@ -2419,179 +2485,131 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
           <EmojiPickerDialog
             open={iconPickerOpen}
             value={draft.icon ?? ''}
+            imageUrl={draft.imageUrl}
             onClose={() => setIconPickerOpen(false)}
             onSelect={handlePickEmoji}
+            onUploadImage={handleUploadSceneIconClick}
+            isUploadingImage={uploadingIcon}
           />
 
-          <Box
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
             sx={{
-              display: 'grid',
-              gap: 1.25,
-              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 156px' },
-              alignItems: 'start',
+              bgcolor: 'background.paper',
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              flexWrap: 'wrap',
             }}
           >
-            <Stack spacing={1}>
-              <Stack direction="row" spacing={1}>
-                <TextField
-                  label="Nombre *"
-                  size="small"
-                  value={draft.name}
-                  onChange={(e) => set('name', e.target.value)}
-                  inputProps={{ maxLength: 80 }}
-                  sx={{ flex: 1 }}
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={Boolean(draft.loop)}
+                  onChange={(event) => {
+                    const enabled = event.target.checked;
+                    setDraft((d) => ({
+                      ...d,
+                      loop: enabled,
+                      loopDelayMs: enabled ? d.loopDelayMs : null,
+                      loopDelayRandomMinMs: enabled ? d.loopDelayRandomMinMs : null,
+                      loopDelayRandomMaxMs: enabled ? d.loopDelayRandomMaxMs : null,
+                      loopWindowStartMs: enabled ? (d.loopWindowStartMs ?? 0) : null,
+                      loopWindowEndMs: enabled ? (d.loopWindowEndMs ?? Math.max(1, Math.round(timelineDurationMs))) : null,
+                    }));
+                  }}
                 />
-                <FormControl size="small" sx={{ width: 180 }}>
-                  <InputLabel>Alcance</InputLabel>
+              )}
+              label="Escena en loop"
+              sx={{ mr: 1 }}
+            />
+
+            {draft.loop ? (
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1, minWidth: 280, flexWrap: 'wrap', gap: 1 }}>
+                <FormControl size="small" sx={{ minWidth: 140 }}>
+                  <InputLabel>Reinicio loop</InputLabel>
                   <Select
-                    value={draft.scope}
-                    label="Alcance"
-                    onChange={(e) => set('scope', e.target.value as 'global' | 'campaign')}
+                    value={loopDelayMode}
+                    label="Reinicio loop"
+                    onChange={(event) => {
+                      const mode = event.target.value as 'immediate' | 'fixed' | 'random';
+                      setDraft((d) => {
+                        if (mode === 'immediate') {
+                          return {
+                            ...d,
+                            loopDelayMs: null,
+                            loopDelayRandomMinMs: null,
+                            loopDelayRandomMaxMs: null,
+                          };
+                        }
+                        if (mode === 'fixed') {
+                          return {
+                            ...d,
+                            loopDelayMs: d.loopDelayMs ?? 1000,
+                            loopDelayRandomMinMs: null,
+                            loopDelayRandomMaxMs: null,
+                          };
+                        }
+                        return {
+                          ...d,
+                          loopDelayMs: null,
+                          loopDelayRandomMinMs: d.loopDelayRandomMinMs ?? 500,
+                          loopDelayRandomMaxMs: d.loopDelayRandomMaxMs ?? 1500,
+                        };
+                      });
+                    }}
                   >
-                    <MenuItem value="campaign">Campaña</MenuItem>
-                    <MenuItem value="global">Global</MenuItem>
+                    <MenuItem value="immediate">Inmediato</MenuItem>
+                    <MenuItem value="fixed">Delay fijo</MenuItem>
+                    <MenuItem value="random">Delay aleatorio</MenuItem>
                   </Select>
                 </FormControl>
-              </Stack>
 
-              <TextField
-                label="Descripción"
-                size="small"
-                multiline
-                rows={2}
-                value={draft.description ?? ''}
-                onChange={(e) => set('description', e.target.value)}
-                inputProps={{ maxLength: 500 }}
-              />
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }}>
-                <FormControlLabel
-                  control={(
-                    <Switch
-                      checked={Boolean(draft.loop)}
-                      onChange={(event) => {
-                        const enabled = event.target.checked;
-                        setDraft((d) => ({
-                          ...d,
-                          loop: enabled,
-                          loopDelayMs: enabled ? d.loopDelayMs : null,
-                          loopDelayRandomMinMs: enabled ? d.loopDelayRandomMinMs : null,
-                          loopDelayRandomMaxMs: enabled ? d.loopDelayRandomMaxMs : null,
-                          loopWindowStartMs: enabled ? (d.loopWindowStartMs ?? 0) : null,
-                          loopWindowEndMs: enabled ? (d.loopWindowEndMs ?? Math.max(1, Math.round(timelineDurationMs))) : null,
-                        }));
-                      }}
-                    />
-                  )}
-                  label="Escena en loop"
-                />
-
-                {draft.loop ? (
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ flex: 1 }}>
-                    <FormControl size="small" sx={{ minWidth: 150 }}>
-                      <InputLabel>Reinicio loop</InputLabel>
-                      <Select
-                        value={loopDelayMode}
-                        label="Reinicio loop"
-                        onChange={(event) => {
-                          const mode = event.target.value as 'immediate' | 'fixed' | 'random';
-                          setDraft((d) => {
-                            if (mode === 'immediate') {
-                              return {
-                                ...d,
-                                loopDelayMs: null,
-                                loopDelayRandomMinMs: null,
-                                loopDelayRandomMaxMs: null,
-                              };
-                            }
-                            if (mode === 'fixed') {
-                              return {
-                                ...d,
-                                loopDelayMs: d.loopDelayMs ?? 1000,
-                                loopDelayRandomMinMs: null,
-                                loopDelayRandomMaxMs: null,
-                              };
-                            }
-                            return {
-                              ...d,
-                              loopDelayMs: null,
-                              loopDelayRandomMinMs: d.loopDelayRandomMinMs ?? 500,
-                              loopDelayRandomMaxMs: d.loopDelayRandomMaxMs ?? 1500,
-                            };
-                          });
-                        }}
-                      >
-                        <MenuItem value="immediate">Inmediato</MenuItem>
-                        <MenuItem value="fixed">Delay fijo</MenuItem>
-                        <MenuItem value="random">Delay aleatorio</MenuItem>
-                      </Select>
-                    </FormControl>
-
-                    {loopDelayMode === 'fixed' ? (
-                      <TextField
-                        size="small"
-                        type="number"
-                        label="Delay loop (ms)"
-                        value={draft.loopDelayMs ?? 0}
-                        onChange={(event) => set('loopDelayMs', Math.max(0, Number(event.target.value || 0)))}
-                        inputProps={{ min: 0, step: 100 }}
-                        sx={{ width: 160 }}
-                      />
-                    ) : null}
-
-                    {loopDelayMode === 'random' ? (
-                      <>
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="Delay min (ms)"
-                          value={draft.loopDelayRandomMinMs ?? 0}
-                          onChange={(event) => set('loopDelayRandomMinMs', Math.max(0, Number(event.target.value || 0)))}
-                          inputProps={{ min: 0, step: 100 }}
-                          sx={{ width: 156 }}
-                        />
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="Delay max (ms)"
-                          value={draft.loopDelayRandomMaxMs ?? 0}
-                          onChange={(event) => set('loopDelayRandomMaxMs', Math.max(0, Number(event.target.value || 0)))}
-                          inputProps={{ min: 0, step: 100 }}
-                          sx={{ width: 156 }}
-                        />
-                      </>
-                    ) : null}
-
-                    <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center' }}>
-                      El tramo de loop parcial se edita visualmente en el timeline (caja inferior).
-                    </Typography>
-                  </Stack>
+                {loopDelayMode === 'fixed' ? (
+                  <TextField
+                    size="small"
+                    type="number"
+                    label="Delay loop (ms)"
+                    value={draft.loopDelayMs ?? 0}
+                    onChange={(event) => set('loopDelayMs', Math.max(0, Number(event.target.value || 0)))}
+                    inputProps={{ min: 0, step: 100 }}
+                    sx={{ width: 140 }}
+                  />
                 ) : null}
-              </Stack>
-            </Stack>
 
-            <Stack spacing={0.6} alignItems={{ xs: 'flex-start', md: 'center' }}>
-              <ShortcutThumbnailPreview
-                icon={draft.icon}
-                imageUrl={draft.imageUrl}
-                name={draft.name || 'Escena'}
-                onClick={() => setIconPickerOpen(true)}
-              />
-              <Stack direction="row" spacing={0.6}>
-                <Button size="small" onClick={() => setIconPickerOpen(true)}>Emoji</Button>
-                <Button size="small" onClick={handleUploadSceneIconClick} disabled={uploadingIcon}>
-                  {uploadingIcon ? 'Subiendo…' : 'Imagen'}
-                </Button>
-                <Button
-                  size="small"
-                  color="inherit"
-                  onClick={() => setDraft((d) => ({ ...d, icon: null, imageUrl: null }))}
-                >
-                  Limpiar
-                </Button>
+                {loopDelayMode === 'random' ? (
+                  <>
+                    <TextField
+                      size="small"
+                      type="number"
+                      label="Delay min (ms)"
+                      value={draft.loopDelayRandomMinMs ?? 0}
+                      onChange={(event) => set('loopDelayRandomMinMs', Math.max(0, Number(event.target.value || 0)))}
+                      inputProps={{ min: 0, step: 100 }}
+                      sx={{ width: 130 }}
+                    />
+                    <TextField
+                      size="small"
+                      type="number"
+                      label="Delay max (ms)"
+                      value={draft.loopDelayRandomMaxMs ?? 0}
+                      onChange={(event) => set('loopDelayRandomMaxMs', Math.max(0, Number(event.target.value || 0)))}
+                      inputProps={{ min: 0, step: 100 }}
+                      sx={{ width: 130 }}
+                    />
+                  </>
+                ) : null}
+
+                <Typography variant="caption" color="text.secondary">
+                  El loop parcial se edita visualmente en el timeline (caja inferior).
+                </Typography>
               </Stack>
-            </Stack>
-          </Box>
+            ) : null}
+          </Stack>
 
           <Box
             sx={{
@@ -2599,6 +2617,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
               gridTemplateColumns: {
                 xs: '1fr',
                 md: '240px minmax(0, 1fr)',
+                lg: '250px minmax(0, 1fr) 320px',
                 xl: '260px minmax(0, 1fr) 360px',
               },
               gap: 1.5,
@@ -2610,11 +2629,12 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
               <Typography variant="subtitle2" sx={{ mb: 1 }}>Herramientas</Typography>
 
               <Stack spacing={0.8}>
-                <Button size="small" variant="contained" startIcon={<AddIcon />} onClick={() => addActionOfType('sendVideoToWindow')}>Añadir vídeo</Button>
-                <Button size="small" variant="outlined" onClick={() => addActionOfType('sendImageToWindow')}>Añadir imagen</Button>
+                <Button size="small" variant="contained" startIcon={<MovieCreationIcon />} onClick={() => addActionOfType('sendVideoToWindow')}>Añadir vídeo</Button>
+                <Button size="small" variant="outlined" startIcon={<ImageIcon />} onClick={() => addActionOfType('sendImageToWindow')}>Añadir imagen</Button>
                 <Button
                   size="small"
                   variant={leftToolPanelMode === 'text' ? 'contained' : 'outlined'}
+                  startIcon={<TextFieldsIcon />}
                   onClick={() => {
                     setLeftToolPanelMode('text');
                     createNarrativeActionAndStartEdit();
@@ -2622,11 +2642,9 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                 >
                   Añadir texto
                 </Button>
-                <Button size="small" variant="outlined" onClick={() => addActionOfType('playMusic')}>Añadir música</Button>
-                <Button size="small" variant="outlined" onClick={() => addActionOfType('playSound')}>Añadir sonido</Button>
-                <Button size="small" variant="outlined" onClick={() => addActionOfType('applyWindowFilter')}>Añadir filtro</Button>
-                <Button size="small" variant="outlined" onClick={() => addActionOfType('delay')}>Añadir pausa</Button>
-                <Button size="small" variant="text" onClick={addAction}>Acción vacía</Button>
+                <Button size="small" variant="outlined" startIcon={<MusicNoteIcon />} onClick={() => addActionOfType('playMusic')}>Añadir música</Button>
+                <Button size="small" variant="outlined" startIcon={<VolumeUpIcon />} onClick={() => addActionOfType('playSound')}>Añadir sonido</Button>
+                <Button size="small" variant="outlined" startIcon={<FilterAltIcon />} onClick={() => addActionOfType('applyWindowFilter')}>Añadir filtro</Button>
               </Stack>
 
               <Divider sx={{ my: 1 }} />
@@ -2902,7 +2920,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                    overflow: 'auto',
+                  overflow: 'auto',
                   position: 'relative',
                 }}
               >
@@ -2996,478 +3014,649 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                       </Box>
                     ) : null}
 
-                  {previewRenderableActions.length === 0 ? (
-                    <Stack sx={{ width: '100%', height: '100%' }} alignItems="center" justifyContent="center">
-                      <Typography variant="body2" color="text.secondary">
-                        No hay capas para la ventana {previewWindowKind}.
-                      </Typography>
-                    </Stack>
-                  ) : (
-                    previewRenderableActions
-                      .slice()
-                      .sort((left, right) => {
-                        const leftOrder = Number((left.payload ?? {}).layerOrder);
-                        const rightOrder = Number((right.payload ?? {}).layerOrder);
-                        const a = Number.isFinite(leftOrder) ? leftOrder : 0;
-                        const b = Number.isFinite(rightOrder) ? rightOrder : 0;
-                        if (a !== b) return a - b;
-                        const leftIndex = draft.actions.findIndex((item) => item.id === left.id);
-                        const rightIndex = draft.actions.findIndex((item) => item.id === right.id);
-                        return leftIndex - rightIndex;
-                      })
-                      .map((action, layerIndex) => {
-                      const payload = action.payload ?? {};
-                      const opacity = normalizeOpacity((payload as Record<string, unknown>).opacity);
-                      const leftPct = normalizeFreePlacement((payload as Record<string, unknown>).leftPct, 10);
-                      const topPct = normalizeFreePlacement((payload as Record<string, unknown>).topPct, 10);
-                      const widthPct = Math.max(1, normalizeFreePlacement((payload as Record<string, unknown>).widthPct, 80));
-                      const heightPct = Math.max(1, normalizeFreePlacement((payload as Record<string, unknown>).heightPct, 80));
-                      const selected = action.id === selectedActionId;
-                      const key = `${action.id}-${layerIndex}`;
-                      const payloadLayerOrder = Number((payload as Record<string, unknown>).layerOrder);
-                      const zIndex = Number.isFinite(payloadLayerOrder) ? Math.round(payloadLayerOrder) : layerIndex + 1;
+                    {previewRenderableActions.length === 0 ? (
+                      <Stack sx={{ width: '100%', height: '100%' }} alignItems="center" justifyContent="center">
+                        <Typography variant="body2" color="text.secondary">
+                          No hay capas para la ventana {previewWindowKind}.
+                        </Typography>
+                      </Stack>
+                    ) : (
+                      previewRenderableActions
+                        .slice()
+                        .sort((left, right) => {
+                          const leftOrder = Number((left.payload ?? {}).layerOrder);
+                          const rightOrder = Number((right.payload ?? {}).layerOrder);
+                          const a = Number.isFinite(leftOrder) ? leftOrder : 0;
+                          const b = Number.isFinite(rightOrder) ? rightOrder : 0;
+                          if (a !== b) return a - b;
+                          const leftIndex = draft.actions.findIndex((item) => item.id === left.id);
+                          const rightIndex = draft.actions.findIndex((item) => item.id === right.id);
+                          return leftIndex - rightIndex;
+                        })
+                        .map((action, layerIndex) => {
+                          const payload = action.payload ?? {};
+                          const opacity = normalizeOpacity((payload as Record<string, unknown>).opacity);
+                          const leftPct = normalizeFreePlacement((payload as Record<string, unknown>).leftPct, 10);
+                          const topPct = normalizeFreePlacement((payload as Record<string, unknown>).topPct, 10);
+                          const widthPct = Math.max(1, normalizeFreePlacement((payload as Record<string, unknown>).widthPct, 80));
+                          const heightPct = Math.max(1, normalizeFreePlacement((payload as Record<string, unknown>).heightPct, 80));
+                          const selected = action.id === selectedActionId;
+                          const key = `${action.id}-${layerIndex}`;
+                          const payloadLayerOrder = Number((payload as Record<string, unknown>).layerOrder);
+                          const zIndex = Number.isFinite(payloadLayerOrder) ? Math.round(payloadLayerOrder) : layerIndex + 1;
 
-                      if (action.type === 'setWindowBackground') {
-                        const imageUrl = String(payload.imageUrl ?? '').trim();
-                        if (!imageUrl) return null;
-                        const sizing = String(payload.sizing ?? 'cover');
-                        return (
-                          <Box
-                            key={key}
-                            component="img"
-                            src={resolveSceneMediaUrl(imageUrl)}
-                            alt="Layer background"
-                            sx={{
-                              position: 'absolute',
-                              inset: 0,
-                              width: '100%',
-                              height: '100%',
-                              objectFit: sizing === 'contain' ? 'contain' : sizing === 'stretch' ? 'fill' : 'cover',
-                              opacity,
-                              zIndex,
-                              border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                              pointerEvents: 'none',
-                            }}
-                          />
-                        );
-                      }
-
-                      if (action.type === 'sendImageToWindow') {
-                        const imageUrl = String(payload.imageUrl ?? '').trim();
-                        if (!imageUrl) return null;
-                        const chroma = getChromaFromPayload(payload as Record<string, unknown>);
-                        return (
-                          <Box
-                            key={key}
-                            sx={{
-                              position: 'absolute',
-                              left: `${leftPct}%`,
-                              top: `${topPct}%`,
-                              width: `${widthPct}%`,
-                              height: `${heightPct}%`,
-                              zIndex,
-                              border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                              pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
-                              cursor: !selected ? 'pointer' : selected && chromaPickActionId !== action.id ? 'move' : 'default',
-                            }}
-                            onMouseDown={(event) => {
-                              if (lockPreviewInteractionToSelectedNarrative && !selected) return;
-                              if (chromaPickActionId === action.id) return;
-                              if (!selected) {
-                                selectActionAndSeekToStart(action.id);
-                                return;
-                              }
-                              startLayerDrag(action, 'move', event);
-                            }}
-                          >
-                            <ChromaKeyMedia
-                              kind="image"
-                              src={resolveSceneMediaUrl(imageUrl)}
-                              opacity={opacity}
-                              chromaKey={chroma}
-                              pickColorEnabled={selected && chromaPickActionId === action.id}
-                              onPickColor={(hexColor) => {
-                                updateActionById(action.id, (currentAction) => ({
-                                  ...currentAction,
-                                  payload: {
-                                    ...(currentAction.payload ?? {}),
-                                    chromaKey: {
-                                      ...getChromaFromPayload(currentAction.payload ?? {}),
-                                      enabled: true,
-                                      color: hexColor,
-                                    },
-                                  },
-                                }));
-                                setChromaPickActionId(null);
-                              }}
-                              onMediaError={() => {
-                                setChromaPickActionId(null);
-                              }}
-                            />
-                            {selected ? (
+                          if (action.type === 'setWindowBackground') {
+                            const imageUrl = String(payload.imageUrl ?? '').trim();
+                            if (!imageUrl) return null;
+                            const sizing = String(payload.sizing ?? 'cover');
+                            return (
                               <Box
+                                key={key}
+                                component="img"
+                                src={resolveSceneMediaUrl(imageUrl)}
+                                alt="Layer background"
                                 sx={{
                                   position: 'absolute',
-                                  right: -8,
-                                  bottom: -8,
-                                  width: 14,
-                                  height: 14,
-                                  borderRadius: '50%',
-                                  bgcolor: 'primary.main',
-                                  border: '2px solid #fff',
-                                  cursor: 'nwse-resize',
-                                  pointerEvents: 'auto',
-                                }}
-                                onMouseDown={(event) => {
-                                  if (chromaPickActionId === action.id) return;
-                                  startLayerDrag(action, 'resize', event);
+                                  inset: 0,
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: sizing === 'contain' ? 'contain' : sizing === 'stretch' ? 'fill' : 'cover',
+                                  opacity,
+                                  zIndex,
+                                  border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
+                                  pointerEvents: 'none',
                                 }}
                               />
-                            ) : null}
-                          </Box>
-                        );
-                      }
-
-                      if (action.type === 'sendVideoToWindow') {
-                        const videoUrl = previewMediaUrlsByActionId[action.id] ?? '';
-                        const videoError = videoPreviewErrorsByActionId[action.id];
-                        const payloadRecord = payload as Record<string, unknown>;
-                        const chroma = getChromaFromPayload(payloadRecord);
-                        const loopSegmentEnabled = Boolean(payloadRecord.loopSegmentEnabled);
-                        const loopSegmentStartMs = toNonNegativeMs(payloadRecord.loopSegmentStartMs);
-                        const loopSegmentEndMs = toNonNegativeMs(payloadRecord.loopSegmentEndMs);
-                        const clipInSec = toNonNegativeSec(payloadRecord.clipInSec) ?? 0;
-                        const clipOutSec = toNonNegativeSec(payloadRecord.clipOutSec);
-                        const hasLoopSegment = loopSegmentEnabled
-                          && loopSegmentStartMs !== undefined
-                          && (loopSegmentEndMs === undefined || loopSegmentEndMs > loopSegmentStartMs);
-                        const timelineEntry = timelineEntriesByActionId.get(action.id);
-                        const mediaTimeSec = timelineEntry
-                          ? Math.max(clipInSec, clipInSec + ((currentTimelineTimeMs - timelineEntry.startMs) / 1000))
-                          : 0;
-                        const hasScenePartialLoop = Boolean(previewLoopWindow && previewLoopCycleIndex > 0);
-                        const actionStartsBeforeLoopWindow = Boolean(previewLoopWindow && timelineEntry && timelineEntry.startMs < previewLoopWindow.startMs);
-                        const sceneLoopStartOffsetSec = (previewLoopWindow && timelineEntry)
-                          ? Math.max(0, (previewLoopWindow.startMs - timelineEntry.startMs) / 1000)
-                          : undefined;
-                        const sceneStartAtSec = hasScenePartialLoop && actionStartsBeforeLoopWindow
-                          ? sceneLoopStartOffsetSec
-                          : undefined;
-
-                        const startAtSec = sceneStartAtSec !== undefined
-                          ? Math.max(clipInSec, sceneStartAtSec)
-                          : clipInSec;
-
-                        const loopSegmentStartSec = hasLoopSegment ? Number(loopSegmentStartMs) / 1000 : undefined;
-                        const loopSegmentEndSec = hasLoopSegment && loopSegmentEndMs !== undefined ? Number(loopSegmentEndMs) / 1000 : undefined;
-                        const effectiveLoopRangeStartSec = loopSegmentStartSec !== undefined
-                          ? Math.max(clipInSec, loopSegmentStartSec)
-                          : (clipInSec > 0 ? clipInSec : undefined);
-                        const effectiveLoopRangeEndSec = (() => {
-                          if (loopSegmentEndSec !== undefined && clipOutSec !== undefined) {
-                            return Math.min(loopSegmentEndSec, clipOutSec);
+                            );
                           }
-                          if (loopSegmentEndSec !== undefined) {
-                            return loopSegmentEndSec;
-                          }
-                          if (clipOutSec !== undefined) {
-                            return clipOutSec;
-                          }
-                          return undefined;
-                        })();
-                        if (videoError) {
-                          return (
-                            <Box key={key} sx={{ position: 'absolute', inset: 0, p: 2 }}>
-                              <Typography variant="caption" color="error">
-                                {videoError}
-                              </Typography>
-                            </Box>
-                          );
-                        }
-                        if (!videoUrl) return null;
-                        return (
-                          <Box
-                            key={key}
-                            sx={{
-                              position: 'absolute',
-                              left: `${leftPct}%`,
-                              top: `${topPct}%`,
-                              width: `${widthPct}%`,
-                              height: `${heightPct}%`,
-                              zIndex,
-                              border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                              pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
-                              cursor: !selected ? 'pointer' : selected && chromaPickActionId !== action.id ? 'move' : 'default',
-                            }}
-                            onMouseDown={(event) => {
-                              if (lockPreviewInteractionToSelectedNarrative && !selected) return;
-                              if (chromaPickActionId === action.id) return;
-                              if (!selected) {
-                                selectActionAndSeekToStart(action.id);
-                                return;
-                              }
-                              startLayerDrag(action, 'move', event);
-                            }}
-                          >
-                            <ChromaKeyMedia
-                              kind="video"
-                              src={videoUrl}
-                              autoPlay
-                              muted
-                              loop
-                              opacity={opacity}
-                              chromaKey={chroma}
-                              isPlaying={isPreviewPlaying}
-                              seekTimeSec={mediaTimeSec}
-                              seekVersion={previewSeekVersion}
-                              startAtSec={startAtSec}
-                              loopRangeStartSec={effectiveLoopRangeStartSec}
-                              loopRangeEndSec={effectiveLoopRangeEndSec}
-                              pickColorEnabled={selected && chromaPickActionId === action.id}
-                              onPickColor={(hexColor) => {
-                                updateActionById(action.id, (currentAction) => ({
-                                  ...currentAction,
-                                  payload: {
-                                    ...(currentAction.payload ?? {}),
-                                    chromaKey: {
-                                      ...getChromaFromPayload(currentAction.payload ?? {}),
-                                      enabled: true,
-                                      color: hexColor,
-                                    },
-                                  },
-                                }));
-                                setChromaPickActionId(null);
-                              }}
-                              onMediaError={() => {
-                                setChromaPickActionId(null);
-                              }}
-                            />
-                            {selected ? (
+
+                          if (action.type === 'sendImageToWindow') {
+                            const imageUrl = String(payload.imageUrl ?? '').trim();
+                            if (!imageUrl) return null;
+                            const chroma = getChromaFromPayload(payload as Record<string, unknown>);
+                            return (
                               <Box
+                                key={key}
                                 sx={{
                                   position: 'absolute',
-                                  right: -8,
-                                  bottom: -8,
-                                  width: 14,
-                                  height: 14,
-                                  borderRadius: '50%',
-                                  bgcolor: 'primary.main',
-                                  border: '2px solid #fff',
-                                  cursor: 'nwse-resize',
-                                  pointerEvents: 'auto',
+                                  left: `${leftPct}%`,
+                                  top: `${topPct}%`,
+                                  width: `${widthPct}%`,
+                                  height: `${heightPct}%`,
+                                  zIndex,
+                                  border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
+                                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
+                                  cursor: !selected ? 'pointer' : selected && chromaPickActionId !== action.id ? 'move' : 'default',
                                 }}
                                 onMouseDown={(event) => {
+                                  if (lockPreviewInteractionToSelectedNarrative && !selected) return;
                                   if (chromaPickActionId === action.id) return;
-                                  startLayerDrag(action, 'resize', event);
+                                  if (!selected) {
+                                    selectActionAndSeekToStart(action.id);
+                                    return;
+                                  }
+                                  startLayerDrag(action, 'move', event);
                                 }}
-                              />
-                            ) : null}
-                          </Box>
-                        );
-                      }
-
-                      if (action.type === 'applyWindowFilter') {
-                        const filter = String(payload.filter ?? '').trim();
-                        if (!filter) return null;
-                        return (
-                          <Box
-                            key={key}
-                            sx={{
-                              position: 'absolute',
-                              inset: 0,
-                              backdropFilter: filter,
-                              opacity,
-                              zIndex,
-                              border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                              pointerEvents: 'none',
-                            }}
-                          />
-                        );
-                      }
-
-                      if (action.type === 'setNarrativeText') {
-                        const placement = getPlacementFromPayload(payload);
-                        const title = String(payload.title ?? '').trim();
-                        const segments = getNarrativeSegments(payload);
-                        const isNarrativeCanvasEditing = narrativeCanvasEditActionId === action.id && selected;
-                        const fontFamily = String(payload.fontFamily ?? 'Merriweather').trim() || 'Merriweather';
-                        const fontSizePx = isNarrativeCanvasEditing
-                          ? (narrativeCanvasDraft?.fontSizePx ?? 28)
-                          : (Number.isFinite(Number(payload.fontSizePx)) ? Math.max(8, Math.min(220, Number(payload.fontSizePx))) : 28);
-                        const fontColor = isNarrativeCanvasEditing
-                          ? (narrativeCanvasDraft?.fontColor ?? '#ffffff')
-                          : (String(payload.fontColor ?? '#ffffff').trim() || '#ffffff');
-                        const textAlignRaw = String(payload.textAlign ?? 'left').trim();
-                        const textAlign = isNarrativeCanvasEditing
-                          ? (narrativeCanvasDraft?.textAlign ?? 'left')
-                          : (textAlignRaw === 'center' || textAlignRaw === 'right' || textAlignRaw === 'justify' ? textAlignRaw : 'left');
-                        const lineHeight = Number.isFinite(Number(payload.lineHeight)) ? Math.max(0.8, Math.min(3, Number(payload.lineHeight))) : 1.35;
-                        const letterSpacingPx = Number.isFinite(Number(payload.letterSpacingPx))
-                          ? Math.max(-8, Math.min(20, Number(payload.letterSpacingPx)))
-                          : 0;
-                        const fontWeightRaw = String(payload.fontWeight ?? 'normal').trim();
-                        const fontWeight = isNarrativeCanvasEditing
-                          ? (narrativeCanvasDraft?.fontWeight === 'bold' ? 700 : 400)
-                          : (fontWeightRaw === 'bold' ? 700 : 400);
-                        const fontStyle = isNarrativeCanvasEditing
-                          ? (narrativeCanvasDraft?.fontStyle ?? 'normal')
-                          : (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal');
-                        const textDecoration = isNarrativeCanvasEditing
-                          ? (narrativeCanvasDraft?.textDecoration ?? 'none')
-                          : (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none');
-                        const backgroundModeRaw = String(payload.backgroundMode ?? 'rect').trim();
-                        const backgroundMode = backgroundModeRaw === 'none' || backgroundModeRaw === 'capsule' ? backgroundModeRaw : 'rect';
-                        const backgroundColor = String(payload.backgroundColor ?? '#000000').trim() || '#000000';
-                        const backgroundOpacity = Number.isFinite(Number(payload.backgroundOpacity))
-                          ? normalizeOpacity(payload.backgroundOpacity)
-                          : 0.58;
-                        const borderRadiusPx = Number.isFinite(Number(payload.borderRadiusPx))
-                          ? Math.max(0, Math.min(128, Number(payload.borderRadiusPx)))
-                          : 12;
-                        const paddingPx = Number.isFinite(Number(payload.paddingPx))
-                          ? Math.max(0, Math.min(64, Number(payload.paddingPx)))
-                          : 16;
-                        const hasContent = Boolean(title) || segments.length > 0;
-                        const narrativeCanvasWidthPx = (placement.widthPct / 100) * previewWindowSize.width * previewScale;
-                        const narrativeCanvasHeightPx = (placement.heightPct / 100) * previewWindowSize.height * previewScale;
-                        const narrativeToolbarCompact = narrativeCanvasWidthPx < 460 || narrativeCanvasHeightPx < 220;
-                        const shouldRenderNarrative = hasContent || selected || isNarrativeCanvasEditing;
-
-                        if (!shouldRenderNarrative) {
-                          return null;
-                        }
-
-                        return (
-                          <Box
-                            key={key}
-                            sx={{
-                              position: 'absolute',
-                              left: `${placement.leftPct}%`,
-                              top: `${placement.topPct}%`,
-                              width: `${placement.widthPct}%`,
-                              height: `${placement.heightPct}%`,
-                              opacity,
-                              zIndex,
-                              border: selected ? '2px solid rgba(255,255,255,0.9)' : 'none',
-                              borderRadius: selected ? 1 : 0,
-                              pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
-                              display: 'flex',
-                              alignItems: 'stretch',
-                              boxSizing: 'border-box',
-                              cursor: !selected
-                                ? 'pointer'
-                                : selected && !isNarrativeCanvasEditing && leftToolPanelMode !== 'text'
-                                  ? 'move'
-                                  : 'text',
-                            }}
-                            onMouseDown={(event) => {
-                              if (!selected) {
-                                selectActionAndSeekToStart(action.id);
-                                return;
-                              }
-                              if (isNarrativeCanvasEditing) return;
-                              if (leftToolPanelMode === 'text') {
-                                return;
-                              }
-                            }}
-                            onClick={(event) => {
-                              if (!selected || isNarrativeCanvasEditing) return;
-                              if (leftToolPanelMode !== 'text') return;
-                              event.stopPropagation();
-                            }}
-                            onDoubleClick={() => {
-                              if (!selected) return;
-                              beginNarrativeCanvasEdit(action);
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                width: '100%',
-                                height: '100%',
-                                overflow: isNarrativeCanvasEditing ? 'visible' : 'hidden',
-                                p: `${paddingPx}px`,
-                                borderRadius: backgroundMode === 'capsule' ? 999 : `${borderRadiusPx}px`,
-                                bgcolor: backgroundMode === 'none' ? 'transparent' : alpha(backgroundColor, backgroundOpacity),
-                                color: fontColor,
-                                fontFamily,
-                                fontSize: `${fontSizePx}px`,
-                                textAlign,
-                                lineHeight,
-                                letterSpacing: `${letterSpacingPx}px`,
-                                fontWeight,
-                                fontStyle,
-                                textDecoration,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'flex-start',
-                                boxSizing: 'border-box',
-                              }}
-                            >
-                              {isNarrativeCanvasEditing ? (
-                                <Stack
-                                  spacing={narrativeToolbarCompact ? 0.5 : 0.75}
-                                  sx={{ width: '100%', height: '100%' }}
-                                  onMouseDown={(event) => event.stopPropagation()}
-                                >
-                                  {!narrativeToolbarCompact || Boolean(narrativeCanvasDraft?.title ?? title) ? (
-                                    <TextField
-                                      size="small"
-                                      label="Título"
-                                      value={narrativeCanvasDraft?.title ?? title}
-                                      onChange={(event) => {
-                                        const nextTitle = event.target.value;
-                                        setNarrativeCanvasDraft((current) => ({
-                                          ...(current ?? {
-                                            title: String(payload.title ?? ''),
-                                            text: String(payload.text ?? ''),
-                                            fontSizePx,
-                                            fontColor,
-                                            textAlign: textAlign as 'left' | 'center' | 'right' | 'justify',
-                                            fontWeight: (fontWeightRaw === 'bold' ? 'bold' : 'normal') as 'normal' | 'bold',
-                                            fontStyle: (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal') as 'normal' | 'italic',
-                                            textDecoration: (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none') as 'none' | 'underline',
-                                          }),
-                                          title: nextTitle,
-                                        }));
-                                      }}
-                                      onKeyDown={(event) => {
-                                        if (event.key === 'Escape') {
-                                          event.preventDefault();
-                                          finishNarrativeCanvasEdit('cancel');
-                                        }
-                                      }}
-                                      InputLabelProps={{ shrink: true }}
-                                    />
-                                  ) : null}
-                                  <TextField
-                                    size="small"
-                                    label="Texto"
-                                    multiline
-                                    minRows={narrativeToolbarCompact ? 2 : 3}
-                                    value={narrativeCanvasDraft?.text ?? String(payload.text ?? '')}
-                                    onChange={(event) => {
-                                      const nextText = event.target.value;
-                                      setNarrativeCanvasDraft((current) => ({
-                                        ...(current ?? {
-                                          title: String(payload.title ?? ''),
-                                          text: String(payload.text ?? ''),
-                                          fontSizePx,
-                                          fontColor,
-                                          textAlign: textAlign as 'left' | 'center' | 'right' | 'justify',
-                                          fontWeight: (fontWeightRaw === 'bold' ? 'bold' : 'normal') as 'normal' | 'bold',
-                                          fontStyle: (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal') as 'normal' | 'italic',
-                                          textDecoration: (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none') as 'none' | 'underline',
-                                        }),
-                                        text: nextText,
-                                      }));
+                              >
+                                <ChromaKeyMedia
+                                  kind="image"
+                                  src={resolveSceneMediaUrl(imageUrl)}
+                                  opacity={opacity}
+                                  chromaKey={chroma}
+                                  pickColorEnabled={selected && chromaPickActionId === action.id}
+                                  onPickColor={(hexColor) => {
+                                    updateActionById(action.id, (currentAction) => ({
+                                      ...currentAction,
+                                      payload: {
+                                        ...(currentAction.payload ?? {}),
+                                        chromaKey: {
+                                          ...getChromaFromPayload(currentAction.payload ?? {}),
+                                          enabled: true,
+                                          color: hexColor,
+                                        },
+                                      },
+                                    }));
+                                    setChromaPickActionId(null);
+                                  }}
+                                  onMediaError={() => {
+                                    setChromaPickActionId(null);
+                                  }}
+                                />
+                                {selected ? (
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      right: -8,
+                                      bottom: -8,
+                                      width: 14,
+                                      height: 14,
+                                      borderRadius: '50%',
+                                      bgcolor: 'primary.main',
+                                      border: '2px solid #fff',
+                                      cursor: 'nwse-resize',
+                                      pointerEvents: 'auto',
                                     }}
-                                    onKeyDown={(event) => {
-                                      if (event.key === 'Escape') {
-                                        event.preventDefault();
-                                        finishNarrativeCanvasEdit('cancel');
-                                      }
-                                      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
-                                        event.preventDefault();
+                                    onMouseDown={(event) => {
+                                      if (chromaPickActionId === action.id) return;
+                                      startLayerDrag(action, 'resize', event);
+                                    }}
+                                  />
+                                ) : null}
+                              </Box>
+                            );
+                          }
+
+                          if (action.type === 'sendVideoToWindow') {
+                            const videoUrl = previewMediaUrlsByActionId[action.id] ?? '';
+                            const videoError = videoPreviewErrorsByActionId[action.id];
+                            const payloadRecord = payload as Record<string, unknown>;
+                            const chroma = getChromaFromPayload(payloadRecord);
+                            const loopSegmentEnabled = Boolean(payloadRecord.loopSegmentEnabled);
+                            const loopSegmentStartMs = toNonNegativeMs(payloadRecord.loopSegmentStartMs);
+                            const loopSegmentEndMs = toNonNegativeMs(payloadRecord.loopSegmentEndMs);
+                            const clipInSec = toNonNegativeSec(payloadRecord.clipInSec) ?? 0;
+                            const clipOutSec = toNonNegativeSec(payloadRecord.clipOutSec);
+                            const hasLoopSegment = loopSegmentEnabled
+                              && loopSegmentStartMs !== undefined
+                              && (loopSegmentEndMs === undefined || loopSegmentEndMs > loopSegmentStartMs);
+                            const timelineEntry = timelineEntriesByActionId.get(action.id);
+                            const mediaTimeSec = timelineEntry
+                              ? Math.max(clipInSec, clipInSec + ((currentTimelineTimeMs - timelineEntry.startMs) / 1000))
+                              : 0;
+                            const hasScenePartialLoop = Boolean(previewLoopWindow && previewLoopCycleIndex > 0);
+                            const actionStartsBeforeLoopWindow = Boolean(previewLoopWindow && timelineEntry && timelineEntry.startMs < previewLoopWindow.startMs);
+                            const sceneLoopStartOffsetSec = (previewLoopWindow && timelineEntry)
+                              ? Math.max(0, (previewLoopWindow.startMs - timelineEntry.startMs) / 1000)
+                              : undefined;
+                            const sceneStartAtSec = hasScenePartialLoop && actionStartsBeforeLoopWindow
+                              ? sceneLoopStartOffsetSec
+                              : undefined;
+
+                            const startAtSec = sceneStartAtSec !== undefined
+                              ? Math.max(clipInSec, sceneStartAtSec)
+                              : clipInSec;
+
+                            const loopSegmentStartSec = hasLoopSegment ? Number(loopSegmentStartMs) / 1000 : undefined;
+                            const loopSegmentEndSec = hasLoopSegment && loopSegmentEndMs !== undefined ? Number(loopSegmentEndMs) / 1000 : undefined;
+                            const effectiveLoopRangeStartSec = loopSegmentStartSec !== undefined
+                              ? Math.max(clipInSec, loopSegmentStartSec)
+                              : (clipInSec > 0 ? clipInSec : undefined);
+                            const effectiveLoopRangeEndSec = (() => {
+                              if (loopSegmentEndSec !== undefined && clipOutSec !== undefined) {
+                                return Math.min(loopSegmentEndSec, clipOutSec);
+                              }
+                              if (loopSegmentEndSec !== undefined) {
+                                return loopSegmentEndSec;
+                              }
+                              if (clipOutSec !== undefined) {
+                                return clipOutSec;
+                              }
+                              return undefined;
+                            })();
+                            if (videoError) {
+                              return (
+                                <Box key={key} sx={{ position: 'absolute', inset: 0, p: 2 }}>
+                                  <Typography variant="caption" color="error">
+                                    {videoError}
+                                  </Typography>
+                                </Box>
+                              );
+                            }
+                            if (!videoUrl) return null;
+                            return (
+                              <Box
+                                key={key}
+                                sx={{
+                                  position: 'absolute',
+                                  left: `${leftPct}%`,
+                                  top: `${topPct}%`,
+                                  width: `${widthPct}%`,
+                                  height: `${heightPct}%`,
+                                  zIndex,
+                                  border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
+                                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
+                                  cursor: !selected ? 'pointer' : selected && chromaPickActionId !== action.id ? 'move' : 'default',
+                                }}
+                                onMouseDown={(event) => {
+                                  if (lockPreviewInteractionToSelectedNarrative && !selected) return;
+                                  if (chromaPickActionId === action.id) return;
+                                  if (!selected) {
+                                    selectActionAndSeekToStart(action.id);
+                                    return;
+                                  }
+                                  startLayerDrag(action, 'move', event);
+                                }}
+                              >
+                                <ChromaKeyMedia
+                                  kind="video"
+                                  src={videoUrl}
+                                  autoPlay
+                                  muted
+                                  loop
+                                  opacity={opacity}
+                                  chromaKey={chroma}
+                                  isPlaying={isPreviewPlaying}
+                                  seekTimeSec={mediaTimeSec}
+                                  seekVersion={previewSeekVersion}
+                                  startAtSec={startAtSec}
+                                  loopRangeStartSec={effectiveLoopRangeStartSec}
+                                  loopRangeEndSec={effectiveLoopRangeEndSec}
+                                  pickColorEnabled={selected && chromaPickActionId === action.id}
+                                  onPickColor={(hexColor) => {
+                                    updateActionById(action.id, (currentAction) => ({
+                                      ...currentAction,
+                                      payload: {
+                                        ...(currentAction.payload ?? {}),
+                                        chromaKey: {
+                                          ...getChromaFromPayload(currentAction.payload ?? {}),
+                                          enabled: true,
+                                          color: hexColor,
+                                        },
+                                      },
+                                    }));
+                                    setChromaPickActionId(null);
+                                  }}
+                                  onMediaError={() => {
+                                    setChromaPickActionId(null);
+                                  }}
+                                />
+                                {selected ? (
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      right: -8,
+                                      bottom: -8,
+                                      width: 14,
+                                      height: 14,
+                                      borderRadius: '50%',
+                                      bgcolor: 'primary.main',
+                                      border: '2px solid #fff',
+                                      cursor: 'nwse-resize',
+                                      pointerEvents: 'auto',
+                                    }}
+                                    onMouseDown={(event) => {
+                                      if (chromaPickActionId === action.id) return;
+                                      startLayerDrag(action, 'resize', event);
+                                    }}
+                                  />
+                                ) : null}
+                              </Box>
+                            );
+                          }
+
+                          if (action.type === 'applyWindowFilter') {
+                            const filter = String(payload.filter ?? '').trim();
+                            if (!filter) return null;
+                            return (
+                              <Box
+                                key={key}
+                                sx={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  backdropFilter: filter,
+                                  opacity,
+                                  zIndex,
+                                  border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
+                                  pointerEvents: 'none',
+                                }}
+                              />
+                            );
+                          }
+
+                          if (action.type === 'setNarrativeText') {
+                            const placement = getPlacementFromPayload(payload);
+                            const title = String(payload.title ?? '').trim();
+                            const segments = getNarrativeSegments(payload);
+                            const isNarrativeCanvasEditing = narrativeCanvasEditActionId === action.id && selected;
+                            const fontFamily = String(payload.fontFamily ?? 'Merriweather').trim() || 'Merriweather';
+                            const fontSizePx = isNarrativeCanvasEditing
+                              ? (narrativeCanvasDraft?.fontSizePx ?? 28)
+                              : (Number.isFinite(Number(payload.fontSizePx)) ? Math.max(8, Math.min(220, Number(payload.fontSizePx))) : 28);
+                            const fontColor = isNarrativeCanvasEditing
+                              ? (narrativeCanvasDraft?.fontColor ?? '#ffffff')
+                              : (String(payload.fontColor ?? '#ffffff').trim() || '#ffffff');
+                            const textAlignRaw = String(payload.textAlign ?? 'left').trim();
+                            const textAlign = isNarrativeCanvasEditing
+                              ? (narrativeCanvasDraft?.textAlign ?? 'left')
+                              : (textAlignRaw === 'center' || textAlignRaw === 'right' || textAlignRaw === 'justify' ? textAlignRaw : 'left');
+                            const lineHeight = Number.isFinite(Number(payload.lineHeight)) ? Math.max(0.8, Math.min(3, Number(payload.lineHeight))) : 1.35;
+                            const letterSpacingPx = Number.isFinite(Number(payload.letterSpacingPx))
+                              ? Math.max(-8, Math.min(20, Number(payload.letterSpacingPx)))
+                              : 0;
+                            const fontWeightRaw = String(payload.fontWeight ?? 'normal').trim();
+                            const fontWeight = isNarrativeCanvasEditing
+                              ? (narrativeCanvasDraft?.fontWeight === 'bold' ? 700 : 400)
+                              : (fontWeightRaw === 'bold' ? 700 : 400);
+                            const fontStyle = isNarrativeCanvasEditing
+                              ? (narrativeCanvasDraft?.fontStyle ?? 'normal')
+                              : (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal');
+                            const textDecoration = isNarrativeCanvasEditing
+                              ? (narrativeCanvasDraft?.textDecoration ?? 'none')
+                              : (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none');
+                            const backgroundModeRaw = String(payload.backgroundMode ?? 'rect').trim();
+                            const backgroundMode = backgroundModeRaw === 'none' || backgroundModeRaw === 'capsule' ? backgroundModeRaw : 'rect';
+                            const backgroundColor = String(payload.backgroundColor ?? '#000000').trim() || '#000000';
+                            const backgroundOpacity = Number.isFinite(Number(payload.backgroundOpacity))
+                              ? normalizeOpacity(payload.backgroundOpacity)
+                              : 0.58;
+                            const borderRadiusPx = Number.isFinite(Number(payload.borderRadiusPx))
+                              ? Math.max(0, Math.min(128, Number(payload.borderRadiusPx)))
+                              : 12;
+                            const paddingPx = Number.isFinite(Number(payload.paddingPx))
+                              ? Math.max(0, Math.min(64, Number(payload.paddingPx)))
+                              : 16;
+                            const hasContent = Boolean(title) || segments.length > 0;
+                            const narrativeCanvasWidthPx = (placement.widthPct / 100) * previewWindowSize.width * previewScale;
+                            const narrativeCanvasHeightPx = (placement.heightPct / 100) * previewWindowSize.height * previewScale;
+                            const narrativeToolbarCompact = narrativeCanvasWidthPx < 460 || narrativeCanvasHeightPx < 220;
+                            const shouldRenderNarrative = hasContent || selected || isNarrativeCanvasEditing;
+
+                            if (!shouldRenderNarrative) {
+                              return null;
+                            }
+
+                            return (
+                              <Box
+                                key={key}
+                                sx={{
+                                  position: 'absolute',
+                                  left: `${placement.leftPct}%`,
+                                  top: `${placement.topPct}%`,
+                                  width: `${placement.widthPct}%`,
+                                  height: `${placement.heightPct}%`,
+                                  opacity,
+                                  zIndex,
+                                  border: selected ? '2px solid rgba(255,255,255,0.9)' : 'none',
+                                  borderRadius: selected ? 1 : 0,
+                                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
+                                  display: 'flex',
+                                  alignItems: 'stretch',
+                                  boxSizing: 'border-box',
+                                  cursor: !selected
+                                    ? 'pointer'
+                                    : selected && !isNarrativeCanvasEditing && leftToolPanelMode !== 'text'
+                                      ? 'move'
+                                      : 'text',
+                                }}
+                                onMouseDown={(event) => {
+                                  if (!selected) {
+                                    selectActionAndSeekToStart(action.id);
+                                    return;
+                                  }
+                                  if (isNarrativeCanvasEditing) return;
+                                  if (leftToolPanelMode === 'text') {
+                                    return;
+                                  }
+                                }}
+                                onClick={(event) => {
+                                  if (!selected || isNarrativeCanvasEditing) return;
+                                  if (leftToolPanelMode !== 'text') return;
+                                  event.stopPropagation();
+                                }}
+                                onDoubleClick={() => {
+                                  if (!selected) return;
+                                  beginNarrativeCanvasEdit(action);
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    overflow: isNarrativeCanvasEditing ? 'visible' : 'hidden',
+                                    p: `${paddingPx}px`,
+                                    borderRadius: backgroundMode === 'capsule' ? 999 : `${borderRadiusPx}px`,
+                                    bgcolor: backgroundMode === 'none' ? 'transparent' : alpha(backgroundColor, backgroundOpacity),
+                                    color: fontColor,
+                                    fontFamily,
+                                    fontSize: `${fontSizePx}px`,
+                                    textAlign,
+                                    lineHeight,
+                                    letterSpacing: `${letterSpacingPx}px`,
+                                    fontWeight,
+                                    fontStyle,
+                                    textDecoration,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'flex-start',
+                                    boxSizing: 'border-box',
+                                  }}
+                                >
+                                  {isNarrativeCanvasEditing ? (
+                                    <Stack
+                                      spacing={narrativeToolbarCompact ? 0.5 : 0.75}
+                                      sx={{ width: '100%', height: '100%' }}
+                                      onMouseDown={(event) => event.stopPropagation()}
+                                    >
+                                      {!narrativeToolbarCompact || Boolean(narrativeCanvasDraft?.title ?? title) ? (
+                                        <TextField
+                                          size="small"
+                                          label="Título"
+                                          value={narrativeCanvasDraft?.title ?? title}
+                                          onChange={(event) => {
+                                            const nextTitle = event.target.value;
+                                            setNarrativeCanvasDraft((current) => ({
+                                              ...(current ?? {
+                                                title: String(payload.title ?? ''),
+                                                text: String(payload.text ?? ''),
+                                                fontSizePx,
+                                                fontColor,
+                                                textAlign: textAlign as 'left' | 'center' | 'right' | 'justify',
+                                                fontWeight: (fontWeightRaw === 'bold' ? 'bold' : 'normal') as 'normal' | 'bold',
+                                                fontStyle: (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal') as 'normal' | 'italic',
+                                                textDecoration: (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none') as 'none' | 'underline',
+                                              }),
+                                              title: nextTitle,
+                                            }));
+                                          }}
+                                          onKeyDown={(event) => {
+                                            if (event.key === 'Escape') {
+                                              event.preventDefault();
+                                              finishNarrativeCanvasEdit('cancel');
+                                            }
+                                          }}
+                                          InputLabelProps={{ shrink: true }}
+                                        />
+                                      ) : null}
+                                      <TextField
+                                        size="small"
+                                        label="Texto"
+                                        multiline
+                                        minRows={narrativeToolbarCompact ? 2 : 3}
+                                        value={narrativeCanvasDraft?.text ?? String(payload.text ?? '')}
+                                        onChange={(event) => {
+                                          const nextText = event.target.value;
+                                          setNarrativeCanvasDraft((current) => ({
+                                            ...(current ?? {
+                                              title: String(payload.title ?? ''),
+                                              text: String(payload.text ?? ''),
+                                              fontSizePx,
+                                              fontColor,
+                                              textAlign: textAlign as 'left' | 'center' | 'right' | 'justify',
+                                              fontWeight: (fontWeightRaw === 'bold' ? 'bold' : 'normal') as 'normal' | 'bold',
+                                              fontStyle: (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal') as 'normal' | 'italic',
+                                              textDecoration: (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none') as 'none' | 'underline',
+                                            }),
+                                            text: nextText,
+                                          }));
+                                        }}
+                                        onKeyDown={(event) => {
+                                          if (event.key === 'Escape') {
+                                            event.preventDefault();
+                                            finishNarrativeCanvasEdit('cancel');
+                                          }
+                                          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+                                            event.preventDefault();
+                                            setNarrativeCanvasDraft((current) => {
+                                              if (!current) return current;
+                                              return {
+                                                ...current,
+                                                fontWeight: current.fontWeight === 'bold' ? 'normal' : 'bold',
+                                              };
+                                            });
+                                          }
+                                          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'i') {
+                                            event.preventDefault();
+                                            setNarrativeCanvasDraft((current) => {
+                                              if (!current) return current;
+                                              return {
+                                                ...current,
+                                                fontStyle: current.fontStyle === 'italic' ? 'normal' : 'italic',
+                                              };
+                                            });
+                                          }
+                                          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'u') {
+                                            event.preventDefault();
+                                            setNarrativeCanvasDraft((current) => {
+                                              if (!current) return current;
+                                              return {
+                                                ...current,
+                                                textDecoration: current.textDecoration === 'underline' ? 'none' : 'underline',
+                                              };
+                                            });
+                                          }
+                                          if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                                            event.preventDefault();
+                                            finishNarrativeCanvasEdit('save');
+                                          }
+                                        }}
+                                        sx={{ flex: 1 }}
+                                        InputLabelProps={{ shrink: true }}
+                                      />
+                                    </Stack>
+                                  ) : (
+                                    <>
+                                      {!hasContent ? (
+                                        <Typography
+                                          variant="caption"
+                                          sx={{
+                                            color: 'rgba(255,255,255,0.82)',
+                                            fontStyle: 'italic',
+                                          }}
+                                        >
+                                          Haz clic para editar texto...
+                                        </Typography>
+                                      ) : null}
+                                      {title ? (
+                                        <Typography
+                                          variant="subtitle2"
+                                          sx={{
+                                            mb: 0.5,
+                                            color: 'inherit',
+                                            fontFamily: 'inherit',
+                                            fontStyle: 'inherit',
+                                            textDecoration: 'inherit',
+                                          }}
+                                        >
+                                          {title}
+                                        </Typography>
+                                      ) : null}
+                                      <Typography
+                                        component="div"
+                                        sx={{
+                                          color: 'inherit',
+                                          fontFamily: 'inherit',
+                                          fontSize: 'inherit',
+                                          fontWeight: 'inherit',
+                                          fontStyle: 'inherit',
+                                          textDecoration: 'inherit',
+                                          lineHeight: 'inherit',
+                                          textAlign: 'inherit',
+                                          whiteSpace: 'pre-wrap',
+                                          overflowWrap: 'anywhere',
+                                        }}
+                                      >
+                                        {segments.map((segment, segmentIndex) => (
+                                          <Box
+                                            key={`${action.id ?? key}-seg-${segmentIndex}`}
+                                            component="span"
+                                            sx={{
+                                              fontWeight: segment.bold ? 700 : undefined,
+                                              fontStyle: segment.italic ? 'italic' : undefined,
+                                              textDecoration: segment.underline ? 'underline' : undefined,
+                                              fontSize: segment.fontSizePx ? `${segment.fontSizePx}px` : undefined,
+                                              color: segment.color,
+                                              fontFamily: segment.fontFamily,
+                                            }}
+                                          >
+                                            {segment.text}
+                                          </Box>
+                                        ))}
+                                      </Typography>
+                                    </>
+                                  )}
+                                </Box>
+                                {selected && !isNarrativeCanvasEditing ? (
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      left: -8,
+                                      top: -8,
+                                      width: 14,
+                                      height: 14,
+                                      borderRadius: '50%',
+                                      bgcolor: 'info.main',
+                                      border: '2px solid #fff',
+                                      cursor: 'move',
+                                      pointerEvents: 'auto',
+                                    }}
+                                    onMouseDown={(event) => {
+                                      startLayerDrag(action, 'move', event);
+                                    }}
+                                  />
+                                ) : null}
+                                {selected && !isNarrativeCanvasEditing ? (
+                                  <Button
+                                    size="small"
+                                    variant="contained"
+                                    sx={{
+                                      position: 'absolute',
+                                      right: 6,
+                                      top: 6,
+                                      minWidth: 0,
+                                      px: 1,
+                                      py: 0.25,
+                                      textTransform: 'none',
+                                      fontSize: 11,
+                                      zIndex: 2,
+                                    }}
+                                    onMouseDown={(event) => {
+                                      event.stopPropagation();
+                                    }}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      beginNarrativeCanvasEdit(action);
+                                    }}
+                                  >
+                                    Editar texto
+                                  </Button>
+                                ) : null}
+                                {selected && isNarrativeCanvasEditing ? (
+                                  <Stack
+                                    direction="row"
+                                    spacing={0.5}
+                                    alignItems="center"
+                                    sx={{
+                                      flexWrap: 'wrap',
+                                      rowGap: 0.5,
+                                      position: 'absolute',
+                                      left: 0,
+                                      right: 0,
+                                      bottom: '100%',
+                                      mb: 0.6,
+                                      zIndex: 4,
+                                      p: 0.4,
+                                      borderRadius: 0.8,
+                                      border: '1px solid rgba(255,255,255,0.2)',
+                                      bgcolor: 'rgba(12, 14, 20, 0.92)',
+                                      boxShadow: '0 4px 18px rgba(0, 0, 0, 0.45)',
+                                    }}
+                                    onMouseDown={(event) => event.stopPropagation()}
+                                  >
+                                    <Button
+                                      size="small"
+                                      variant={narrativeCanvasDraft?.fontWeight === 'bold' ? 'contained' : 'outlined'}
+                                      sx={{ minWidth: 34, px: 0.85 }}
+                                      onClick={() => {
                                         setNarrativeCanvasDraft((current) => {
                                           if (!current) return current;
                                           return {
@@ -3475,9 +3664,15 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                                             fontWeight: current.fontWeight === 'bold' ? 'normal' : 'bold',
                                           };
                                         });
-                                      }
-                                      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'i') {
-                                        event.preventDefault();
+                                      }}
+                                    >
+                                      B
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      variant={narrativeCanvasDraft?.fontStyle === 'italic' ? 'contained' : 'outlined'}
+                                      sx={{ minWidth: 34, px: 0.85 }}
+                                      onClick={() => {
                                         setNarrativeCanvasDraft((current) => {
                                           if (!current) return current;
                                           return {
@@ -3485,9 +3680,15 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                                             fontStyle: current.fontStyle === 'italic' ? 'normal' : 'italic',
                                           };
                                         });
-                                      }
-                                      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'u') {
-                                        event.preventDefault();
+                                      }}
+                                    >
+                                      I
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      variant={narrativeCanvasDraft?.textDecoration === 'underline' ? 'contained' : 'outlined'}
+                                      sx={{ minWidth: 34, px: 0.85 }}
+                                      onClick={() => {
                                         setNarrativeCanvasDraft((current) => {
                                           if (!current) return current;
                                           return {
@@ -3495,283 +3696,100 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                                             textDecoration: current.textDecoration === 'underline' ? 'none' : 'underline',
                                           };
                                         });
-                                      }
-                                      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-                                        event.preventDefault();
-                                        finishNarrativeCanvasEdit('save');
-                                      }
-                                    }}
-                                    sx={{ flex: 1 }}
-                                    InputLabelProps={{ shrink: true }}
-                                  />
-                                </Stack>
-                              ) : (
-                                <>
-                                  {!hasContent ? (
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: 'rgba(255,255,255,0.82)',
-                                        fontStyle: 'italic',
                                       }}
                                     >
-                                      Haz clic para editar texto...
-                                    </Typography>
-                                  ) : null}
-                                  {title ? (
-                                    <Typography
-                                      variant="subtitle2"
-                                      sx={{
-                                        mb: 0.5,
-                                        color: 'inherit',
-                                        fontFamily: 'inherit',
-                                        fontStyle: 'inherit',
-                                        textDecoration: 'inherit',
+                                      U
+                                    </Button>
+                                    <TextField
+                                      size="small"
+                                      label="Color"
+                                      type="color"
+                                      sx={{ width: 88 }}
+                                      value={narrativeCanvasDraft?.fontColor ?? '#ffffff'}
+                                      onChange={(event) => {
+                                        const next = event.target.value;
+                                        setNarrativeCanvasDraft((current) => {
+                                          if (!current) return current;
+                                          return { ...current, fontColor: next };
+                                        });
                                       }}
-                                    >
-                                      {title}
-                                    </Typography>
-                                  ) : null}
-                                  <Typography
-                                    component="div"
-                                    sx={{
-                                      color: 'inherit',
-                                      fontFamily: 'inherit',
-                                      fontSize: 'inherit',
-                                      fontWeight: 'inherit',
-                                      fontStyle: 'inherit',
-                                      textDecoration: 'inherit',
-                                      lineHeight: 'inherit',
-                                      textAlign: 'inherit',
-                                      whiteSpace: 'pre-wrap',
-                                      overflowWrap: 'anywhere',
-                                    }}
-                                  >
-                                    {segments.map((segment, segmentIndex) => (
-                                      <Box
-                                        key={`${action.id ?? key}-seg-${segmentIndex}`}
-                                        component="span"
-                                        sx={{
-                                          fontWeight: segment.bold ? 700 : undefined,
-                                          fontStyle: segment.italic ? 'italic' : undefined,
-                                          textDecoration: segment.underline ? 'underline' : undefined,
-                                          fontSize: segment.fontSizePx ? `${segment.fontSizePx}px` : undefined,
-                                          color: segment.color,
-                                          fontFamily: segment.fontFamily,
+                                      InputLabelProps={{ shrink: true }}
+                                    />
+                                    <TextField
+                                      size="small"
+                                      label="Tam"
+                                      type="number"
+                                      sx={{ width: 84 }}
+                                      value={narrativeCanvasDraft?.fontSizePx ?? 28}
+                                      inputProps={{ min: 8, max: 220, step: 1 }}
+                                      onChange={(event) => {
+                                        const raw = Number(event.target.value);
+                                        setNarrativeCanvasDraft((current) => {
+                                          if (!current) return current;
+                                          return {
+                                            ...current,
+                                            fontSizePx: Number.isFinite(raw) ? Math.max(8, Math.min(220, raw)) : current.fontSizePx,
+                                          };
+                                        });
+                                      }}
+                                      InputLabelProps={{ shrink: true }}
+                                    />
+                                    <FormControl size="small" sx={{ minWidth: 116 }}>
+                                      <InputLabel>Alineación</InputLabel>
+                                      <Select
+                                        label="Alineación"
+                                        value={narrativeCanvasDraft?.textAlign ?? 'left'}
+                                        onChange={(event) => {
+                                          const value = event.target.value as 'left' | 'center' | 'right' | 'justify';
+                                          setNarrativeCanvasDraft((current) => {
+                                            if (!current) return current;
+                                            return { ...current, textAlign: value };
+                                          });
                                         }}
                                       >
-                                        {segment.text}
-                                      </Box>
-                                    ))}
-                                  </Typography>
-                                </>
-                              )}
-                            </Box>
-                            {selected && !isNarrativeCanvasEditing ? (
-                              <Box
-                                sx={{
-                                  position: 'absolute',
-                                  left: -8,
-                                  top: -8,
-                                  width: 14,
-                                  height: 14,
-                                  borderRadius: '50%',
-                                  bgcolor: 'info.main',
-                                  border: '2px solid #fff',
-                                  cursor: 'move',
-                                  pointerEvents: 'auto',
-                                }}
-                                onMouseDown={(event) => {
-                                  startLayerDrag(action, 'move', event);
-                                }}
-                              />
-                            ) : null}
-                            {selected && !isNarrativeCanvasEditing ? (
-                              <Button
-                                size="small"
-                                variant="contained"
-                                sx={{
-                                  position: 'absolute',
-                                  right: 6,
-                                  top: 6,
-                                  minWidth: 0,
-                                  px: 1,
-                                  py: 0.25,
-                                  textTransform: 'none',
-                                  fontSize: 11,
-                                  zIndex: 2,
-                                }}
-                                onMouseDown={(event) => {
-                                  event.stopPropagation();
-                                }}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  beginNarrativeCanvasEdit(action);
-                                }}
-                              >
-                                Editar texto
-                              </Button>
-                            ) : null}
-                            {selected && isNarrativeCanvasEditing ? (
-                              <Stack
-                                direction="row"
-                                spacing={0.5}
-                                alignItems="center"
-                                sx={{
-                                  flexWrap: 'wrap',
-                                  rowGap: 0.5,
-                                  position: 'absolute',
-                                  left: 0,
-                                  right: 0,
-                                  bottom: '100%',
-                                  mb: 0.6,
-                                  zIndex: 4,
-                                  p: 0.4,
-                                  borderRadius: 0.8,
-                                  border: '1px solid rgba(255,255,255,0.2)',
-                                  bgcolor: 'rgba(12, 14, 20, 0.92)',
-                                  boxShadow: '0 4px 18px rgba(0, 0, 0, 0.45)',
-                                }}
-                                onMouseDown={(event) => event.stopPropagation()}
-                              >
-                                <Button
-                                  size="small"
-                                  variant={narrativeCanvasDraft?.fontWeight === 'bold' ? 'contained' : 'outlined'}
-                                  sx={{ minWidth: 34, px: 0.85 }}
-                                  onClick={() => {
-                                    setNarrativeCanvasDraft((current) => {
-                                      if (!current) return current;
-                                      return {
-                                        ...current,
-                                        fontWeight: current.fontWeight === 'bold' ? 'normal' : 'bold',
-                                      };
-                                    });
-                                  }}
-                                >
-                                  B
-                                </Button>
-                                <Button
-                                  size="small"
-                                  variant={narrativeCanvasDraft?.fontStyle === 'italic' ? 'contained' : 'outlined'}
-                                  sx={{ minWidth: 34, px: 0.85 }}
-                                  onClick={() => {
-                                    setNarrativeCanvasDraft((current) => {
-                                      if (!current) return current;
-                                      return {
-                                        ...current,
-                                        fontStyle: current.fontStyle === 'italic' ? 'normal' : 'italic',
-                                      };
-                                    });
-                                  }}
-                                >
-                                  I
-                                </Button>
-                                <Button
-                                  size="small"
-                                  variant={narrativeCanvasDraft?.textDecoration === 'underline' ? 'contained' : 'outlined'}
-                                  sx={{ minWidth: 34, px: 0.85 }}
-                                  onClick={() => {
-                                    setNarrativeCanvasDraft((current) => {
-                                      if (!current) return current;
-                                      return {
-                                        ...current,
-                                        textDecoration: current.textDecoration === 'underline' ? 'none' : 'underline',
-                                      };
-                                    });
-                                  }}
-                                >
-                                  U
-                                </Button>
-                                <TextField
-                                  size="small"
-                                  label="Color"
-                                  type="color"
-                                  sx={{ width: 88 }}
-                                  value={narrativeCanvasDraft?.fontColor ?? '#ffffff'}
-                                  onChange={(event) => {
-                                    const next = event.target.value;
-                                    setNarrativeCanvasDraft((current) => {
-                                      if (!current) return current;
-                                      return { ...current, fontColor: next };
-                                    });
-                                  }}
-                                  InputLabelProps={{ shrink: true }}
-                                />
-                                <TextField
-                                  size="small"
-                                  label="Tam"
-                                  type="number"
-                                  sx={{ width: 84 }}
-                                  value={narrativeCanvasDraft?.fontSizePx ?? 28}
-                                  inputProps={{ min: 8, max: 220, step: 1 }}
-                                  onChange={(event) => {
-                                    const raw = Number(event.target.value);
-                                    setNarrativeCanvasDraft((current) => {
-                                      if (!current) return current;
-                                      return {
-                                        ...current,
-                                        fontSizePx: Number.isFinite(raw) ? Math.max(8, Math.min(220, raw)) : current.fontSizePx,
-                                      };
-                                    });
-                                  }}
-                                  InputLabelProps={{ shrink: true }}
-                                />
-                                <FormControl size="small" sx={{ minWidth: 116 }}>
-                                  <InputLabel>Alineación</InputLabel>
-                                  <Select
-                                    label="Alineación"
-                                    value={narrativeCanvasDraft?.textAlign ?? 'left'}
-                                    onChange={(event) => {
-                                      const value = event.target.value as 'left' | 'center' | 'right' | 'justify';
-                                      setNarrativeCanvasDraft((current) => {
-                                        if (!current) return current;
-                                        return { ...current, textAlign: value };
-                                      });
+                                        <MenuItem value="left">Left</MenuItem>
+                                        <MenuItem value="center">Center</MenuItem>
+                                        <MenuItem value="right">Right</MenuItem>
+                                        <MenuItem value="justify">Justify</MenuItem>
+                                      </Select>
+                                    </FormControl>
+                                    <Stack direction="row" spacing={0.5} sx={{ marginLeft: 'auto' }}>
+                                      <Button size="small" variant="outlined" onClick={() => finishNarrativeCanvasEdit('cancel')}>
+                                        Cancelar
+                                      </Button>
+                                      <Button size="small" variant="contained" onClick={() => finishNarrativeCanvasEdit('save')}>
+                                        Guardar
+                                      </Button>
+                                    </Stack>
+                                  </Stack>
+                                ) : null}
+                                {selected ? (
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      right: -8,
+                                      bottom: -8,
+                                      width: 14,
+                                      height: 14,
+                                      borderRadius: '50%',
+                                      bgcolor: 'primary.main',
+                                      border: '2px solid #fff',
+                                      cursor: 'nwse-resize',
+                                      pointerEvents: 'auto',
                                     }}
-                                  >
-                                    <MenuItem value="left">Left</MenuItem>
-                                    <MenuItem value="center">Center</MenuItem>
-                                    <MenuItem value="right">Right</MenuItem>
-                                    <MenuItem value="justify">Justify</MenuItem>
-                                  </Select>
-                                </FormControl>
-                                <Stack direction="row" spacing={0.5} sx={{ marginLeft: 'auto' }}>
-                                  <Button size="small" variant="outlined" onClick={() => finishNarrativeCanvasEdit('cancel')}>
-                                    Cancelar
-                                  </Button>
-                                  <Button size="small" variant="contained" onClick={() => finishNarrativeCanvasEdit('save')}>
-                                    Guardar
-                                  </Button>
-                                </Stack>
-                              </Stack>
-                            ) : null}
-                            {selected ? (
-                              <Box
-                                sx={{
-                                  position: 'absolute',
-                                  right: -8,
-                                  bottom: -8,
-                                  width: 14,
-                                  height: 14,
-                                  borderRadius: '50%',
-                                  bgcolor: 'primary.main',
-                                  border: '2px solid #fff',
-                                  cursor: 'nwse-resize',
-                                  pointerEvents: 'auto',
-                                }}
-                                onMouseDown={(event) => {
-                                  if (isNarrativeCanvasEditing) return;
-                                  startLayerDrag(action, 'resize', event);
-                                }}
-                              />
-                            ) : null}
-                          </Box>
-                        );
-                      }
+                                    onMouseDown={(event) => {
+                                      if (isNarrativeCanvasEditing) return;
+                                      startLayerDrag(action, 'resize', event);
+                                    }}
+                                  />
+                                ) : null}
+                              </Box>
+                            );
+                          }
 
-                      return null;
-                    })
-                  )}
+                          return null;
+                        })
+                    )}
                   </Box>
                 </Box>
               </Box>
@@ -3881,6 +3899,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                     onSelectAction={handleSelectActionFromTimeline}
                     onMoveActionInTime={moveActionInTimeline}
                     onChangeActionLayerOrder={setActionLayerOrder}
+                    onChangeActionDuration={changeActionDurationInTimeline}
                     currentTimeMs={currentTimelineTimeMs}
                     onSeekTimeMs={handleSeekTimelineTime}
                     loopEnabled={Boolean(draft.loop)}
@@ -3892,7 +3911,24 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
               </Box>
             </Paper>
 
-            <Paper variant="outlined" sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, minHeight: 0, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 1.5,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+                minHeight: 0,
+                minWidth: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                gridColumn: {
+                  xs: 'span 1',
+                  md: 'span 2',
+                  lg: 'span 1',
+                },
+              }}
+            >
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
                 <Typography variant="subtitle2">Inspector y capas</Typography>
                 <Stack direction="row" spacing={0.4} sx={{ flexWrap: 'wrap' }}>
@@ -4074,33 +4110,33 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                     <Typography variant="caption" color="text.secondary">
                       Editor de la capa seleccionada.
                     </Typography>
-                  <DndContext>
-                    <SortableContext items={[selectedAction.id]} strategy={verticalListSortingStrategy}>
-                      <SceneActionEditor
-                        action={selectedAction}
-                        index={selectedActionIndex + 1}
-                        highlighted
-                        sceneVideoAssets={sceneVideoAssets}
-                        onRequestUploadVideo={handleUploadVideoClick}
-                        onStartChromaColorPick={() => {
-                          if (selectedAction.type !== 'sendImageToWindow' && selectedAction.type !== 'sendVideoToWindow') {
-                            return;
-                          }
-                          setChromaPickActionId((current) => (current === selectedAction.id ? null : selectedAction.id));
-                        }}
-                        isChromaColorPicking={chromaPickActionId === selectedAction.id}
-                        onChange={(updated) => {
-                          if (selectedActionIndex < 0) return;
-                          if (updated.type !== draft.actions[selectedActionIndex].type) {
-                            handleChangeActionType(selectedActionIndex, updated.type);
-                          } else {
-                            updateAction(selectedActionIndex, updated);
-                          }
-                        }}
-                        onRemove={removeSelectedAction}
-                      />
-                    </SortableContext>
-                  </DndContext>
+                    <DndContext>
+                      <SortableContext items={[selectedAction.id]} strategy={verticalListSortingStrategy}>
+                        <SceneActionEditor
+                          action={selectedAction}
+                          index={selectedActionIndex + 1}
+                          highlighted
+                          sceneVideoAssets={sceneVideoAssets}
+                          onRequestUploadVideo={handleUploadVideoClick}
+                          onStartChromaColorPick={() => {
+                            if (selectedAction.type !== 'sendImageToWindow' && selectedAction.type !== 'sendVideoToWindow') {
+                              return;
+                            }
+                            setChromaPickActionId((current) => (current === selectedAction.id ? null : selectedAction.id));
+                          }}
+                          isChromaColorPicking={chromaPickActionId === selectedAction.id}
+                          onChange={(updated) => {
+                            if (selectedActionIndex < 0) return;
+                            if (updated.type !== draft.actions[selectedActionIndex].type) {
+                              handleChangeActionType(selectedActionIndex, updated.type);
+                            } else {
+                              updateAction(selectedActionIndex, updated);
+                            }
+                          }}
+                          onRemove={removeSelectedAction}
+                        />
+                      </SortableContext>
+                    </DndContext>
                   </Stack>
                 ) : (
                   <Typography variant="body2" color="text.secondary">
