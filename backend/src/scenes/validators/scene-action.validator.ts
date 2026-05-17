@@ -124,6 +124,77 @@ const asFreePercentage = (value: unknown, field: string, min: number, max: numbe
   return percentage;
 };
 
+const asOptionalEnum = <T extends string>(
+  value: unknown,
+  field: string,
+  allowed: readonly T[],
+): T | undefined => {
+  if (value === undefined || value === null) return undefined;
+  const normalized = asString(value, field) as T;
+  if (!allowed.includes(normalized)) {
+    throw new BadRequestException(`Action field "${field}" must be one of: ${allowed.join(', ')}`);
+  }
+  return normalized;
+};
+
+const asOptionalHexColor = (value: unknown, field: string): string | undefined => {
+  const normalized = asOptionalNonEmptyString(value, field);
+  if (!normalized) return undefined;
+  const color = normalized.startsWith('#') ? normalized : `#${normalized}`;
+  if (!/^#[0-9a-fA-F]{6}$/.test(color)) {
+    throw new BadRequestException(`Action field "${field}" must be a hex color like #112233`);
+  }
+  return color.toLowerCase();
+};
+
+const normalizeNarrativeRichTextDoc = (
+  value: unknown,
+): {
+  blocks: Array<{
+    segments: Array<{
+      text: string;
+      bold?: boolean;
+      italic?: boolean;
+      underline?: boolean;
+      fontSizePx?: number;
+      color?: string;
+      fontFamily?: string;
+    }>;
+  }>;
+} | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  const doc = asObject(value, 'richTextDoc');
+  const blocksRaw = doc.blocks;
+  if (!Array.isArray(blocksRaw) || blocksRaw.length === 0) {
+    throw new BadRequestException('Action field "richTextDoc.blocks" must be a non-empty array');
+  }
+
+  const blocks = blocksRaw.map((blockValue, blockIndex) => {
+    const block = asObject(blockValue, `richTextDoc.blocks[${blockIndex}]`);
+    const segmentsRaw = block.segments;
+    if (!Array.isArray(segmentsRaw) || segmentsRaw.length === 0) {
+      throw new BadRequestException(`Action field "richTextDoc.blocks[${blockIndex}].segments" must be a non-empty array`);
+    }
+    const segments = segmentsRaw.map((segmentValue, segmentIndex) => {
+      const segment = asObject(segmentValue, `richTextDoc.blocks[${blockIndex}].segments[${segmentIndex}]`);
+      return {
+        text: asString(segment.text, `richTextDoc.blocks[${blockIndex}].segments[${segmentIndex}].text`),
+        ...(segment.bold === undefined ? {} : { bold: asBoolean(segment.bold, `richTextDoc.blocks[${blockIndex}].segments[${segmentIndex}].bold`) }),
+        ...(segment.italic === undefined ? {} : { italic: asBoolean(segment.italic, `richTextDoc.blocks[${blockIndex}].segments[${segmentIndex}].italic`) }),
+        ...(segment.underline === undefined ? {} : { underline: asBoolean(segment.underline, `richTextDoc.blocks[${blockIndex}].segments[${segmentIndex}].underline`) }),
+        ...(segment.fontSizePx === undefined ? {} : { fontSizePx: asFreePercentage(segment.fontSizePx, `richTextDoc.blocks[${blockIndex}].segments[${segmentIndex}].fontSizePx`, 8, 220) }),
+        ...(segment.color === undefined ? {} : { color: asOptionalHexColor(segment.color, `richTextDoc.blocks[${blockIndex}].segments[${segmentIndex}].color`) }),
+        ...(segment.fontFamily === undefined ? {} : { fontFamily: asOptionalLabel(segment.fontFamily, `richTextDoc.blocks[${blockIndex}].segments[${segmentIndex}].fontFamily`, 120) }),
+      };
+    });
+    return { segments };
+  });
+
+  return { blocks };
+};
+
 const normalizeChromaKey = (
   value: unknown,
 ): { enabled: boolean; color: string; tolerance: number } | undefined => {
@@ -325,12 +396,42 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
         durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
       };
     case 'setNarrativeText':
+      {
+        const richTextDoc = normalizeNarrativeRichTextDoc(body.richTextDoc);
+        const text = body.text === undefined ? undefined : asOptionalNonEmptyString(body.text, 'text');
+        if (!text && !richTextDoc) {
+          throw new BadRequestException('setNarrativeText requires text or richTextDoc');
+        }
       return {
         ...(displayName ? { displayName } : {}),
-        text: asString(body.text, 'text'),
+        ...(text ? { text } : {}),
         title: body.title === undefined ? undefined : asString(body.title, 'title'),
         durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
+        ...(richTextDoc ? { richTextDoc } : {}),
+        leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -50, 150),
+        topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -50, 150),
+        widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 200),
+        heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 200),
+        opacity: body.opacity === undefined ? undefined : asOpacity(body.opacity, 'opacity'),
+        layerOrder: body.layerOrder === undefined ? undefined : asNumber(body.layerOrder, 'layerOrder'),
+        fontFamily: asOptionalLabel(body.fontFamily, 'fontFamily', 120),
+        fontSizePx: body.fontSizePx === undefined ? undefined : asFreePercentage(body.fontSizePx, 'fontSizePx', 8, 220),
+        fontColor: asOptionalHexColor(body.fontColor, 'fontColor'),
+        textAlign: asOptionalEnum(body.textAlign, 'textAlign', ['left', 'center', 'right', 'justify'] as const),
+        lineHeight: body.lineHeight === undefined ? undefined : asFreePercentage(body.lineHeight, 'lineHeight', 0.8, 3),
+        letterSpacingPx: body.letterSpacingPx === undefined
+          ? undefined
+          : asFreePercentage(body.letterSpacingPx, 'letterSpacingPx', -8, 20),
+        fontWeight: asOptionalEnum(body.fontWeight, 'fontWeight', ['normal', 'bold'] as const),
+        fontStyle: asOptionalEnum(body.fontStyle, 'fontStyle', ['normal', 'italic'] as const),
+        textDecoration: asOptionalEnum(body.textDecoration, 'textDecoration', ['none', 'underline'] as const),
+        backgroundMode: asOptionalEnum(body.backgroundMode, 'backgroundMode', ['none', 'rect', 'capsule'] as const),
+        backgroundColor: asOptionalHexColor(body.backgroundColor, 'backgroundColor'),
+        backgroundOpacity: body.backgroundOpacity === undefined ? undefined : asOpacity(body.backgroundOpacity, 'backgroundOpacity'),
+        borderRadiusPx: body.borderRadiusPx === undefined ? undefined : asFreePercentage(body.borderRadiusPx, 'borderRadiusPx', 0, 128),
+        paddingPx: body.paddingPx === undefined ? undefined : asFreePercentage(body.paddingPx, 'paddingPx', 0, 64),
       };
+      }
     case 'runShortcut':
       return {
         ...(displayName ? { displayName } : {}),

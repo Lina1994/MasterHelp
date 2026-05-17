@@ -144,9 +144,42 @@ export interface SetWeatherSceneAction extends SceneActionBase {
 export interface SetNarrativeTextSceneAction extends SceneActionBase {
   type: 'setNarrativeText';
   payload: {
-    text: string;
+    text?: string;
     title?: string;
     durationMs?: number;
+    richTextDoc?: {
+      blocks: Array<{
+        segments: Array<{
+          text: string;
+          bold?: boolean;
+          italic?: boolean;
+          underline?: boolean;
+          fontSizePx?: number;
+          color?: string;
+          fontFamily?: string;
+        }>;
+      }>;
+    };
+    leftPct?: number;
+    topPct?: number;
+    widthPct?: number;
+    heightPct?: number;
+    opacity?: number;
+    layerOrder?: number;
+    fontFamily?: string;
+    fontSizePx?: number;
+    fontColor?: string;
+    textAlign?: 'left' | 'center' | 'right' | 'justify';
+    lineHeight?: number;
+    letterSpacingPx?: number;
+    fontWeight?: 'normal' | 'bold';
+    fontStyle?: 'normal' | 'italic';
+    textDecoration?: 'none' | 'underline';
+    backgroundMode?: 'none' | 'rect' | 'capsule';
+    backgroundColor?: string;
+    backgroundOpacity?: number;
+    borderRadiusPx?: number;
+    paddingPx?: number;
   };
 }
 

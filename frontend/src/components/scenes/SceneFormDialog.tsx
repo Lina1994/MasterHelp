@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { alpha } from '@mui/material/styles';
 import {
   Alert,
   Box,
@@ -102,6 +103,103 @@ const SCENE_EDITOR_MEMORY_WARMUP_KEY = 'app.sceneEditor.videoMemoryWarmup';
 const PREVIEW_FPS = 30;
 const DERIVATION_POLL_INTERVAL_MS = 1200;
 const DERIVATION_MAX_POLLS = 45;
+const PREVIEW_LAYER_SNAP_STEP_PCT = 1;
+const PREVIEW_LAYER_MIN_SIZE_PCT = 5;
+const PREVIEW_LAYER_STAGE_MIN_PCT = 0;
+const PREVIEW_LAYER_STAGE_MAX_PCT = 100;
+
+type LeftToolPanelMode = 'media' | 'text';
+
+const NARRATIVE_TOOL_STYLE_PRESETS: Array<{
+  id: string;
+  label: string;
+  subtitle: string;
+  patch: Record<string, unknown>;
+}> = [
+  {
+    id: 'title-cinematic',
+    label: 'Titulo cinematografico',
+    subtitle: 'Grande y centrado',
+    patch: {
+      title: 'Titulo',
+      text: 'Escribe aqui tu narracion...',
+      stylePresetId: 'cinematicTitle',
+      leftPct: 12,
+      topPct: 60,
+      widthPct: 76,
+      heightPct: 24,
+      textAlign: 'center',
+      fontFamily: 'Cinzel',
+      fontSizePx: 42,
+      fontWeight: 'bold',
+      backgroundMode: 'none',
+      backgroundOpacity: 0,
+    },
+  },
+  {
+    id: 'subtitle-card',
+    label: 'Subtitulo',
+    subtitle: 'Lectura limpia',
+    patch: {
+      title: '',
+      text: 'Texto de apoyo o descripcion breve.',
+      stylePresetId: 'subtitleCard',
+      leftPct: 8,
+      topPct: 70,
+      widthPct: 84,
+      heightPct: 20,
+      textAlign: 'left',
+      fontFamily: 'Merriweather',
+      fontSizePx: 28,
+      lineHeight: 1.45,
+      backgroundMode: 'rect',
+      backgroundColor: '#111111',
+      backgroundOpacity: 0.62,
+    },
+  },
+  {
+    id: 'lower-third',
+    label: 'Lower third',
+    subtitle: 'Etiqueta inferior',
+    patch: {
+      title: 'Ubicacion',
+      text: 'Detalle contextual',
+      stylePresetId: 'lowerThird',
+      leftPct: 6,
+      topPct: 78,
+      widthPct: 58,
+      heightPct: 16,
+      textAlign: 'left',
+      fontFamily: 'Montserrat',
+      fontSizePx: 24,
+      fontWeight: 'bold',
+      backgroundMode: 'capsule',
+      backgroundColor: '#0b1f3a',
+      backgroundOpacity: 0.74,
+      borderRadiusPx: 18,
+    },
+  },
+  {
+    id: 'minimal-note',
+    label: 'Nota minimal',
+    subtitle: 'Sin fondo',
+    patch: {
+      title: '',
+      text: 'Nota breve',
+      stylePresetId: 'minimalNote',
+      leftPct: 68,
+      topPct: 12,
+      widthPct: 26,
+      heightPct: 14,
+      textAlign: 'right',
+      fontFamily: 'Lato',
+      fontSizePx: 22,
+      fontStyle: 'italic',
+      backgroundMode: 'none',
+      backgroundOpacity: 0,
+    },
+  },
+];
 
 function toPositiveDurationMs(value: unknown): number | undefined {
   const n = Number(value);
@@ -196,7 +294,31 @@ function emptyPayload(type: string): Record<string, unknown> {
     case 'applyWindowFilter': return { filter: 'blur', intensity: 0.5, color: '' };
     case 'clearWindowFilter': return {};
     case 'setWeather':     return { preset: 'rain', intensity: 0.5, durationMs: 0 };
-    case 'setNarrativeText': return { text: '', title: '', durationMs: 0 };
+    case 'setNarrativeText': return {
+      text: '',
+      title: '',
+      durationMs: 0,
+      leftPct: 8,
+      topPct: 68,
+      widthPct: 84,
+      heightPct: 22,
+      opacity: 1,
+      layerOrder: 100,
+      fontFamily: 'Merriweather',
+      fontSizePx: 28,
+      fontColor: '#ffffff',
+      textAlign: 'left',
+      lineHeight: 1.35,
+      letterSpacingPx: 0,
+      fontWeight: 'normal',
+      fontStyle: 'normal',
+      textDecoration: 'none',
+      backgroundMode: 'rect',
+      backgroundColor: '#000000',
+      backgroundOpacity: 0.58,
+      borderRadiusPx: 12,
+      paddingPx: 16,
+    };
     case 'runShortcut':    return { shortcutId: '' };
     case 'delay':          return { durationMs: 1000 };
     case 'runScene':       return { sceneId: '' };
@@ -241,6 +363,38 @@ function normalizeFreePlacement(value: unknown, fallback: number): number {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(-50, Math.min(150, n));
+}
+
+function snapPct(value: number): number {
+  return Math.round(value / PREVIEW_LAYER_SNAP_STEP_PCT) * PREVIEW_LAYER_SNAP_STEP_PCT;
+}
+
+function clampLayerMoveInsideStage(
+  leftPct: number,
+  topPct: number,
+  widthPct: number,
+  heightPct: number,
+): { leftPct: number; topPct: number } {
+  const maxLeft = Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, PREVIEW_LAYER_STAGE_MAX_PCT - widthPct);
+  const maxTop = Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, PREVIEW_LAYER_STAGE_MAX_PCT - heightPct);
+  return {
+    leftPct: Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, Math.min(maxLeft, leftPct)),
+    topPct: Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, Math.min(maxTop, topPct)),
+  };
+}
+
+function clampLayerSizeInsideStage(
+  widthPct: number,
+  heightPct: number,
+  leftPct: number,
+  topPct: number,
+): { widthPct: number; heightPct: number } {
+  const maxWidth = Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, PREVIEW_LAYER_STAGE_MAX_PCT - leftPct);
+  const maxHeight = Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, PREVIEW_LAYER_STAGE_MAX_PCT - topPct);
+  return {
+    widthPct: Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, Math.min(maxWidth, widthPct)),
+    heightPct: Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, Math.min(maxHeight, heightPct)),
+  };
 }
 
 function readStoredWindowSize(key: string): WindowSize | null {
@@ -306,6 +460,55 @@ function getPlacementFromPayload(payload: Record<string, unknown>): {
     widthPct: Math.max(1, normalizeFreePlacement(readLegacyPercentage(widthRaw, 80), 80)),
     heightPct: Math.max(1, normalizeFreePlacement(readLegacyPercentage(heightRaw, 80), 80)),
   };
+}
+
+function getNarrativeSegments(payload: Record<string, unknown>): Array<{
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  fontSizePx?: number;
+  color?: string;
+  fontFamily?: string;
+}> {
+  const richTextDoc = asRecord(payload.richTextDoc);
+  const blocks = Array.isArray(richTextDoc?.blocks) ? richTextDoc?.blocks : [];
+  const segments: Array<{
+    text: string;
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    fontSizePx?: number;
+    color?: string;
+    fontFamily?: string;
+  }> = [];
+
+  for (const block of blocks) {
+    const blockRecord = asRecord(block);
+    const blockSegments = Array.isArray(blockRecord?.segments) ? blockRecord?.segments : [];
+    for (const segment of blockSegments) {
+      const segmentRecord = asRecord(segment);
+      const text = typeof segmentRecord?.text === 'string' ? segmentRecord.text : '';
+      if (!text) continue;
+      segments.push({
+        text,
+        ...(segmentRecord?.bold !== undefined ? { bold: Boolean(segmentRecord.bold) } : {}),
+        ...(segmentRecord?.italic !== undefined ? { italic: Boolean(segmentRecord.italic) } : {}),
+        ...(segmentRecord?.underline !== undefined ? { underline: Boolean(segmentRecord.underline) } : {}),
+        ...(Number.isFinite(Number(segmentRecord?.fontSizePx)) ? { fontSizePx: Number(segmentRecord?.fontSizePx) } : {}),
+        ...(typeof segmentRecord?.color === 'string' ? { color: segmentRecord.color } : {}),
+        ...(typeof segmentRecord?.fontFamily === 'string' ? { fontFamily: segmentRecord.fontFamily } : {}),
+      });
+    }
+  }
+
+  if (segments.length > 0) {
+    return segments;
+  }
+
+  const fallbackText = String(payload.text ?? '').trim();
+  if (!fallbackText) return [];
+  return [{ text: fallbackText }];
 }
 
 function parseWindowKind(value: unknown): ScenePreviewWindowKind | null {
@@ -476,6 +679,10 @@ function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
   }
 
   if (base.type === 'setNarrativeText') {
+    const placement = getPlacementFromPayload(payload);
+    const backgroundMode = String(payload.backgroundMode ?? 'rect').trim();
+    const normalizedBackgroundMode = backgroundMode === 'none' || backgroundMode === 'capsule' ? backgroundMode : 'rect';
+    const richTextDoc = asRecord(payload.richTextDoc);
     return {
       ...base,
       payload: {
@@ -484,6 +691,39 @@ function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         ...(optionalText(payload.title) ? { title: optionalText(payload.title) } : {}),
         ...(payload.durationMs !== undefined && Number.isFinite(Number(payload.durationMs))
           ? { durationMs: Number(payload.durationMs) }
+          : {}),
+        ...(richTextDoc ? { richTextDoc } : {}),
+        leftPct: placement.leftPct,
+        topPct: placement.topPct,
+        widthPct: placement.widthPct,
+        heightPct: placement.heightPct,
+        ...(payload.opacity !== undefined ? { opacity: normalizeOpacity(payload.opacity) } : {}),
+        ...(normalizedLayerOrder !== undefined ? { layerOrder: normalizedLayerOrder } : {}),
+        ...(optionalText(payload.fontFamily) ? { fontFamily: optionalText(payload.fontFamily) } : {}),
+        ...(payload.fontSizePx !== undefined && Number.isFinite(Number(payload.fontSizePx))
+          ? { fontSizePx: Math.max(8, Math.min(220, Number(payload.fontSizePx))) }
+          : {}),
+        ...(optionalText(payload.fontColor) ? { fontColor: optionalText(payload.fontColor) } : {}),
+        ...(optionalText(payload.textAlign) ? { textAlign: optionalText(payload.textAlign) } : {}),
+        ...(payload.lineHeight !== undefined && Number.isFinite(Number(payload.lineHeight))
+          ? { lineHeight: Math.max(0.8, Math.min(3, Number(payload.lineHeight))) }
+          : {}),
+        ...(payload.letterSpacingPx !== undefined && Number.isFinite(Number(payload.letterSpacingPx))
+          ? { letterSpacingPx: Math.max(-8, Math.min(20, Number(payload.letterSpacingPx))) }
+          : {}),
+        ...(optionalText(payload.fontWeight) ? { fontWeight: optionalText(payload.fontWeight) } : {}),
+        ...(optionalText(payload.fontStyle) ? { fontStyle: optionalText(payload.fontStyle) } : {}),
+        ...(optionalText(payload.textDecoration) ? { textDecoration: optionalText(payload.textDecoration) } : {}),
+        backgroundMode: normalizedBackgroundMode,
+        ...(optionalText(payload.backgroundColor) ? { backgroundColor: optionalText(payload.backgroundColor) } : {}),
+        ...(payload.backgroundOpacity !== undefined && Number.isFinite(Number(payload.backgroundOpacity))
+          ? { backgroundOpacity: normalizeOpacity(payload.backgroundOpacity) }
+          : {}),
+        ...(payload.borderRadiusPx !== undefined && Number.isFinite(Number(payload.borderRadiusPx))
+          ? { borderRadiusPx: Math.max(0, Math.min(128, Number(payload.borderRadiusPx))) }
+          : {}),
+        ...(payload.paddingPx !== undefined && Number.isFinite(Number(payload.paddingPx))
+          ? { paddingPx: Math.max(0, Math.min(64, Number(payload.paddingPx))) }
           : {}),
       },
     };
@@ -655,6 +895,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   const [skylineWindowSize, setSkylineWindowSize] = useState<WindowSize | null>(null);
   const [chromaPickActionId, setChromaPickActionId] = useState<string | null>(null);
   const [dragOverActionId, setDragOverActionId] = useState<string | null>(null);
+  const [leftToolPanelMode, setLeftToolPanelMode] = useState<LeftToolPanelMode>('media');
   const [videoLibraryQuery, setVideoLibraryQuery] = useState<string>('');
   const [renamingVideoId, setRenamingVideoId] = useState<string | null>(null);
   const [renamingVideoName, setRenamingVideoName] = useState<string>('');
@@ -662,6 +903,17 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
   const [derivingClipActionId, setDerivingClipActionId] = useState<string | null>(null);
   const [derivingClipErrorByActionId, setDerivingClipErrorByActionId] = useState<Record<string, string>>({});
+  const [narrativeCanvasEditActionId, setNarrativeCanvasEditActionId] = useState<string | null>(null);
+  const [narrativeCanvasDraft, setNarrativeCanvasDraft] = useState<{
+    title: string;
+    text: string;
+    fontSizePx: number;
+    fontColor: string;
+    textAlign: 'left' | 'center' | 'right' | 'justify';
+    fontWeight: 'normal' | 'bold';
+    fontStyle: 'normal' | 'italic';
+    textDecoration: 'none' | 'underline';
+  } | null>(null);
   const [isPreviewMemoryWarmupEnabled, setIsPreviewMemoryWarmupEnabled] = useState<boolean>(() => {
     try {
       return localStorage.getItem(SCENE_EDITOR_MEMORY_WARMUP_KEY) !== 'off';
@@ -684,6 +936,13 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     originTopPct: number;
     originWidthPct: number;
     originHeightPct: number;
+  } | null>(null);
+  const [activeLayerDragPlacement, setActiveLayerDragPlacement] = useState<{
+    actionId: string;
+    leftPct: number;
+    topPct: number;
+    widthPct: number;
+    heightPct: number;
   } | null>(null);
 
   // Populate form when editing or reset when creating
@@ -711,6 +970,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     }
     setError(null);
     setSelectedActionId(editing?.actions?.[0]?.id ?? null);
+    setLeftToolPanelMode('media');
   }, [open, editing, campaignId]);
 
   useEffect(() => {
@@ -775,6 +1035,20 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
       setChromaPickActionId(null);
     }
   }, [selectedActionId, chromaPickActionId]);
+
+  useEffect(() => {
+    if (!narrativeCanvasEditActionId) return;
+    if (!selectedActionId || selectedActionId !== narrativeCanvasEditActionId) {
+      setNarrativeCanvasEditActionId(null);
+      setNarrativeCanvasDraft(null);
+      return;
+    }
+    const active = draft.actions.find((action) => action.id === narrativeCanvasEditActionId);
+    if (!active || active.type !== 'setNarrativeText') {
+      setNarrativeCanvasEditActionId(null);
+      setNarrativeCanvasDraft(null);
+    }
+  }, [selectedActionId, narrativeCanvasEditActionId, draft.actions]);
 
   const timelineModel = useMemo(() => buildTimeline(draft.actions), [draft.actions]);
   const timelineEntriesByActionId = useMemo(() => {
@@ -915,6 +1189,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     const frameStepMs = 1000 / PREVIEW_FPS;
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTextInputTarget(event.target)) return;
+      if (narrativeCanvasEditActionId) return;
 
       if (event.code === 'Space') {
         event.preventDefault();
@@ -940,7 +1215,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [open, timelineDurationMs]);
+  }, [open, timelineDurationMs, narrativeCanvasEditActionId]);
 
   const set = <K extends keyof ScenePayload>(key: K, value: ScenePayload[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
@@ -990,12 +1265,80 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     }));
   };
 
+  const beginNarrativeCanvasEdit = (action: SceneActionDto) => {
+    if (action.type !== 'setNarrativeText') return;
+    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const textAlignRaw = String(payload.textAlign ?? 'left').trim();
+    const textAlign: 'left' | 'center' | 'right' | 'justify' =
+      textAlignRaw === 'center' || textAlignRaw === 'right' || textAlignRaw === 'justify'
+        ? textAlignRaw
+        : 'left';
+    setNarrativeCanvasEditActionId(action.id);
+    setNarrativeCanvasDraft({
+      title: String(payload.title ?? ''),
+      text: String(payload.text ?? ''),
+      fontSizePx: Number.isFinite(Number(payload.fontSizePx)) ? Math.max(8, Math.min(220, Number(payload.fontSizePx))) : 28,
+      fontColor: String(payload.fontColor ?? '#ffffff').trim() || '#ffffff',
+      textAlign,
+      fontWeight: String(payload.fontWeight ?? 'normal').trim() === 'bold' ? 'bold' : 'normal',
+      fontStyle: String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal',
+      textDecoration: String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none',
+    });
+    setIsPreviewPlaying(false);
+  };
+
+  const createNarrativeActionAndStartEdit = (presetPatch?: Record<string, unknown>) => {
+    if (draft.actions.length >= SCENE_MAX_ACTIONS) return;
+
+    const basePayload = emptyPayload('setNarrativeText');
+    const payload = {
+      ...basePayload,
+      ...(presetPatch ?? {}),
+    } as Record<string, unknown>;
+
+    const next: SceneActionDto = {
+      id: uuidv4(),
+      type: 'setNarrativeText',
+      delay: 0,
+      payload,
+    };
+
+    setDraft((d) => ({ ...d, actions: [...d.actions, next] }));
+    setSelectedActionId(next.id);
+    setLeftToolPanelMode('text');
+    beginNarrativeCanvasEdit(next);
+  };
+
+  const finishNarrativeCanvasEdit = (mode: 'save' | 'cancel') => {
+    if (!narrativeCanvasEditActionId) return;
+    if (mode === 'save' && narrativeCanvasDraft) {
+      const title = narrativeCanvasDraft.title.trim();
+      const text = narrativeCanvasDraft.text;
+      updateActionById(narrativeCanvasEditActionId, (action) => ({
+        ...action,
+        payload: {
+          ...(action.payload ?? {}),
+          text,
+          ...(title ? { title } : { title: '' }),
+          fontSizePx: narrativeCanvasDraft.fontSizePx,
+          fontColor: narrativeCanvasDraft.fontColor,
+          textAlign: narrativeCanvasDraft.textAlign,
+          fontWeight: narrativeCanvasDraft.fontWeight,
+          fontStyle: narrativeCanvasDraft.fontStyle,
+          textDecoration: narrativeCanvasDraft.textDecoration,
+        },
+      }));
+    }
+    setNarrativeCanvasEditActionId(null);
+    setNarrativeCanvasDraft(null);
+  };
+
   const removeAction = (index: number) => {
     setDraft((d) => ({ ...d, actions: d.actions.filter((_, i) => i !== index) }));
   };
 
   const handleSelectActionFromTimeline = (actionId: string) => {
-    setSelectedActionId(actionId);
+    selectActionAndSeekToStart(actionId);
   };
 
   const handleChangeActionType = (index: number, type: string) => {
@@ -1134,6 +1477,41 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
 
   const selectedActionIndex = draft.actions.findIndex((action) => action.id === selectedActionId);
   const selectedAction = selectedActionIndex >= 0 ? draft.actions[selectedActionIndex] : null;
+  const lockPreviewInteractionToSelectedNarrative = Boolean(
+    selectedAction
+    && selectedAction.type === 'setNarrativeText'
+    && (leftToolPanelMode === 'text' || narrativeCanvasEditActionId === selectedAction.id),
+  );
+  const selectedPreviewGuidePlacement = useMemo(() => {
+    if (!selectedAction) return null;
+    if (!['sendImageToWindow', 'sendVideoToWindow', 'setNarrativeText'].includes(selectedAction.type)) {
+      return null;
+    }
+    const payload = (selectedAction.payload ?? {}) as Record<string, unknown>;
+    if (selectedAction.type === 'setNarrativeText') {
+      const placement = getPlacementFromPayload(payload);
+      return {
+        actionId: selectedAction.id,
+        leftPct: placement.leftPct,
+        topPct: placement.topPct,
+        widthPct: placement.widthPct,
+        heightPct: placement.heightPct,
+      };
+    }
+
+    return {
+      actionId: selectedAction.id,
+      leftPct: normalizeFreePlacement(payload.leftPct, 10),
+      topPct: normalizeFreePlacement(payload.topPct, 10),
+      widthPct: Math.max(1, normalizeFreePlacement(payload.widthPct, 80)),
+      heightPct: Math.max(1, normalizeFreePlacement(payload.heightPct, 80)),
+    };
+  }, [selectedAction]);
+  const activePreviewGuidePlacement = activeLayerDragPlacement
+    && selectedActionId
+    && activeLayerDragPlacement.actionId === selectedActionId
+    ? activeLayerDragPlacement
+    : selectedPreviewGuidePlacement;
   const selectedTimelineEntry = selectedAction ? timelineEntriesByActionId.get(selectedAction.id) : undefined;
   const canSplitSelectedAction = Boolean(
     selectedAction
@@ -1771,6 +2149,13 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
       originWidthPct: normalizeFreePlacement((payload as Record<string, unknown>).widthPct, 80),
       originHeightPct: normalizeFreePlacement((payload as Record<string, unknown>).heightPct, 80),
     };
+    setActiveLayerDragPlacement({
+      actionId: action.id,
+      leftPct: normalizeFreePlacement((payload as Record<string, unknown>).leftPct, 10),
+      topPct: normalizeFreePlacement((payload as Record<string, unknown>).topPct, 10),
+      widthPct: Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, normalizeFreePlacement((payload as Record<string, unknown>).widthPct, 80)),
+      heightPct: Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, normalizeFreePlacement((payload as Record<string, unknown>).heightPct, 80)),
+    });
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const drag = layerDragRef.current;
@@ -1783,21 +2168,38 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
       if (drag.mode === 'move') {
         const widthPct = drag.originWidthPct;
         const heightPct = drag.originHeightPct;
-        const leftPct = drag.originLeftPct + dxPct;
-        const topPct = drag.originTopPct + dyPct;
+        const snappedLeft = snapPct(drag.originLeftPct + dxPct);
+        const snappedTop = snapPct(drag.originTopPct + dyPct);
+        const { leftPct, topPct } = clampLayerMoveInsideStage(snappedLeft, snappedTop, widthPct, heightPct);
         updateLayerPlacementByActionId(drag.actionId, { leftPct, topPct });
+        setActiveLayerDragPlacement({
+          actionId: drag.actionId,
+          leftPct,
+          topPct,
+          widthPct,
+          heightPct,
+        });
         return;
       }
 
       const leftPct = drag.originLeftPct;
       const topPct = drag.originTopPct;
-      const widthPct = Math.max(5, drag.originWidthPct + dxPct);
-      const heightPct = Math.max(5, drag.originHeightPct + dyPct);
+      const snappedWidth = snapPct(drag.originWidthPct + dxPct);
+      const snappedHeight = snapPct(drag.originHeightPct + dyPct);
+      const { widthPct, heightPct } = clampLayerSizeInsideStage(snappedWidth, snappedHeight, leftPct, topPct);
       updateLayerPlacementByActionId(drag.actionId, { widthPct, heightPct });
+      setActiveLayerDragPlacement({
+        actionId: drag.actionId,
+        leftPct,
+        topPct,
+        widthPct,
+        heightPct,
+      });
     };
 
     const onMouseUp = () => {
       layerDragRef.current = null;
+      setActiveLayerDragPlacement(null);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
@@ -1827,6 +2229,21 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     setPreviewLoopCycleIndex(0);
     setPreviewSeekVersion((v) => v + 1);
   };
+
+  const selectActionAndSeekToStart = useCallback((actionId: string) => {
+    setSelectedActionId(actionId);
+    const selectedAction = draft.actions.find((action) => action.id === actionId);
+    if (selectedAction?.type === 'setNarrativeText') {
+      setLeftToolPanelMode('text');
+    }
+
+    const timelineEntry = timelineEntriesByActionId.get(actionId);
+    const startMs = timelineEntry?.startMs ?? 0;
+    setIsPreviewPlaying(false);
+    setCurrentTimelineTimeMs(Math.max(0, Math.min(timelineDurationMs, startMs)));
+    setPreviewLoopCycleIndex(0);
+    setPreviewSeekVersion((v) => v + 1);
+  }, [draft.actions, timelineDurationMs, timelineEntriesByActionId]);
 
   const handleSetLoopWindow = useCallback((nextStartMs: number, nextEndMs: number) => {
     setDraft((currentDraft) => {
@@ -2195,7 +2612,16 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
               <Stack spacing={0.8}>
                 <Button size="small" variant="contained" startIcon={<AddIcon />} onClick={() => addActionOfType('sendVideoToWindow')}>Añadir vídeo</Button>
                 <Button size="small" variant="outlined" onClick={() => addActionOfType('sendImageToWindow')}>Añadir imagen</Button>
-                <Button size="small" variant="outlined" onClick={() => addActionOfType('setNarrativeText')}>Añadir texto</Button>
+                <Button
+                  size="small"
+                  variant={leftToolPanelMode === 'text' ? 'contained' : 'outlined'}
+                  onClick={() => {
+                    setLeftToolPanelMode('text');
+                    createNarrativeActionAndStartEdit();
+                  }}
+                >
+                  Añadir texto
+                </Button>
                 <Button size="small" variant="outlined" onClick={() => addActionOfType('playMusic')}>Añadir música</Button>
                 <Button size="small" variant="outlined" onClick={() => addActionOfType('playSound')}>Añadir sonido</Button>
                 <Button size="small" variant="outlined" onClick={() => addActionOfType('applyWindowFilter')}>Añadir filtro</Button>
@@ -2205,115 +2631,183 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
 
               <Divider sx={{ my: 1 }} />
 
+              <Stack direction="row" spacing={0.75} sx={{ mb: 1 }}>
+                <Button
+                  size="small"
+                  variant={leftToolPanelMode === 'media' ? 'contained' : 'outlined'}
+                  onClick={() => setLeftToolPanelMode('media')}
+                >
+                  Media
+                </Button>
+                <Button
+                  size="small"
+                  variant={leftToolPanelMode === 'text' ? 'contained' : 'outlined'}
+                  onClick={() => setLeftToolPanelMode('text')}
+                >
+                  Texto
+                </Button>
+              </Stack>
+
               <Stack spacing={1} sx={{ minHeight: 0, flex: 1 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="subtitle2">Librería de vídeos</Typography>
-                  <Button
-                    size="small"
-                    startIcon={<UploadIcon />}
-                    onClick={handleUploadVideoClick}
-                    disabled={uploadingVideo}
-                  >
-                    {uploadingVideo ? 'Subiendo…' : 'Subir'}
-                  </Button>
-                </Stack>
-
-                {loadingAssets ? (
-                  <Typography variant="caption" color="text.secondary">Cargando vídeos…</Typography>
-                ) : sceneVideoAssets.length === 0 ? (
-                  <Alert severity="info">No hay vídeos subidos todavía.</Alert>
+                {leftToolPanelMode === 'text' ? (
+                  <Stack spacing={0.8} sx={{ minHeight: 0, overflowY: 'auto', pr: 0.4 }}>
+                    <Typography variant="subtitle2">Estilos de texto</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Elige un estilo para crear texto y escribir directamente en el previsualizador.
+                    </Typography>
+                    {NARRATIVE_TOOL_STYLE_PRESETS.map((preset) => (
+                      <Paper
+                        key={preset.id}
+                        variant="outlined"
+                        sx={{ p: 0.9, cursor: 'pointer', borderColor: 'divider' }}
+                        onClick={() => createNarrativeActionAndStartEdit(preset.patch)}
+                      >
+                        <Stack spacing={0.5}>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                            {preset.label}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {preset.subtitle}
+                          </Typography>
+                          <Box
+                            sx={{
+                              borderRadius: 1,
+                              px: 0.8,
+                              py: 0.55,
+                              bgcolor: 'rgba(15, 18, 28, 0.5)',
+                              border: '1px solid rgba(148, 163, 184, 0.24)',
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: '#f6f7fb',
+                                fontFamily: String(preset.patch.fontFamily ?? 'Merriweather'),
+                                fontSize: Math.max(12, Number(preset.patch.fontSizePx ?? 20) * 0.48),
+                                fontWeight: String(preset.patch.fontWeight ?? 'normal') === 'bold' ? 700 : 400,
+                                textAlign: String(preset.patch.textAlign ?? 'left') as 'left' | 'center' | 'right' | 'justify',
+                                display: 'block',
+                              }}
+                            >
+                              {String(preset.patch.title ?? '') || 'Texto de ejemplo'}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Paper>
+                    ))}
+                  </Stack>
                 ) : (
-                  <Stack spacing={0.8} sx={{ minHeight: 0 }}>
-                    <TextField
-                      size="small"
-                      placeholder="Buscar por nombre o archivo..."
-                      value={videoLibraryQuery}
-                      onChange={(event) => setVideoLibraryQuery(event.target.value)}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <SearchIcon fontSize="small" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
+                  <>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="subtitle2">Librería de vídeos</Typography>
+                      <Button
+                        size="small"
+                        startIcon={<UploadIcon />}
+                        onClick={handleUploadVideoClick}
+                        disabled={uploadingVideo}
+                      >
+                        {uploadingVideo ? 'Subiendo…' : 'Subir'}
+                      </Button>
+                    </Stack>
 
-                    {filteredSceneVideoAssets.length === 0 ? (
-                      <Typography variant="caption" color="text.secondary">
-                        No hay resultados para la búsqueda actual.
-                      </Typography>
+                    {loadingAssets ? (
+                      <Typography variant="caption" color="text.secondary">Cargando vídeos…</Typography>
+                    ) : sceneVideoAssets.length === 0 ? (
+                      <Alert severity="info">No hay vídeos subidos todavía.</Alert>
                     ) : (
-                      <Stack spacing={0.7} sx={{ overflowY: 'auto', overflowX: 'hidden', pr: 0.5, minWidth: 0 }}>
-                        {filteredSceneVideoAssets.map((asset) => {
-                          const isRenaming = renamingVideoId === asset.id;
-                          return (
-                            <Paper key={asset.id} variant="outlined" sx={{ p: 0.75, minWidth: 0, overflow: 'hidden' }}>
-                              <Stack spacing={0.6}>
-                                <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
-                                  <Chip
-                                    label={`${asset.name} (${Math.round(asset.size / (1024 * 1024))}MB)`}
-                                    size="small"
-                                    variant="outlined"
-                                    sx={{ maxWidth: '100%' }}
-                                    draggable
-                                    onDragStart={(event) => {
-                                      event.dataTransfer.setData('text/plain', toVideoDragPayload(asset.id));
-                                      event.dataTransfer.effectAllowed = 'copy';
-                                    }}
-                                    onClick={() => {
-                                      createActionByDroppingVideoAsset(asset.id);
-                                    }}
-                                  />
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleStartRenameVideo(asset)}
-                                    aria-label="Renombrar vídeo"
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                  <IconButton
-                                    size="small"
-                                    color="error"
-                                    onClick={() => handleDeleteVideoAsset(asset)}
-                                    disabled={deletingVideoId === asset.id}
-                                    aria-label="Eliminar vídeo"
-                                  >
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
-                                </Stack>
+                      <Stack spacing={0.8} sx={{ minHeight: 0 }}>
+                        <TextField
+                          size="small"
+                          placeholder="Buscar por nombre o archivo..."
+                          value={videoLibraryQuery}
+                          onChange={(event) => setVideoLibraryQuery(event.target.value)}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <SearchIcon fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
 
-                                {isRenaming ? (
-                                  <Stack direction="row" spacing={0.75} alignItems="center">
-                                    <TextField
-                                      size="small"
-                                      value={renamingVideoName}
-                                      onChange={(event) => setRenamingVideoName(event.target.value)}
-                                      sx={{ flex: 1 }}
-                                    />
-                                    <Button
-                                      size="small"
-                                      variant="contained"
-                                      onClick={() => handleConfirmRenameVideo(asset.id)}
-                                      disabled={renamingVideoSubmitting}
-                                    >
-                                      Guardar
-                                    </Button>
-                                    <Button size="small" onClick={handleCancelRenameVideo}>
-                                      Cancelar
-                                    </Button>
+                        {filteredSceneVideoAssets.length === 0 ? (
+                          <Typography variant="caption" color="text.secondary">
+                            No hay resultados para la búsqueda actual.
+                          </Typography>
+                        ) : (
+                          <Stack spacing={0.7} sx={{ overflowY: 'auto', overflowX: 'hidden', pr: 0.5, minWidth: 0 }}>
+                            {filteredSceneVideoAssets.map((asset) => {
+                              const isRenaming = renamingVideoId === asset.id;
+                              return (
+                                <Paper key={asset.id} variant="outlined" sx={{ p: 0.75, minWidth: 0, overflow: 'hidden' }}>
+                                  <Stack spacing={0.6}>
+                                    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
+                                      <Chip
+                                        label={`${asset.name} (${Math.round(asset.size / (1024 * 1024))}MB)`}
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{ maxWidth: '100%' }}
+                                        draggable
+                                        onDragStart={(event) => {
+                                          event.dataTransfer.setData('text/plain', toVideoDragPayload(asset.id));
+                                          event.dataTransfer.effectAllowed = 'copy';
+                                        }}
+                                        onClick={() => {
+                                          createActionByDroppingVideoAsset(asset.id);
+                                        }}
+                                      />
+                                      <IconButton
+                                        size="small"
+                                        onClick={() => handleStartRenameVideo(asset)}
+                                        aria-label="Renombrar vídeo"
+                                      >
+                                        <EditIcon fontSize="small" />
+                                      </IconButton>
+                                      <IconButton
+                                        size="small"
+                                        color="error"
+                                        onClick={() => handleDeleteVideoAsset(asset)}
+                                        disabled={deletingVideoId === asset.id}
+                                        aria-label="Eliminar vídeo"
+                                      >
+                                        <DeleteIcon fontSize="small" />
+                                      </IconButton>
+                                    </Stack>
+
+                                    {isRenaming ? (
+                                      <Stack direction="row" spacing={0.75} alignItems="center">
+                                        <TextField
+                                          size="small"
+                                          value={renamingVideoName}
+                                          onChange={(event) => setRenamingVideoName(event.target.value)}
+                                          sx={{ flex: 1 }}
+                                        />
+                                        <Button
+                                          size="small"
+                                          variant="contained"
+                                          onClick={() => handleConfirmRenameVideo(asset.id)}
+                                          disabled={renamingVideoSubmitting}
+                                        >
+                                          Guardar
+                                        </Button>
+                                        <Button size="small" onClick={handleCancelRenameVideo}>
+                                          Cancelar
+                                        </Button>
+                                      </Stack>
+                                    ) : null}
+
+                                    <Typography variant="caption" color="text.secondary">
+                                      Archivo: {asset.originalFilename}
+                                    </Typography>
                                   </Stack>
-                                ) : null}
-
-                                <Typography variant="caption" color="text.secondary">
-                                  Archivo: {asset.originalFilename}
-                                </Typography>
-                              </Stack>
-                            </Paper>
-                          );
-                        })}
+                                </Paper>
+                              );
+                            })}
+                          </Stack>
+                        )}
                       </Stack>
                     )}
-                  </Stack>
+                  </>
                 )}
               </Stack>
             </Paper>
@@ -2377,6 +2871,19 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                       <MenuItem value="0.25">25%</MenuItem>
                       <MenuItem value="0.3">30%</MenuItem>
                       <MenuItem value="0.35">35%</MenuItem>
+                      <MenuItem value="0.4">40%</MenuItem>
+                      <MenuItem value="0.45">45%</MenuItem>
+                      <MenuItem value="0.5">50%</MenuItem>
+                      <MenuItem value="0.55">55%</MenuItem>
+                      <MenuItem value="0.6">60%</MenuItem>
+                      <MenuItem value="0.65">65%</MenuItem>
+                      <MenuItem value="0.7">70%</MenuItem>
+                      <MenuItem value="0.75">75%</MenuItem>
+                      <MenuItem value="0.8">80%</MenuItem>
+                      <MenuItem value="0.85">85%</MenuItem>
+                      <MenuItem value="0.9">90%</MenuItem>
+                      <MenuItem value="0.95">95%</MenuItem>
+                      <MenuItem value="1">100%</MenuItem>
                     </Select>
                   </FormControl>
                 </Stack>
@@ -2423,6 +2930,71 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                     <Box sx={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
                       {previewBaseContent}
                     </Box>
+
+                    {activePreviewGuidePlacement && !narrativeCanvasEditActionId ? (
+                      <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 9000 }}>
+                        {activeLayerDragPlacement ? (
+                          <>
+                            {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((pct) => (
+                              <Box
+                                key={`drag-v-guide-${pct}`}
+                                sx={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  bottom: 0,
+                                  left: `${pct}%`,
+                                  width: '1px',
+                                  bgcolor: pct === 50 ? 'rgba(121, 134, 255, 0.7)' : 'rgba(121, 134, 255, 0.28)',
+                                }}
+                              />
+                            ))}
+                            {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((pct) => (
+                              <Box
+                                key={`drag-h-guide-${pct}`}
+                                sx={{
+                                  position: 'absolute',
+                                  left: 0,
+                                  right: 0,
+                                  top: `${pct}%`,
+                                  height: '1px',
+                                  bgcolor: pct === 50 ? 'rgba(121, 134, 255, 0.7)' : 'rgba(121, 134, 255, 0.28)',
+                                }}
+                              />
+                            ))}
+                          </>
+                        ) : null}
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            left: `${activePreviewGuidePlacement.leftPct}%`,
+                            top: `${activePreviewGuidePlacement.topPct}%`,
+                            width: `${activePreviewGuidePlacement.widthPct}%`,
+                            height: `${activePreviewGuidePlacement.heightPct}%`,
+                            border: '1px dashed rgba(121, 134, 255, 0.95)',
+                            borderRadius: 0.5,
+                            boxShadow: 'inset 0 0 0 1px rgba(121, 134, 255, 0.45)',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              transform: 'translateY(-100%)',
+                              px: 0.5,
+                              py: 0.2,
+                              bgcolor: 'rgba(10, 14, 26, 0.88)',
+                              border: '1px solid rgba(121, 134, 255, 0.9)',
+                              borderRadius: 0.5,
+                            }}
+                          >
+                            <Typography sx={{ fontSize: 10, lineHeight: 1.1, color: 'rgba(230, 236, 255, 0.95)' }}>
+                              L {activePreviewGuidePlacement.leftPct.toFixed(0)}% | T {activePreviewGuidePlacement.topPct.toFixed(0)}% | W {activePreviewGuidePlacement.widthPct.toFixed(0)}% | H {activePreviewGuidePlacement.heightPct.toFixed(0)}%
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    ) : null}
 
                   {previewRenderableActions.length === 0 ? (
                     <Stack sx={{ width: '100%', height: '100%' }} alignItems="center" justifyContent="center">
@@ -2495,10 +3067,18 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                               height: `${heightPct}%`,
                               zIndex,
                               border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                              pointerEvents: selected ? 'auto' : 'none',
-                              cursor: selected && chromaPickActionId !== action.id ? 'move' : 'default',
+                              pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
+                              cursor: !selected ? 'pointer' : selected && chromaPickActionId !== action.id ? 'move' : 'default',
                             }}
-                            onMouseDown={(event) => selected && chromaPickActionId !== action.id ? startLayerDrag(action, 'move', event) : undefined}
+                            onMouseDown={(event) => {
+                              if (lockPreviewInteractionToSelectedNarrative && !selected) return;
+                              if (chromaPickActionId === action.id) return;
+                              if (!selected) {
+                                selectActionAndSeekToStart(action.id);
+                                return;
+                              }
+                              startLayerDrag(action, 'move', event);
+                            }}
                           >
                             <ChromaKeyMedia
                               kind="image"
@@ -2616,10 +3196,18 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                               height: `${heightPct}%`,
                               zIndex,
                               border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                              pointerEvents: selected ? 'auto' : 'none',
-                              cursor: selected && chromaPickActionId !== action.id ? 'move' : 'default',
+                              pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
+                              cursor: !selected ? 'pointer' : selected && chromaPickActionId !== action.id ? 'move' : 'default',
                             }}
-                            onMouseDown={(event) => selected && chromaPickActionId !== action.id ? startLayerDrag(action, 'move', event) : undefined}
+                            onMouseDown={(event) => {
+                              if (lockPreviewInteractionToSelectedNarrative && !selected) return;
+                              if (chromaPickActionId === action.id) return;
+                              if (!selected) {
+                                selectActionAndSeekToStart(action.id);
+                                return;
+                              }
+                              startLayerDrag(action, 'move', event);
+                            }}
                           >
                             <ChromaKeyMedia
                               kind="video"
@@ -2698,29 +3286,485 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                       }
 
                       if (action.type === 'setNarrativeText') {
+                        const placement = getPlacementFromPayload(payload);
+                        const title = String(payload.title ?? '').trim();
+                        const segments = getNarrativeSegments(payload);
+                        const isNarrativeCanvasEditing = narrativeCanvasEditActionId === action.id && selected;
+                        const fontFamily = String(payload.fontFamily ?? 'Merriweather').trim() || 'Merriweather';
+                        const fontSizePx = isNarrativeCanvasEditing
+                          ? (narrativeCanvasDraft?.fontSizePx ?? 28)
+                          : (Number.isFinite(Number(payload.fontSizePx)) ? Math.max(8, Math.min(220, Number(payload.fontSizePx))) : 28);
+                        const fontColor = isNarrativeCanvasEditing
+                          ? (narrativeCanvasDraft?.fontColor ?? '#ffffff')
+                          : (String(payload.fontColor ?? '#ffffff').trim() || '#ffffff');
+                        const textAlignRaw = String(payload.textAlign ?? 'left').trim();
+                        const textAlign = isNarrativeCanvasEditing
+                          ? (narrativeCanvasDraft?.textAlign ?? 'left')
+                          : (textAlignRaw === 'center' || textAlignRaw === 'right' || textAlignRaw === 'justify' ? textAlignRaw : 'left');
+                        const lineHeight = Number.isFinite(Number(payload.lineHeight)) ? Math.max(0.8, Math.min(3, Number(payload.lineHeight))) : 1.35;
+                        const letterSpacingPx = Number.isFinite(Number(payload.letterSpacingPx))
+                          ? Math.max(-8, Math.min(20, Number(payload.letterSpacingPx)))
+                          : 0;
+                        const fontWeightRaw = String(payload.fontWeight ?? 'normal').trim();
+                        const fontWeight = isNarrativeCanvasEditing
+                          ? (narrativeCanvasDraft?.fontWeight === 'bold' ? 700 : 400)
+                          : (fontWeightRaw === 'bold' ? 700 : 400);
+                        const fontStyle = isNarrativeCanvasEditing
+                          ? (narrativeCanvasDraft?.fontStyle ?? 'normal')
+                          : (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal');
+                        const textDecoration = isNarrativeCanvasEditing
+                          ? (narrativeCanvasDraft?.textDecoration ?? 'none')
+                          : (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none');
+                        const backgroundModeRaw = String(payload.backgroundMode ?? 'rect').trim();
+                        const backgroundMode = backgroundModeRaw === 'none' || backgroundModeRaw === 'capsule' ? backgroundModeRaw : 'rect';
+                        const backgroundColor = String(payload.backgroundColor ?? '#000000').trim() || '#000000';
+                        const backgroundOpacity = Number.isFinite(Number(payload.backgroundOpacity))
+                          ? normalizeOpacity(payload.backgroundOpacity)
+                          : 0.58;
+                        const borderRadiusPx = Number.isFinite(Number(payload.borderRadiusPx))
+                          ? Math.max(0, Math.min(128, Number(payload.borderRadiusPx)))
+                          : 12;
+                        const paddingPx = Number.isFinite(Number(payload.paddingPx))
+                          ? Math.max(0, Math.min(64, Number(payload.paddingPx)))
+                          : 16;
+                        const hasContent = Boolean(title) || segments.length > 0;
+                        const narrativeCanvasWidthPx = (placement.widthPct / 100) * previewWindowSize.width * previewScale;
+                        const narrativeCanvasHeightPx = (placement.heightPct / 100) * previewWindowSize.height * previewScale;
+                        const narrativeToolbarCompact = narrativeCanvasWidthPx < 460 || narrativeCanvasHeightPx < 220;
+                        const shouldRenderNarrative = hasContent || selected || isNarrativeCanvasEditing;
+
+                        if (!shouldRenderNarrative) {
+                          return null;
+                        }
+
                         return (
                           <Box
                             key={key}
                             sx={{
                               position: 'absolute',
-                              left: '8%',
-                              right: '8%',
-                              bottom: '10%',
-                              borderRadius: 1,
-                              p: 1.5,
-                              bgcolor: 'rgba(0, 0, 0, 0.58)',
+                              left: `${placement.leftPct}%`,
+                              top: `${placement.topPct}%`,
+                              width: `${placement.widthPct}%`,
+                              height: `${placement.heightPct}%`,
                               opacity,
                               zIndex,
-                              border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                              pointerEvents: 'none',
+                              border: selected ? '2px solid rgba(255,255,255,0.9)' : 'none',
+                              borderRadius: selected ? 1 : 0,
+                              pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
+                              display: 'flex',
+                              alignItems: 'stretch',
+                              boxSizing: 'border-box',
+                              cursor: !selected
+                                ? 'pointer'
+                                : selected && !isNarrativeCanvasEditing && leftToolPanelMode !== 'text'
+                                  ? 'move'
+                                  : 'text',
+                            }}
+                            onMouseDown={(event) => {
+                              if (!selected) {
+                                selectActionAndSeekToStart(action.id);
+                                return;
+                              }
+                              if (isNarrativeCanvasEditing) return;
+                              if (leftToolPanelMode === 'text') {
+                                return;
+                              }
+                            }}
+                            onClick={(event) => {
+                              if (!selected || isNarrativeCanvasEditing) return;
+                              if (leftToolPanelMode !== 'text') return;
+                              event.stopPropagation();
+                            }}
+                            onDoubleClick={() => {
+                              if (!selected) return;
+                              beginNarrativeCanvasEdit(action);
                             }}
                           >
-                            <Typography variant="subtitle2" color="white" sx={{ mb: 0.5 }}>
-                              {String(payload.title ?? 'Narrativa')}
-                            </Typography>
-                            <Typography variant="body2" color="white">
-                              {String(payload.text ?? 'Sin texto')}
-                            </Typography>
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                overflow: isNarrativeCanvasEditing ? 'visible' : 'hidden',
+                                p: `${paddingPx}px`,
+                                borderRadius: backgroundMode === 'capsule' ? 999 : `${borderRadiusPx}px`,
+                                bgcolor: backgroundMode === 'none' ? 'transparent' : alpha(backgroundColor, backgroundOpacity),
+                                color: fontColor,
+                                fontFamily,
+                                fontSize: `${fontSizePx}px`,
+                                textAlign,
+                                lineHeight,
+                                letterSpacing: `${letterSpacingPx}px`,
+                                fontWeight,
+                                fontStyle,
+                                textDecoration,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'flex-start',
+                                boxSizing: 'border-box',
+                              }}
+                            >
+                              {isNarrativeCanvasEditing ? (
+                                <Stack
+                                  spacing={narrativeToolbarCompact ? 0.5 : 0.75}
+                                  sx={{ width: '100%', height: '100%' }}
+                                  onMouseDown={(event) => event.stopPropagation()}
+                                >
+                                  {!narrativeToolbarCompact || Boolean(narrativeCanvasDraft?.title ?? title) ? (
+                                    <TextField
+                                      size="small"
+                                      label="Título"
+                                      value={narrativeCanvasDraft?.title ?? title}
+                                      onChange={(event) => {
+                                        const nextTitle = event.target.value;
+                                        setNarrativeCanvasDraft((current) => ({
+                                          ...(current ?? {
+                                            title: String(payload.title ?? ''),
+                                            text: String(payload.text ?? ''),
+                                            fontSizePx,
+                                            fontColor,
+                                            textAlign: textAlign as 'left' | 'center' | 'right' | 'justify',
+                                            fontWeight: (fontWeightRaw === 'bold' ? 'bold' : 'normal') as 'normal' | 'bold',
+                                            fontStyle: (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal') as 'normal' | 'italic',
+                                            textDecoration: (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none') as 'none' | 'underline',
+                                          }),
+                                          title: nextTitle,
+                                        }));
+                                      }}
+                                      onKeyDown={(event) => {
+                                        if (event.key === 'Escape') {
+                                          event.preventDefault();
+                                          finishNarrativeCanvasEdit('cancel');
+                                        }
+                                      }}
+                                      InputLabelProps={{ shrink: true }}
+                                    />
+                                  ) : null}
+                                  <TextField
+                                    size="small"
+                                    label="Texto"
+                                    multiline
+                                    minRows={narrativeToolbarCompact ? 2 : 3}
+                                    value={narrativeCanvasDraft?.text ?? String(payload.text ?? '')}
+                                    onChange={(event) => {
+                                      const nextText = event.target.value;
+                                      setNarrativeCanvasDraft((current) => ({
+                                        ...(current ?? {
+                                          title: String(payload.title ?? ''),
+                                          text: String(payload.text ?? ''),
+                                          fontSizePx,
+                                          fontColor,
+                                          textAlign: textAlign as 'left' | 'center' | 'right' | 'justify',
+                                          fontWeight: (fontWeightRaw === 'bold' ? 'bold' : 'normal') as 'normal' | 'bold',
+                                          fontStyle: (String(payload.fontStyle ?? 'normal').trim() === 'italic' ? 'italic' : 'normal') as 'normal' | 'italic',
+                                          textDecoration: (String(payload.textDecoration ?? 'none').trim() === 'underline' ? 'underline' : 'none') as 'none' | 'underline',
+                                        }),
+                                        text: nextText,
+                                      }));
+                                    }}
+                                    onKeyDown={(event) => {
+                                      if (event.key === 'Escape') {
+                                        event.preventDefault();
+                                        finishNarrativeCanvasEdit('cancel');
+                                      }
+                                      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+                                        event.preventDefault();
+                                        setNarrativeCanvasDraft((current) => {
+                                          if (!current) return current;
+                                          return {
+                                            ...current,
+                                            fontWeight: current.fontWeight === 'bold' ? 'normal' : 'bold',
+                                          };
+                                        });
+                                      }
+                                      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'i') {
+                                        event.preventDefault();
+                                        setNarrativeCanvasDraft((current) => {
+                                          if (!current) return current;
+                                          return {
+                                            ...current,
+                                            fontStyle: current.fontStyle === 'italic' ? 'normal' : 'italic',
+                                          };
+                                        });
+                                      }
+                                      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'u') {
+                                        event.preventDefault();
+                                        setNarrativeCanvasDraft((current) => {
+                                          if (!current) return current;
+                                          return {
+                                            ...current,
+                                            textDecoration: current.textDecoration === 'underline' ? 'none' : 'underline',
+                                          };
+                                        });
+                                      }
+                                      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                                        event.preventDefault();
+                                        finishNarrativeCanvasEdit('save');
+                                      }
+                                    }}
+                                    sx={{ flex: 1 }}
+                                    InputLabelProps={{ shrink: true }}
+                                  />
+                                </Stack>
+                              ) : (
+                                <>
+                                  {!hasContent ? (
+                                    <Typography
+                                      variant="caption"
+                                      sx={{
+                                        color: 'rgba(255,255,255,0.82)',
+                                        fontStyle: 'italic',
+                                      }}
+                                    >
+                                      Haz clic para editar texto...
+                                    </Typography>
+                                  ) : null}
+                                  {title ? (
+                                    <Typography
+                                      variant="subtitle2"
+                                      sx={{
+                                        mb: 0.5,
+                                        color: 'inherit',
+                                        fontFamily: 'inherit',
+                                        fontStyle: 'inherit',
+                                        textDecoration: 'inherit',
+                                      }}
+                                    >
+                                      {title}
+                                    </Typography>
+                                  ) : null}
+                                  <Typography
+                                    component="div"
+                                    sx={{
+                                      color: 'inherit',
+                                      fontFamily: 'inherit',
+                                      fontSize: 'inherit',
+                                      fontWeight: 'inherit',
+                                      fontStyle: 'inherit',
+                                      textDecoration: 'inherit',
+                                      lineHeight: 'inherit',
+                                      textAlign: 'inherit',
+                                      whiteSpace: 'pre-wrap',
+                                      overflowWrap: 'anywhere',
+                                    }}
+                                  >
+                                    {segments.map((segment, segmentIndex) => (
+                                      <Box
+                                        key={`${action.id ?? key}-seg-${segmentIndex}`}
+                                        component="span"
+                                        sx={{
+                                          fontWeight: segment.bold ? 700 : undefined,
+                                          fontStyle: segment.italic ? 'italic' : undefined,
+                                          textDecoration: segment.underline ? 'underline' : undefined,
+                                          fontSize: segment.fontSizePx ? `${segment.fontSizePx}px` : undefined,
+                                          color: segment.color,
+                                          fontFamily: segment.fontFamily,
+                                        }}
+                                      >
+                                        {segment.text}
+                                      </Box>
+                                    ))}
+                                  </Typography>
+                                </>
+                              )}
+                            </Box>
+                            {selected && !isNarrativeCanvasEditing ? (
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  left: -8,
+                                  top: -8,
+                                  width: 14,
+                                  height: 14,
+                                  borderRadius: '50%',
+                                  bgcolor: 'info.main',
+                                  border: '2px solid #fff',
+                                  cursor: 'move',
+                                  pointerEvents: 'auto',
+                                }}
+                                onMouseDown={(event) => {
+                                  startLayerDrag(action, 'move', event);
+                                }}
+                              />
+                            ) : null}
+                            {selected && !isNarrativeCanvasEditing ? (
+                              <Button
+                                size="small"
+                                variant="contained"
+                                sx={{
+                                  position: 'absolute',
+                                  right: 6,
+                                  top: 6,
+                                  minWidth: 0,
+                                  px: 1,
+                                  py: 0.25,
+                                  textTransform: 'none',
+                                  fontSize: 11,
+                                  zIndex: 2,
+                                }}
+                                onMouseDown={(event) => {
+                                  event.stopPropagation();
+                                }}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  beginNarrativeCanvasEdit(action);
+                                }}
+                              >
+                                Editar texto
+                              </Button>
+                            ) : null}
+                            {selected && isNarrativeCanvasEditing ? (
+                              <Stack
+                                direction="row"
+                                spacing={0.5}
+                                alignItems="center"
+                                sx={{
+                                  flexWrap: 'wrap',
+                                  rowGap: 0.5,
+                                  position: 'absolute',
+                                  left: 0,
+                                  right: 0,
+                                  bottom: '100%',
+                                  mb: 0.6,
+                                  zIndex: 4,
+                                  p: 0.4,
+                                  borderRadius: 0.8,
+                                  border: '1px solid rgba(255,255,255,0.2)',
+                                  bgcolor: 'rgba(12, 14, 20, 0.92)',
+                                  boxShadow: '0 4px 18px rgba(0, 0, 0, 0.45)',
+                                }}
+                                onMouseDown={(event) => event.stopPropagation()}
+                              >
+                                <Button
+                                  size="small"
+                                  variant={narrativeCanvasDraft?.fontWeight === 'bold' ? 'contained' : 'outlined'}
+                                  sx={{ minWidth: 34, px: 0.85 }}
+                                  onClick={() => {
+                                    setNarrativeCanvasDraft((current) => {
+                                      if (!current) return current;
+                                      return {
+                                        ...current,
+                                        fontWeight: current.fontWeight === 'bold' ? 'normal' : 'bold',
+                                      };
+                                    });
+                                  }}
+                                >
+                                  B
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant={narrativeCanvasDraft?.fontStyle === 'italic' ? 'contained' : 'outlined'}
+                                  sx={{ minWidth: 34, px: 0.85 }}
+                                  onClick={() => {
+                                    setNarrativeCanvasDraft((current) => {
+                                      if (!current) return current;
+                                      return {
+                                        ...current,
+                                        fontStyle: current.fontStyle === 'italic' ? 'normal' : 'italic',
+                                      };
+                                    });
+                                  }}
+                                >
+                                  I
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant={narrativeCanvasDraft?.textDecoration === 'underline' ? 'contained' : 'outlined'}
+                                  sx={{ minWidth: 34, px: 0.85 }}
+                                  onClick={() => {
+                                    setNarrativeCanvasDraft((current) => {
+                                      if (!current) return current;
+                                      return {
+                                        ...current,
+                                        textDecoration: current.textDecoration === 'underline' ? 'none' : 'underline',
+                                      };
+                                    });
+                                  }}
+                                >
+                                  U
+                                </Button>
+                                <TextField
+                                  size="small"
+                                  label="Color"
+                                  type="color"
+                                  sx={{ width: 88 }}
+                                  value={narrativeCanvasDraft?.fontColor ?? '#ffffff'}
+                                  onChange={(event) => {
+                                    const next = event.target.value;
+                                    setNarrativeCanvasDraft((current) => {
+                                      if (!current) return current;
+                                      return { ...current, fontColor: next };
+                                    });
+                                  }}
+                                  InputLabelProps={{ shrink: true }}
+                                />
+                                <TextField
+                                  size="small"
+                                  label="Tam"
+                                  type="number"
+                                  sx={{ width: 84 }}
+                                  value={narrativeCanvasDraft?.fontSizePx ?? 28}
+                                  inputProps={{ min: 8, max: 220, step: 1 }}
+                                  onChange={(event) => {
+                                    const raw = Number(event.target.value);
+                                    setNarrativeCanvasDraft((current) => {
+                                      if (!current) return current;
+                                      return {
+                                        ...current,
+                                        fontSizePx: Number.isFinite(raw) ? Math.max(8, Math.min(220, raw)) : current.fontSizePx,
+                                      };
+                                    });
+                                  }}
+                                  InputLabelProps={{ shrink: true }}
+                                />
+                                <FormControl size="small" sx={{ minWidth: 116 }}>
+                                  <InputLabel>Alineación</InputLabel>
+                                  <Select
+                                    label="Alineación"
+                                    value={narrativeCanvasDraft?.textAlign ?? 'left'}
+                                    onChange={(event) => {
+                                      const value = event.target.value as 'left' | 'center' | 'right' | 'justify';
+                                      setNarrativeCanvasDraft((current) => {
+                                        if (!current) return current;
+                                        return { ...current, textAlign: value };
+                                      });
+                                    }}
+                                  >
+                                    <MenuItem value="left">Left</MenuItem>
+                                    <MenuItem value="center">Center</MenuItem>
+                                    <MenuItem value="right">Right</MenuItem>
+                                    <MenuItem value="justify">Justify</MenuItem>
+                                  </Select>
+                                </FormControl>
+                                <Stack direction="row" spacing={0.5} sx={{ marginLeft: 'auto' }}>
+                                  <Button size="small" variant="outlined" onClick={() => finishNarrativeCanvasEdit('cancel')}>
+                                    Cancelar
+                                  </Button>
+                                  <Button size="small" variant="contained" onClick={() => finishNarrativeCanvasEdit('save')}>
+                                    Guardar
+                                  </Button>
+                                </Stack>
+                              </Stack>
+                            ) : null}
+                            {selected ? (
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  right: -8,
+                                  bottom: -8,
+                                  width: 14,
+                                  height: 14,
+                                  borderRadius: '50%',
+                                  bgcolor: 'primary.main',
+                                  border: '2px solid #fff',
+                                  cursor: 'nwse-resize',
+                                  pointerEvents: 'auto',
+                                }}
+                                onMouseDown={(event) => {
+                                  if (isNarrativeCanvasEditing) return;
+                                  startLayerDrag(action, 'resize', event);
+                                }}
+                              />
+                            ) : null}
                           </Box>
                         );
                       }
@@ -2833,6 +3877,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                   <SceneTimelineEditor
                     actions={draft.actions}
                     selectedActionId={selectedActionId}
+                    narrativeEditingActionId={narrativeCanvasEditActionId}
                     onSelectAction={handleSelectActionFromTimeline}
                     onMoveActionInTime={moveActionInTimeline}
                     onChangeActionLayerOrder={setActionLayerOrder}
@@ -2847,10 +3892,10 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
               </Box>
             </Paper>
 
-            <Paper variant="outlined" sx={{ p: 1.25, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
+            <Paper variant="outlined" sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, minHeight: 0, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
                 <Typography variant="subtitle2">Inspector y capas</Typography>
-                <Stack direction="row" spacing={0.25} sx={{ flexWrap: 'wrap' }}>
+                <Stack direction="row" spacing={0.4} sx={{ flexWrap: 'wrap' }}>
                   <Tooltip title="Subir">
                     <span>
                       <IconButton
@@ -2915,14 +3960,43 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                 </Stack>
               </Stack>
 
-              <Paper variant="outlined" sx={{ p: 1, mb: 1, maxHeight: 180, overflowY: 'auto', overflowX: 'hidden', minWidth: 0 }}>
-                <Stack spacing={0.5}>
+              <Paper variant="outlined" sx={{ p: 1.1, maxHeight: 210, overflowY: 'auto', overflowX: 'hidden', minWidth: 0 }}>
+                <Stack spacing={0.75}>
                   <Typography variant="caption" color="text.secondary">
                     Capas (arrastra para cambiar superposición). Última = más arriba.
                   </Typography>
                   {draft.actions.map((action, index) => {
                     const isSelected = selectedActionId === action.id;
                     const targetKind = action.targetWindow?.kind ?? 'main';
+                    const payload = (action.payload ?? {}) as Record<string, unknown>;
+                    const isNarrative = action.type === 'setNarrativeText';
+                    const narrativeEditing = narrativeCanvasEditActionId === action.id;
+                    const narrativeHasRichText = isNarrative && (() => {
+                      const richTextDoc = payload.richTextDoc;
+                      if (!richTextDoc || typeof richTextDoc !== 'object' || Array.isArray(richTextDoc)) return false;
+                      const blocks = (richTextDoc as Record<string, unknown>).blocks;
+                      if (!Array.isArray(blocks)) return false;
+                      return blocks.some((block) => {
+                        if (!block || typeof block !== 'object' || Array.isArray(block)) return false;
+                        const segments = (block as Record<string, unknown>).segments;
+                        return Array.isArray(segments) && segments.length > 0;
+                      });
+                    })();
+                    const narrativeHasStyle = isNarrative && [
+                      'fontFamily',
+                      'fontSizePx',
+                      'fontColor',
+                      'textAlign',
+                      'lineHeight',
+                      'fontWeight',
+                      'fontStyle',
+                      'textDecoration',
+                      'backgroundMode',
+                      'backgroundColor',
+                      'backgroundOpacity',
+                      'borderRadiusPx',
+                      'paddingPx',
+                    ].some((field) => payload[field] !== undefined && payload[field] !== null && payload[field] !== '');
                     return (
                       <Paper
                         key={action.id}
@@ -2951,9 +4025,12 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                           reorderActionsByIds(draggedActionId, action.id);
                           setDragOverActionId(null);
                         }}
-                        onClick={() => setSelectedActionId(action.id)}
+                        onClick={() => {
+                          selectActionAndSeekToStart(action.id);
+                        }}
                         sx={{
-                          p: 0.75,
+                          p: 0.9,
+                          borderRadius: 1,
                           cursor: 'grab',
                           border: '1px solid',
                           borderColor: isSelected
@@ -2973,7 +4050,12 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                               Ventana: {targetKind}
                             </Typography>
                           </Stack>
-                          <Chip size="small" label={`z${index + 1}`} />
+                          <Stack direction="row" spacing={0.4} sx={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            <Chip size="small" label={`z${index + 1}`} />
+                            {narrativeHasRichText ? <Chip size="small" color="info" variant="outlined" label="rich" /> : null}
+                            {narrativeHasStyle ? <Chip size="small" color="secondary" variant="outlined" label="style" /> : null}
+                            {narrativeEditing ? <Chip size="small" color="warning" label="editando" /> : null}
+                          </Stack>
                         </Stack>
                       </Paper>
                     );
@@ -2986,8 +4068,12 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                 </Stack>
               </Paper>
 
-              <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', pr: 0.25 }}>
+              <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', pr: 0.5 }}>
                 {selectedAction ? (
+                  <Stack spacing={0.75}>
+                    <Typography variant="caption" color="text.secondary">
+                      Editor de la capa seleccionada.
+                    </Typography>
                   <DndContext>
                     <SortableContext items={[selectedAction.id]} strategy={verticalListSortingStrategy}>
                       <SceneActionEditor
@@ -3015,6 +4101,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                       />
                     </SortableContext>
                   </DndContext>
+                  </Stack>
                 ) : (
                   <Typography variant="body2" color="text.secondary">
                     Selecciona un bloque en timeline o en la lista del inspector.

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Box, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { QRCodeSVG } from 'qrcode.react';
 import AuthImage from '../components/common/AuthImage';
 import { getMapSkylineUrlSized, listMaps } from '../api/maps';
@@ -86,6 +87,95 @@ function clampFreeSize(value: unknown, fallback: number): number {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(1, Math.min(200, n));
+}
+
+function clampOpacity(value: unknown, fallback: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(1, n));
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function getNarrativeSegments(payload: Record<string, unknown>): Array<{
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  fontSizePx?: number;
+  color?: string;
+  fontFamily?: string;
+}> {
+  const richTextDoc = asRecord(payload.richTextDoc);
+  const blocks = Array.isArray(richTextDoc?.blocks) ? richTextDoc.blocks : [];
+  const segments: Array<{
+    text: string;
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    fontSizePx?: number;
+    color?: string;
+    fontFamily?: string;
+  }> = [];
+  for (const block of blocks) {
+    const blockRecord = asRecord(block);
+    const blockSegments = Array.isArray(blockRecord?.segments) ? blockRecord.segments : [];
+    for (const segment of blockSegments) {
+      const segmentRecord = asRecord(segment);
+      const text = typeof segmentRecord?.text === 'string' ? segmentRecord.text : '';
+      if (!text) continue;
+      segments.push({
+        text,
+        ...(segmentRecord?.bold !== undefined ? { bold: Boolean(segmentRecord.bold) } : {}),
+        ...(segmentRecord?.italic !== undefined ? { italic: Boolean(segmentRecord.italic) } : {}),
+        ...(segmentRecord?.underline !== undefined ? { underline: Boolean(segmentRecord.underline) } : {}),
+        ...(Number.isFinite(Number(segmentRecord?.fontSizePx)) ? { fontSizePx: Number(segmentRecord?.fontSizePx) } : {}),
+        ...(typeof segmentRecord?.color === 'string' ? { color: segmentRecord.color } : {}),
+        ...(typeof segmentRecord?.fontFamily === 'string' ? { fontFamily: segmentRecord.fontFamily } : {}),
+      });
+    }
+  }
+
+  if (segments.length > 0) return segments;
+  const fallbackText = typeof payload.text === 'string' ? payload.text.trim() : '';
+  return fallbackText ? [{ text: fallbackText }] : [];
+}
+
+interface NarrativeTextOverlay {
+  text: string;
+  title?: string;
+  leftPct: number;
+  topPct: number;
+  widthPct: number;
+  heightPct: number;
+  opacity: number;
+  layerOrder: number;
+  fontFamily: string;
+  fontSizePx: number;
+  fontColor: string;
+  textAlign: 'left' | 'center' | 'right' | 'justify';
+  lineHeight: number;
+  letterSpacingPx: number;
+  fontWeight: 'normal' | 'bold';
+  fontStyle: 'normal' | 'italic';
+  textDecoration: 'none' | 'underline';
+  backgroundMode: 'none' | 'rect' | 'capsule';
+  backgroundColor: string;
+  backgroundOpacity: number;
+  borderRadiusPx: number;
+  paddingPx: number;
+  segments: Array<{
+    text: string;
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    fontSizePx?: number;
+    color?: string;
+    fontFamily?: string;
+  }>;
 }
 
 interface TimedImageOverlay {
@@ -190,7 +280,7 @@ const ProjectionSkylinePage: React.FC = () => {
   const [connectionError, setConnectionError] = useState<boolean>(false);
   const [lastConnectionAttempt, setLastConnectionAttempt] = useState<number>(Date.now());
   const [shortcutImageOverlays, setShortcutImageOverlays] = useState<TimedImageOverlay[]>([]);
-  const [shortcutTextOverlay, setShortcutTextOverlay] = useState<{ text: string; title?: string } | null>(null);
+  const [shortcutTextOverlay, setShortcutTextOverlay] = useState<NarrativeTextOverlay | null>(null);
   const shortcutTextExecutionIdRef = useRef<string | null>(null);
   const [shortcutFilterOverlay, setShortcutFilterOverlay] = useState<{ filter: string; color?: string; intensity?: number } | null>(null);
   const [shortcutVideoOverlays, setShortcutVideoOverlays] = useState<TimedVideoOverlay[]>([]);
@@ -554,7 +644,7 @@ const ProjectionSkylinePage: React.FC = () => {
       shortcutImageTimeoutsRef.current.set(overlayKey, timeoutId);
     };
 
-    const setTimedShortcutTextOverlay = (next: { text: string; title?: string }, durationMs?: number) => {
+    const setTimedShortcutTextOverlay = (next: NarrativeTextOverlay, durationMs?: number) => {
       const ms = Number(durationMs);
       const timeout = Number.isFinite(ms) && ms > 0 ? ms : 6000;
       if (shortcutTextTimeoutRef.current !== null) {
@@ -787,15 +877,50 @@ const ProjectionSkylinePage: React.FC = () => {
       if (sceneCommand?.kind === 'narrative.setText') {
         const body = (sceneCommand.payload ?? {}) as Record<string, unknown>;
         const text = typeof body.text === 'string' ? body.text.trim() : '';
-        if (!text) {
+        const segments = getNarrativeSegments(body);
+        if (!text && segments.length === 0) {
           clearShortcutTextOverlay();
           return;
         }
-        const title = typeof body.title === 'string' ? body.title : undefined;
+        const title = typeof body.title === 'string' ? body.title.trim() || undefined : undefined;
         const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+        const textAlignRaw = typeof body.textAlign === 'string' ? body.textAlign : 'left';
+        const textAlign: 'left' | 'center' | 'right' | 'justify' =
+          textAlignRaw === 'center' || textAlignRaw === 'right' || textAlignRaw === 'justify'
+            ? textAlignRaw
+            : 'left';
+        const backgroundModeRaw = typeof body.backgroundMode === 'string' ? body.backgroundMode : 'rect';
+        const backgroundMode: 'none' | 'rect' | 'capsule' =
+          backgroundModeRaw === 'none' || backgroundModeRaw === 'capsule'
+            ? backgroundModeRaw
+            : 'rect';
         scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
           shortcutTextExecutionIdRef.current = sceneCommand.executionId ?? null;
-          setTimedShortcutTextOverlay({ text, title }, durationMs);
+          setTimedShortcutTextOverlay({
+            text,
+            title,
+            leftPct: clampFreePlacement(body.leftPct ?? 8, 8),
+            topPct: clampFreePlacement(body.topPct ?? 68, 68),
+            widthPct: clampFreeSize(body.widthPct ?? 84, 84),
+            heightPct: clampFreeSize(body.heightPct ?? 22, 22),
+            opacity: clampOpacity(body.opacity, 1),
+            layerOrder: Number.isFinite(Number(body.layerOrder)) ? Math.round(Number(body.layerOrder)) : 100,
+            fontFamily: typeof body.fontFamily === 'string' && body.fontFamily.trim() ? body.fontFamily.trim() : 'Merriweather',
+            fontSizePx: Number.isFinite(Number(body.fontSizePx)) ? Math.max(8, Math.min(220, Number(body.fontSizePx))) : 28,
+            fontColor: typeof body.fontColor === 'string' && body.fontColor.trim() ? body.fontColor.trim() : '#ffffff',
+            textAlign,
+            lineHeight: Number.isFinite(Number(body.lineHeight)) ? Math.max(0.8, Math.min(3, Number(body.lineHeight))) : 1.35,
+            letterSpacingPx: Number.isFinite(Number(body.letterSpacingPx)) ? Math.max(-8, Math.min(20, Number(body.letterSpacingPx))) : 0,
+            fontWeight: body.fontWeight === 'bold' ? 'bold' : 'normal',
+            fontStyle: body.fontStyle === 'italic' ? 'italic' : 'normal',
+            textDecoration: body.textDecoration === 'underline' ? 'underline' : 'none',
+            backgroundMode,
+            backgroundColor: typeof body.backgroundColor === 'string' && body.backgroundColor.trim() ? body.backgroundColor.trim() : '#000000',
+            backgroundOpacity: clampOpacity(body.backgroundOpacity, 0.58),
+            borderRadiusPx: Number.isFinite(Number(body.borderRadiusPx)) ? Math.max(0, Math.min(128, Number(body.borderRadiusPx))) : 12,
+            paddingPx: Number.isFinite(Number(body.paddingPx)) ? Math.max(0, Math.min(64, Number(body.paddingPx))) : 16,
+            segments,
+          }, durationMs);
         }, 'narrative.setText', getLateExecutionPolicy(sceneCommand, durationMs));
         return;
       }
@@ -853,7 +978,31 @@ const ProjectionSkylinePage: React.FC = () => {
         if (!text) return;
         const title = typeof body.title === 'string' ? body.title : undefined;
         const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
-        setTimedShortcutTextOverlay({ text, title }, durationMs);
+        setTimedShortcutTextOverlay({
+          text,
+          title,
+          leftPct: 8,
+          topPct: 68,
+          widthPct: 84,
+          heightPct: 22,
+          opacity: 1,
+          layerOrder: 100,
+          fontFamily: 'Merriweather',
+          fontSizePx: 28,
+          fontColor: '#ffffff',
+          textAlign: 'left',
+          lineHeight: 1.35,
+          letterSpacingPx: 0,
+          fontWeight: 'normal',
+          fontStyle: 'normal',
+          textDecoration: 'none',
+          backgroundMode: 'rect',
+          backgroundColor: '#000000',
+          backgroundOpacity: 0.58,
+          borderRadiusPx: 12,
+          paddingPx: 16,
+          segments: [{ text }],
+        }, durationMs);
         return;
       }
 
@@ -1765,26 +1914,87 @@ const ProjectionSkylinePage: React.FC = () => {
         <Box
           sx={{
             position: 'absolute',
-            top: '10vh',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            maxWidth: '86vw',
-            px: 2,
-            py: 1.5,
-            borderRadius: 2,
-            bgcolor: 'rgba(0,0,0,0.62)',
-            color: 'white',
-            textAlign: 'center',
-            zIndex: 8000,
-            boxShadow: '0 10px 28px rgba(0,0,0,0.45)',
+            left: `${shortcutTextOverlay.leftPct}%`,
+            top: `${shortcutTextOverlay.topPct}%`,
+            width: `${shortcutTextOverlay.widthPct}%`,
+            height: `${shortcutTextOverlay.heightPct}%`,
+            zIndex: 8000 + shortcutTextOverlay.layerOrder,
+            opacity: shortcutTextOverlay.opacity,
+            pointerEvents: 'none',
+            boxSizing: 'border-box',
           }}
         >
-          {shortcutTextOverlay.title ? (
-            <Typography variant="h6" sx={{ mb: 0.5 }}>
-              {shortcutTextOverlay.title}
+          <Box
+            sx={{
+              width: '100%',
+              height: '100%',
+              overflow: 'hidden',
+              p: `${shortcutTextOverlay.paddingPx}px`,
+              borderRadius: shortcutTextOverlay.backgroundMode === 'capsule'
+                ? '999px'
+                : `${shortcutTextOverlay.borderRadiusPx}px`,
+              bgcolor: shortcutTextOverlay.backgroundMode === 'none'
+                ? 'transparent'
+                : alpha(shortcutTextOverlay.backgroundColor, shortcutTextOverlay.backgroundOpacity),
+              color: shortcutTextOverlay.fontColor,
+              fontFamily: shortcutTextOverlay.fontFamily,
+              fontSize: `${shortcutTextOverlay.fontSizePx}px`,
+              textAlign: shortcutTextOverlay.textAlign,
+              lineHeight: shortcutTextOverlay.lineHeight,
+              letterSpacing: `${shortcutTextOverlay.letterSpacingPx}px`,
+              fontWeight: shortcutTextOverlay.fontWeight === 'bold' ? 700 : 400,
+              fontStyle: shortcutTextOverlay.fontStyle,
+              textDecoration: shortcutTextOverlay.textDecoration,
+              boxSizing: 'border-box',
+            }}
+          >
+            {shortcutTextOverlay.title ? (
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 0.5,
+                  color: 'inherit',
+                  fontFamily: 'inherit',
+                  fontStyle: 'inherit',
+                  textDecoration: 'inherit',
+                }}
+              >
+                {shortcutTextOverlay.title}
+              </Typography>
+            ) : null}
+            <Typography
+              component="div"
+              sx={{
+                color: 'inherit',
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+                fontWeight: 'inherit',
+                fontStyle: 'inherit',
+                textDecoration: 'inherit',
+                lineHeight: 'inherit',
+                textAlign: 'inherit',
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {shortcutTextOverlay.segments.map((segment, index) => (
+                <Box
+                  key={`skyline-text-seg-${index}`}
+                  component="span"
+                  sx={{
+                    fontWeight: segment.bold ? 700 : undefined,
+                    fontStyle: segment.italic ? 'italic' : undefined,
+                    textDecoration: segment.underline ? 'underline' : undefined,
+                    fontSize: segment.fontSizePx ? `${segment.fontSizePx}px` : undefined,
+                    color: segment.color,
+                    fontFamily: segment.fontFamily,
+                  }}
+                >
+                  {segment.text}
+                </Box>
+              ))}
             </Typography>
-          ) : null}
-          <Typography variant="h5">{shortcutTextOverlay.text}</Typography>
+          </Box>
         </Box>
       ) : null}
 

@@ -20,6 +20,8 @@ export interface TimelineEntry {
   startMs: number;
   endMs: number;
   durationMs: number;
+  narrativeHasRichText?: boolean;
+  narrativeHasStyleOverrides?: boolean;
 }
 
 interface TimelineLane {
@@ -36,6 +38,7 @@ interface TimelineTrack {
 interface SceneTimelineEditorProps {
   actions: SceneActionDto[];
   selectedActionId?: string | null;
+  narrativeEditingActionId?: string | null;
   onSelectAction?: (actionId: string) => void;
   onMoveActionInTime?: (actionId: string, nextStartMs: number) => void;
   onChangeActionLayerOrder?: (actionId: string, nextLayerOrder: number) => void;
@@ -108,6 +111,7 @@ const SNAP_OPTIONS_MS = [100, 250, 500] as const;
 const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
   actions,
   selectedActionId,
+  narrativeEditingActionId,
   onSelectAction,
   onMoveActionInTime,
   onChangeActionLayerOrder,
@@ -571,11 +575,12 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                         const left = leftMs * pxPerMs;
                         const width = Math.max(28, entry.durationMs * pxPerMs);
                         const isSelected = selectedActionId === entry.actionId;
+                        const isNarrativeEditing = narrativeEditingActionId === entry.actionId;
 
                         return (
                           <Tooltip
                             key={entry.actionId}
-                            title={`${entry.label} | ${formatMs(entry.startMs)} - ${formatMs(entry.endMs)}`}
+                            title={`${entry.label} | ${formatMs(entry.startMs)} - ${formatMs(entry.endMs)}${entry.type === 'setNarrativeText' ? ` | ${entry.narrativeHasRichText ? 'rich' : 'plain'}${entry.narrativeHasStyleOverrides ? ' + style' : ''}${isNarrativeEditing ? ' | editando' : ''}` : ''}`}
                           >
                             <Box
                               role="button"
@@ -617,16 +622,31 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                                 bgcolor: colorForTrack(entry.trackKey),
                                 color: '#fff',
                                 border: isSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.28)',
-                                boxShadow: isSelected ? '0 0 0 2px rgba(0,0,0,0.35)' : 'none',
+                                boxShadow: isNarrativeEditing
+                                  ? '0 0 0 2px rgba(255, 193, 7, 0.55)'
+                                  : isSelected
+                                    ? '0 0 0 2px rgba(0,0,0,0.35)'
+                                    : 'none',
                                 overflow: 'hidden',
                                 cursor: 'grab',
                                 userSelect: 'none',
                                 zIndex: isDraggingThis ? 10 : 1,
                               }}
                             >
-                              <Typography variant="caption" noWrap sx={{ color: 'inherit' }}>
-                                {entry.label}
-                              </Typography>
+                              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ width: '100%', minWidth: 0 }}>
+                                <Typography variant="caption" noWrap sx={{ color: 'inherit', flex: 1, minWidth: 0 }}>
+                                  {entry.label}
+                                </Typography>
+                                {entry.type === 'setNarrativeText' && entry.narrativeHasRichText ? (
+                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.92)' }} />
+                                ) : null}
+                                {entry.type === 'setNarrativeText' && entry.narrativeHasStyleOverrides ? (
+                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'rgba(173, 216, 230, 0.92)' }} />
+                                ) : null}
+                                {isNarrativeEditing ? (
+                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'warning.light' }} />
+                                ) : null}
+                              </Stack>
                             </Box>
                           </Tooltip>
                         );
@@ -675,6 +695,12 @@ export function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEnt
       startMs,
       endMs,
       durationMs,
+      ...(action.type === 'setNarrativeText'
+        ? {
+            narrativeHasRichText: hasNarrativeRichTextDoc(payload),
+            narrativeHasStyleOverrides: hasNarrativeStyleOverrides(payload),
+          }
+        : {}),
     });
 
     cursorMs = hasExplicitStart ? cursorMs : endMs;
@@ -682,6 +708,37 @@ export function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEnt
   }
 
   return { entries, totalMs: Math.max(maxEndMs, cursorMs, 1000) };
+}
+
+function hasNarrativeRichTextDoc(payload: Record<string, unknown>): boolean {
+  const richTextDoc = payload.richTextDoc;
+  if (!richTextDoc || typeof richTextDoc !== 'object' || Array.isArray(richTextDoc)) return false;
+  const blocks = (richTextDoc as Record<string, unknown>).blocks;
+  if (!Array.isArray(blocks)) return false;
+  return blocks.some((block) => {
+    if (!block || typeof block !== 'object' || Array.isArray(block)) return false;
+    const segments = (block as Record<string, unknown>).segments;
+    return Array.isArray(segments) && segments.length > 0;
+  });
+}
+
+function hasNarrativeStyleOverrides(payload: Record<string, unknown>): boolean {
+  const styleFields = [
+    'fontFamily',
+    'fontSizePx',
+    'fontColor',
+    'textAlign',
+    'lineHeight',
+    'fontWeight',
+    'fontStyle',
+    'textDecoration',
+    'backgroundMode',
+    'backgroundColor',
+    'backgroundOpacity',
+    'borderRadiusPx',
+    'paddingPx',
+  ] as const;
+  return styleFields.some((field) => payload[field] !== undefined && payload[field] !== null && payload[field] !== '');
 }
 
 function inferTimelineLabel(action: SceneActionDto): string {

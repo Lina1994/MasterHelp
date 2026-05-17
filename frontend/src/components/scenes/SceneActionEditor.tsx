@@ -11,12 +11,17 @@ import {
   Paper,
   Select,
   Stack,
+  Switch,
   TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FormatBoldIcon from '@mui/icons-material/FormatBold';
+import FormatItalicIcon from '@mui/icons-material/FormatItalic';
+import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { SceneActionDto, SceneVideoAsset } from '../../types/scenes';
@@ -94,6 +99,10 @@ const SceneActionEditor: React.FC<Props> = ({
 
   const setPayload = (key: string, value: unknown) => {
     onChange({ ...action, payload: { ...action.payload, [key]: value } });
+  };
+
+  const setPayloadPatch = (patch: Record<string, unknown>) => {
+    onChange({ ...action, payload: { ...action.payload, ...patch } });
   };
 
   const setType = (newType: string) => {
@@ -224,6 +233,7 @@ const SceneActionEditor: React.FC<Props> = ({
               type={action.type}
               payload={p}
               setPayload={setPayload}
+              setPayloadPatch={setPayloadPatch}
               sceneVideoAssets={sceneVideoAssets}
               onRequestUploadVideo={onRequestUploadVideo}
               onStartChromaColorPick={onStartChromaColorPick}
@@ -249,21 +259,131 @@ interface PayloadFieldsProps {
   type: string;
   payload: Record<string, unknown>;
   setPayload: (key: string, value: unknown) => void;
+  setPayloadPatch: (patch: Record<string, unknown>) => void;
   sceneVideoAssets?: SceneVideoAsset[];
   onRequestUploadVideo?: () => void;
   onStartChromaColorPick?: () => void;
   isChromaColorPicking?: boolean;
 }
 
+const NARRATIVE_FONT_OPTIONS = [
+  'Merriweather',
+  'Lora',
+  'Playfair Display',
+  'Cinzel',
+  'Cormorant Garamond',
+  'Libre Baskerville',
+  'EB Garamond',
+  'Noto Serif',
+  'Montserrat',
+  'Poppins',
+] as const;
+
+const NARRATIVE_STYLE_PRESETS: Array<{ id: string; label: string; patch: Record<string, unknown> }> = [
+  {
+    id: 'narrador',
+    label: 'Narrador clásico',
+    patch: {
+      fontFamily: 'Merriweather',
+      fontSizePx: 28,
+      fontColor: '#ffffff',
+      textAlign: 'left',
+      lineHeight: 1.35,
+      backgroundMode: 'rect',
+      backgroundColor: '#000000',
+      backgroundOpacity: 0.58,
+      borderRadiusPx: 12,
+      paddingPx: 16,
+    },
+  },
+  {
+    id: 'susurro',
+    label: 'Susurro',
+    patch: {
+      fontFamily: 'Cormorant Garamond',
+      fontSizePx: 24,
+      fontColor: '#dbeafe',
+      textAlign: 'left',
+      lineHeight: 1.45,
+      fontStyle: 'italic',
+      backgroundMode: 'none',
+      paddingPx: 10,
+    },
+  },
+  {
+    id: 'aviso',
+    label: 'Aviso',
+    patch: {
+      fontFamily: 'Montserrat',
+      fontSizePx: 30,
+      fontColor: '#fff7d6',
+      textAlign: 'center',
+      lineHeight: 1.25,
+      fontWeight: 'bold',
+      backgroundMode: 'capsule',
+      backgroundColor: '#7c2d12',
+      backgroundOpacity: 0.72,
+      borderRadiusPx: 18,
+      paddingPx: 14,
+    },
+  },
+  {
+    id: 'titulo',
+    label: 'Título',
+    patch: {
+      fontFamily: 'Cinzel',
+      fontSizePx: 38,
+      fontColor: '#fef3c7',
+      textAlign: 'center',
+      lineHeight: 1.15,
+      fontWeight: 'bold',
+      backgroundMode: 'none',
+    },
+  },
+  {
+    id: 'ritual',
+    label: 'Ritual',
+    patch: {
+      fontFamily: 'EB Garamond',
+      fontSizePx: 32,
+      fontColor: '#f5d0fe',
+      textAlign: 'justify',
+      lineHeight: 1.5,
+      fontStyle: 'italic',
+      backgroundMode: 'rect',
+      backgroundColor: '#1f1147',
+      backgroundOpacity: 0.68,
+      borderRadiusPx: 8,
+      paddingPx: 18,
+    },
+  },
+];
+
 const PayloadFields: React.FC<PayloadFieldsProps> = ({
   type,
   payload,
   setPayload,
+  setPayloadPatch,
   sceneVideoAssets,
   onRequestUploadVideo,
   onStartChromaColorPick,
   isChromaColorPicking,
 }) => {
+  type NarrativeSegment = {
+    text: string;
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    fontSizePx?: number;
+    color?: string;
+    fontFamily?: string;
+  };
+
+  const [narrativeEditorMode, setNarrativeEditorMode] = React.useState<'basic' | 'advanced'>('basic');
+  const [narrativeInspectorSection, setNarrativeInspectorSection] = React.useState<'text' | 'typography' | 'background' | 'layout' | 'segments'>('text');
+  const [showSegmentEditor, setShowSegmentEditor] = React.useState<boolean>(false);
+  const [showCustomFontInput, setShowCustomFontInput] = React.useState<boolean>(false);
+
   const str = (key: string) => String(payload[key] ?? '');
   const num = (key: string, fallback = 0) => {
     const direct = payload[key];
@@ -320,6 +440,62 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
       color: patch.color ?? chroma.color,
       tolerance: patch.tolerance ?? chroma.tolerance,
     });
+  };
+
+  const getNarrativeEditorSegments = (): NarrativeSegment[] => {
+    const richTextDoc = payload.richTextDoc;
+    if (richTextDoc && typeof richTextDoc === 'object' && !Array.isArray(richTextDoc)) {
+      const blocksRaw = (richTextDoc as Record<string, unknown>).blocks;
+      if (Array.isArray(blocksRaw)) {
+        const segments: NarrativeSegment[] = [];
+        for (const block of blocksRaw) {
+          if (!block || typeof block !== 'object' || Array.isArray(block)) continue;
+          const blockSegments = (block as Record<string, unknown>).segments;
+          if (!Array.isArray(blockSegments)) continue;
+          for (const segment of blockSegments) {
+            if (!segment || typeof segment !== 'object' || Array.isArray(segment)) continue;
+            const s = segment as Record<string, unknown>;
+            const text = typeof s.text === 'string' ? s.text : '';
+            if (!text.trim()) continue;
+            segments.push({
+              text,
+              ...(s.bold !== undefined ? { bold: Boolean(s.bold) } : {}),
+              ...(s.italic !== undefined ? { italic: Boolean(s.italic) } : {}),
+              ...(s.underline !== undefined ? { underline: Boolean(s.underline) } : {}),
+              ...(Number.isFinite(Number(s.fontSizePx)) ? { fontSizePx: Number(s.fontSizePx) } : {}),
+              ...(typeof s.color === 'string' && s.color.trim() ? { color: s.color } : {}),
+              ...(typeof s.fontFamily === 'string' && s.fontFamily.trim() ? { fontFamily: s.fontFamily } : {}),
+            });
+          }
+        }
+        if (segments.length > 0) return segments;
+      }
+    }
+
+    const legacyText = str('text').trim();
+    if (legacyText) return [{ text: legacyText }];
+    return [{ text: '' }];
+  };
+
+  const setNarrativeEditorSegments = (nextSegments: NarrativeSegment[]) => {
+    const cleaned = nextSegments
+      .map((segment) => ({
+        text: String(segment.text ?? ''),
+        ...(segment.bold ? { bold: true } : {}),
+        ...(segment.italic ? { italic: true } : {}),
+        ...(segment.underline ? { underline: true } : {}),
+        ...(Number.isFinite(Number(segment.fontSizePx)) ? { fontSizePx: Number(segment.fontSizePx) } : {}),
+        ...(typeof segment.color === 'string' && segment.color.trim() ? { color: segment.color.trim() } : {}),
+        ...(typeof segment.fontFamily === 'string' && segment.fontFamily.trim() ? { fontFamily: segment.fontFamily.trim() } : {}),
+      }))
+      .filter((segment) => segment.text.trim().length > 0);
+
+    if (cleaned.length === 0) {
+      setPayload('richTextDoc', undefined);
+      return;
+    }
+
+    setPayload('richTextDoc', { blocks: [{ segments: cleaned }] });
   };
 
   switch (type) {
@@ -581,15 +757,388 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
       );
 
     case 'setNarrativeText':
+      {
+        const narrativeSegments = getNarrativeEditorSegments();
+        const selectedFont = str('fontFamily') || 'Merriweather';
+        const hasCuratedFont = NARRATIVE_FONT_OPTIONS.includes(selectedFont as (typeof NARRATIVE_FONT_OPTIONS)[number]);
+        const appliedPresetId = str('stylePresetId');
+        const applyPreset = (presetId: string) => {
+          const preset = NARRATIVE_STYLE_PRESETS.find((item) => item.id === presetId);
+          if (!preset) return;
+          setPayloadPatch({ ...preset.patch, stylePresetId: preset.id });
+          const presetFont = String(preset.patch.fontFamily ?? '');
+          setShowCustomFontInput(!NARRATIVE_FONT_OPTIONS.includes(presetFont as (typeof NARRATIVE_FONT_OPTIONS)[number]));
+        };
+        const narrativeSectionSx = {
+          p: 1,
+          borderRadius: 1,
+          border: '1px solid',
+          borderColor: 'divider',
+        } as const;
+
       return (
-        <Stack spacing={1}>
+          <Stack spacing={1}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.8 }}>
+            <Typography variant="caption" color="text.secondary">Modo editor</Typography>
+            <Button
+              size="small"
+              variant={narrativeEditorMode === 'basic' ? 'contained' : 'outlined'}
+              onClick={() => setNarrativeEditorMode('basic')}
+            >
+              Basico
+            </Button>
+            <Button
+              size="small"
+              variant={narrativeEditorMode === 'advanced' ? 'contained' : 'outlined'}
+              onClick={() => {
+                setNarrativeEditorMode('advanced');
+                if (narrativeInspectorSection === 'text') {
+                  setNarrativeInspectorSection('typography');
+                }
+              }}
+            >
+              Avanzado
+            </Button>
+          </Stack>
+
+          <Stack direction="row" spacing={0.7} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.7 }}>
+            <Typography variant="caption" color="text.secondary">Sección</Typography>
+            <Button size="small" variant={narrativeInspectorSection === 'text' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('text')}>Texto</Button>
+            <Button size="small" variant={narrativeInspectorSection === 'typography' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('typography')}>Tipografía</Button>
+            <Button size="small" variant={narrativeInspectorSection === 'background' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('background')}>Fondo</Button>
+            <Button size="small" variant={narrativeInspectorSection === 'layout' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('layout')}>Posición</Button>
+            <Button size="small" variant={narrativeInspectorSection === 'segments' ? 'contained' : 'outlined'} onClick={() => setNarrativeInspectorSection('segments')}>Segmentos</Button>
+          </Stack>
+
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.8 }}>
+            <FormControl size="small" sx={{ minWidth: 210 }}>
+              <InputLabel>Preset narrativo</InputLabel>
+              <Select
+                label="Preset narrativo"
+                value={appliedPresetId}
+                onChange={(e) => applyPreset(e.target.value)}
+              >
+                <MenuItem value="">(sin preset)</MenuItem>
+                {NARRATIVE_STYLE_PRESETS.map((preset) => (
+                  <MenuItem key={preset.id} value={preset.id}>{preset.label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {appliedPresetId ? (
+              <Button
+                size="small"
+                variant="text"
+                onClick={() => setPayload('stylePresetId', '')}
+              >
+                Quitar preset
+              </Button>
+            ) : null}
+          </Stack>
+
           <TextField label="Texto narrativo" size="small" multiline rows={2} value={str('text')} onChange={(e) => setPayload('text', e.target.value)} />
           <Stack direction="row" spacing={1}>
             <TextField label="Título (opcional)" size="small" value={str('title')} onChange={(e) => setPayload('title', e.target.value)} />
             <TextField label="Duración (ms, 0=manual)" type="number" size="small" sx={{ width: 180 }} value={num('durationMs', 0)} inputProps={{ min: 0 }} onChange={(e) => setPayload('durationMs', Number(e.target.value))} />
           </Stack>
+
+          {narrativeInspectorSection === 'text' || narrativeInspectorSection === 'typography' ? (
+          <Paper variant="outlined" sx={narrativeSectionSx}>
+            <Stack spacing={0.8}>
+              <Typography variant="caption" color="text.secondary">Apariencia rapida</Typography>
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+                <FormControl size="small" sx={{ minWidth: 220 }}>
+                  <InputLabel>Fuente</InputLabel>
+                  <Select
+                    label="Fuente"
+                    value={hasCuratedFont ? selectedFont : ''}
+                    onChange={(e) => {
+                      setPayload('fontFamily', e.target.value);
+                      setShowCustomFontInput(false);
+                    }}
+                  >
+                    {NARRATIVE_FONT_OPTIONS.map((font) => (
+                      <MenuItem key={font} value={font}>{font}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={showCustomFontInput || !hasCuratedFont}
+                      onChange={(_, checked) => setShowCustomFontInput(checked)}
+                    />
+                  )}
+                  label="Fuente manual"
+                />
+                {showCustomFontInput || !hasCuratedFont ? (
+                  <TextField
+                    label="Fuente personalizada"
+                    size="small"
+                    sx={{ minWidth: 220 }}
+                    value={selectedFont}
+                    onChange={(e) => setPayload('fontFamily', e.target.value)}
+                  />
+                ) : null}
+                <TextField label="Tamaño px" type="number" size="small" sx={{ width: 120 }} value={num('fontSizePx', 28)} inputProps={{ min: 8, max: 220, step: 1 }} onChange={(e) => setPayload('fontSizePx', Number(e.target.value))} />
+                <TextField label="Color" size="small" sx={{ width: 130 }} value={str('fontColor') || '#ffffff'} onChange={(e) => setPayload('fontColor', e.target.value)} />
+                <FormControl size="small" sx={{ minWidth: 130 }}>
+                  <InputLabel>Alineación</InputLabel>
+                  <Select value={str('textAlign') || 'left'} label="Alineación" onChange={(e) => setPayload('textAlign', e.target.value)}>
+                    <MenuItem value="left">left</MenuItem>
+                    <MenuItem value="center">center</MenuItem>
+                    <MenuItem value="right">right</MenuItem>
+                    <MenuItem value="justify">justify</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            </Stack>
+          </Paper>
+          ) : null}
+
+          {narrativeInspectorSection === 'background' ? (
+          <Paper variant="outlined" sx={narrativeSectionSx}>
+            <Stack spacing={0.8}>
+              <Typography variant="caption" color="text.secondary">Caja</Typography>
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+                <FormControl size="small" sx={{ minWidth: 130 }}>
+                  <InputLabel>Modo</InputLabel>
+                  <Select value={str('backgroundMode') || 'rect'} label="Modo" onChange={(e) => setPayload('backgroundMode', e.target.value)}>
+                    <MenuItem value="none">none</MenuItem>
+                    <MenuItem value="rect">rect</MenuItem>
+                    <MenuItem value="capsule">capsule</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField label="Color" size="small" sx={{ width: 130 }} value={str('backgroundColor') || '#000000'} onChange={(e) => setPayload('backgroundColor', e.target.value)} />
+                <TextField label="Opacidad" type="number" size="small" sx={{ width: 120 }} value={num('backgroundOpacity', 0.58)} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => setPayload('backgroundOpacity', Number(e.target.value))} />
+              </Stack>
+            </Stack>
+          </Paper>
+          ) : null}
+
+          {narrativeEditorMode === 'advanced' ? (
+            <>
+              {narrativeInspectorSection === 'layout' ? (
+              <Paper variant="outlined" sx={narrativeSectionSx}>
+                <Stack spacing={0.8}>
+                  <Typography variant="caption" color="text.secondary">Capa y posición fina</Typography>
+                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+                    <TextField label="Left %" type="number" size="small" sx={{ width: 110 }} value={num('leftPct', 8)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('leftPct', Number(e.target.value))} />
+                    <TextField label="Top %" type="number" size="small" sx={{ width: 110 }} value={num('topPct', 68)} inputProps={{ min: -50, max: 150, step: 1 }} onChange={(e) => setPayload('topPct', Number(e.target.value))} />
+                    <TextField label="Width %" type="number" size="small" sx={{ width: 120 }} value={num('widthPct', 84)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('widthPct', Number(e.target.value))} />
+                    <TextField label="Height %" type="number" size="small" sx={{ width: 120 }} value={num('heightPct', 22)} inputProps={{ min: 1, max: 200, step: 1 }} onChange={(e) => setPayload('heightPct', Number(e.target.value))} />
+                    <TextField label="Opacity" type="number" size="small" sx={{ width: 120 }} value={num('opacity', 1)} inputProps={{ min: 0, max: 1, step: 0.05 }} onChange={(e) => setPayload('opacity', Number(e.target.value))} />
+                    <TextField label="Layer" type="number" size="small" sx={{ width: 110 }} value={num('layerOrder', 100)} onChange={(e) => setPayload('layerOrder', Number(e.target.value))} />
+                  </Stack>
+                </Stack>
+              </Paper>
+              ) : null}
+
+              {narrativeInspectorSection === 'typography' ? (
+              <Paper variant="outlined" sx={narrativeSectionSx}>
+                <Stack spacing={0.8}>
+                  <Typography variant="caption" color="text.secondary">Tipografía avanzada</Typography>
+                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+                    <TextField label="Line height" type="number" size="small" sx={{ width: 130 }} value={num('lineHeight', 1.35)} inputProps={{ min: 0.8, max: 3, step: 0.05 }} onChange={(e) => setPayload('lineHeight', Number(e.target.value))} />
+                    <TextField label="Espaciado letras" type="number" size="small" sx={{ width: 150 }} value={num('letterSpacingPx', 0)} inputProps={{ min: -8, max: 20, step: 0.25 }} onChange={(e) => setPayload('letterSpacingPx', Number(e.target.value))} />
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Peso</InputLabel>
+                      <Select value={str('fontWeight') || 'normal'} label="Peso" onChange={(e) => setPayload('fontWeight', e.target.value)}>
+                        <MenuItem value="normal">normal</MenuItem>
+                        <MenuItem value="bold">bold</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Estilo</InputLabel>
+                      <Select value={str('fontStyle') || 'normal'} label="Estilo" onChange={(e) => setPayload('fontStyle', e.target.value)}>
+                        <MenuItem value="normal">normal</MenuItem>
+                        <MenuItem value="italic">italic</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 150 }}>
+                      <InputLabel>Decoración</InputLabel>
+                      <Select value={str('textDecoration') || 'none'} label="Decoración" onChange={(e) => setPayload('textDecoration', e.target.value)}>
+                        <MenuItem value="none">none</MenuItem>
+                        <MenuItem value="underline">underline</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Stack>
+                </Stack>
+              </Paper>
+              ) : null}
+
+              {narrativeInspectorSection === 'background' ? (
+              <Paper variant="outlined" sx={narrativeSectionSx}>
+                <Stack spacing={0.8}>
+                  <Typography variant="caption" color="text.secondary">Caja avanzada</Typography>
+                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+                    <TextField label="Radio px" type="number" size="small" sx={{ width: 120 }} value={num('borderRadiusPx', 12)} inputProps={{ min: 0, max: 128, step: 1 }} onChange={(e) => setPayload('borderRadiusPx', Number(e.target.value))} />
+                    <TextField label="Padding px" type="number" size="small" sx={{ width: 120 }} value={num('paddingPx', 16)} inputProps={{ min: 0, max: 64, step: 1 }} onChange={(e) => setPayload('paddingPx', Number(e.target.value))} />
+                  </Stack>
+                </Stack>
+              </Paper>
+              ) : null}
+            </>
+          ) : null}
+
+          {narrativeInspectorSection === 'segments' ? (
+            <>
+              <Divider flexItem />
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
+                <Typography variant="caption" color="text.secondary">Texto enriquecido por segmentos</Typography>
+                <Button
+                  size="small"
+                  variant={showSegmentEditor ? 'contained' : 'outlined'}
+                  onClick={() => setShowSegmentEditor((current) => !current)}
+                >
+                  {showSegmentEditor ? 'Ocultar segmentos' : 'Editar por segmentos'}
+                </Button>
+              </Stack>
+            </>
+          ) : null}
+
+          {narrativeInspectorSection === 'segments' && showSegmentEditor ? (
+            <>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
+                <Typography variant="caption" color="text.secondary">Segmentos activos: {narrativeSegments.filter((segment) => segment.text.trim()).length}</Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setNarrativeEditorSegments([
+                      ...narrativeSegments,
+                      { text: '', fontSizePx: num('fontSizePx', 28), color: str('fontColor') || '#ffffff', fontFamily: selectedFont || 'Merriweather' },
+                    ]);
+                  }}
+                >
+                  Añadir segmento
+                </Button>
+              </Stack>
+              <Stack spacing={0.8}>
+                {narrativeSegments.map((segment, segmentIndex) => (
+                  <Paper key={`narrative-segment-${segmentIndex}`} variant="outlined" sx={{ p: 1 }}>
+                    <Stack spacing={0.8}>
+                      <TextField
+                        label={`Segmento ${segmentIndex + 1}`}
+                        size="small"
+                        multiline
+                        rows={2}
+                        value={segment.text}
+                        onChange={(e) => {
+                          const next = [...narrativeSegments];
+                          next[segmentIndex] = { ...next[segmentIndex], text: e.target.value };
+                          setNarrativeEditorSegments(next);
+                        }}
+                      />
+                      <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.75 }}>
+                        <Tooltip title="Negrita">
+                          <IconButton
+                            size="small"
+                            color={segment.bold ? 'primary' : 'default'}
+                            onClick={() => {
+                              const next = [...narrativeSegments];
+                              next[segmentIndex] = { ...next[segmentIndex], bold: !next[segmentIndex].bold };
+                              setNarrativeEditorSegments(next);
+                            }}
+                          >
+                            <FormatBoldIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Cursiva">
+                          <IconButton
+                            size="small"
+                            color={segment.italic ? 'primary' : 'default'}
+                            onClick={() => {
+                              const next = [...narrativeSegments];
+                              next[segmentIndex] = { ...next[segmentIndex], italic: !next[segmentIndex].italic };
+                              setNarrativeEditorSegments(next);
+                            }}
+                          >
+                            <FormatItalicIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Subrayado">
+                          <IconButton
+                            size="small"
+                            color={segment.underline ? 'primary' : 'default'}
+                            onClick={() => {
+                              const next = [...narrativeSegments];
+                              next[segmentIndex] = { ...next[segmentIndex], underline: !next[segmentIndex].underline };
+                              setNarrativeEditorSegments(next);
+                            }}
+                          >
+                            <FormatUnderlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <TextField
+                          label="Tamaño"
+                          type="number"
+                          size="small"
+                          sx={{ width: 110 }}
+                          value={Number.isFinite(Number(segment.fontSizePx)) ? Number(segment.fontSizePx) : ''}
+                          inputProps={{ min: 8, max: 220, step: 1 }}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            const next = [...narrativeSegments];
+                            next[segmentIndex] = {
+                              ...next[segmentIndex],
+                              ...(raw.trim() ? { fontSizePx: Number(raw) } : { fontSizePx: undefined }),
+                            };
+                            setNarrativeEditorSegments(next);
+                          }}
+                        />
+                        <TextField
+                          label="Color"
+                          type="color"
+                          size="small"
+                          sx={{ width: 90 }}
+                          value={segment.color || '#ffffff'}
+                          onChange={(e) => {
+                            const next = [...narrativeSegments];
+                            next[segmentIndex] = { ...next[segmentIndex], color: e.target.value };
+                            setNarrativeEditorSegments(next);
+                          }}
+                        />
+                        <TextField
+                          label="Fuente"
+                          size="small"
+                          sx={{ minWidth: 160 }}
+                          value={segment.fontFamily || ''}
+                          onChange={(e) => {
+                            const next = [...narrativeSegments];
+                            next[segmentIndex] = {
+                              ...next[segmentIndex],
+                              ...(e.target.value.trim() ? { fontFamily: e.target.value } : { fontFamily: undefined }),
+                            };
+                            setNarrativeEditorSegments(next);
+                          }}
+                        />
+                        <Button
+                          size="small"
+                          color="error"
+                          variant="text"
+                          startIcon={<DeleteIcon fontSize="small" />}
+                          onClick={() => {
+                            const next = narrativeSegments.filter((_, idx) => idx !== segmentIndex);
+                            setNarrativeEditorSegments(next);
+                          }}
+                        >
+                          Quitar
+                        </Button>
+                      </Stack>
+                    </Stack>
+                  </Paper>
+                ))}
+              </Stack>
+            </>
+          ) : narrativeInspectorSection === 'segments' ? (
+            <Typography variant="caption" color="text.secondary">
+              Usa Editar por segmentos para mezclar estilos en una misma caja de texto.
+            </Typography>
+          ) : null}
         </Stack>
       );
+      }
 
     case 'runShortcut':
       return (
