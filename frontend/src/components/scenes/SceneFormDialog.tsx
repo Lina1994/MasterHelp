@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Box,
@@ -184,12 +184,40 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   const iconFileInputRef = useRef<HTMLInputElement | null>(null);
   const { layerDragRef, activeLayerDragPlacement, setActiveLayerDragPlacement } = useSceneLayerDrag();
 
+  // Fetch initial scene video assets when dialog opens
+  useEffect(() => {
+    if (!open) return;
+
+    let active = true;
+    const fetchVideos = async () => {
+      setLoadingAssets(true);
+      try {
+        const assets = await listSceneVideos(campaignId ?? undefined);
+        if (active) {
+          setSceneVideoAssets(assets);
+        }
+      } catch (err: any) {
+        console.error('Error fetching scene videos on mount:', err);
+      } finally {
+        if (active) {
+          setLoadingAssets(false);
+        }
+      }
+    };
+
+    fetchVideos();
+
+    return () => {
+      active = false;
+    };
+  }, [open, campaignId, setSceneVideoAssets, setLoadingAssets]);
+
   // Populate form when editing or reset when creating
   useEffect(() => {
     if (!open) return;
     if (editing) {
       const resolvedCampaignId = editing.campaignId ?? ((editing as unknown as { campaign?: { id?: string | null } }).campaign?.id ?? null);
-      // AquÃ­ irÃ­a la lÃ³gica de inicializaciÃ³n del draft si es necesario
+      // Aquí iría la lógica de inicialización del draft si es necesario
       return;
     }
     setSelectedActionId(draft.actions[0]?.id ?? null);
@@ -508,6 +536,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     setDraft((d) => ({ ...d, actions: [...d.actions, next] }));
     setSelectedActionId(next.id);
     setLeftToolPanelMode('text');
+    setContextualMenu(null);
     beginNarrativeCanvasEdit(next);
   };
 
@@ -623,7 +652,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
       const refreshed = await listSceneVideos(campaignId ?? undefined);
       setSceneVideoAssets(refreshed);
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? err?.message ?? 'Error al subir vÃ­deo.');
+      setError(err?.response?.data?.message ?? err?.message ?? 'Error al subir vídeo.');
     } finally {
       setUploadingVideo(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -1341,7 +1370,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     }));
   };
 
-  // --- FUNCIÃ“N INCOMPLETA ELIMINADA POR ERROR DE SINTAXIS ---
+  // --- FUNCIÓN INCOMPLETA ELIMINADA POR ERROR DE SINTAXIS ---
 
   const moveSelectedLayerToEdge = (edge: 'top' | 'bottom') => {
     if (selectedActionIndex < 0) return;
@@ -1370,6 +1399,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     const selectedAction = draft.actions.find((action) => action.id === actionId);
     if (selectedAction?.type === 'setNarrativeText') {
       setLeftToolPanelMode('text');
+      setContextualMenu(null);
     }
 
     const timelineEntry = timelineEntriesByActionId.get(actionId);
@@ -1421,8 +1451,8 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   }, [currentTimelineTimeMs, timelineModel.entries]);
 
   const activeEntryLabel = activeTimelineEntry
-    ? `${activeTimelineEntry.label} Â· ${formatPreviewClock(Math.max(0, currentTimelineTimeMs - activeTimelineEntry.startMs))}/${formatPreviewClock(activeTimelineEntry.durationMs)}`
-    : 'Sin acciÃ³n activa';
+    ? `${activeTimelineEntry.label} · ${formatPreviewClock(Math.max(0, currentTimelineTimeMs - activeTimelineEntry.startMs))}/${formatPreviewClock(activeTimelineEntry.durationMs)}`
+    : 'Sin acción activa';
 
   const previewRenderableActions = draft.actions.filter((action) => {
     const timelineEntry = timelineEntriesByActionId.get(action.id);
@@ -1473,7 +1503,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
         return (
           <Stack sx={{ width: '100%', height: '100%' }} alignItems="center" justifyContent="center">
             <Typography variant="body2" color="text.secondary">
-              Selecciona campaÃ±a y mapa activo para usar la base Skyline.
+              Selecciona campaña y mapa activo para usar la base Skyline.
             </Typography>
           </Stack>
         );
@@ -1559,15 +1589,15 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                   label="Alcance"
                   onChange={(e) => set('scope', e.target.value as 'global' | 'campaign')}
                 >
-                  <MenuItem value="campaign">CampaÃ±a</MenuItem>
+                  <MenuItem value="campaign">Campaña</MenuItem>
                   <MenuItem value="global">Global</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
             <TextField
-              label="DescripciÃ³n"
+              label="Descripción"
               size="small"
-              placeholder="DescripciÃ³n breve de la escena..."
+              placeholder="Descripción breve de la escena..."
               value={draft.description ?? ''}
               onChange={(e) => set('description', e.target.value)}
               inputProps={{ maxLength: 500 }}
@@ -1576,7 +1606,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
           </Stack>
           {uploadingIcon ? (
             <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', ml: 1 }}>
-              Subiendoâ€¦
+              Subiendo...
             </Typography>
           ) : null}
         </Stack>
