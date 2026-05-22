@@ -49,6 +49,8 @@ interface SceneTimelineEditorProps {
   loopWindowStartMs?: number | null;
   loopWindowEndMs?: number | null;
   onSetLoopWindow?: (nextStartMs: number, nextEndMs: number) => void;
+  /** Nuevo: handler para drop contextualizado en pista/ventana, recibe assetId */
+  onDropAsset?: (info: { assetId: string; trackKey: string; startMs: number; clientX: number; clientY: number }) => void;
 }
 
 interface TimelineDragState {
@@ -133,6 +135,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
   loopWindowStartMs,
   loopWindowEndMs,
   onSetLoopWindow,
+  onDropAsset,
 }) => {
   const { entries, totalMs } = useMemo(() => buildTimeline(actions), [actions]);
   const [dragState, setDragState] = useState<TimelineDragState | null>(null);
@@ -495,6 +498,33 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                     if (dragState || resizeState) return;
                     const rect = event.currentTarget.getBoundingClientRect();
                     seekFromPointer(event.clientX, rect);
+                  }}
+                  onDragOver={(e) => {
+                    // Permitir drop
+                    e.preventDefault();
+                  }}
+                  onDrop={(e) => {
+                    if (typeof onDropAsset === 'function') {
+                      e.preventDefault();
+                      // Calcular startMs según posición X
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+                      const pxPerMs = timelineWidth / Math.max(1, totalMs);
+                      const startMs = Math.round(x / pxPerMs);
+                      // Obtener assetId del dataTransfer
+                      const payload = e.dataTransfer.getData('text/plain');
+                      // Solo soportamos drag de vídeo asset
+                      if (!payload.startsWith('scene-video-asset:')) return;
+                      const assetId = payload.replace('scene-video-asset:', '').trim();
+                      if (!assetId) return;
+                      onDropAsset({
+                        assetId,
+                        trackKey: track.trackKey,
+                        startMs,
+                        clientX: e.clientX,
+                        clientY: e.clientY,
+                      });
+                    }
                   }}
                 >
                   {normalizedLoopWindow.hasLoopWindow ? (
