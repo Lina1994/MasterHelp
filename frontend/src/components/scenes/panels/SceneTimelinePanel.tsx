@@ -38,7 +38,7 @@ interface SceneTimelinePanelProps {
   onMoveActionInTime: (actionId: string, nextStartMs: number) => void;
   onChangeActionLayerOrder: (actionId: string, nextLayerOrder: number) => void;
   onChangeActionDuration: (actionId: string, nextDurationMs: number, nextStartMs?: number) => void;
-  onDropAsset: (info: { assetId: string; trackKey: string; startMs: number; clientX: number; clientY: number }) => void;
+  onDropAsset: (info: { dragPayload: string; trackKey: string; startMs: number; clientX: number; clientY: number }) => void;
   onSeekTimeMs: (timeMs: number) => void;
   loopEnabled: boolean;
   loopWindowStartMs: number | null;
@@ -82,7 +82,7 @@ export const SceneTimelinePanel: React.FC<SceneTimelinePanelProps> = ({
   onSetLoopWindow,
 }) => {
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box sx={{ flex: '0 0 auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
       <Stack spacing={0.75}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
           <Typography variant="subtitle2">

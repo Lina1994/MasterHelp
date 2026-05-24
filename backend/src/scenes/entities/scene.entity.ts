@@ -46,6 +46,12 @@ export class Scene {
   @Column({ type: 'integer', nullable: true, default: null })
   loopWindowEndMs: number | null;
 
+  @Column({ default: false })
+  takeOverMusicOnStart: boolean;
+
+  @Column({ default: true })
+  restorePreviousMusicOnFinish: boolean;
+
   @Column({ type: 'text', nullable: true, default: null })
   icon: string | null;
 

@@ -114,6 +114,7 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
   const lastStartTokenRef = useRef<string | null>(null);
   const chroma = useMemo(() => normalizeChroma(chromaKey), [chromaKey]);
   const [canvasUnavailable, setCanvasUnavailable] = useState(false);
+  const [mediaLoadError, setMediaLoadError] = useState(false);
 
   const customLoopRange = useMemo(() => {
     const rangeStartSec = Number(loopRangeStartSec);
@@ -133,6 +134,7 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
 
   useEffect(() => {
     setCanvasUnavailable(false);
+    setMediaLoadError(false);
   }, [src, kind, chroma.enabled, pickColorEnabled]);
 
   useEffect(() => {
@@ -340,6 +342,7 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
       };
       img.onerror = () => {
         markCanvasUnavailable();
+        setMediaLoadError(true);
         onMediaError?.();
       };
       img.src = src;
@@ -382,6 +385,7 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
     const onLoadedData = () => startLoop();
     const onError = () => {
       markCanvasUnavailable();
+      setMediaLoadError(true);
       onMediaError?.();
     };
     const onEnded = () => onVideoEnded?.();
@@ -455,6 +459,28 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
     event.stopPropagation();
   };
 
+  if (mediaLoadError) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'rgba(8, 10, 18, 0.7)',
+          color: 'rgba(255,255,255,0.86)',
+          fontSize: 12,
+          textAlign: 'center',
+          px: 1,
+          opacity,
+        }}
+      >
+        No se pudo cargar el recurso
+      </Box>
+    );
+  }
+
   if (!needsCanvas) {
     if (kind === 'image') {
       return (
@@ -462,7 +488,11 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
           component="img"
           src={src}
           alt="layer"
-          onError={onMediaError}
+          onLoad={() => setMediaLoadError(false)}
+          onError={() => {
+            setMediaLoadError(true);
+            onMediaError?.();
+          }}
           sx={{ width: '100%', height: '100%', objectFit: 'contain', opacity }}
         />
       );
@@ -478,7 +508,11 @@ const ChromaKeyMedia: React.FC<ChromaKeyMediaProps> = ({
         muted={muted}
         playsInline={playsInline}
         controls={false}
-        onError={onMediaError}
+        onLoadedData={() => setMediaLoadError(false)}
+        onError={() => {
+          setMediaLoadError(true);
+          onMediaError?.();
+        }}
         onEnded={onVideoEnded}
         style={{ width: '100%', height: '100%', objectFit: 'contain', opacity }}
       />

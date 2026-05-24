@@ -7,7 +7,10 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import { api } from '../../apiBase';
+import { getAuthHeaders } from '../../utils/auth';
 import type { SceneActionDto } from '../../types/scenes';
+import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 
 export interface TimelineEntry {
   actionId: string;
@@ -22,6 +25,11 @@ export interface TimelineEntry {
   durationMs: number;
   narrativeHasRichText?: boolean;
   narrativeHasStyleOverrides?: boolean;
+  hasMotionPath?: boolean;
+  hasOscillation?: boolean;
+  motionKeyframeCount?: number;
+  motionKeyframeRatios?: number[];
+  motionPauseKeyframes?: Array<{ ratio: number; holdMs: number }>;
 }
 
 interface TimelineLane {
@@ -49,8 +57,8 @@ interface SceneTimelineEditorProps {
   loopWindowStartMs?: number | null;
   loopWindowEndMs?: number | null;
   onSetLoopWindow?: (nextStartMs: number, nextEndMs: number) => void;
-  /** Nuevo: handler para drop contextualizado en pista/ventana, recibe assetId */
-  onDropAsset?: (info: { assetId: string; trackKey: string; startMs: number; clientX: number; clientY: number }) => void;
+  /** Handler para drop contextualizado en pista/ventana, recibe payload de drag (video o imagen). */
+  onDropAsset?: (info: { dragPayload: string; trackKey: string; startMs: number; clientX: number; clientY: number }) => void;
 }
 
 interface TimelineDragState {
@@ -101,9 +109,12 @@ const TRACK_ORDER = [
 
 const ACTION_LABELS: Record<string, string> = {
   playMusic: 'Music',
+  playPreset: 'Preset FX',
   stopMusic: 'Stop music',
   playSound: 'SFX',
+  stopSound: 'Stop SFX',
   setMusicVolume: 'Music volume',
+  setSoundVolume: 'SFX volume',
   sendImageToWindow: 'Image',
   sendVideoToWindow: 'Video',
   setWindowBackground: 'Background',
@@ -117,6 +128,291 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 const SNAP_OPTIONS_MS = [100, 250, 500] as const;
+const AUDIO_BLOCK_HEIGHT = 52;
+const DEFAULT_BLOCK_HEIGHT = 26;
+
+type WaveformData = {
+  peaks: number[];
+  durationSec: number;
+};
+
+const waveformCache = new Map<string, Promise<WaveformData | null>>();
+
+const toNonNegativeNumber = (value: unknown): number | undefined => {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return undefined;
+  return n;
+};
+
+const resolveAudioPlaybackSegment = (payload: Record<string, unknown>, fallbackDurationMs: number): { startSec: number; durationSec: number } => {
+  const clipInSec = toNonNegativeNumber(payload.clipInSec) ?? 0;
+  const explicitStartAtSec = toNonNegativeNumber(payload.startAtSec);
+  const startSec = explicitStartAtSec === undefined
+    ? clipInSec
+    : Math.max(clipInSec, explicitStartAtSec);
+
+  const clipOutSecRaw = toNonNegativeNumber(payload.clipOutSec);
+  const clipOutSec = clipOutSecRaw !== undefined && clipOutSecRaw > startSec
+    ? clipOutSecRaw
+    : undefined;
+
+  const durationCandidatesSec: number[] = [];
+  const clipDurationMs = toNonNegativeNumber(payload.clipDurationMs);
+  const payloadDurationMs = toNonNegativeNumber(payload.durationMs);
+
+  if (clipOutSec !== undefined) {
+    durationCandidatesSec.push(Math.max(0, clipOutSec - startSec));
+  }
+  if (clipDurationMs !== undefined && clipDurationMs > 0) {
+    durationCandidatesSec.push(clipDurationMs / 1000);
+  }
+  if (payloadDurationMs !== undefined && payloadDurationMs > 0) {
+    durationCandidatesSec.push(payloadDurationMs / 1000);
+  }
+  if (fallbackDurationMs > 0) {
+    durationCandidatesSec.push(fallbackDurationMs / 1000);
+  }
+
+  const positiveDurations = durationCandidatesSec.filter((value) => Number.isFinite(value) && value > 0);
+  const durationSec = positiveDurations.length > 0 ? Math.min(...positiveDurations) : 0;
+
+  return {
+    startSec,
+    durationSec,
+  };
+};
+
+const computeWaveformPeaks = async (cacheKey: string, streamUrl: string): Promise<WaveformData | null> => {
+  const cached = waveformCache.get(cacheKey);
+  if (cached) return cached;
+
+  const loader = (async (): Promise<WaveformData | null> => {
+    try {
+      const res = await api.get(streamUrl, {
+        headers: getAuthHeaders(),
+        responseType: 'blob',
+      });
+      const blob = res.data as Blob;
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      try {
+        const decoded = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+        const channelData = decoded.numberOfChannels > 0
+          ? decoded.getChannelData(0)
+          : new Float32Array();
+        if (channelData.length === 0 || decoded.duration <= 0) {
+          return null;
+        }
+
+        const bins = 2200;
+        const samplesPerBin = Math.max(1, Math.floor(channelData.length / bins));
+        const envelope = new Array<number>(bins).fill(0);
+
+        for (let bin = 0; bin < bins; bin += 1) {
+          const start = bin * samplesPerBin;
+          const end = Math.min(channelData.length, start + samplesPerBin);
+          let peak = 0;
+          let sumSquares = 0;
+          let count = 0;
+          for (let i = start; i < end; i += 1) {
+            const abs = Math.abs(channelData[i]);
+            if (abs > peak) peak = abs;
+            sumSquares += channelData[i] * channelData[i];
+            count += 1;
+          }
+          const rms = count > 0 ? Math.sqrt(sumSquares / count) : 0;
+          // RMS gives body, peak keeps transient detail.
+          envelope[bin] = (rms * 0.82) + (peak * 0.18);
+        }
+
+        const sorted = envelope.slice().sort((a, b) => a - b);
+        const q = (ratio: number) => {
+          const idx = Math.max(0, Math.min(sorted.length - 1, Math.floor(ratio * (sorted.length - 1))));
+          return sorted[idx] ?? 0;
+        };
+        const low = q(0.15);
+        const high = q(0.96);
+        const range = Math.max(0.0001, high - low);
+
+        const contrasted = envelope.map((value) => {
+          const normalized = Math.max(0, Math.min(1, (value - low) / range));
+          // Gamma to increase visible variation in dense/mastered tracks.
+          return Math.pow(normalized, 0.72);
+        });
+
+        const smoothed = contrasted.map((_, idx, arr) => {
+          let acc = 0;
+          let n = 0;
+          for (let k = -2; k <= 2; k += 1) {
+            const j = idx + k;
+            if (j < 0 || j >= arr.length) continue;
+            acc += arr[j];
+            n += 1;
+          }
+          return n > 0 ? acc / n : arr[idx];
+        });
+
+        const normalizedPeaks = smoothed.map((value) => Math.max(0.02, Math.min(1, value)));
+
+        return {
+          peaks: normalizedPeaks,
+          durationSec: decoded.duration,
+        };
+      } finally {
+        void audioContext.close();
+      }
+    } catch {
+      return null;
+    }
+  })();
+
+  waveformCache.set(cacheKey, loader);
+  return loader;
+};
+
+interface AudioWaveformOverlayProps {
+  actionType: string;
+  payload: Record<string, unknown>;
+  durationMs: number;
+  widthPx: number;
+  campaignId?: string | null;
+  zoomPxPerMs: number;
+}
+
+const AudioWaveformOverlay: React.FC<AudioWaveformOverlayProps> = ({
+  actionType,
+  payload,
+  durationMs,
+  widthPx,
+  campaignId,
+  zoomPxPerMs,
+}) => {
+  const [waveform, setWaveform] = useState<WaveformData | null>(null);
+
+  const streamInfo = useMemo(() => {
+    const songId = typeof payload.songId === 'string' ? payload.songId.trim() : '';
+    const effectId = typeof payload.effectId === 'string' ? payload.effectId.trim() : '';
+    const base = api.defaults.baseURL || '';
+
+    if (actionType === 'playMusic' && songId) {
+      const url = campaignId
+        ? `${base}/soundtrack/songs/${songId}/stream?campaignId=${campaignId}`
+        : `${base}/soundtrack/songs/${songId}/stream`;
+      return { cacheKey: `song:${campaignId ?? 'none'}:${songId}`, streamUrl: url };
+    }
+
+    if (actionType === 'playSound' && effectId) {
+      const url = campaignId
+        ? `${base}/soundtrack/effects/${effectId}/stream?campaignId=${campaignId}`
+        : `${base}/soundtrack/effects/${effectId}/stream`;
+      return { cacheKey: `sfx:${campaignId ?? 'none'}:${effectId}`, streamUrl: url };
+    }
+
+    return null;
+  }, [actionType, campaignId, payload]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      if (!streamInfo) {
+        setWaveform(null);
+        return;
+      }
+      const data = await computeWaveformPeaks(streamInfo.cacheKey, streamInfo.streamUrl);
+      if (!cancelled) {
+        setWaveform(data);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [streamInfo]);
+
+  const bars = useMemo(() => {
+    const zoomRatio = Math.max(0.55, Math.min(4.5, zoomPxPerMs / 0.035));
+    const maxBars = Math.max(140, Math.round(240 * zoomRatio));
+    const barsCount = Math.max(20, Math.min(maxBars, Math.floor(widthPx / 2.4)));
+    const fallback = new Array<number>(barsCount).fill(0).map((_, idx) => {
+      const sine = Math.sin((idx / Math.max(1, barsCount - 1)) * Math.PI * 2.5);
+      return Math.max(0.09, 0.3 + sine * 0.22);
+    });
+
+    if (!waveform || waveform.peaks.length === 0 || waveform.durationSec <= 0) {
+      return fallback;
+    }
+
+    const segment = resolveAudioPlaybackSegment(payload, durationMs);
+    const segStart = Math.max(0, segment.startSec);
+    const segDuration = Math.max(0.02, segment.durationSec);
+    const peaksLength = waveform.peaks.length;
+
+    return new Array<number>(barsCount).fill(0).map((_, index) => {
+      const fromRatio = barsCount <= 1 ? 0 : index / barsCount;
+      const toRatio = barsCount <= 1 ? 1 : (index + 1) / barsCount;
+      const fromSec = segStart + segDuration * fromRatio;
+      const toSec = segStart + segDuration * toRatio;
+      const fromPos = Math.max(0, Math.min(1, fromSec / waveform.durationSec));
+      const toPos = Math.max(0, Math.min(1, toSec / waveform.durationSec));
+      const fromIdx = Math.max(0, Math.min(peaksLength - 1, Math.floor(fromPos * (peaksLength - 1))));
+      const toIdx = Math.max(fromIdx, Math.min(peaksLength - 1, Math.ceil(toPos * (peaksLength - 1))));
+
+      let acc = 0;
+      let n = 0;
+      for (let i = fromIdx; i <= toIdx; i += 1) {
+        acc += waveform.peaks[i] ?? 0;
+        n += 1;
+      }
+
+      const avg = n > 0 ? acc / n : (waveform.peaks[fromIdx] ?? 0.08);
+      // Lift low amplitudes to reveal softer passages while preserving transients.
+      const boosted = 1 - Math.exp(-3.6 * avg);
+      const mixed = (avg * 0.38) + (boosted * 0.62);
+      return Math.max(0.06, Math.min(1, mixed));
+    });
+  }, [durationMs, payload, waveform, widthPx, zoomPxPerMs]);
+
+  return (
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        opacity: 0.9,
+        pointerEvents: 'none',
+      }}
+    >
+      <Box
+        sx={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: '50%',
+          height: 1,
+          transform: 'translateY(-0.5px)',
+          bgcolor: 'rgba(255,255,255,0.28)',
+        }}
+      />
+      {bars.map((value, idx) => (
+        <Box
+          key={idx}
+          sx={{
+            position: 'absolute',
+            left: `${(idx / Math.max(1, bars.length)) * 100}%`,
+            width: `${Math.max(0.8, 100 / Math.max(1, bars.length) - 0.2)}%`,
+            minWidth: 1,
+            top: `${50 - (value * 40)}%`,
+            height: `${Math.max(8, value * 80)}%`,
+            borderRadius: 0.4,
+            bgcolor: 'rgba(255,255,255,0.9)',
+          }}
+        />
+      ))}
+    </Box>
+  );
+};
 
 /**
  * Timeline-like visualization for scene actions, grouped in tracks with temporal offsets.
@@ -137,15 +433,23 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
   onSetLoopWindow,
   onDropAsset,
 }) => {
+  const { activeCampaign } = useActiveCampaign();
   const { entries, totalMs } = useMemo(() => buildTimeline(actions), [actions]);
+  const actionsById = useMemo(() => {
+    const map = new Map<string, SceneActionDto>();
+    for (const action of actions) {
+      map.set(action.id, action);
+    }
+    return map;
+  }, [actions]);
   const [dragState, setDragState] = useState<TimelineDragState | null>(null);
   const [resizeState, setResizeState] = useState<TimelineResizeState | null>(null);
   const [loopWindowDragState, setLoopWindowDragState] = useState<LoopWindowDragState | null>(null);
   const [snapMs, setSnapMs] = useState<number>(250);
+  const [pxPerMs, setPxPerMs] = useState<number>(0.035);
   const timelineScrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const pxPerMs = 0.035;
-  const laneHeight = 34;
+  const laneHeight = 60;
   const timelineWidth = Math.max(900, totalMs * pxPerMs + 40);
   const tickMs = chooseTickMs(totalMs);
   const boundedCurrentTimeMs = Math.max(0, Math.min(totalMs, Number(currentTimeMs ?? 0)));
@@ -184,6 +488,31 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
     const ratio = activeWidth > 0 ? x / activeWidth : 0;
     const nextTime = Math.round(totalMs * ratio);
     onSeekTimeMs(nextTime);
+  };
+
+  const handleTimelineWheelZoom = (event: React.WheelEvent<HTMLDivElement>) => {
+    const container = timelineScrollContainerRef.current;
+    if (!container) return;
+
+    event.preventDefault();
+
+    const minPxPerMs = 0.012;
+    const maxPxPerMs = 0.18;
+    const rect = container.getBoundingClientRect();
+    const pointerX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+    const currentScrollLeft = container.scrollLeft;
+    const timeAtPointerMs = (currentScrollLeft + pointerX) / pxPerMs;
+
+    const zoomMultiplier = Math.exp(-event.deltaY * 0.00135);
+    const nextPxPerMs = Math.max(minPxPerMs, Math.min(maxPxPerMs, pxPerMs * zoomMultiplier));
+    if (Math.abs(nextPxPerMs - pxPerMs) < 0.00001) return;
+
+    setPxPerMs(nextPxPerMs);
+    requestAnimationFrame(() => {
+      const nextContainer = timelineScrollContainerRef.current;
+      if (!nextContainer) return;
+      nextContainer.scrollLeft = Math.max(0, (timeAtPointerMs * nextPxPerMs) - pointerX);
+    });
   };
 
   const tracks = useMemo(() => {
@@ -426,10 +755,24 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
             label={`Duracion aprox: ${formatMs(totalMs)}`}
             variant="outlined"
           />
+          <Chip
+            size="small"
+            label={`Zoom: ${(pxPerMs / 0.035).toFixed(2)}x`}
+            variant="outlined"
+          />
         </Stack>
       </Stack>
 
-      <Box ref={timelineScrollContainerRef} sx={{ overflowX: 'auto', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+      <Box
+        ref={timelineScrollContainerRef}
+        onWheel={handleTimelineWheelZoom}
+        sx={{
+          overflowX: 'auto',
+          borderRadius: 1,
+          border: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
         <Box sx={{ width: timelineWidth + 220, p: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Box sx={{ width: 210, pr: 1 }}>
@@ -475,6 +818,62 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
           </Box>
 
           <Stack spacing={0.75}>
+            {tracks.length === 0 ? (
+              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <Box sx={{ width: 210, pr: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Ventana projection
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: timelineWidth,
+                    minHeight: laneHeight + 10,
+                    borderRadius: 1,
+                    border: '1px dashed',
+                    borderColor: 'divider',
+                    bgcolor: 'action.hover',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'copy',
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                  }}
+                  onDrop={(event) => {
+                    if (typeof onDropAsset !== 'function') return;
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const payload = event.dataTransfer.getData('text/plain').trim();
+                    if (!payload) return;
+                    const isVideoPayload = payload.startsWith('scene-video-asset:');
+                    const isImagePayload = payload.startsWith('scene-image-asset:');
+                    if (!isVideoPayload && !isImagePayload) return;
+
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+                    const pxPerMsLocal = timelineWidth / Math.max(1, totalMs);
+                    const startMs = Math.round(x / pxPerMsLocal);
+
+                    onDropAsset({
+                      dragPayload: payload,
+                      trackKey: 'window.projection',
+                      startMs,
+                      clientX: event.clientX,
+                      clientY: event.clientY,
+                    });
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    Arrastra una imagen o video aqui para crear la primera accion.
+                  </Typography>
+                </Box>
+              </Box>
+            ) : null}
             {tracks.map((track, trackIndex) => (
               <Box key={track.trackKey} sx={{ display: 'flex', alignItems: 'flex-start' }}>
                 <Box sx={{ width: 210, pr: 1 }}>
@@ -506,19 +905,20 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                   onDrop={(e) => {
                     if (typeof onDropAsset === 'function') {
                       e.preventDefault();
+                      e.stopPropagation();
                       // Calcular startMs según posición X
                       const rect = e.currentTarget.getBoundingClientRect();
                       const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
                       const pxPerMs = timelineWidth / Math.max(1, totalMs);
                       const startMs = Math.round(x / pxPerMs);
-                      // Obtener assetId del dataTransfer
-                      const payload = e.dataTransfer.getData('text/plain');
-                      // Solo soportamos drag de vídeo asset
-                      if (!payload.startsWith('scene-video-asset:')) return;
-                      const assetId = payload.replace('scene-video-asset:', '').trim();
-                      if (!assetId) return;
+                      const payload = e.dataTransfer.getData('text/plain').trim();
+                      if (!payload) return;
+                      const isVideoPayload = payload.startsWith('scene-video-asset:');
+                      const isImagePayload = payload.startsWith('scene-image-asset:');
+                      if (!isVideoPayload && !isImagePayload) return;
+
                       onDropAsset({
-                        assetId,
+                        dragPayload: payload,
                         trackKey: track.trackKey,
                         startMs,
                         clientX: e.clientX,
@@ -765,7 +1165,16 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                         const width = Math.max(28, durationMs * pxPerMs);
                         const isSelected = selectedActionId === entry.actionId;
                         const isNarrativeEditing = narrativeEditingActionId === entry.actionId;
-                        const isResizable = entry.type === 'setNarrativeText' || entry.type === 'sendImageToWindow';
+                        const isResizable = entry.type === 'setNarrativeText' || entry.type === 'sendImageToWindow' || entry.type === 'applyWindowFilter';
+                        const isAudioAction = ['playMusic', 'playSound', 'playPreset', 'stopMusic', 'stopSound', 'setSoundVolume'].includes(entry.type);
+                        const isAudioFileAction = entry.type === 'playMusic' || entry.type === 'playSound' || entry.type === 'playPreset';
+                        const isAudioActive =
+                          isAudioAction &&
+                          Number.isFinite(Number(currentTimeMs)) &&
+                          Number(currentTimeMs) >= leftMs &&
+                          Number(currentTimeMs) < (leftMs + durationMs);
+                        const action = actionsById.get(entry.actionId);
+                        const entryPayload = (action?.payload ?? {}) as Record<string, unknown>;
 
                         return (
                           <Tooltip
@@ -804,7 +1213,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                                 left,
                                 top: 4,
                                 width,
-                                height: 26,
+                                height: isAudioFileAction ? AUDIO_BLOCK_HEIGHT : DEFAULT_BLOCK_HEIGHT,
                                 borderRadius: 1,
                                 px: 0.75,
                                 display: 'flex',
@@ -817,7 +1226,7 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                                   : isSelected
                                     ? '0 0 0 2px rgba(0,0,0,0.35)'
                                     : 'none',
-                                overflow: 'hidden',
+                                overflow: 'visible',
                                 cursor: 'grab',
                                 userSelect: 'none',
                                 zIndex: isDraggingThis || isResizingThis ? 10 : 1,
@@ -859,10 +1268,39 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                               )}
 
                               {/* Box Label Content */}
-                              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ width: '100%', minWidth: 0, px: 0.5 }}>
+                              <Stack
+                                direction="row"
+                                spacing={0.5}
+                                alignItems="center"
+                                sx={{
+                                  width: '100%',
+                                  minWidth: 0,
+                                  px: 0.5,
+                                  position: 'absolute',
+                                  top: 4,
+                                  left: 0,
+                                  right: 0,
+                                  zIndex: 2,
+                                }}
+                              >
                                 <Typography variant="caption" noWrap sx={{ color: 'inherit', flex: 1, minWidth: 0 }}>
                                   {entry.label}
                                 </Typography>
+                                {(entry.hasMotionPath || entry.hasOscillation) ? (
+                                  <Tooltip
+                                    title={`Movimiento: ${entry.motionKeyframeCount ?? 0} punto(s)${entry.hasOscillation ? ' + oscilacion' : ''}`}
+                                  >
+                                    <Box
+                                      sx={{
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: '50%',
+                                        bgcolor: entry.hasOscillation ? 'rgba(255, 213, 79, 0.95)' : 'rgba(129, 199, 132, 0.95)',
+                                        flexShrink: 0,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                ) : null}
                                 {entry.type === 'setNarrativeText' && entry.narrativeHasRichText ? (
                                   <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.92)', flexShrink: 0 }} />
                                 ) : null}
@@ -872,7 +1310,113 @@ const SceneTimelineEditor: React.FC<SceneTimelineEditorProps> = ({
                                 {isNarrativeEditing ? (
                                   <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'warning.light', flexShrink: 0 }} />
                                 ) : null}
+                                {isAudioAction ? (
+                                  <Tooltip title={isAudioActive ? 'Audio activo en preview' : 'Accion de audio'}>
+                                    <Box
+                                      sx={{
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: '50%',
+                                        bgcolor: isAudioActive ? 'rgba(76, 175, 80, 0.95)' : 'rgba(255, 255, 255, 0.55)',
+                                        boxShadow: isAudioActive ? '0 0 0 2px rgba(76, 175, 80, 0.38)' : 'none',
+                                        flexShrink: 0,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                ) : null}
                               </Stack>
+
+                              {isAudioFileAction ? (
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    left: 8,
+                                    right: 8,
+                                    top: 20,
+                                    bottom: 4,
+                                    zIndex: 1,
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <AudioWaveformOverlay
+                                    actionType={entry.type}
+                                    payload={entryPayload}
+                                    durationMs={durationMs}
+                                    widthPx={width}
+                                    campaignId={activeCampaign?.id ?? null}
+                                    zoomPxPerMs={pxPerMs}
+                                  />
+                                </Box>
+                              ) : null}
+
+                              {entry.motionKeyframeRatios && entry.motionKeyframeRatios.length > 0 ? (
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    left: 8,
+                                    right: 8,
+                                    bottom: 2,
+                                    height: 4,
+                                    pointerEvents: 'none',
+                                  }}
+                                >
+                                  {entry.motionKeyframeRatios.map((ratio, idx) => (
+                                    <Box
+                                      key={`${entry.actionId}-kf-${idx}`}
+                                      sx={{
+                                        position: 'absolute',
+                                        left: `${Math.max(0, Math.min(100, ratio * 100))}%`,
+                                        top: 0,
+                                        width: 2,
+                                        height: 4,
+                                        borderRadius: 0.25,
+                                        transform: 'translateX(-50%)',
+                                        bgcolor: 'rgba(255,255,255,0.9)',
+                                        opacity: 0.95,
+                                      }}
+                                    />
+                                  ))}
+                                </Box>
+                              ) : null}
+
+                              {entry.motionPauseKeyframes && entry.motionPauseKeyframes.length > 0 ? (
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    left: 8,
+                                    right: 8,
+                                    top: -16,
+                                    height: 14,
+                                    pointerEvents: 'none',
+                                  }}
+                                >
+                                  {entry.motionPauseKeyframes.map((pause, idx) => (
+                                    <Tooltip
+                                      key={`${entry.actionId}-pause-${idx}`}
+                                      title={`Pausa en punto ${idx + 1}: ${formatPauseLabel(pause.holdMs)}`}
+                                    >
+                                      <Box
+                                        sx={{
+                                          position: 'absolute',
+                                          left: `${Math.max(0, Math.min(100, pause.ratio * 100))}%`,
+                                          transform: 'translateX(-50%)',
+                                          px: 0.35,
+                                          py: 0.05,
+                                          borderRadius: 0.5,
+                                          bgcolor: 'rgba(17, 24, 39, 0.9)',
+                                          border: '1px solid rgba(255,255,255,0.24)',
+                                          color: '#fff',
+                                          fontSize: '0.52rem',
+                                          lineHeight: 1.15,
+                                          whiteSpace: 'nowrap',
+                                        }}
+                                      >
+                                        {`⏸ ${formatPauseLabel(pause.holdMs)}`}
+                                      </Box>
+                                    </Tooltip>
+                                  ))}
+                                </Box>
+                              ) : null}
 
                               {/* Right Resize Handle */}
                               {isResizable && (
@@ -940,6 +1484,38 @@ export function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEnt
     const durationMs = inferActionDurationMs(action);
     const track = resolveTrack(action);
     const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const canHaveMotion = action.type === 'sendImageToWindow'
+      || action.type === 'sendVideoToWindow'
+      || action.type === 'setNarrativeText';
+    const motionPath = canHaveMotion && Array.isArray(payload.motionPath)
+      ? payload.motionPath
+      : [];
+    const oscillation = canHaveMotion && payload.oscillation && typeof payload.oscillation === 'object'
+      ? (payload.oscillation as Record<string, unknown>)
+      : undefined;
+    const oscillationEnabled = Boolean(oscillation?.enabled);
+    const motionKeyframeCount = motionPath.length;
+    const motionKeyframeRatios = motionPath
+      .map((point) => {
+        if (!point || typeof point !== 'object' || Array.isArray(point)) return null;
+        const timeMs = Number((point as Record<string, unknown>).timeMs);
+        if (!Number.isFinite(timeMs) || durationMs <= 0) return null;
+        return Math.max(0, Math.min(1, timeMs / durationMs));
+      })
+      .filter((value): value is number => value !== null);
+    const motionPauseKeyframes = motionPath
+      .map((point) => {
+        if (!point || typeof point !== 'object' || Array.isArray(point) || durationMs <= 0) return null;
+        const row = point as Record<string, unknown>;
+        const timeMs = Number(row.timeMs);
+        const holdMs = Number(row.holdMs);
+        if (!Number.isFinite(timeMs) || !Number.isFinite(holdMs) || holdMs <= 0) return null;
+        return {
+          ratio: Math.max(0, Math.min(1, timeMs / durationMs)),
+          holdMs: Math.max(0, holdMs),
+        };
+      })
+      .filter((value): value is { ratio: number; holdMs: number } => value !== null);
     const explicitStartMs = Number(payload.timelineStartMs);
     const hasExplicitStart = Number.isFinite(explicitStartMs) && explicitStartMs >= 0;
     const startMs = hasExplicitStart ? Math.round(explicitStartMs) : cursorMs;
@@ -960,6 +1536,15 @@ export function buildTimeline(actions: SceneActionDto[]): { entries: TimelineEnt
         ? {
           narrativeHasRichText: hasNarrativeRichTextDoc(payload),
           narrativeHasStyleOverrides: hasNarrativeStyleOverrides(payload),
+        }
+        : {}),
+      ...(canHaveMotion && (motionKeyframeCount > 0 || oscillationEnabled)
+        ? {
+          hasMotionPath: motionKeyframeCount > 0,
+          hasOscillation: oscillationEnabled,
+          motionKeyframeCount,
+          motionKeyframeRatios,
+          ...(motionPauseKeyframes.length > 0 ? { motionPauseKeyframes } : {}),
         }
         : {}),
     });
@@ -1024,6 +1609,16 @@ function inferTimelineLabel(action: SceneActionDto): string {
     }
   }
 
+  if (action.type === 'applyWindowFilter') {
+    const filter = typeof payload.filter === 'string' ? payload.filter.trim() : '';
+    const intensity = Number(payload.intensity);
+    const intensityLabel = Number.isFinite(intensity)
+      ? ` (${Math.round(Math.max(0, Math.min(1, intensity)) * 100)}%)`
+      : '';
+    if (filter) return `Filter: ${filter}${intensityLabel}`;
+    return 'Filter';
+  }
+
   if (action.type === 'setNarrativeText') {
     const title = typeof payload.title === 'string' ? payload.title.trim() : '';
     if (title) return `Narrative: ${title}`;
@@ -1039,6 +1634,17 @@ function inferTimelineLabel(action: SceneActionDto): string {
   if (action.type === 'playSound') {
     const effectId = typeof payload.effectId === 'string' ? payload.effectId.trim() : '';
     if (effectId) return `SFX: ${effectId}`;
+  }
+
+  if (action.type === 'stopSound') {
+    const effectId = typeof payload.effectId === 'string' ? payload.effectId.trim() : '';
+    if (effectId) return `Stop SFX: ${effectId}`;
+    return 'Stop all SFX';
+  }
+
+  if (action.type === 'playPreset') {
+    const presetId = typeof payload.presetId === 'string' ? payload.presetId.trim() : '';
+    if (presetId) return `Preset: ${presetId}`;
   }
 
   if (action.type === 'runScene') {
@@ -1062,6 +1668,8 @@ function readLayerOrder(payload: Record<string, unknown>, fallback: number): num
 
 function inferActionDurationMs(action: SceneActionDto): number {
   const payload = action.payload ?? {};
+  const motionRequiredDurationMs = inferMotionPathRequiredDurationMs(payload as Record<string, unknown>);
+  const clipDurationMs = Number((payload as Record<string, unknown>).clipDurationMs);
 
   if (action.type === 'delay') {
     return clampMsNumber(payload.durationMs, 1000);
@@ -1069,7 +1677,15 @@ function inferActionDurationMs(action: SceneActionDto): number {
 
   const genericDuration = Number((payload as Record<string, unknown>).durationMs);
   if (Number.isFinite(genericDuration) && genericDuration > 0) {
-    return clampMsNumber(genericDuration, 1400);
+    return clampMsNumber(Math.max(genericDuration, motionRequiredDurationMs), 1400);
+  }
+
+  if (
+    (action.type === 'playMusic' || action.type === 'playPreset' || action.type === 'playSound')
+    && Number.isFinite(clipDurationMs)
+    && clipDurationMs > 0
+  ) {
+    return clampMsNumber(Math.max(clipDurationMs, motionRequiredDurationMs), 1400);
   }
 
   if (action.type === 'sendVideoToWindow') {
@@ -1077,12 +1693,47 @@ function inferActionDurationMs(action: SceneActionDto): number {
     return isLoop ? 6000 : 4000;
   }
 
-  if (action.type === 'setNarrativeText') return 3500;
-  if (action.type === 'playMusic') return 1200;
-  if (action.type === 'playSound') return 1200;
-  if (action.type === 'runScene' || action.type === 'runShortcut') return 1000;
+  if (action.type === 'applyWindowFilter') {
+    const durationMs = Number((payload as Record<string, unknown>).durationMs);
+    if (Number.isFinite(durationMs) && durationMs > 0) {
+      return clampMsNumber(Math.max(durationMs, motionRequiredDurationMs), 2500);
+    }
+    return Math.max(2500, motionRequiredDurationMs);
+  }
 
-  return 900;
+  const baseDuration =
+    action.type === 'setNarrativeText' ? 3500
+      : action.type === 'playMusic' ? 1200
+        : action.type === 'playPreset' ? 1200
+        : action.type === 'playSound' ? 1200
+          : action.type === 'runScene' || action.type === 'runShortcut' ? 1000
+            : 900;
+
+  return Math.max(baseDuration, motionRequiredDurationMs);
+}
+
+function inferMotionPathRequiredDurationMs(payload: Record<string, unknown>): number {
+  const raw = payload.motionPath;
+  if (!Array.isArray(raw) || raw.length === 0) return 0;
+
+  const sorted = raw
+    .filter((item) => item && typeof item === 'object' && !Array.isArray(item))
+    .map((item) => item as Record<string, unknown>)
+    .filter((item) => Number.isFinite(Number(item.timeMs)))
+    .sort((left, right) => Number(left.timeMs) - Number(right.timeMs));
+
+  let totalMs = 0;
+  let previousTimeMs = 0;
+
+  for (const point of sorted) {
+    const timeMs = Math.max(0, Number(point.timeMs));
+    const holdMs = Math.max(0, Number(point.holdMs ?? 0));
+    totalMs += Math.max(0, timeMs - previousTimeMs);
+    totalMs += holdMs;
+    previousTimeMs = timeMs;
+  }
+
+  return Math.max(0, Math.round(totalMs));
 }
 
 function resolveTrack(action: SceneActionDto): { key: string; label: string } {
@@ -1104,7 +1755,7 @@ function resolveTrack(action: SceneActionDto): { key: string; label: string } {
     return { key: 'audio', label: 'Audio' };
   }
 
-  if (action.type === 'playSound') {
+  if (action.type === 'playSound' || action.type === 'playPreset' || action.type === 'stopSound' || action.type === 'setSoundVolume') {
     return { key: 'fx', label: 'Sound FX' };
   }
 
@@ -1177,6 +1828,14 @@ function formatMs(value: number): string {
   const mins = Math.floor(seconds / 60);
   const remSec = seconds % 60;
   return `${String(mins).padStart(2, '0')}:${String(remSec).padStart(2, '0')}`;
+}
+
+function formatPauseLabel(value: number): string {
+  const ms = Math.max(0, Number(value) || 0);
+  if (ms >= 1000) {
+    return `${(ms / 1000).toFixed(1)}s`;
+  }
+  return `${Math.round(ms)}ms`;
 }
 
 function eventHintLabel(snapMs: number): string {

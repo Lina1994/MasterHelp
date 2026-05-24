@@ -20,8 +20,18 @@ import { getCellStreamUrl } from '../api/shops';
 import ChromaKeyMedia from '../components/common/ChromaKeyMedia';
 import { useSceneClockSync } from '../hooks/useSceneClockSync';
 import { useRuntimeSceneVideoWarmup } from '../hooks/useRuntimeSceneVideoWarmup';
+import { buildWindowFilterBackdropStyle } from '../components/scenes/utils/sceneLayerUtils';
+import {
+  normalizeNarratorVoiceConfig,
+  normalizeNarratorVoiceTarget,
+  playNarration,
+  type NarratorPlaybackHandle,
+} from '../components/scenes/utils/narratorPlayback';
 import type { ShortcutActionDefinition } from '../types/actionTypes';
-import type { SceneRuntimeCommand } from '../types/scenes';
+import type { MotionKeyframe, OscillationEffect, SceneRuntimeCommand } from '../types/scenes';
+import { applyOscillation, buildTransformCss, interpolateMotionPath } from '../components/scenes/utils/motionPathUtils';
+import { getAuthHeaders } from '../utils/auth';
+import API_BASE_URL from '../apiBase';
 
 const SHOW_DAY_IN_SKYLINE_KEY = 'diary_showSelectedDayInSkyline';
 const SELECTED_DAY_KEY = 'app.diary.selectedDay';
@@ -30,6 +40,14 @@ type DiarySelectedDayPayload = {
   label: string;
   campaignId: string;
 } | null;
+
+type ShortcutFilterOverlay = {
+  id: string;
+  filter: string;
+  color?: string;
+  intensity?: number;
+  layerOrder?: number;
+};
 
 function loadShowSelectedDayInSkyline(): boolean {
   try {
@@ -58,11 +76,13 @@ function loadSelectedDayPayload(): DiarySelectedDayPayload {
 /** Resolves relative backend media paths into absolute URLs for projection windows. */
 function resolveSceneMediaUrl(rawUrl: string): string {
   if (!rawUrl) return rawUrl;
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
-  if (rawUrl.startsWith('/')) {
-    return `${window.location.protocol}//${window.location.hostname}:3000${rawUrl}`;
-  }
-  return `${window.location.protocol}//${window.location.hostname}:3000/${rawUrl}`;
+  if (/^(https?:|data:|blob:)/i.test(rawUrl)) return rawUrl;
+
+  const base = String(API_BASE_URL ?? '').replace(/\/+$/, '');
+  if (!base) return rawUrl;
+
+  const normalizedPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+  return `${base}${normalizedPath}`;
 }
 
 function parseChromaKey(value: unknown): { enabled: boolean; color: string; tolerance: number } | undefined {
@@ -93,6 +113,66 @@ function clampOpacity(value: unknown, fallback: number): number {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(0, Math.min(1, n));
+}
+
+function parseMotionPath(value: unknown): MotionKeyframe[] | undefined {
+  if (!Array.isArray(value) || value.length === 0) return undefined;
+  const path = value
+    .map((item) => {
+      const row = asRecord(item);
+      if (!row) return null;
+      const timeMs = Number(row.timeMs);
+      const leftPct = Number(row.leftPct);
+      const topPct = Number(row.topPct);
+      const holdMs = Number(row.holdMs);
+      const pauseOscillationDuringHold = row.pauseOscillationDuringHold === undefined
+        ? undefined
+        : Boolean(row.pauseOscillationDuringHold);
+      if (!Number.isFinite(timeMs) || !Number.isFinite(leftPct) || !Number.isFinite(topPct)) {
+        return null;
+      }
+      const rotation = Number(row.rotation);
+      const flipH = row.flipH === undefined ? undefined : Boolean(row.flipH);
+      const flipV = row.flipV === undefined ? undefined : Boolean(row.flipV);
+      const easingRaw = typeof row.easing === 'string' ? row.easing : 'linear';
+      const easing = (
+        easingRaw === 'linear'
+        || easingRaw === 'easeIn'
+        || easingRaw === 'easeOut'
+        || easingRaw === 'easeInOut'
+        || easingRaw === 'bounce'
+        || easingRaw === 'spring'
+      ) ? easingRaw : 'linear';
+      return {
+        timeMs: Math.max(0, timeMs),
+        leftPct,
+        topPct,
+        ...(Number.isFinite(holdMs) ? { holdMs: Math.max(0, holdMs) } : {}),
+        ...(pauseOscillationDuringHold !== undefined ? { pauseOscillationDuringHold } : {}),
+        ...(Number.isFinite(rotation) ? { rotation } : {}),
+        ...(flipH !== undefined ? { flipH } : {}),
+        ...(flipV !== undefined ? { flipV } : {}),
+        easing,
+      } as MotionKeyframe;
+    })
+    .filter((item): item is MotionKeyframe => Boolean(item))
+    .sort((a, b) => a.timeMs - b.timeMs);
+  return path.length > 0 ? path : undefined;
+}
+
+function parseOscillation(value: unknown): OscillationEffect | undefined {
+  const body = asRecord(value);
+  if (!body || !body.enabled) return undefined;
+  const amplitudePct = Number(body.amplitudePct);
+  const frequencyHz = Number(body.frequencyHz);
+  return {
+    enabled: true,
+    type: body.type === 'wave' ? 'wave' : 'bounce',
+    axis: body.axis === 'x' || body.axis === 'both' ? body.axis : 'y',
+    amplitudePct: Number.isFinite(amplitudePct) ? Math.max(0, Math.min(50, amplitudePct)) : 3,
+    frequencyHz: Number.isFinite(frequencyHz) ? Math.max(0.1, Math.min(20, frequencyHz)) : 2,
+    pauseDuringMotionHold: Boolean(body.pauseDuringMotionHold),
+  };
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -190,6 +270,12 @@ interface TimedImageOverlay {
   heightPct: number;
   layerOrder: number;
   createdAtMs: number;
+  rotation?: number;
+  flipH?: boolean;
+  flipV?: boolean;
+  motionPath?: MotionKeyframe[];
+  oscillation?: OscillationEffect;
+  startedAtMs?: number;
 }
 
 interface TimedVideoOverlay {
@@ -208,7 +294,128 @@ interface TimedVideoOverlay {
   heightPct: number;
   layerOrder: number;
   createdAtMs: number;
+  rotation?: number;
+  flipH?: boolean;
+  flipV?: boolean;
+  motionPath?: MotionKeyframe[];
+  oscillation?: OscillationEffect;
+  startedAtMs?: number;
 }
+
+interface AnimatedSceneOverlayProps {
+  overlay: Pick<
+    TimedImageOverlay,
+    | 'leftPct'
+    | 'topPct'
+    | 'widthPct'
+    | 'heightPct'
+    | 'layerOrder'
+    | 'createdAtMs'
+    | 'startedAtMs'
+    | 'rotation'
+    | 'flipH'
+    | 'flipV'
+    | 'motionPath'
+    | 'oscillation'
+  >;
+  zBase?: number;
+  children: React.ReactNode;
+}
+
+/**
+ * Runtime overlay container that applies transform/motion updates using rAF and direct DOM writes.
+ */
+const AnimatedSceneOverlay: React.FC<AnimatedSceneOverlayProps> = ({
+  overlay,
+  zBase = 9000,
+  children,
+}) => {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return undefined;
+
+    const baseRotation = Number.isFinite(Number(overlay.rotation)) ? Number(overlay.rotation) : 0;
+    const flipH = Boolean(overlay.flipH);
+    const flipV = Boolean(overlay.flipV);
+    const path = Array.isArray(overlay.motionPath) ? overlay.motionPath : [];
+    const oscillation = overlay.oscillation;
+    const startedAtMs = Number.isFinite(Number(overlay.startedAtMs))
+      ? Number(overlay.startedAtMs)
+      : Number(overlay.createdAtMs);
+
+    let rafId = 0;
+    const tick = () => {
+      const elapsedMs = Math.max(0, Date.now() - startedAtMs);
+      const motion = path.length > 0
+        ? interpolateMotionPath(
+          { leftPct: overlay.leftPct, topPct: overlay.topPct },
+          path,
+          elapsedMs,
+          { rotation: baseRotation, flipH, flipV },
+          { defaultPauseOscillationDuringHold: Boolean(oscillation?.pauseDuringMotionHold) },
+        )
+        : {
+          leftPct: overlay.leftPct,
+          topPct: overlay.topPct,
+          rotation: baseRotation,
+          flipH,
+          flipV,
+          oscillationElapsedMs: elapsedMs,
+        };
+      const oscillated = applyOscillation(
+        { leftPct: motion.leftPct, topPct: motion.topPct },
+        oscillation,
+        Math.max(0, Number(motion.oscillationElapsedMs ?? elapsedMs)),
+      );
+      host.style.left = `${oscillated.leftPct}%`;
+      host.style.top = `${oscillated.topPct}%`;
+      host.style.transform = buildTransformCss(motion.rotation, motion.flipH, motion.flipV);
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    tick();
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, [
+    overlay.createdAtMs,
+    overlay.flipH,
+    overlay.flipV,
+    overlay.heightPct,
+    overlay.layerOrder,
+    overlay.leftPct,
+    overlay.motionPath,
+    overlay.oscillation,
+    overlay.rotation,
+    overlay.startedAtMs,
+    overlay.topPct,
+    overlay.widthPct,
+  ]);
+
+  return (
+    <Box
+      ref={hostRef}
+      sx={{
+        position: 'absolute',
+        left: `${overlay.leftPct}%`,
+        top: `${overlay.topPct}%`,
+        width: `${overlay.widthPct}%`,
+        height: `${overlay.heightPct}%`,
+        zIndex: zBase + (overlay.layerOrder ?? 100),
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+        transformOrigin: 'center center',
+        willChange: 'left, top, transform',
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
 
 const ProjectionSkylinePage: React.FC = () => {
   const { activeMapId, refreshFromServer } = useActiveMap();
@@ -282,11 +489,14 @@ const ProjectionSkylinePage: React.FC = () => {
   const [shortcutImageOverlays, setShortcutImageOverlays] = useState<TimedImageOverlay[]>([]);
   const [shortcutTextOverlay, setShortcutTextOverlay] = useState<NarrativeTextOverlay | null>(null);
   const shortcutTextExecutionIdRef = useRef<string | null>(null);
-  const [shortcutFilterOverlay, setShortcutFilterOverlay] = useState<{ filter: string; color?: string; intensity?: number } | null>(null);
+  const [shortcutFilterOverlays, setShortcutFilterOverlays] = useState<ShortcutFilterOverlay[]>([]);
   const [shortcutVideoOverlays, setShortcutVideoOverlays] = useState<TimedVideoOverlay[]>([]);
   const shortcutImageTimeoutsRef = useRef<Map<string, number>>(new Map());
+  const shortcutImageObjectUrlsRef = useRef<Map<string, string>>(new Map());
   const shortcutTextTimeoutRef = useRef<number | null>(null);
+  const narrationHandlesByExecutionRef = useRef<Map<string, Set<NarratorPlaybackHandle>>>(new Map());
   const shortcutVideoTimeoutsRef = useRef<Map<string, number>>(new Map());
+  const shortcutFilterTimeoutsRef = useRef<Map<string, number>>(new Map());
   const introPlayedActionsByExecutionRef = useRef<Map<string, Set<string>>>(new Map());
   const {
     preloadVideoForOverlay,
@@ -308,6 +518,43 @@ const ProjectionSkylinePage: React.FC = () => {
   useEffect(() => {
     sceneClockSyncStateRef.current = sceneClockSync;
   }, [sceneClockSync]);
+
+  const clearShortcutFilterOverlays = useCallback(() => {
+    shortcutFilterTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    shortcutFilterTimeoutsRef.current.clear();
+    setShortcutFilterOverlays([]);
+  }, []);
+
+  const upsertShortcutFilterOverlay = useCallback((overlay: ShortcutFilterOverlay & { durationMs?: number }) => {
+    const overlayId = overlay.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const nextOverlay: ShortcutFilterOverlay = {
+      id: overlayId,
+      filter: overlay.filter,
+      ...(overlay.color !== undefined ? { color: overlay.color } : {}),
+      ...(overlay.intensity !== undefined ? { intensity: overlay.intensity } : {}),
+      ...(overlay.layerOrder !== undefined ? { layerOrder: overlay.layerOrder } : {}),
+    };
+
+    const existingTimeoutId = shortcutFilterTimeoutsRef.current.get(overlayId);
+    if (existingTimeoutId !== undefined) {
+      window.clearTimeout(existingTimeoutId);
+      shortcutFilterTimeoutsRef.current.delete(overlayId);
+    }
+
+    setShortcutFilterOverlays((current) => {
+      const nextWithoutCurrent = current.filter((item) => item.id !== overlayId);
+      return [...nextWithoutCurrent, nextOverlay];
+    });
+
+    const durationMs = Math.max(0, Number(overlay.durationMs ?? 0));
+    if (durationMs > 0) {
+      const timeoutId = window.setTimeout(() => {
+        shortcutFilterTimeoutsRef.current.delete(overlayId);
+        setShortcutFilterOverlays((current) => current.filter((item) => item.id !== overlayId));
+      }, durationMs);
+      shortcutFilterTimeoutsRef.current.set(overlayId, timeoutId);
+    }
+  }, []);
   const sceneCommandDedupRef = useRef<Set<string>>(new Set());
   const sceneCommandDedupOrderRef = useRef<string[]>([]);
   const sceneClockOffsetByExecutionRef = useRef<Map<string, number>>(new Map());
@@ -554,7 +801,28 @@ const ProjectionSkylinePage: React.FC = () => {
         clearShortcutTextOverlay();
       }
 
+      const narrationHandles = narrationHandlesByExecutionRef.current.get(executionId);
+      if (narrationHandles) {
+        narrationHandles.forEach((handle) => handle.stop());
+        narrationHandlesByExecutionRef.current.delete(executionId);
+      }
+
       introPlayedActionsByExecutionRef.current.delete(executionId);
+    };
+
+    const registerNarrationHandle = (executionId: string | undefined, handle: NarratorPlaybackHandle) => {
+      if (!executionId) return;
+      const set = narrationHandlesByExecutionRef.current.get(executionId) ?? new Set<NarratorPlaybackHandle>();
+      set.add(handle);
+      narrationHandlesByExecutionRef.current.set(executionId, set);
+      void handle.finished.finally(() => {
+        const currentSet = narrationHandlesByExecutionRef.current.get(executionId);
+        if (!currentSet) return;
+        currentSet.delete(handle);
+        if (currentSet.size === 0) {
+          narrationHandlesByExecutionRef.current.delete(executionId);
+        }
+      });
     };
 
     const hasIntroBeenPlayed = (executionId: string, actionId: string): boolean => {
@@ -569,9 +837,20 @@ const ProjectionSkylinePage: React.FC = () => {
     };
 
     const clearShortcutImageOverlay = (overlayKey?: string) => {
+      const revokeObjectUrlForKey = (key: string) => {
+        const objectUrl = shortcutImageObjectUrlsRef.current.get(key);
+        if (!objectUrl) return;
+        URL.revokeObjectURL(objectUrl);
+        shortcutImageObjectUrlsRef.current.delete(key);
+      };
+
       if (!overlayKey) {
         shortcutImageTimeoutsRef.current.forEach((timerId) => window.clearTimeout(timerId));
         shortcutImageTimeoutsRef.current.clear();
+        shortcutImageObjectUrlsRef.current.forEach((objectUrl) => {
+          URL.revokeObjectURL(objectUrl);
+        });
+        shortcutImageObjectUrlsRef.current.clear();
         setShortcutImageOverlays([]);
         return;
       }
@@ -581,6 +860,7 @@ const ProjectionSkylinePage: React.FC = () => {
         window.clearTimeout(timerId);
         shortcutImageTimeoutsRef.current.delete(overlayKey);
       }
+      revokeObjectUrlForKey(overlayKey);
       setShortcutImageOverlays((current) => current.filter((overlay) => overlay.key !== overlayKey));
     };
 
@@ -625,6 +905,16 @@ const ProjectionSkylinePage: React.FC = () => {
         window.clearTimeout(previousTimerId);
       }
 
+      const previousObjectUrl = shortcutImageObjectUrlsRef.current.get(overlayKey);
+      if (previousObjectUrl && previousObjectUrl !== next.src) {
+        URL.revokeObjectURL(previousObjectUrl);
+        shortcutImageObjectUrlsRef.current.delete(overlayKey);
+      }
+
+      if (next.src.startsWith('blob:')) {
+        shortcutImageObjectUrlsRef.current.set(overlayKey, next.src);
+      }
+
       setShortcutImageOverlays((current) => {
         const withoutCurrent = current.filter((overlay) => overlay.key !== overlayKey);
         return [
@@ -638,10 +928,39 @@ const ProjectionSkylinePage: React.FC = () => {
       });
 
       const timeoutId = window.setTimeout(() => {
+        const objectUrl = shortcutImageObjectUrlsRef.current.get(overlayKey);
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          shortcutImageObjectUrlsRef.current.delete(overlayKey);
+        }
         setShortcutImageOverlays((current) => current.filter((overlay) => overlay.key !== overlayKey));
         shortcutImageTimeoutsRef.current.delete(overlayKey);
       }, timeout);
       shortcutImageTimeoutsRef.current.set(overlayKey, timeoutId);
+    };
+
+    const resolveAuthenticatedImageOverlaySrc = async (rawUrl: string): Promise<string> => {
+      const resolvedUrl = resolveSceneMediaUrl(rawUrl);
+      try {
+        const authHeaders = getAuthHeaders();
+        const headers: Record<string, string> = {};
+        if (typeof authHeaders.Authorization === 'string' && authHeaders.Authorization.length > 0) {
+          headers.Authorization = authHeaders.Authorization;
+        }
+        const response = await fetch(resolvedUrl, {
+          method: 'GET',
+          headers,
+          cache: 'no-store',
+        });
+        if (!response.ok) {
+          throw new Error(`Image fetch failed (${response.status})`);
+        }
+        const blob = await response.blob();
+        if (!blob.size) return resolvedUrl;
+        return URL.createObjectURL(blob);
+      } catch {
+        return resolvedUrl;
+      }
     };
 
     const setTimedShortcutTextOverlay = (next: NarrativeTextOverlay, durationMs?: number) => {
@@ -745,7 +1064,15 @@ const ProjectionSkylinePage: React.FC = () => {
         const topPct = clampFreePlacement(body.topPct ?? 10, 10);
         const widthPct = clampFreeSize(body.widthPct ?? 80, 80);
         const heightPct = clampFreeSize(body.heightPct ?? 80, 80);
-        const layerOrder = Number.isFinite(Number(body.layerOrder)) ? Math.round(Number(body.layerOrder)) : 0;
+        const rotation = Number.isFinite(Number(body.rotation)) ? Number(body.rotation) : 0;
+        const flipH = Boolean(body.flipH);
+        const flipV = Boolean(body.flipV);
+        const motionPath = parseMotionPath(body.motionPath);
+        const oscillation = parseOscillation(body.oscillation);
+        const sequenceLayerOrder = Number(sceneCommand.sequence);
+        const layerOrder = Number.isFinite(Number(body.layerOrder))
+          ? Math.round(Number(body.layerOrder))
+          : (Number.isFinite(sequenceLayerOrder) ? Math.round(sequenceLayerOrder) : 0);
         const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
         const explicitStartAtSec = Number(body.startAtSec);
         const clipInSecRaw = Number(body.clipInSec);
@@ -828,6 +1155,12 @@ const ProjectionSkylinePage: React.FC = () => {
               widthPct,
               heightPct,
               layerOrder,
+              rotation,
+              flipH,
+              flipV,
+              ...(motionPath ? { motionPath } : {}),
+              ...(oscillation ? { oscillation } : {}),
+              startedAtMs: Date.now(),
             },
             loop ? undefined : durationMs,
           );
@@ -858,21 +1191,48 @@ const ProjectionSkylinePage: React.FC = () => {
         }
         const overlayKey = sceneCommand.actionId || commandKey(sceneCommand);
         registerExecutionOverlayKey(executionImageOverlayKeysRef, sceneCommand.executionId, overlayKey);
-        const name = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : 'Imagen';
+        const name = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : '';
         const opacity = Math.max(0, Math.min(1, Number(body.opacity ?? 1)));
         const chromaKey = parseChromaKey(body.chromaKey);
         const leftPct = clampFreePlacement(body.leftPct ?? 10, 10);
         const topPct = clampFreePlacement(body.topPct ?? 10, 10);
         const widthPct = clampFreeSize(body.widthPct ?? 80, 80);
         const heightPct = clampFreeSize(body.heightPct ?? 80, 80);
-        const layerOrder = Number.isFinite(Number(body.layerOrder)) ? Math.round(Number(body.layerOrder)) : 0;
+        const rotation = Number.isFinite(Number(body.rotation)) ? Number(body.rotation) : 0;
+        const flipH = Boolean(body.flipH);
+        const flipV = Boolean(body.flipV);
+        const motionPath = parseMotionPath(body.motionPath);
+        const oscillation = parseOscillation(body.oscillation);
+        const sequenceLayerOrder = Number(sceneCommand.sequence);
+        const layerOrder = Number.isFinite(Number(body.layerOrder))
+          ? Math.round(Number(body.layerOrder))
+          : (Number.isFinite(sequenceLayerOrder) ? Math.round(sequenceLayerOrder) : 0);
         const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
         scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
-          setTimedShortcutImageOverlay(
-            overlayKey,
-            { src: resolveSceneMediaUrl(imageUrl), name, opacity, chromaKey, leftPct, topPct, widthPct, heightPct, layerOrder },
-            durationMs,
-          );
+          void (async () => {
+            const runtimeImageSrc = await resolveAuthenticatedImageOverlaySrc(imageUrl);
+            setTimedShortcutImageOverlay(
+              overlayKey,
+              {
+                src: runtimeImageSrc,
+                name,
+                opacity,
+                chromaKey,
+                leftPct,
+                topPct,
+                widthPct,
+                heightPct,
+                layerOrder,
+                rotation,
+                flipH,
+                flipV,
+                ...(motionPath ? { motionPath } : {}),
+                ...(oscillation ? { oscillation } : {}),
+                startedAtMs: Date.now(),
+              },
+              durationMs,
+            );
+          })();
         }, 'window.sendImage', getLateExecutionPolicy(sceneCommand, durationMs));
         return;
       }
@@ -924,13 +1284,25 @@ const ProjectionSkylinePage: React.FC = () => {
             paddingPx: Number.isFinite(Number(body.paddingPx)) ? Math.max(0, Math.min(64, Number(body.paddingPx))) : 16,
             segments,
           }, durationMs);
+
+          const voiceTarget = normalizeNarratorVoiceTarget(body.voiceTarget);
+          const shouldPlayProjectionVoice = voiceTarget === 'projection' || voiceTarget === 'both';
+          if (shouldPlayProjectionVoice && text) {
+            void playNarration({
+              text,
+              voiceConfig: normalizeNarratorVoiceConfig(body.voiceConfig as Record<string, unknown>),
+              locale: navigator.language,
+            }).then((handle) => {
+              registerNarrationHandle(sceneCommand.executionId, handle);
+            }).catch(() => {});
+          }
         }, 'narrative.setText', getLateExecutionPolicy(sceneCommand, durationMs));
         return;
       }
 
       if (sceneCommand?.kind === 'window.clearFilter') {
         scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
-          setShortcutFilterOverlay(null);
+          clearShortcutFilterOverlays();
         }, 'window.clearFilter');
         return;
       }
@@ -941,8 +1313,17 @@ const ProjectionSkylinePage: React.FC = () => {
         if (!filter) return;
         const color = typeof body.color === 'string' ? body.color : undefined;
         const intensity = typeof body.intensity === 'number' ? body.intensity : undefined;
+        const layerOrder = Number.isFinite(Number(body.layerOrder)) ? Math.round(Number(body.layerOrder)) : undefined;
+        const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
         scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
-          setShortcutFilterOverlay({ filter, color, intensity });
+          upsertShortcutFilterOverlay({
+            id: sceneCommand.actionId || `${sceneCommand.kind}-${sceneCommand.executeAtMs ?? Date.now()}`,
+            filter,
+            color,
+            intensity,
+            ...(layerOrder !== undefined ? { layerOrder } : {}),
+            ...(durationMs !== undefined ? { durationMs } : {}),
+          });
         }, 'window.applyFilter');
         return;
       }
@@ -963,7 +1344,7 @@ const ProjectionSkylinePage: React.FC = () => {
       const body = (action.payload ?? action.config ?? {}) as Record<string, unknown>;
 
       if (action.kind === 'window.clearFilter') {
-        setShortcutFilterOverlay(null);
+        clearShortcutFilterOverlays();
         return;
       }
 
@@ -972,7 +1353,16 @@ const ProjectionSkylinePage: React.FC = () => {
         if (!filter) return;
         const color = typeof body.color === 'string' ? body.color : undefined;
         const intensity = typeof body.intensity === 'number' ? body.intensity : undefined;
-        setShortcutFilterOverlay({ filter, color, intensity });
+        const layerOrder = Number.isFinite(Number(body.layerOrder)) ? Math.round(Number(body.layerOrder)) : undefined;
+        const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+        upsertShortcutFilterOverlay({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          filter,
+          color,
+          intensity,
+          ...(layerOrder !== undefined ? { layerOrder } : {}),
+          ...(durationMs !== undefined ? { durationMs } : {}),
+        });
         return;
       }
 
@@ -1080,10 +1470,16 @@ const ProjectionSkylinePage: React.FC = () => {
       clearShortcutImageOverlay();
       clearShortcutTextOverlay();
       clearShortcutVideoOverlay();
+      shortcutFilterTimeoutsRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      shortcutFilterTimeoutsRef.current.clear();
       shortcutImageTimeoutsRef.current.forEach((timerId) => window.clearTimeout(timerId));
       shortcutImageTimeoutsRef.current.clear();
       shortcutVideoTimeoutsRef.current.forEach((timerId) => window.clearTimeout(timerId));
       shortcutVideoTimeoutsRef.current.clear();
+      narrationHandlesByExecutionRef.current.forEach((handles) => {
+        handles.forEach((handle) => handle.stop());
+      });
+      narrationHandlesByExecutionRef.current.clear();
       clearWarmupCache();
     };
   }, [
@@ -1094,38 +1490,6 @@ const ProjectionSkylinePage: React.FC = () => {
     rawCampaignId,
     releaseOverlayVideo,
   ]);
-
-  const shortcutFilterStyle = useMemo(() => {
-    if (!shortcutFilterOverlay) return undefined;
-    const name = shortcutFilterOverlay.filter.toLowerCase();
-    const intensity = Math.max(0, Math.min(1, Number(shortcutFilterOverlay.intensity ?? 1)));
-    const opacity = 0.08 + (0.32 * intensity);
-    const color = shortcutFilterOverlay.color || 'transparent';
-
-    const filterMap: Record<string, string> = {
-      grayscale: `grayscale(${Math.round(intensity * 100)}%)`,
-      sepia: `sepia(${Math.round(intensity * 100)}%)`,
-      blur: `blur(${(intensity * 8).toFixed(1)}px)`,
-      brightness: `brightness(${(0.6 + intensity).toFixed(2)})`,
-      contrast: `contrast(${(1 + intensity).toFixed(2)})`,
-      saturate: `saturate(${(1 + intensity * 1.5).toFixed(2)})`,
-      hue: `hue-rotate(${Math.round(intensity * 180)}deg)`,
-      hue_rotate: `hue-rotate(${Math.round(intensity * 180)}deg)`,
-      invert: `invert(${Math.round(intensity * 100)}%)`,
-    };
-
-    const filterCss = filterMap[name] || '';
-    return {
-      position: 'absolute' as const,
-      inset: 0,
-      zIndex: 7000,
-      pointerEvents: 'none' as const,
-      backdropFilter: filterCss || undefined,
-      WebkitBackdropFilter: filterCss || undefined,
-      backgroundColor: color === 'transparent' ? `rgba(0,0,0,${opacity.toFixed(3)})` : color,
-      mixBlendMode: color === 'transparent' ? 'normal' as const : 'multiply' as const,
-    };
-  }, [shortcutFilterOverlay]);
 
   useEffect(() => {
     let cid = new URLSearchParams(window.location.search).get('campaignId');
@@ -1911,7 +2275,21 @@ const ProjectionSkylinePage: React.FC = () => {
         <Typography variant="h4" color="white">Sin mapa activo</Typography>
       )}
 
-      {shortcutFilterStyle ? <Box sx={shortcutFilterStyle} /> : null}
+      {shortcutFilterOverlays
+        .slice()
+        .sort((left, right) => (left.layerOrder ?? 100) - (right.layerOrder ?? 100) || left.id.localeCompare(right.id))
+        .map((overlay) => (
+        <Box
+          key={overlay.id}
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 9000 + (overlay.layerOrder ?? 100),
+            pointerEvents: 'none',
+            ...buildWindowFilterBackdropStyle(overlay.filter, overlay.intensity, overlay.color),
+          }}
+        />
+      ))}
 
       {shortcutTextOverlay ? (
         <Box
@@ -2044,31 +2422,12 @@ const ProjectionSkylinePage: React.FC = () => {
       {shortcutImageOverlays
         .slice()
         .sort((a, b) => a.layerOrder - b.layerOrder || a.createdAtMs - b.createdAtMs)
-        .map((overlay, index) => (
-          <Box
-            key={overlay.key}
-            sx={{
-              position: 'absolute',
-              left: `${overlay.leftPct}%`,
-              top: `${overlay.topPct}%`,
-              width: `${overlay.widthPct}%`,
-              height: `${overlay.heightPct}%`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'none',
-              zIndex: 9000 + (overlay.layerOrder ?? 100),
-            }}
-          >
+        .map((overlay) => (
+          <AnimatedSceneOverlay key={overlay.key} overlay={overlay}>
             <Box
               sx={{
                 width: '100%',
                 height: '100%',
-                px: 1.5,
-                py: 1,
-                bgcolor: 'rgba(0,0,0,0.55)',
-                borderRadius: 2,
-                boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
               }}
             >
               <ChromaKeyMedia
@@ -2085,31 +2444,29 @@ const ProjectionSkylinePage: React.FC = () => {
                   setShortcutImageOverlays((current) => current.filter((item) => item.key !== overlay.key));
                 }}
               />
-              <Typography variant="subtitle1" color="white" sx={{ mt: 1, textAlign: 'center' }}>
-                {overlay.name}
-              </Typography>
+              {overlay.name ? (
+                <Typography
+                  variant="subtitle2"
+                  color="white"
+                  sx={{
+                    mt: 0.75,
+                    textAlign: 'center',
+                    textShadow: '0 1px 6px rgba(0,0,0,0.8)',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {overlay.name}
+                </Typography>
+              ) : null}
             </Box>
-          </Box>
+          </AnimatedSceneOverlay>
         ))}
 
       {shortcutVideoOverlays
         .slice()
         .sort((a, b) => a.layerOrder - b.layerOrder || a.createdAtMs - b.createdAtMs)
-        .map((overlay, index) => (
-          <Box
-            key={overlay.key}
-            sx={{
-              position: 'absolute',
-              left: `${overlay.leftPct}%`,
-              top: `${overlay.topPct}%`,
-              width: `${overlay.widthPct}%`,
-              height: `${overlay.heightPct}%`,
-              zIndex: 9000 + (overlay.layerOrder ?? 100),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        .map((overlay) => (
+          <AnimatedSceneOverlay key={overlay.key} overlay={overlay}>
             <ChromaKeyMedia
               kind="video"
               src={resolveVideoSrc(overlay.key, overlay.src)}
@@ -2143,7 +2500,7 @@ const ProjectionSkylinePage: React.FC = () => {
                 setShortcutVideoOverlays((current) => current.filter((item) => item.key !== overlay.key));
               }}
             />
-          </Box>
+          </AnimatedSceneOverlay>
         ))}
 
       {showSongTitle && nowPlayingTitle ? (

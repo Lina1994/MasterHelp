@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { alpha } from '@mui/material/styles';
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import type { SceneActionDto } from '../../../types/scenes';
 import type { WindowSize } from '../../../hooks/useSecondaryWindowSizes';
 import ChromaKeyMedia from '../../common/ChromaKeyMedia';
 import type { LeftToolPanelMode, NarrativeCanvasDraft } from '../hooks/useSceneDraft';
 import {
+  buildWindowFilterBackdropStyle,
   getChromaFromPayload,
   getNarrativeSegments,
   getPlacementFromPayload,
   normalizeFreePlacement,
   normalizeOpacity,
 } from '../utils/sceneLayerUtils';
+import {
+  applyOscillation,
+  buildTransformCss,
+  getMotionPathFromPayload,
+  getOscillationFromPayload,
+  getTransformFromPayload,
+  interpolateMotionPath,
+} from '../utils/motionPathUtils';
 import { resolveSceneMediaUrl, toNonNegativeMs, toNonNegativeSec } from '../utils/sceneEditorUtils';
 
 export type TimelineEntryRange = {
@@ -29,6 +38,13 @@ interface ScenePreviewLayersRendererProps {
   setChromaPickActionId: (next: string | null) => void;
   selectActionAndSeekToStart: (actionId: string) => void;
   startLayerDrag: (action: SceneActionDto, mode: 'move' | 'resize', event: React.MouseEvent<HTMLElement>) => void;
+  startMotionKeyframeDrag: (actionId: string, keyframeIndex: number, event: React.MouseEvent<HTMLElement>) => void;
+  addMotionKeyframeAtPreview: (actionId: string, leftPct: number, topPct: number) => void;
+  removeMotionKeyframeAtPreview: (actionId: string, keyframeIndex: number) => void;
+  toggleMotionKeyframeFlipAtPreview: (actionId: string, keyframeIndex: number, axis: 'h' | 'v') => void;
+  updateMotionKeyframeHoldAtPreview: (actionId: string, keyframeIndex: number, holdMs: number) => void;
+  toggleMotionKeyframeOscillationPauseAtPreview: (actionId: string, keyframeIndex: number) => void;
+  propagateMotionKeyframeFlipFromPreview: (actionId: string, keyframeIndex: number, axis: 'h' | 'v') => void;
   updateActionById: (actionId: string, updater: (currentAction: SceneActionDto) => SceneActionDto) => void;
   previewMediaUrlsByActionId: Record<string, string>;
   videoPreviewErrorsByActionId: Record<string, string | undefined>;
@@ -46,6 +62,7 @@ interface ScenePreviewLayersRendererProps {
   finishNarrativeCanvasEdit: (mode: 'save' | 'cancel') => void;
   previewWindowSize: WindowSize;
   previewScale: number;
+  isSelectionModifierPressed: boolean;
 }
 
 /**
@@ -64,6 +81,13 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
   setChromaPickActionId,
   selectActionAndSeekToStart,
   startLayerDrag,
+  startMotionKeyframeDrag,
+  addMotionKeyframeAtPreview,
+  removeMotionKeyframeAtPreview,
+  toggleMotionKeyframeFlipAtPreview,
+  updateMotionKeyframeHoldAtPreview,
+  toggleMotionKeyframeOscillationPauseAtPreview,
+  propagateMotionKeyframeFlipFromPreview,
   updateActionById,
   previewMediaUrlsByActionId,
   videoPreviewErrorsByActionId,
@@ -81,7 +105,42 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
   finishNarrativeCanvasEdit,
   previewWindowSize,
   previewScale,
+  isSelectionModifierPressed,
 }) => {
+  const [selectedKeyframeIndex, setSelectedKeyframeIndex] = useState<number | null>(null);
+  const flipClickTimersRef = useRef<{ h: number | null; v: number | null }>({ h: null, v: null });
+  const keyframeOpenedOnMouseDownRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (flipClickTimersRef.current.h !== null) {
+        window.clearTimeout(flipClickTimersRef.current.h);
+      }
+      if (flipClickTimersRef.current.v !== null) {
+        window.clearTimeout(flipClickTimersRef.current.v);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setSelectedKeyframeIndex(null);
+  }, [selectedActionId]);
+
+  const canSwitchSelection = (
+    event: React.MouseEvent<HTMLElement>,
+    isSelected: boolean,
+  ): boolean => {
+    if (isSelected) return true;
+    if (!selectedActionId) return true;
+    return event.ctrlKey || event.metaKey || isSelectionModifierPressed;
+  };
+
+  const canCapturePointer = (isSelected: boolean): boolean => {
+    if (isSelected) return true;
+    if (!selectedActionId) return true;
+    return isSelectionModifierPressed;
+  };
+
   if (previewRenderableActions.length === 0) {
     return (
       <Stack sx={{ width: '100%', height: '100%' }} alignItems="center" justifyContent="center">
@@ -92,8 +151,307 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
     );
   }
 
+  const selectedAction = selectedActionId
+    ? previewRenderableActions.find((action) => action.id === selectedActionId)
+    : undefined;
+  const selectedPayload = (selectedAction?.payload ?? {}) as Record<string, unknown>;
+  const selectedMotionPath = selectedAction ? getMotionPathFromPayload(selectedPayload) : [];
+  const selectedPathOrigin = selectedAction
+    ? selectedAction.type === 'setNarrativeText'
+      ? (() => {
+        const placement = getPlacementFromPayload(selectedPayload);
+        return { leftPct: placement.leftPct, topPct: placement.topPct };
+      })()
+      : {
+        leftPct: normalizeFreePlacement(selectedPayload.leftPct, 10),
+        topPct: normalizeFreePlacement(selectedPayload.topPct, 10),
+      }
+    : { leftPct: 10, topPct: 10 };
+  const selectedPathPoints = selectedMotionPath.length > 0
+    ? [{ leftPct: selectedPathOrigin.leftPct, topPct: selectedPathOrigin.topPct }, ...selectedMotionPath]
+    : [];
+  const selectedCanEditMotion = Boolean(
+    selectedAction
+    && (
+      selectedAction.type === 'sendImageToWindow'
+      || selectedAction.type === 'sendVideoToWindow'
+      || selectedAction.type === 'setNarrativeText'
+    ),
+  );
+
+  const handlePathDoubleClick = (event: React.MouseEvent<SVGPolylineElement>) => {
+    if (!selectedAction || !selectedCanEditMotion) return;
+    const svg = event.currentTarget.ownerSVGElement;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    const leftPct = ((event.clientX - rect.left) / rect.width) * 100;
+    const topPct = ((event.clientY - rect.top) / rect.height) * 100;
+    addMotionKeyframeAtPreview(
+      selectedAction.id,
+      Math.max(-200, Math.min(200, leftPct)),
+      Math.max(-200, Math.min(200, topPct)),
+    );
+    setSelectedKeyframeIndex(selectedMotionPath.length);
+  };
+
+  const handleFlipButtonClick = (axis: 'h' | 'v') => {
+    if (!selectedAction || selectedKeyframeIndex === null) return;
+    const timerId = flipClickTimersRef.current[axis];
+    if (timerId !== null) {
+      window.clearTimeout(timerId);
+      flipClickTimersRef.current[axis] = null;
+      propagateMotionKeyframeFlipFromPreview(selectedAction.id, selectedKeyframeIndex, axis);
+      return;
+    }
+
+    flipClickTimersRef.current[axis] = window.setTimeout(() => {
+      flipClickTimersRef.current[axis] = null;
+      toggleMotionKeyframeFlipAtPreview(selectedAction.id, selectedKeyframeIndex, axis);
+    }, 220);
+  };
+
   return (
     <>
+      {selectedPathPoints.length > 1 ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 9999,
+          }}
+        >
+          <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {selectedCanEditMotion ? (
+              <polyline
+                points={selectedPathPoints.map((point) => `${point.leftPct},${point.topPct}`).join(' ')}
+                fill="none"
+                stroke="rgba(0,0,0,0)"
+                strokeWidth="4"
+                style={{ pointerEvents: 'stroke', cursor: 'copy' }}
+                onDoubleClick={handlePathDoubleClick}
+              />
+            ) : null}
+            <polyline
+              points={selectedPathPoints.map((point) => `${point.leftPct},${point.topPct}`).join(' ')}
+              fill="none"
+              stroke="rgba(255,255,255,0.75)"
+              strokeWidth="0.35"
+              strokeDasharray="1.2 1"
+            />
+            {selectedPathPoints.map((point, index) => (
+              <circle
+                key={`motion-path-kf-${index}`}
+                cx={point.leftPct}
+                cy={point.topPct}
+                r={index === 0 ? 0.9 : 0.7}
+                fill={index === 0 ? 'rgba(0,191,255,0.95)' : 'rgba(255,255,255,0.95)'}
+                stroke="rgba(0,0,0,0.35)"
+                strokeWidth="0.25"
+              />
+            ))}
+          </svg>
+          {selectedCanEditMotion
+            ? selectedMotionPath.map((keyframe, index) => (
+              <Box
+                key={`motion-path-handle-${index}`}
+                sx={{
+                  position: 'absolute',
+                  left: `${keyframe.leftPct}%`,
+                  top: `${keyframe.topPct}%`,
+                  width: 14,
+                  height: 14,
+                  borderRadius: '50%',
+                  border: '1px solid rgba(0,0,0,0.45)',
+                  bgcolor: 'rgba(255,255,255,0.98)',
+                  transform: 'translate(-50%, -50%)',
+                  boxShadow: '0 0 0 1px rgba(255,255,255,0.3), 0 1px 3px rgba(0,0,0,0.35)',
+                  cursor: 'grab',
+                  pointerEvents: 'auto',
+                  zIndex: 10000,
+                  outline: selectedKeyframeIndex === index
+                    ? '2px solid rgba(255, 215, 64, 0.95)'
+                    : 'none',
+                }}
+                title={`Arrastra para mover. Click derecho para eliminar${keyframe.pauseOscillationDuringHold ? ' | Oscilación congelada durante pausa' : ''}`}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (event.button !== 0) return;
+                  if (!selectedAction) return;
+                  if (selectedKeyframeIndex === index) {
+                    keyframeOpenedOnMouseDownRef.current = null;
+                    return;
+                  }
+                  keyframeOpenedOnMouseDownRef.current = index;
+                  setSelectedKeyframeIndex(index);
+                  startMotionKeyframeDrag(selectedAction.id, index, event);
+                }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (keyframeOpenedOnMouseDownRef.current === index) {
+                    keyframeOpenedOnMouseDownRef.current = null;
+                    setSelectedKeyframeIndex(index);
+                    return;
+                  }
+                  setSelectedKeyframeIndex((current) => (current === index ? null : index));
+                }}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (!selectedAction) return;
+                  removeMotionKeyframeAtPreview(selectedAction.id, index);
+                  setSelectedKeyframeIndex((current) => {
+                    if (current === null) return current;
+                    if (current === index) return null;
+                    return current > index ? current - 1 : current;
+                  });
+                }}
+              >
+                {keyframe.pauseOscillationDuringHold ? (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      right: -4,
+                      top: -4,
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      bgcolor: 'rgba(17, 24, 39, 0.95)',
+                      border: '1px solid rgba(255,255,255,0.8)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.35rem',
+                      fontWeight: 800,
+                      color: '#fff',
+                      lineHeight: 1,
+                      pointerEvents: 'none',
+                    }}
+                    aria-hidden="true"
+                  >
+                    ||
+                  </Box>
+                ) : null}
+              </Box>
+            ))
+            : null}
+
+          {selectedCanEditMotion && selectedAction && selectedKeyframeIndex !== null && selectedMotionPath[selectedKeyframeIndex] ? (
+            <Box
+              sx={{
+                position: 'absolute',
+                left: `${selectedMotionPath[selectedKeyframeIndex].leftPct}%`,
+                top: `${selectedMotionPath[selectedKeyframeIndex].topPct}%`,
+                transform: `translate(-50%, -155%) scale(${1 / Math.max(0.01, previewScale)})`,
+                transformOrigin: 'center bottom',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                bgcolor: 'rgba(14, 18, 28, 0.9)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                borderRadius: 1,
+                px: 0.5,
+                py: 0.35,
+                pointerEvents: 'auto',
+                zIndex: 10010,
+              }}
+            >
+              <Tooltip title="Pausa en este punto (ms) antes de seguir al siguiente.">
+                <TextField
+                  size="small"
+                  type="number"
+                  value={Math.max(0, Number(selectedMotionPath[selectedKeyframeIndex].holdMs ?? 0))}
+                  inputProps={{ min: 0, max: 60000, step: 100 }}
+                  onMouseDown={(event) => {
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                  onKeyDown={(event) => {
+                    event.stopPropagation();
+                  }}
+                  onChange={(event) => {
+                    const next = Number(event.target.value);
+                    updateMotionKeyframeHoldAtPreview(
+                      selectedAction.id,
+                      selectedKeyframeIndex,
+                      Number.isFinite(next) ? Math.max(0, next) : 0,
+                    );
+                  }}
+                  sx={{
+                    width: 82,
+                    '& .MuiInputBase-input': {
+                      fontSize: '0.68rem',
+                      px: 0.75,
+                      py: 0.5,
+                    },
+                  }}
+                />
+              </Tooltip>
+              <Tooltip title="Si está activo, durante la pausa de este punto también se congela la oscilación secundaria.">
+                <Button
+                  size="small"
+                  variant={selectedMotionPath[selectedKeyframeIndex].pauseOscillationDuringHold ? 'contained' : 'outlined'}
+                  sx={{ minWidth: 62, height: 24, px: 0.8, fontSize: '0.62rem', lineHeight: 1, fontWeight: 700 }}
+                  onMouseDown={(event) => {
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    toggleMotionKeyframeOscillationPauseAtPreview(selectedAction.id, selectedKeyframeIndex);
+                  }}
+                >
+                  Osc ⏸
+                </Button>
+              </Tooltip>
+              <Typography sx={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600, lineHeight: 1 }}>
+                Flip
+              </Typography>
+              <Tooltip title="Click: alterna Flip H en este punto. Doble click: aplica desde este punto en adelante.">
+                <Button
+                  size="small"
+                  variant={selectedMotionPath[selectedKeyframeIndex].flipH ? 'contained' : 'outlined'}
+                  sx={{ minWidth: 44, height: 24, px: 0.8, fontSize: '0.7rem', lineHeight: 1, fontWeight: 700 }}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleFlipButtonClick('h');
+                  }}
+                >
+                  H
+                </Button>
+              </Tooltip>
+              <Tooltip title="Click: alterna Flip V en este punto. Doble click: aplica desde este punto en adelante.">
+                <Button
+                  size="small"
+                  variant={selectedMotionPath[selectedKeyframeIndex].flipV ? 'contained' : 'outlined'}
+                  sx={{ minWidth: 44, height: 24, px: 0.8, fontSize: '0.7rem', lineHeight: 1, fontWeight: 700 }}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleFlipButtonClick('v');
+                  }}
+                >
+                  V
+                </Button>
+              </Tooltip>
+            </Box>
+          ) : null}
+        </Box>
+      ) : null}
       {previewRenderableActions
         .slice()
         .sort((left, right) => {
@@ -108,6 +466,7 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
         })
         .map((action, layerIndex) => {
           const payload = action.payload ?? {};
+          const payloadRecord = payload as Record<string, unknown>;
           const opacity = normalizeOpacity((payload as Record<string, unknown>).opacity);
           const leftPct = normalizeFreePlacement((payload as Record<string, unknown>).leftPct, 10);
           const topPct = normalizeFreePlacement((payload as Record<string, unknown>).topPct, 10);
@@ -117,6 +476,41 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
           const key = `${action.id}-${layerIndex}`;
           const payloadLayerOrder = Number((payload as Record<string, unknown>).layerOrder);
           const zIndex = Number.isFinite(payloadLayerOrder) ? Math.round(payloadLayerOrder) : layerIndex + 1;
+          const motionPath = getMotionPathFromPayload(payloadRecord);
+          const oscillation = getOscillationFromPayload(payloadRecord);
+          const staticTransform = getTransformFromPayload(payloadRecord);
+          const timelineEntry = timelineEntriesByActionId.get(action.id);
+          const elapsedMs = timelineEntry ? Math.max(0, currentTimelineTimeMs - timelineEntry.startMs) : 0;
+          const motionState = motionPath.length > 0
+            ? interpolateMotionPath(
+              { leftPct, topPct },
+              motionPath,
+              elapsedMs,
+              {
+                rotation: staticTransform.rotation,
+                flipH: staticTransform.flipH,
+                flipV: staticTransform.flipV,
+              },
+              {
+                defaultPauseOscillationDuringHold: Boolean(oscillation?.pauseDuringMotionHold),
+              },
+            )
+            : {
+              leftPct,
+              topPct,
+              rotation: staticTransform.rotation,
+              flipH: staticTransform.flipH,
+              flipV: staticTransform.flipV,
+              oscillationElapsedMs: elapsedMs,
+            };
+          const oscillatedPlacement = applyOscillation(
+            { leftPct: motionState.leftPct, topPct: motionState.topPct },
+            oscillation,
+            Math.max(0, Number(motionState.oscillationElapsedMs ?? elapsedMs)),
+          );
+          const animatedLeftPct = oscillatedPlacement.leftPct;
+          const animatedTopPct = oscillatedPlacement.topPct;
+          const transformCss = buildTransformCss(motionState.rotation, motionState.flipH, motionState.flipV);
 
           if (action.type === 'setWindowBackground') {
             const imageUrl = String(payload.imageUrl ?? '').trim();
@@ -147,24 +541,35 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
             const imageUrl = String(payload.imageUrl ?? '').trim();
             if (!imageUrl) return null;
             const chroma = getChromaFromPayload(payload as Record<string, unknown>);
+            const canCaptureThisLayer = canCapturePointer(selected);
             return (
               <Box
                 key={key}
                 sx={{
                   position: 'absolute',
-                  left: `${leftPct}%`,
-                  top: `${topPct}%`,
+                  left: `${animatedLeftPct}%`,
+                  top: `${animatedTopPct}%`,
                   width: `${widthPct}%`,
                   height: `${heightPct}%`,
+                  transform: transformCss,
+                  transformOrigin: 'center center',
                   zIndex,
                   border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
-                  cursor: !selected ? 'pointer' : selected && chromaPickActionId !== action.id ? 'move' : 'default',
+                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected
+                    ? 'none'
+                    : canCaptureThisLayer ? 'auto' : 'none',
+                  cursor: !selected
+                    ? (canCaptureThisLayer ? 'pointer' : 'default')
+                    : selected && chromaPickActionId !== action.id ? 'move' : 'default',
                 }}
                 onMouseDown={(event) => {
                   if (lockPreviewInteractionToSelectedNarrative && !selected) return;
                   if (chromaPickActionId === action.id) return;
                   if (!selected) {
+                    if (!canSwitchSelection(event, selected)) {
+                      event.preventDefault();
+                      return;
+                    }
                     selectActionAndSeekToStart(action.id);
                     return;
                   }
@@ -222,7 +627,6 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
           if (action.type === 'sendVideoToWindow') {
             const videoUrl = previewMediaUrlsByActionId[action.id] ?? '';
             const videoError = videoPreviewErrorsByActionId[action.id];
-            const payloadRecord = payload as Record<string, unknown>;
             const chroma = getChromaFromPayload(payloadRecord);
             const loopSegmentEnabled = Boolean(payloadRecord.loopSegmentEnabled);
             const loopSegmentStartMs = toNonNegativeMs(payloadRecord.loopSegmentStartMs);
@@ -266,6 +670,7 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
               }
               return undefined;
             })();
+            const canCaptureThisLayer = canCapturePointer(selected);
             if (videoError) {
               return (
                 <Box key={key} sx={{ position: 'absolute', inset: 0, p: 2 }}>
@@ -281,19 +686,29 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
                 key={key}
                 sx={{
                   position: 'absolute',
-                  left: `${leftPct}%`,
-                  top: `${topPct}%`,
+                  left: `${animatedLeftPct}%`,
+                  top: `${animatedTopPct}%`,
                   width: `${widthPct}%`,
                   height: `${heightPct}%`,
+                  transform: transformCss,
+                  transformOrigin: 'center center',
                   zIndex,
                   border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
-                  cursor: !selected ? 'pointer' : selected && chromaPickActionId !== action.id ? 'move' : 'default',
+                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected
+                    ? 'none'
+                    : canCaptureThisLayer ? 'auto' : 'none',
+                  cursor: !selected
+                    ? (canCaptureThisLayer ? 'pointer' : 'default')
+                    : selected && chromaPickActionId !== action.id ? 'move' : 'default',
                 }}
                 onMouseDown={(event) => {
                   if (lockPreviewInteractionToSelectedNarrative && !selected) return;
                   if (chromaPickActionId === action.id) return;
                   if (!selected) {
+                    if (!canSwitchSelection(event, selected)) {
+                      event.preventDefault();
+                      return;
+                    }
                     selectActionAndSeekToStart(action.id);
                     return;
                   }
@@ -360,13 +775,15 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
           if (action.type === 'applyWindowFilter') {
             const filter = String(payload.filter ?? '').trim();
             if (!filter) return null;
+            const intensity = Number(payload.intensity ?? 1);
+            const color = typeof payload.color === 'string' ? payload.color : undefined;
             return (
               <Box
                 key={key}
                 sx={{
                   position: 'absolute',
                   inset: 0,
-                  backdropFilter: filter,
+                  ...buildWindowFilterBackdropStyle(filter, Number.isFinite(intensity) ? intensity : 1, color),
                   opacity,
                   zIndex,
                   border: selected ? '2px solid rgba(255,255,255,0.8)' : 'none',
@@ -378,6 +795,38 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
 
           if (action.type === 'setNarrativeText') {
             const placement = getPlacementFromPayload(payload);
+            const narrativeMotionState = motionPath.length > 0
+              ? interpolateMotionPath(
+                { leftPct: placement.leftPct, topPct: placement.topPct },
+                motionPath,
+                elapsedMs,
+                {
+                  rotation: staticTransform.rotation,
+                  flipH: staticTransform.flipH,
+                  flipV: staticTransform.flipV,
+                },
+                {
+                  defaultPauseOscillationDuringHold: Boolean(oscillation?.pauseDuringMotionHold),
+                },
+              )
+              : {
+                leftPct: placement.leftPct,
+                topPct: placement.topPct,
+                rotation: staticTransform.rotation,
+                flipH: staticTransform.flipH,
+                flipV: staticTransform.flipV,
+                oscillationElapsedMs: elapsedMs,
+              };
+            const narrativeOscillatedPlacement = applyOscillation(
+              { leftPct: narrativeMotionState.leftPct, topPct: narrativeMotionState.topPct },
+              oscillation,
+              Math.max(0, Number(narrativeMotionState.oscillationElapsedMs ?? elapsedMs)),
+            );
+            const narrativeTransformCss = buildTransformCss(
+              narrativeMotionState.rotation,
+              narrativeMotionState.flipH,
+              narrativeMotionState.flipV,
+            );
             const title = String(payload.title ?? '').trim();
             const segments = getNarrativeSegments(payload);
             const isNarrativeCanvasEditing = narrativeCanvasEditActionId === action.id && selected;
@@ -428,31 +877,40 @@ export const ScenePreviewLayersRenderer: React.FC<ScenePreviewLayersRendererProp
               return null;
             }
 
+            const canCaptureThisLayer = canCapturePointer(selected);
             return (
               <Box
                 key={key}
                 sx={{
                   position: 'absolute',
-                  left: `${placement.leftPct}%`,
-                  top: `${placement.topPct}%`,
+                  left: `${narrativeOscillatedPlacement.leftPct}%`,
+                  top: `${narrativeOscillatedPlacement.topPct}%`,
                   width: `${placement.widthPct}%`,
                   height: `${placement.heightPct}%`,
                   opacity,
+                  transform: narrativeTransformCss,
+                  transformOrigin: 'center center',
                   zIndex,
                   border: selected ? '2px solid rgba(255,255,255,0.9)' : 'none',
                   borderRadius: selected ? 1 : 0,
-                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected ? 'none' : 'auto',
+                  pointerEvents: lockPreviewInteractionToSelectedNarrative && !selected
+                    ? 'none'
+                    : canCaptureThisLayer ? 'auto' : 'none',
                   display: 'flex',
                   alignItems: 'stretch',
                   boxSizing: 'border-box',
                   cursor: !selected
-                    ? 'pointer'
+                    ? (canCaptureThisLayer ? 'pointer' : 'default')
                     : selected && !isNarrativeCanvasEditing && leftToolPanelMode !== 'text'
                       ? 'move'
                       : 'text',
                 }}
-                onMouseDown={() => {
+                onMouseDown={(event) => {
                   if (!selected) {
+                    if (!canSwitchSelection(event, selected)) {
+                      event.preventDefault();
+                      return;
+                    }
                     selectActionAndSeekToStart(action.id);
                     return;
                   }

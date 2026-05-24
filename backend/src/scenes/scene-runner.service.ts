@@ -177,9 +177,12 @@ export class SceneRunnerService {
   ): Promise<SceneRuntimeCommand> {
     const kindMap: Record<Exclude<SceneActionDefinition['type'], 'delay' | 'runScene' | 'runShortcut'>, SceneRuntimeCommandKind> = {
       playMusic: 'audio.playMusic',
+      playPreset: 'audio.playPreset',
       stopMusic: 'audio.stopMusic',
       playSound: 'audio.playSound',
       setMusicVolume: 'audio.setMusicVolume',
+      stopSound: 'audio.stopSound',
+      setSoundVolume: 'audio.setSoundVolume',
       sendImageToWindow: 'window.sendImage',
       sendVideoToWindow: 'window.sendVideo',
       setWindowBackground: 'window.setBackground',

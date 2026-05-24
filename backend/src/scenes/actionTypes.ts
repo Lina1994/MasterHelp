@@ -35,7 +35,27 @@ export interface PlayMusicSceneAction extends SceneActionBase {
     playlistId?: string;
     loop?: boolean;
     volume?: number;
+    durationMs?: number;
+    timelineStartMs?: number;
   } & SceneClipTimingMetadata;
+}
+
+export interface PlayPresetSceneAction extends SceneActionBase {
+  type: 'playPreset';
+  payload: {
+    presetId: string;
+    volume?: number;
+    durationMs?: number;
+    timelineStartMs?: number;
+    playbackRate?: number;
+    pitchSemitones?: number;
+    echoEnabled?: boolean;
+    echoDelayMs?: number;
+    echoFeedback?: number;
+    filterType?: 'none' | 'lowpass' | 'highpass' | 'bandpass';
+    filterFrequency?: number;
+    filterQ?: number;
+  };
 }
 
 export interface StopMusicSceneAction extends SceneActionBase {
@@ -50,6 +70,16 @@ export interface PlaySoundSceneAction extends SceneActionBase {
   payload: {
     effectId: string;
     volume?: number;
+    durationMs?: number;
+    timelineStartMs?: number;
+    playbackRate?: number;
+    pitchSemitones?: number;
+    echoEnabled?: boolean;
+    echoDelayMs?: number;
+    echoFeedback?: number;
+    filterType?: 'none' | 'lowpass' | 'highpass' | 'bandpass';
+    filterFrequency?: number;
+    filterQ?: number;
     loopMode?: 'once' | 'continuous' | 'fixed' | 'random';
     waitMs?: number;
     randomMinMs?: number;
@@ -64,6 +94,42 @@ export interface SetMusicVolumeSceneAction extends SceneActionBase {
   };
 }
 
+export interface StopSoundSceneAction extends SceneActionBase {
+  type: 'stopSound';
+  payload?: {
+    effectId?: string;
+  };
+}
+
+export interface SetSoundVolumeSceneAction extends SceneActionBase {
+  type: 'setSoundVolume';
+  payload: {
+    value: number;
+    effectId?: string;
+  };
+}
+
+type MotionKeyframeBackend = {
+  timeMs: number;
+  leftPct: number;
+  topPct: number;
+  holdMs?: number;
+  pauseOscillationDuringHold?: boolean;
+  rotation?: number;
+  flipH?: boolean;
+  flipV?: boolean;
+  easing: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' | 'bounce' | 'spring';
+};
+
+type OscillationEffectBackend = {
+  enabled: boolean;
+  type: 'wave' | 'bounce';
+  axis: 'x' | 'y' | 'both';
+  amplitudePct: number;
+  frequencyHz: number;
+  pauseDuringMotionHold?: boolean;
+};
+
 export interface SendImageToWindowSceneAction extends SceneActionBase {
   type: 'sendImageToWindow';
   payload: {
@@ -72,6 +138,7 @@ export interface SendImageToWindowSceneAction extends SceneActionBase {
     opacity?: number;
     durationMs?: number;
     timelineStartMs?: number;
+    layerOrder?: number;
     chromaKey?: {
       enabled?: boolean;
       color?: string;
@@ -81,6 +148,11 @@ export interface SendImageToWindowSceneAction extends SceneActionBase {
     topPct?: number;
     widthPct?: number;
     heightPct?: number;
+    rotation?: number;
+    flipH?: boolean;
+    flipV?: boolean;
+    motionPath?: MotionKeyframeBackend[];
+    oscillation?: OscillationEffectBackend;
   } & SceneClipTimingMetadata;
 }
 
@@ -98,6 +170,7 @@ export interface SendVideoToWindowSceneAction extends SceneActionBase {
     opacity?: number;
     durationMs?: number;
     timelineStartMs?: number;
+    layerOrder?: number;
     chromaKey?: {
       enabled?: boolean;
       color?: string;
@@ -107,6 +180,11 @@ export interface SendVideoToWindowSceneAction extends SceneActionBase {
     topPct?: number;
     widthPct?: number;
     heightPct?: number;
+    rotation?: number;
+    flipH?: boolean;
+    flipV?: boolean;
+    motionPath?: MotionKeyframeBackend[];
+    oscillation?: OscillationEffectBackend;
   } & SceneClipTimingMetadata;
 }
 
@@ -124,6 +202,9 @@ export interface ApplyWindowFilterSceneAction extends SceneActionBase {
     filter: string;
     intensity?: number;
     color?: string;
+    durationMs?: number;
+    timelineStartMs?: number;
+    layerOrder?: number;
   };
 }
 
@@ -144,9 +225,15 @@ export interface SetWeatherSceneAction extends SceneActionBase {
 export interface SetNarrativeTextSceneAction extends SceneActionBase {
   type: 'setNarrativeText';
   payload: {
+    rotation?: number;
+    flipH?: boolean;
+    flipV?: boolean;
+    motionPath?: MotionKeyframeBackend[];
+    oscillation?: OscillationEffectBackend;
     text?: string;
     title?: string;
     durationMs?: number;
+    timelineStartMs?: number;
     richTextDoc?: {
       blocks: Array<{
         segments: Array<{
@@ -180,6 +267,27 @@ export interface SetNarrativeTextSceneAction extends SceneActionBase {
     backgroundOpacity?: number;
     borderRadiusPx?: number;
     paddingPx?: number;
+    voiceConfig?: {
+      mode: 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant';
+      speed?: number;
+      pitchRange?: number;
+      tomodachi?: {
+        sampleSet?: 'classic' | 'bright' | 'soft';
+        consonantDensity?: number;
+        humanize?: number;
+      };
+      qwen?: {
+        persona?: 'male' | 'female' | 'child' | 'robot';
+        pitchMul?: number;
+        speedMs?: number;
+        brightness?: number;
+        volume?: number;
+        jitter?: number;
+        transitionMul?: number;
+        vowelGlitch?: number;
+      };
+    };
+    voiceTarget?: 'main' | 'projection' | 'both';
   };
 }
 
@@ -206,9 +314,12 @@ export interface RunSceneSceneAction extends SceneActionBase {
 
 export type SceneActionDefinition =
   | PlayMusicSceneAction
+  | PlayPresetSceneAction
   | StopMusicSceneAction
   | PlaySoundSceneAction
   | SetMusicVolumeSceneAction
+  | StopSoundSceneAction
+  | SetSoundVolumeSceneAction
   | SendImageToWindowSceneAction
   | SendVideoToWindowSceneAction
   | SetWindowBackgroundSceneAction
@@ -224,9 +335,12 @@ export type SceneActionType = SceneActionDefinition['type'];
 
 export const SCENE_ACTION_TYPES: readonly SceneActionType[] = [
   'playMusic',
+  'playPreset',
   'stopMusic',
   'playSound',
   'setMusicVolume',
+  'stopSound',
+  'setSoundVolume',
   'sendImageToWindow',
   'sendVideoToWindow',
   'setWindowBackground',
@@ -253,9 +367,12 @@ export type SceneTriggerSource = 'manual' | 'shortcut' | 'scene';
 
 export type SceneRuntimeCommandKind =
   | 'audio.playMusic'
+  | 'audio.playPreset'
   | 'audio.stopMusic'
   | 'audio.playSound'
   | 'audio.setMusicVolume'
+  | 'audio.stopSound'
+  | 'audio.setSoundVolume'
   | 'window.sendImage'
   | 'window.sendVideo'
   | 'window.setBackground'

@@ -12,6 +12,7 @@ export type SceneActionType =
   | 'applyWindowFilter'
   | 'clearWindow'
   | 'playMusic'
+  | 'playPreset'
   | 'stopMusic'
   | 'setMusicVolume'
   | 'playSound'
@@ -32,6 +33,7 @@ export const ACTION_TYPES: SceneActionType[] = [
   'applyWindowFilter',
   'clearWindow',
   'playMusic',
+  'playPreset',
   'stopMusic',
   'setMusicVolume',
   'playSound',
@@ -53,6 +55,7 @@ export const ACTION_TYPE_LABELS: Record<SceneActionType, string> = {
   applyWindowFilter: '🎨 Aplicar filtro de ventana',
   clearWindow: '🧹 Limpiar ventana',
   playMusic: '🎵 Reproducir música',
+  playPreset: '🎛️ Reproducir preset FX',
   stopMusic: '🔇 Detener música',
   setMusicVolume: '🔊 Ajustar volumen música',
   playSound: '🔊 Reproducir sonido',

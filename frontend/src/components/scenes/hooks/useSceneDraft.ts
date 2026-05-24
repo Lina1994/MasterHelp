@@ -25,7 +25,7 @@ export function useSceneDraft(campaignId?: string | null) {
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [chromaPickActionId, setChromaPickActionId] = useState<string | null>(null);
   const [dragOverActionId, setDragOverActionId] = useState<string | null>(null);
-  const [contextualMenu, setContextualMenu] = useState<null | 'image' | 'music' | 'filter'>(null);
+  const [contextualMenu, setContextualMenu] = useState<null | 'image' | 'music' | 'filter' | 'narrator'>(null);
   const [leftToolPanelMode, setLeftToolPanelMode] = useState<LeftToolPanelMode>('media');
   const [narrativeCanvasEditActionId, setNarrativeCanvasEditActionId] = useState<string | null>(null);
   const [narrativeCanvasDraft, setNarrativeCanvasDraft] = useState<NarrativeCanvasDraft | null>(null);

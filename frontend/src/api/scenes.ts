@@ -20,6 +20,8 @@ const normalizeScene = (raw: any): SceneLite => ({
   loopDelayRandomMaxMs: typeof raw?.loopDelayRandomMaxMs === 'number' ? raw.loopDelayRandomMaxMs : null,
   loopWindowStartMs: typeof raw?.loopWindowStartMs === 'number' ? raw.loopWindowStartMs : null,
   loopWindowEndMs: typeof raw?.loopWindowEndMs === 'number' ? raw.loopWindowEndMs : null,
+  takeOverMusicOnStart: Boolean(raw?.takeOverMusicOnStart),
+  restorePreviousMusicOnFinish: raw?.restorePreviousMusicOnFinish !== false,
   scope: raw?.scope || 'global',
   campaignId: raw?.campaignId ?? raw?.campaign?.id ?? null,
 });

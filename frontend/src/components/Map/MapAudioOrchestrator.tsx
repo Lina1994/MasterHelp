@@ -40,9 +40,33 @@ const MapAudioOrchestrator: React.FC = () => {
   const [mapsFetchVersion, setMapsFetchVersion] = useState(0);
 
   const lastMusicRef = useRef<string | null>(null); // e.g., song:abc or playlist:def
+  const suppressAutoResumeMusicRef = useRef<boolean>(false);
   const lastPresetRef = useRef<string | null>(null);
   const applyingPresetRef = useRef<string | null>(null);
   const prevMapIdRef = useRef<string | null>(null);
+  const activeSceneExecutionCountRef = useRef<number>(0);
+
+  useEffect(() => {
+    const onSceneStart = () => {
+      activeSceneExecutionCountRef.current += 1;
+      suppressAutoResumeMusicRef.current = true;
+    };
+
+    const onSceneFinish = () => {
+      activeSceneExecutionCountRef.current = Math.max(0, activeSceneExecutionCountRef.current - 1);
+      suppressAutoResumeMusicRef.current = true;
+    };
+
+    window.addEventListener('scene:execution-started', onSceneStart as EventListener);
+    window.addEventListener('scene:execution-completed', onSceneFinish as EventListener);
+    window.addEventListener('scene:execution-stopped', onSceneFinish as EventListener);
+
+    return () => {
+      window.removeEventListener('scene:execution-started', onSceneStart as EventListener);
+      window.removeEventListener('scene:execution-completed', onSceneFinish as EventListener);
+      window.removeEventListener('scene:execution-stopped', onSceneFinish as EventListener);
+    };
+  }, []);
 
   // Listen for map edits broadcast by MapsPage so we can re-fetch with fresh musicConfig/sfxConfig.
   // Only re-fetches the maps list; does NOT reset audio refs so that a transform-only save
@@ -148,6 +172,7 @@ const MapAudioOrchestrator: React.FC = () => {
     const run = async () => {
       if (!activeMap || !timeOfDay) return;
       if (soundtrackMode === 'manual') return;
+      if (activeSceneExecutionCountRef.current > 0) return;
       const tod: Tod = timeOfDay as Tod;
       const musicConfig: any = activeMap.musicConfig || {};
       const sfxConfig: any = activeMap.sfxConfig || {};
@@ -156,6 +181,14 @@ const MapAudioOrchestrator: React.FC = () => {
       const sel = musicConfig?.[tod]?.['base'] as { type: 'song' | 'playlist'; id: string } | undefined;
       if (sel) {
         const key = `${sel.type}:${sel.id}`;
+        if (lastMusicRef.current !== key) {
+          suppressAutoResumeMusicRef.current = false;
+        }
+
+        if (suppressAutoResumeMusicRef.current && lastMusicRef.current === key) {
+          return;
+        }
+
         // Determine if we must apply even if key matches (e.g., user manually played another song/queue)
         let mustApply = lastMusicRef.current !== key;
         if (!mustApply) {
@@ -181,6 +214,7 @@ const MapAudioOrchestrator: React.FC = () => {
               }
             );
             lastMusicRef.current = key;
+            suppressAutoResumeMusicRef.current = false;
           } else if (sel.type === 'playlist') {
             const pl = (playlists || []).find(p => p.id === sel.id);
             const items = (pl?.songs || []).map(s => ({ id: s.id, name: s.name, size: s.size, mimeType: s.mimeType }));
@@ -191,6 +225,7 @@ const MapAudioOrchestrator: React.FC = () => {
                 return URL.createObjectURL(res.data as Blob);
               }, { shuffle: false });
               lastMusicRef.current = key;
+              suppressAutoResumeMusicRef.current = false;
             }
           }
         }

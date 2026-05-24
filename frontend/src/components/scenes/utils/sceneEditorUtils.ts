@@ -7,6 +7,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import type { SceneActionDto, ScenePayload } from '../../../types/scenes';
+import API_BASE_URL from '../../../apiBase';
 
 // ---------------------------------------------------------------------------
 // Editor-wide constants
@@ -28,6 +29,9 @@ export const CLIP_METADATA_KEYS = [
 
 /** DnD payload prefix used when dragging a video asset onto the timeline. */
 export const VIDEO_ASSET_DND_PREFIX = 'scene-video-asset:';
+
+/** DnD payload prefix used when dragging an image asset onto the timeline. */
+export const IMAGE_ASSET_DND_PREFIX = 'scene-image-asset:';
 
 /** Frames per second used by the preview ticker. */
 export const PREVIEW_FPS = 30;
@@ -162,12 +166,41 @@ export function emptyPayload(type: string): Record<string, unknown> {
   switch (type) {
     case 'playMusic':
       return { songId: '', loop: false, volume: 80 };
+    case 'playPreset':
+      return {
+        presetId: '',
+        volume: 100,
+        playbackRate: 1,
+        pitchSemitones: 0,
+        echoEnabled: false,
+        echoDelayMs: 300,
+        echoFeedback: 0.3,
+        filterType: 'none',
+        filterFrequency: 1000,
+        filterQ: 1,
+      };
     case 'stopMusic':
       return { stopEffects: false };
     case 'playSound':
-      return { effectId: '', volume: 80, loopMode: 'once' };
+      return {
+        effectId: '',
+        volume: 80,
+        loopMode: 'once',
+        playbackRate: 1,
+        pitchSemitones: 0,
+        echoEnabled: false,
+        echoDelayMs: 300,
+        echoFeedback: 0.3,
+        filterType: 'none',
+        filterFrequency: 1000,
+        filterQ: 1,
+      };
     case 'setMusicVolume':
       return { value: 80 };
+    case 'stopSound':
+      return { effectId: '' };
+    case 'setSoundVolume':
+      return { value: 80, effectId: '' };
     case 'sendImageToWindow':
       return {
         imageUrl: '',
@@ -193,7 +226,7 @@ export function emptyPayload(type: string): Record<string, unknown> {
     case 'setWindowBackground':
       return { imageUrl: '', sizing: 'cover' };
     case 'applyWindowFilter':
-      return { filter: 'blur', intensity: 0.5, color: '' };
+      return { filter: 'blur', intensity: 0.5, color: '', durationMs: 2500 };
     case 'clearWindowFilter':
       return {};
     case 'setWeather':
@@ -223,6 +256,27 @@ export function emptyPayload(type: string): Record<string, unknown> {
         backgroundOpacity: 0.58,
         borderRadiusPx: 12,
         paddingPx: 16,
+        voiceConfig: {
+          mode: 'retroBeep',
+          speed: 1,
+          pitchRange: 8,
+          tomodachi: {
+            sampleSet: 'classic',
+            consonantDensity: 1,
+            humanize: 0.65,
+          },
+          qwen: {
+            persona: 'male',
+            pitchMul: 1,
+            speedMs: 90,
+            brightness: 1,
+            volume: 0.7,
+            jitter: 0.08,
+            transitionMul: 0.3,
+            vowelGlitch: 0.28,
+          },
+        },
+        voiceTarget: 'both',
       };
     case 'runShortcut':
       return { shortcutId: '' };
@@ -246,11 +300,13 @@ export function emptyPayload(type: string): Record<string, unknown> {
  */
 export function resolveSceneMediaUrl(rawUrl: string): string {
   if (!rawUrl) return rawUrl;
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
-  if (rawUrl.startsWith('/')) {
-    return `${window.location.protocol}//${window.location.hostname}:3000${rawUrl}`;
-  }
-  return `${window.location.protocol}//${window.location.hostname}:3000/${rawUrl}`;
+  if (/^(https?:|data:|blob:)/i.test(rawUrl)) return rawUrl;
+
+  const base = String(API_BASE_URL ?? '').replace(/\/+$/, '');
+  if (!base) return rawUrl;
+
+  const normalizedPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+  return `${base}${normalizedPath}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -275,6 +331,40 @@ export function fromVideoDragPayload(raw: string): string | null {
   if (!raw.startsWith(VIDEO_ASSET_DND_PREFIX)) return null;
   const assetId = raw.slice(VIDEO_ASSET_DND_PREFIX.length).trim();
   return assetId || null;
+}
+
+/**
+ * Encodes an image descriptor into a DnD data-transfer string.
+ * @param image - Selected image metadata.
+ * @returns Encoded drag payload string.
+ */
+export function toImageDragPayload(image: { url: string; label: string }): string {
+  const payload = {
+    url: String(image.url ?? '').trim(),
+    label: String(image.label ?? '').trim(),
+  };
+  return `${IMAGE_ASSET_DND_PREFIX}${encodeURIComponent(JSON.stringify(payload))}`;
+}
+
+/**
+ * Decodes a DnD string back to an image descriptor.
+ * @param raw - Raw drag payload string.
+ * @returns Decoded image metadata, or `null` if invalid.
+ */
+export function fromImageDragPayload(raw: string): { url: string; label: string } | null {
+  if (!raw.startsWith(IMAGE_ASSET_DND_PREFIX)) return null;
+  const encoded = raw.slice(IMAGE_ASSET_DND_PREFIX.length).trim();
+  if (!encoded) return null;
+
+  try {
+    const decoded = JSON.parse(decodeURIComponent(encoded)) as { url?: unknown; label?: unknown };
+    const url = String(decoded?.url ?? '').trim();
+    const label = String(decoded?.label ?? '').trim();
+    if (!url) return null;
+    return { url, label: label || 'Imagen' };
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -306,6 +396,8 @@ export function blankDraft(campaignId?: string | null): ScenePayload {
     loopDelayRandomMaxMs: null,
     loopWindowStartMs: null,
     loopWindowEndMs: null,
+    takeOverMusicOnStart: false,
+    restorePreviousMusicOnFinish: true,
     scope: campaignId ? 'campaign' : 'global',
     campaignId: campaignId ?? null,
     actions: [],

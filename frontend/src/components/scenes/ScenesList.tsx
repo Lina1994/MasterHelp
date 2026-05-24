@@ -36,12 +36,14 @@ import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import ConfirmDialog from '../common/ConfirmDialog';
 import SceneFormDialog from './SceneFormDialog';
 import SceneExecutionHistory from './SceneExecutionHistory';
+import { useLayoutChrome } from '../../contexts/LayoutChromeContext';
 
 /**
  * Main scenes list component — CRUD + execution.
  */
 export const ScenesList: React.FC = () => {
   const { activeCampaign } = useActiveCampaign();
+  const { setWorkspaceMode } = useLayoutChrome();
   const campaignId = activeCampaign?.id ?? null;
 
   const [scenes, setScenes] = useState<SceneLite[]>([]);
@@ -80,6 +82,7 @@ export const ScenesList: React.FC = () => {
 
   const handleOpenCreate = () => {
     setEditingScene(null);
+    setWorkspaceMode('scenesEditor');
     setOpenForm(true);
   };
 
@@ -87,11 +90,23 @@ export const ScenesList: React.FC = () => {
     try {
       const full = await getScene(scene.id);
       setEditingScene(full);
+      setWorkspaceMode('scenesEditor');
       setOpenForm(true);
     } catch {
       // ignore
     }
   };
+
+  const closeEditor = () => {
+    setOpenForm(false);
+    setWorkspaceMode('default');
+  };
+
+  useEffect(() => {
+    return () => {
+      setWorkspaceMode('default');
+    };
+  }, [setWorkspaceMode]);
 
   const handleSave = async (payload: ScenePayload, id?: string) => {
     if (id) {
@@ -119,6 +134,15 @@ export const ScenesList: React.FC = () => {
     setExecuteError(null);
     try {
       const result = await executeScene(scene.id);
+      console.info('[scene-runtime]', {
+        at: new Date().toISOString(),
+        executionId: String(result?.executionId || 'missing'),
+        stage: 'emit-runtime-from-scenes-list',
+        source: 'ScenesList.handleExecute',
+        sceneId: scene.id,
+        responseSceneId: result?.scene?.id ?? null,
+        commands: Array.isArray(result?.commands) ? result.commands.length : null,
+      });
       // Dispatch execution plan to runtime bridge for timed orchestration.
       window.dispatchEvent(new CustomEvent('scene:runtime-execute', { detail: result }));
     } catch (err: any) {
@@ -144,6 +168,21 @@ export const ScenesList: React.FC = () => {
   const filtered = scenes.filter((s) =>
     s.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  if (openForm) {
+    return (
+      <Box sx={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <SceneFormDialog
+          open={openForm}
+          embedded
+          editing={editingScene}
+          campaignId={campaignId}
+          onClose={closeEditor}
+          onSave={handleSave}
+        />
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -218,15 +257,6 @@ export const ScenesList: React.FC = () => {
           ))}
         </Box>
       )}
-
-      {/* Form dialog */}
-      <SceneFormDialog
-        open={openForm}
-        editing={editingScene}
-        campaignId={campaignId}
-        onClose={() => setOpenForm(false)}
-        onSave={handleSave}
-      />
 
       {/* Delete confirm */}
       <ConfirmDialog

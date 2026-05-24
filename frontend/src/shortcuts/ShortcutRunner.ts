@@ -162,6 +162,15 @@ const runSceneAction = async (action: ShortcutActionDefinition): Promise<void> =
   if (!sceneId) return;
   const execution = await executeScene(sceneId);
   try {
+    console.info('[scene-runtime]', {
+      at: new Date().toISOString(),
+      executionId: String(execution?.executionId || 'missing'),
+      stage: 'emit-runtime-from-shortcut-runner',
+      source: 'ShortcutRunner.runSceneAction',
+      sceneId,
+      responseSceneId: execution?.scene?.id ?? null,
+      commands: Array.isArray(execution?.commands) ? execution.commands.length : null,
+    });
     window.dispatchEvent(new CustomEvent('scene:runtime-execute', { detail: execution }));
   } catch {
     // no-op fallback

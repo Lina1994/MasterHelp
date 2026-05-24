@@ -124,6 +124,14 @@ const asFreePercentage = (value: unknown, field: string, min: number, max: numbe
   return percentage;
 };
 
+const asBoundedNumber = (value: unknown, field: string, min: number, max: number): number => {
+  const numeric = asNumber(value, field);
+  if (numeric < min || numeric > max) {
+    throw new BadRequestException(`Action field "${field}" must be between ${min} and ${max}`);
+  }
+  return numeric;
+};
+
 const asOptionalEnum = <T extends string>(
   value: unknown,
   field: string,
@@ -210,6 +218,167 @@ const normalizeChromaKey = (
   }
   const tolerance = body.tolerance === undefined ? 20 : asPercentage(body.tolerance, 'chromaKey.tolerance');
   return { enabled, color: color.toLowerCase(), tolerance };
+};
+
+const normalizeMotionPath = (
+  value: unknown,
+): Array<{ timeMs: number; leftPct: number; topPct: number; holdMs?: number; pauseOscillationDuringHold?: boolean; rotation?: number; flipH?: boolean; flipV?: boolean; easing: string }> | undefined => {
+  if (value === undefined || value === null) return undefined;
+  if (!Array.isArray(value)) throw new BadRequestException('Action field "motionPath" must be an array');
+  return value.map((item, i) => {
+    const kf = asObject(item, `motionPath[${i}]`);
+    const timeMs = asNumber(kf.timeMs, `motionPath[${i}].timeMs`);
+    if (timeMs < 0) throw new BadRequestException(`motionPath[${i}].timeMs must be >= 0`);
+    const holdMs = kf.holdMs === undefined ? undefined : asNumber(kf.holdMs, `motionPath[${i}].holdMs`);
+    if (holdMs !== undefined && holdMs < 0) {
+      throw new BadRequestException(`motionPath[${i}].holdMs must be >= 0`);
+    }
+    const pauseOscillationDuringHold = kf.pauseOscillationDuringHold === undefined
+      ? undefined
+      : asBoolean(kf.pauseOscillationDuringHold, `motionPath[${i}].pauseOscillationDuringHold`);
+    const leftPct = asFreePercentage(kf.leftPct, `motionPath[${i}].leftPct`, -200, 200);
+    const topPct = asFreePercentage(kf.topPct, `motionPath[${i}].topPct`, -200, 200);
+    const rotation = kf.rotation === undefined ? undefined : asFreePercentage(kf.rotation, `motionPath[${i}].rotation`, -360, 360);
+    const flipH = kf.flipH === undefined ? undefined : asBoolean(kf.flipH, `motionPath[${i}].flipH`);
+    const flipV = kf.flipV === undefined ? undefined : asBoolean(kf.flipV, `motionPath[${i}].flipV`);
+    const easing = asOptionalEnum(kf.easing, `motionPath[${i}].easing`, ['linear', 'easeIn', 'easeOut', 'easeInOut', 'bounce', 'spring'] as const) ?? 'linear';
+    return {
+      timeMs,
+      leftPct,
+      topPct,
+      ...(holdMs !== undefined ? { holdMs } : {}),
+      ...(pauseOscillationDuringHold !== undefined ? { pauseOscillationDuringHold } : {}),
+      ...(rotation !== undefined ? { rotation } : {}),
+      ...(flipH !== undefined ? { flipH } : {}),
+      ...(flipV !== undefined ? { flipV } : {}),
+      easing,
+    };
+  });
+};
+
+const normalizeOscillation = (
+  value: unknown,
+): { enabled: boolean; type: 'wave' | 'bounce'; axis: 'x' | 'y' | 'both'; amplitudePct: number; frequencyHz: number; pauseDuringMotionHold?: boolean } | undefined => {
+  if (value === undefined || value === null) return undefined;
+  const body = asObject(value, 'oscillation');
+  const enabled = body.enabled === undefined ? false : asBoolean(body.enabled, 'oscillation.enabled');
+  const pauseDuringMotionHold = body.pauseDuringMotionHold === undefined
+    ? undefined
+    : asBoolean(body.pauseDuringMotionHold, 'oscillation.pauseDuringMotionHold');
+  if (!enabled) {
+    return {
+      enabled: false,
+      type: 'bounce',
+      axis: 'y',
+      amplitudePct: 0,
+      frequencyHz: 1,
+      ...(pauseDuringMotionHold !== undefined ? { pauseDuringMotionHold } : {}),
+    };
+  }
+  const type = asOptionalEnum(body.type, 'oscillation.type', ['wave', 'bounce'] as const) ?? 'bounce';
+  const axis = asOptionalEnum(body.axis, 'oscillation.axis', ['x', 'y', 'both'] as const) ?? 'y';
+  const amplitudePct = body.amplitudePct === undefined ? 3 : asFreePercentage(body.amplitudePct, 'oscillation.amplitudePct', 0, 50);
+  const frequencyHz = body.frequencyHz === undefined ? 2 : asFreePercentage(body.frequencyHz, 'oscillation.frequencyHz', 0.1, 20);
+  return {
+    enabled,
+    type,
+    axis,
+    amplitudePct,
+    frequencyHz,
+    ...(pauseDuringMotionHold !== undefined ? { pauseDuringMotionHold } : {}),
+  };
+};
+
+const normalizeVoiceConfig = (
+  value: unknown,
+): {
+  mode: 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant';
+  speed: number;
+  pitchRange: number;
+  tomodachi: {
+    sampleSet: 'classic' | 'bright' | 'soft';
+    consonantDensity: number;
+    humanize: number;
+  };
+  qwen: {
+    persona: 'male' | 'female' | 'child' | 'robot';
+    pitchMul: number;
+    speedMs: number;
+    brightness: number;
+    volume: number;
+    jitter: number;
+    transitionMul: number;
+    vowelGlitch: number;
+  };
+} | undefined => {
+  if (value === undefined || value === null) return undefined;
+  const body = asObject(value, 'voiceConfig');
+  const mode = asOptionalEnum(body.mode, 'voiceConfig.mode', ['retroBeep', 'animalese', 'tomodachi', 'qwenFormant'] as const) ?? 'retroBeep';
+  const speed = body.speed === undefined ? 1 : asBoundedNumber(body.speed, 'voiceConfig.speed', 0.25, 3);
+  const pitchRange = body.pitchRange === undefined ? 8 : asBoundedNumber(body.pitchRange, 'voiceConfig.pitchRange', 0, 24);
+  const tomodachiBody = body.tomodachi === undefined
+    ? {}
+    : asObject(body.tomodachi, 'voiceConfig.tomodachi');
+  const sampleSet = asOptionalEnum(
+    tomodachiBody.sampleSet,
+    'voiceConfig.tomodachi.sampleSet',
+    ['classic', 'bright', 'soft'] as const,
+  ) ?? 'classic';
+  const consonantDensity = tomodachiBody.consonantDensity === undefined
+    ? 1
+    : asBoundedNumber(tomodachiBody.consonantDensity, 'voiceConfig.tomodachi.consonantDensity', 0, 1);
+  const humanize = tomodachiBody.humanize === undefined
+    ? 0.65
+    : asBoundedNumber(tomodachiBody.humanize, 'voiceConfig.tomodachi.humanize', 0, 1);
+  const qwenBody = body.qwen === undefined
+    ? {}
+    : asObject(body.qwen, 'voiceConfig.qwen');
+  const persona = asOptionalEnum(
+    qwenBody.persona,
+    'voiceConfig.qwen.persona',
+    ['male', 'female', 'child', 'robot'] as const,
+  ) ?? 'male';
+  const pitchMul = qwenBody.pitchMul === undefined
+    ? (persona === 'female' ? 1.3 : persona === 'child' ? 1.6 : 1)
+    : asBoundedNumber(qwenBody.pitchMul, 'voiceConfig.qwen.pitchMul', 0.5, 2.5);
+  const speedMs = qwenBody.speedMs === undefined
+    ? (persona === 'child' ? 68 : persona === 'robot' ? 72 : 70)
+    : asBoundedNumber(qwenBody.speedMs, 'voiceConfig.qwen.speedMs', 30, 200);
+  const brightness = qwenBody.brightness === undefined
+    ? (persona === 'female' ? 1.3 : persona === 'child' ? 1.5 : persona === 'robot' ? 0.6 : 1)
+    : asBoundedNumber(qwenBody.brightness, 'voiceConfig.qwen.brightness', 0.3, 3);
+  const volume = qwenBody.volume === undefined
+    ? (persona === 'female' ? 0.68 : persona === 'child' ? 0.66 : persona === 'robot' ? 0.72 : 0.7)
+    : asBoundedNumber(qwenBody.volume, 'voiceConfig.qwen.volume', 0.1, 1);
+  const jitter = qwenBody.jitter === undefined
+    ? (persona === 'robot' ? 0.02 : persona === 'child' ? 0.1 : 0.08)
+    : asBoundedNumber(qwenBody.jitter, 'voiceConfig.qwen.jitter', 0, 0.3);
+  const transitionMul = qwenBody.transitionMul === undefined
+    ? (persona === 'female' ? 0.34 : persona === 'child' ? 0.38 : persona === 'robot' ? 0.14 : 0.3)
+    : asBoundedNumber(qwenBody.transitionMul, 'voiceConfig.qwen.transitionMul', 0, 0.8);
+  const vowelGlitch = qwenBody.vowelGlitch === undefined
+    ? (persona === 'female' ? 0.3 : persona === 'child' ? 0.34 : persona === 'robot' ? 0.08 : 0.28)
+    : asBoundedNumber(qwenBody.vowelGlitch, 'voiceConfig.qwen.vowelGlitch', 0, 1);
+  return {
+    mode,
+    speed,
+    pitchRange,
+    tomodachi: {
+      sampleSet,
+      consonantDensity,
+      humanize,
+    },
+    qwen: {
+      persona,
+      pitchMul,
+      speedMs,
+      brightness,
+      volume,
+      jitter,
+      transitionMul,
+      vowelGlitch,
+    },
+  };
 };
 
 const normalizeDelay = (delay: unknown): number | undefined => {
@@ -312,7 +481,25 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
         playlistId: body.playlistId === undefined ? undefined : asString(body.playlistId, 'playlistId'),
         loop: body.loop === undefined ? undefined : asBoolean(body.loop, 'loop'),
         volume: body.volume === undefined ? undefined : asNumber(body.volume, 'volume'),
+        durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
+        timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
         ...normalizeClipMetadata(body),
+      };
+    case 'playPreset':
+      return {
+        ...(displayName ? { displayName } : {}),
+        presetId: asString(body.presetId, 'presetId'),
+        volume: body.volume === undefined ? undefined : asNumber(body.volume, 'volume'),
+        durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
+        timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
+        playbackRate: body.playbackRate === undefined ? undefined : asNumber(body.playbackRate, 'playbackRate'),
+        pitchSemitones: body.pitchSemitones === undefined ? undefined : asNumber(body.pitchSemitones, 'pitchSemitones'),
+        echoEnabled: body.echoEnabled === undefined ? undefined : asBoolean(body.echoEnabled, 'echoEnabled'),
+        echoDelayMs: body.echoDelayMs === undefined ? undefined : asNumber(body.echoDelayMs, 'echoDelayMs'),
+        echoFeedback: body.echoFeedback === undefined ? undefined : asNumber(body.echoFeedback, 'echoFeedback'),
+        filterType: asOptionalEnum(body.filterType, 'filterType', ['none', 'lowpass', 'highpass', 'bandpass'] as const),
+        filterFrequency: body.filterFrequency === undefined ? undefined : asNumber(body.filterFrequency, 'filterFrequency'),
+        filterQ: body.filterQ === undefined ? undefined : asNumber(body.filterQ, 'filterQ'),
       };
     case 'stopMusic':
       return {
@@ -324,6 +511,16 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
         ...(displayName ? { displayName } : {}),
         effectId: asString(body.effectId, 'effectId'),
         volume: body.volume === undefined ? undefined : asNumber(body.volume, 'volume'),
+        durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
+        timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
+        playbackRate: body.playbackRate === undefined ? undefined : asNumber(body.playbackRate, 'playbackRate'),
+        pitchSemitones: body.pitchSemitones === undefined ? undefined : asNumber(body.pitchSemitones, 'pitchSemitones'),
+        echoEnabled: body.echoEnabled === undefined ? undefined : asBoolean(body.echoEnabled, 'echoEnabled'),
+        echoDelayMs: body.echoDelayMs === undefined ? undefined : asNumber(body.echoDelayMs, 'echoDelayMs'),
+        echoFeedback: body.echoFeedback === undefined ? undefined : asNumber(body.echoFeedback, 'echoFeedback'),
+        filterType: asOptionalEnum(body.filterType, 'filterType', ['none', 'lowpass', 'highpass', 'bandpass'] as const),
+        filterFrequency: body.filterFrequency === undefined ? undefined : asNumber(body.filterFrequency, 'filterFrequency'),
+        filterQ: body.filterQ === undefined ? undefined : asNumber(body.filterQ, 'filterQ'),
         loopMode: body.loopMode === undefined ? undefined : asString(body.loopMode, 'loopMode'),
         waitMs: body.waitMs === undefined ? undefined : asNumber(body.waitMs, 'waitMs'),
         randomMinMs: body.randomMinMs === undefined ? undefined : asNumber(body.randomMinMs, 'randomMinMs'),
@@ -335,6 +532,17 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
         ...(displayName ? { displayName } : {}),
         value: asNumber(body.value, 'value'),
       };
+    case 'stopSound':
+      return {
+        ...(displayName ? { displayName } : {}),
+        effectId: body.effectId === undefined ? undefined : asString(body.effectId, 'effectId'),
+      };
+    case 'setSoundVolume':
+      return {
+        ...(displayName ? { displayName } : {}),
+        value: asNumber(body.value, 'value'),
+        effectId: body.effectId === undefined ? undefined : asString(body.effectId, 'effectId'),
+      };
     case 'sendImageToWindow':
       return {
         ...(displayName ? { displayName } : {}),
@@ -343,11 +551,17 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
         opacity: body.opacity === undefined ? undefined : asOpacity(body.opacity, 'opacity'),
         durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
         timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
+        layerOrder: body.layerOrder === undefined ? undefined : asNumber(body.layerOrder, 'layerOrder'),
         chromaKey: normalizeChromaKey(body.chromaKey),
-        leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -50, 150),
-        topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -50, 150),
-        widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 200),
-        heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 200),
+        leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -200, 200),
+        topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -200, 200),
+        widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 300),
+        heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 300),
+        rotation: body.rotation === undefined ? undefined : asFreePercentage(body.rotation, 'rotation', -360, 360),
+        flipH: body.flipH === undefined ? undefined : asBoolean(body.flipH, 'flipH'),
+        flipV: body.flipV === undefined ? undefined : asBoolean(body.flipV, 'flipV'),
+        motionPath: normalizeMotionPath(body.motionPath),
+        oscillation: normalizeOscillation(body.oscillation),
         ...normalizeClipMetadata(body),
       };
     case 'sendVideoToWindow':
@@ -368,10 +582,15 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
           durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
           timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
           chromaKey: normalizeChromaKey(body.chromaKey),
-          leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -50, 150),
-          topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -50, 150),
-          widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 200),
-          heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 200),
+          leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -200, 200),
+          topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -200, 200),
+          widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 300),
+          heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 300),
+          rotation: body.rotation === undefined ? undefined : asFreePercentage(body.rotation, 'rotation', -360, 360),
+          flipH: body.flipH === undefined ? undefined : asBoolean(body.flipH, 'flipH'),
+          flipV: body.flipV === undefined ? undefined : asBoolean(body.flipV, 'flipV'),
+          motionPath: normalizeMotionPath(body.motionPath),
+          oscillation: normalizeOscillation(body.oscillation),
           ...normalizeClipMetadata(body),
         };
       }
@@ -385,8 +604,11 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
       return {
         ...(displayName ? { displayName } : {}),
         filter: asString(body.filter, 'filter'),
+        timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
+        layerOrder: body.layerOrder === undefined ? undefined : asNumber(body.layerOrder, 'layerOrder'),
         intensity: body.intensity === undefined ? undefined : asNumber(body.intensity, 'intensity'),
         color: body.color === undefined ? undefined : asString(body.color, 'color'),
+        durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
       };
     case 'setWeather':
       return {
@@ -402,35 +624,43 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
         if (!text && !richTextDoc) {
           throw new BadRequestException('setNarrativeText requires text or richTextDoc');
         }
-      return {
-        ...(displayName ? { displayName } : {}),
-        ...(text ? { text } : {}),
-        title: body.title === undefined ? undefined : asString(body.title, 'title'),
-        durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
-        ...(richTextDoc ? { richTextDoc } : {}),
-        leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -50, 150),
-        topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -50, 150),
-        widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 200),
-        heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 200),
-        opacity: body.opacity === undefined ? undefined : asOpacity(body.opacity, 'opacity'),
-        layerOrder: body.layerOrder === undefined ? undefined : asNumber(body.layerOrder, 'layerOrder'),
-        fontFamily: asOptionalLabel(body.fontFamily, 'fontFamily', 120),
-        fontSizePx: body.fontSizePx === undefined ? undefined : asFreePercentage(body.fontSizePx, 'fontSizePx', 8, 220),
-        fontColor: asOptionalHexColor(body.fontColor, 'fontColor'),
-        textAlign: asOptionalEnum(body.textAlign, 'textAlign', ['left', 'center', 'right', 'justify'] as const),
-        lineHeight: body.lineHeight === undefined ? undefined : asFreePercentage(body.lineHeight, 'lineHeight', 0.8, 3),
-        letterSpacingPx: body.letterSpacingPx === undefined
-          ? undefined
-          : asFreePercentage(body.letterSpacingPx, 'letterSpacingPx', -8, 20),
-        fontWeight: asOptionalEnum(body.fontWeight, 'fontWeight', ['normal', 'bold'] as const),
-        fontStyle: asOptionalEnum(body.fontStyle, 'fontStyle', ['normal', 'italic'] as const),
-        textDecoration: asOptionalEnum(body.textDecoration, 'textDecoration', ['none', 'underline'] as const),
-        backgroundMode: asOptionalEnum(body.backgroundMode, 'backgroundMode', ['none', 'rect', 'capsule'] as const),
-        backgroundColor: asOptionalHexColor(body.backgroundColor, 'backgroundColor'),
-        backgroundOpacity: body.backgroundOpacity === undefined ? undefined : asOpacity(body.backgroundOpacity, 'backgroundOpacity'),
-        borderRadiusPx: body.borderRadiusPx === undefined ? undefined : asFreePercentage(body.borderRadiusPx, 'borderRadiusPx', 0, 128),
-        paddingPx: body.paddingPx === undefined ? undefined : asFreePercentage(body.paddingPx, 'paddingPx', 0, 64),
-      };
+        return {
+          ...(displayName ? { displayName } : {}),
+          ...(text ? { text } : {}),
+          title: body.title === undefined ? undefined : asString(body.title, 'title'),
+          durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
+          timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
+          ...(richTextDoc ? { richTextDoc } : {}),
+          leftPct: body.leftPct === undefined ? undefined : asFreePercentage(body.leftPct, 'leftPct', -200, 200),
+          topPct: body.topPct === undefined ? undefined : asFreePercentage(body.topPct, 'topPct', -200, 200),
+          widthPct: body.widthPct === undefined ? undefined : asFreePercentage(body.widthPct, 'widthPct', 1, 300),
+          heightPct: body.heightPct === undefined ? undefined : asFreePercentage(body.heightPct, 'heightPct', 1, 300),
+          opacity: body.opacity === undefined ? undefined : asOpacity(body.opacity, 'opacity'),
+          layerOrder: body.layerOrder === undefined ? undefined : asNumber(body.layerOrder, 'layerOrder'),
+          rotation: body.rotation === undefined ? undefined : asFreePercentage(body.rotation, 'rotation', -360, 360),
+          flipH: body.flipH === undefined ? undefined : asBoolean(body.flipH, 'flipH'),
+          flipV: body.flipV === undefined ? undefined : asBoolean(body.flipV, 'flipV'),
+          motionPath: normalizeMotionPath(body.motionPath),
+          oscillation: normalizeOscillation(body.oscillation),
+          fontFamily: asOptionalLabel(body.fontFamily, 'fontFamily', 120),
+          fontSizePx: body.fontSizePx === undefined ? undefined : asFreePercentage(body.fontSizePx, 'fontSizePx', 8, 220),
+          fontColor: asOptionalHexColor(body.fontColor, 'fontColor'),
+          textAlign: asOptionalEnum(body.textAlign, 'textAlign', ['left', 'center', 'right', 'justify'] as const),
+          lineHeight: body.lineHeight === undefined ? undefined : asFreePercentage(body.lineHeight, 'lineHeight', 0.8, 3),
+          letterSpacingPx: body.letterSpacingPx === undefined
+            ? undefined
+            : asFreePercentage(body.letterSpacingPx, 'letterSpacingPx', -8, 20),
+          fontWeight: asOptionalEnum(body.fontWeight, 'fontWeight', ['normal', 'bold'] as const),
+          fontStyle: asOptionalEnum(body.fontStyle, 'fontStyle', ['normal', 'italic'] as const),
+          textDecoration: asOptionalEnum(body.textDecoration, 'textDecoration', ['none', 'underline'] as const),
+          backgroundMode: asOptionalEnum(body.backgroundMode, 'backgroundMode', ['none', 'rect', 'capsule'] as const),
+          backgroundColor: asOptionalHexColor(body.backgroundColor, 'backgroundColor'),
+          backgroundOpacity: body.backgroundOpacity === undefined ? undefined : asOpacity(body.backgroundOpacity, 'backgroundOpacity'),
+          borderRadiusPx: body.borderRadiusPx === undefined ? undefined : asFreePercentage(body.borderRadiusPx, 'borderRadiusPx', 0, 128),
+          paddingPx: body.paddingPx === undefined ? undefined : asFreePercentage(body.paddingPx, 'paddingPx', 0, 64),
+          voiceConfig: normalizeVoiceConfig(body.voiceConfig),
+          voiceTarget: asOptionalEnum(body.voiceTarget, 'voiceTarget', ['main', 'projection', 'both'] as const) ?? 'projection',
+        };
       }
     case 'runShortcut':
       return {

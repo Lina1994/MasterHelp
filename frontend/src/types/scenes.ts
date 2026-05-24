@@ -1,8 +1,11 @@
 export type SceneRuntimeCommandKind =
   | 'audio.playMusic'
+  | 'audio.playPreset'
   | 'audio.stopMusic'
   | 'audio.playSound'
   | 'audio.setMusicVolume'
+  | 'audio.stopSound'
+  | 'audio.setSoundVolume'
   | 'scene.stopExecution'
   | 'window.sendImage'
   | 'window.sendVideo'
@@ -57,6 +60,8 @@ export interface SceneLite {
   loopDelayRandomMaxMs?: number | null;
   loopWindowStartMs?: number | null;
   loopWindowEndMs?: number | null;
+  takeOverMusicOnStart?: boolean;
+  restorePreviousMusicOnFinish?: boolean;
   scope?: 'global' | 'campaign';
   campaignId?: string | null;
 }
@@ -106,6 +111,8 @@ export interface ScenePayload {
   loopDelayRandomMaxMs?: number | null;
   loopWindowStartMs?: number | null;
   loopWindowEndMs?: number | null;
+  takeOverMusicOnStart?: boolean;
+  restorePreviousMusicOnFinish?: boolean;
   scope: 'global' | 'campaign';
   campaignId?: string | null;
   actions: SceneActionDto[];
@@ -185,4 +192,52 @@ export interface SceneClockSyncResponse {
   serverNowMs: number;
   scheduleVersion: number;
   leadMs: number;
+}
+
+// ---------------------------------------------------------------------------
+// Motion & Transform types
+// ---------------------------------------------------------------------------
+
+/** Easing function applied from one keyframe to the next. */
+export type MotionEasing = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' | 'bounce' | 'spring';
+
+/**
+ * A single keyframe in a layer motion path.
+ * timeMs=0 maps to the action's starting position (leftPct/topPct in payload).
+ */
+export interface MotionKeyframe {
+  /** Milliseconds from action start. */
+  timeMs: number;
+  /** X position as % of stage width. */
+  leftPct: number;
+  /** Y position as % of stage height. */
+  topPct: number;
+  /** Optional pause duration at this keyframe before moving to the next one. */
+  holdMs?: number;
+  /** Whether oscillation should freeze while this keyframe hold is active. */
+  pauseOscillationDuringHold?: boolean;
+  /** Optional rotation in degrees at this keyframe. Interpolated from prev keyframe. */
+  rotation?: number;
+  /** Optional horizontal flip at this keyframe (step change). */
+  flipH?: boolean;
+  /** Optional vertical flip at this keyframe (step change). */
+  flipV?: boolean;
+  /** Easing applied from this keyframe to the next one. */
+  easing: MotionEasing;
+}
+
+/**
+ * Secondary oscillation effect superimposed on the motion path.
+ * 'wave' = smooth sinusoidal; 'bounce' = abrupt sawtooth (walk cycle feel).
+ */
+export interface OscillationEffect {
+  enabled: boolean;
+  type: 'wave' | 'bounce';
+  axis: 'x' | 'y' | 'both';
+  /** Amplitude as % of stage (e.g. 3 = ±3%). */
+  amplitudePct: number;
+  /** Oscillations per second (e.g. 2 = 2 bounces/sec). */
+  frequencyHz: number;
+  /** When true, the oscillation phase is frozen while motion-path holds are active. */
+  pauseDuringMotionHold?: boolean;
 }

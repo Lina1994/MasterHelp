@@ -78,6 +78,14 @@ export class CreateSceneDto {
   loopWindowEndMs?: number | null;
 
   @IsOptional()
+  @IsBoolean()
+  takeOverMusicOnStart?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  restorePreviousMusicOnFinish?: boolean;
+
+  @IsOptional()
   @IsString()
   @MaxLength(8)
   icon?: string | null;

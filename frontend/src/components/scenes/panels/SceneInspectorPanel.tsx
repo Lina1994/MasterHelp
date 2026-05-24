@@ -182,6 +182,7 @@ export const SceneInspectorPanel: React.FC<SceneInspectorPanelProps> = ({
               'borderRadiusPx',
               'paddingPx',
             ].some((field) => payload[field] !== undefined && payload[field] !== null && payload[field] !== '');
+            const narrativeHasVoice = isNarrative && Boolean(payload.voiceConfig && typeof payload.voiceConfig === 'object');
             return (
               <Paper
                 key={action.id}
@@ -232,6 +233,7 @@ export const SceneInspectorPanel: React.FC<SceneInspectorPanelProps> = ({
                     <Chip size="small" label={`z${index + 1}`} />
                     {narrativeHasRichText ? <Chip size="small" color="info" variant="outlined" label="rich" /> : null}
                     {narrativeHasStyle ? <Chip size="small" color="secondary" variant="outlined" label="style" /> : null}
+                    {narrativeHasVoice ? <Chip size="small" color="success" variant="outlined" label="voice" /> : null}
                     {narrativeEditing ? <Chip size="small" color="warning" label="editando" /> : null}
                   </Stack>
                 </Stack>

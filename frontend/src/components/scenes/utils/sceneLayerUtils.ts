@@ -4,6 +4,7 @@
  *   shaping used throughout the Scene editor and preview canvas.
  */
 
+import type { CSSProperties } from 'react';
 import type { SceneActionDto } from '../../../types/scenes';
 import type { WindowSize } from '../../../hooks/useSecondaryWindowSizes';
 import { WINDOW_ACTION_TYPES } from '../constants/actionTypes';
@@ -21,11 +22,20 @@ export const PREVIEW_LAYER_SNAP_STEP_PCT = 1;
 /** Minimum layer dimension (%) to avoid zero-size layers. */
 export const PREVIEW_LAYER_MIN_SIZE_PCT = 5;
 
-/** Minimum coordinate (%) for layer placement inside the stage. */
-export const PREVIEW_LAYER_STAGE_MIN_PCT = 0;
+/**
+ * Minimum coordinate (%) allowed for free placement.
+ * Negative values allow layers to be partially or fully outside the stage.
+ */
+export const PREVIEW_LAYER_STAGE_MIN_PCT = -200;
 
-/** Maximum coordinate (%) for layer placement inside the stage. */
-export const PREVIEW_LAYER_STAGE_MAX_PCT = 100;
+/**
+ * Maximum coordinate (%) allowed for free placement.
+ * Values above 100 allow layers to be partially or fully outside the stage.
+ */
+export const PREVIEW_LAYER_STAGE_MAX_PCT = 200;
+
+/** Maximum dimension (%) allowed for layer width/height while editing. */
+export const PREVIEW_LAYER_MAX_SIZE_PCT = 300;
 
 // ---------------------------------------------------------------------------
 // Preview window type
@@ -98,14 +108,14 @@ export function normalizePercentage(
 }
 
 /**
- * Clamps a free-placement percentage to [-50, 150], allowing partial overflow.
+ * Clamps a free-placement percentage to a generous range, allowing overflow.
  * @param value - Raw value.
  * @param fallback - Value used when `value` is not finite.
  */
 export function normalizeFreePlacement(value: unknown, fallback: number): number {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
-  return Math.max(-50, Math.min(150, n));
+  return Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, Math.min(PREVIEW_LAYER_STAGE_MAX_PCT, n));
 }
 
 /**
@@ -121,7 +131,7 @@ export function snapPct(value: number): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Clamps a layer's position so it stays fully inside the stage.
+ * Clamps a layer's position to an overflow-friendly authoring range.
  * @param leftPct - Requested left coordinate (%).
  * @param topPct - Requested top coordinate (%).
  * @param widthPct - Layer width (%).
@@ -131,25 +141,17 @@ export function snapPct(value: number): number {
 export function clampLayerMoveInsideStage(
   leftPct: number,
   topPct: number,
-  widthPct: number,
-  heightPct: number,
+  _widthPct: number,
+  _heightPct: number,
 ): { leftPct: number; topPct: number } {
-  const maxLeft = Math.max(
-    PREVIEW_LAYER_STAGE_MIN_PCT,
-    PREVIEW_LAYER_STAGE_MAX_PCT - widthPct,
-  );
-  const maxTop = Math.max(
-    PREVIEW_LAYER_STAGE_MIN_PCT,
-    PREVIEW_LAYER_STAGE_MAX_PCT - heightPct,
-  );
   return {
-    leftPct: Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, Math.min(maxLeft, leftPct)),
-    topPct: Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, Math.min(maxTop, topPct)),
+    leftPct: Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, Math.min(PREVIEW_LAYER_STAGE_MAX_PCT, leftPct)),
+    topPct: Math.max(PREVIEW_LAYER_STAGE_MIN_PCT, Math.min(PREVIEW_LAYER_STAGE_MAX_PCT, topPct)),
   };
 }
 
 /**
- * Clamps a layer's size so it fits inside the stage from the current anchor position.
+ * Clamps a layer's size to an authoring-safe range without forcing it inside stage bounds.
  * @param widthPct - Requested width (%).
  * @param heightPct - Requested height (%).
  * @param leftPct - Current left anchor (%).
@@ -159,20 +161,12 @@ export function clampLayerMoveInsideStage(
 export function clampLayerSizeInsideStage(
   widthPct: number,
   heightPct: number,
-  leftPct: number,
-  topPct: number,
+  _leftPct: number,
+  _topPct: number,
 ): { widthPct: number; heightPct: number } {
-  const maxWidth = Math.max(
-    PREVIEW_LAYER_MIN_SIZE_PCT,
-    PREVIEW_LAYER_STAGE_MAX_PCT - leftPct,
-  );
-  const maxHeight = Math.max(
-    PREVIEW_LAYER_MIN_SIZE_PCT,
-    PREVIEW_LAYER_STAGE_MAX_PCT - topPct,
-  );
   return {
-    widthPct: Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, Math.min(maxWidth, widthPct)),
-    heightPct: Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, Math.min(maxHeight, heightPct)),
+    widthPct: Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, Math.min(PREVIEW_LAYER_MAX_SIZE_PCT, widthPct)),
+    heightPct: Math.max(PREVIEW_LAYER_MIN_SIZE_PCT, Math.min(PREVIEW_LAYER_MAX_SIZE_PCT, heightPct)),
   };
 }
 
@@ -230,6 +224,47 @@ export function getChromaFromPayload(
     enabled: Boolean(chroma.enabled),
     color,
     tolerance: normalizePercentage(chroma.tolerance, 20),
+  };
+}
+
+/**
+ * Builds the backdrop filter overlay style used for window filter actions.
+ * @param filter - Filter name or CSS filter preset.
+ * @param intensity - Optional normalized intensity in the range [0, 1].
+ * @param color - Optional overlay color.
+ * @returns Style fragment that can be merged into an absolutely positioned overlay.
+ */
+export function buildWindowFilterBackdropStyle(
+  filter: string,
+  intensity?: number,
+  color?: string,
+): CSSProperties {
+  const normalizedFilter = filter.toLowerCase().trim();
+  const normalizedIntensity = Math.max(0, Math.min(1, Number(intensity ?? 1)));
+  const opacity = 0.08 + (0.32 * normalizedIntensity);
+  const overlayColor = color || 'transparent';
+
+  const filterMap: Record<string, string> = {
+    grayscale: `grayscale(${Math.round(normalizedIntensity * 100)}%)`,
+    sepia: `sepia(${Math.round(normalizedIntensity * 100)}%)`,
+    blur: `blur(${(normalizedIntensity * 8).toFixed(1)}px)`,
+    brightness: `brightness(${(0.6 + normalizedIntensity).toFixed(2)})`,
+    contrast: `contrast(${(1 + normalizedIntensity).toFixed(2)})`,
+    saturate: `saturate(${(1 + normalizedIntensity * 1.5).toFixed(2)})`,
+    hue: `hue-rotate(${Math.round(normalizedIntensity * 180)}deg)`,
+    hue_rotate: `hue-rotate(${Math.round(normalizedIntensity * 180)}deg)`,
+    invert: `invert(${Math.round(normalizedIntensity * 100)}%)`,
+  };
+
+  const filterCss = filterMap[normalizedFilter] || '';
+
+  return {
+    backdropFilter: filterCss || undefined,
+    WebkitBackdropFilter: filterCss || undefined,
+    backgroundColor: overlayColor === 'transparent'
+      ? `rgba(0,0,0,${opacity.toFixed(3)})`
+      : overlayColor,
+    mixBlendMode: overlayColor === 'transparent' ? 'normal' : 'multiply',
   };
 }
 
@@ -437,7 +472,8 @@ export function normalizeActionForEditor(action: SceneActionDto): SceneActionDto
   const base = normalizeWindowTargetForEditor(action);
   if (
     base.type !== 'sendImageToWindow' &&
-    base.type !== 'sendVideoToWindow'
+    base.type !== 'sendVideoToWindow' &&
+    base.type !== 'setNarrativeText'
   ) {
     return base;
   }
@@ -477,6 +513,29 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
     return trimmed ? trimmed : undefined;
   };
   const displayName = optionalText(payload.displayName);
+  const clipMetadata = {
+    ...(optionalText(payload.splitGroupId)
+      ? { splitGroupId: optionalText(payload.splitGroupId) }
+      : {}),
+    ...(payload.splitIndex !== undefined && Number.isFinite(Number(payload.splitIndex))
+      ? { splitIndex: Number(payload.splitIndex) }
+      : {}),
+    ...(payload.splitTotal !== undefined && Number.isFinite(Number(payload.splitTotal))
+      ? { splitTotal: Number(payload.splitTotal) }
+      : {}),
+    ...(optionalText(payload.parentActionId)
+      ? { parentActionId: optionalText(payload.parentActionId) }
+      : {}),
+    ...(payload.clipInSec !== undefined && Number.isFinite(Number(payload.clipInSec))
+      ? { clipInSec: Number(payload.clipInSec) }
+      : {}),
+    ...(payload.clipOutSec !== undefined && Number.isFinite(Number(payload.clipOutSec))
+      ? { clipOutSec: Number(payload.clipOutSec) }
+      : {}),
+    ...(payload.clipDurationMs !== undefined && Number.isFinite(Number(payload.clipDurationMs))
+      ? { clipDurationMs: Number(payload.clipDurationMs) }
+      : {}),
+  };
 
   if (base.type === 'sendImageToWindow') {
     const placement = getPlacementFromPayload(payload);
@@ -500,6 +559,18 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         ...(timelineStartMs !== undefined ? { timelineStartMs } : {}),
         ...(normalizedLayerOrder !== undefined
           ? { layerOrder: normalizedLayerOrder }
+          : {}),
+        // Transform & animation
+        ...(Number.isFinite(Number(payload.rotation)) && Number(payload.rotation) !== 0
+          ? { rotation: Number(payload.rotation) }
+          : {}),
+        ...(payload.flipH ? { flipH: true } : {}),
+        ...(payload.flipV ? { flipV: true } : {}),
+        ...(Array.isArray(payload.motionPath)
+          ? { motionPath: payload.motionPath }
+          : {}),
+        ...(payload.oscillation && typeof payload.oscillation === 'object'
+          ? { oscillation: payload.oscillation }
           : {}),
       },
     };
@@ -558,6 +629,18 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         ...(normalizedLayerOrder !== undefined
           ? { layerOrder: normalizedLayerOrder }
           : {}),
+        // Transform & animation
+        ...(Number.isFinite(Number(payload.rotation)) && Number(payload.rotation) !== 0
+          ? { rotation: Number(payload.rotation) }
+          : {}),
+        ...(payload.flipH ? { flipH: true } : {}),
+        ...(payload.flipV ? { flipV: true } : {}),
+        ...(Array.isArray(payload.motionPath)
+          ? { motionPath: payload.motionPath }
+          : {}),
+        ...(payload.oscillation && typeof payload.oscillation === 'object'
+          ? { oscillation: payload.oscillation }
+          : {}),
       },
     };
   }
@@ -581,23 +664,67 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
       payload: {
         filter: String(payload.filter ?? '').trim(),
         ...(displayName ? { displayName } : {}),
+        ...(payload.timelineStartMs !== undefined && Number.isFinite(Number(payload.timelineStartMs))
+          ? { timelineStartMs: Number(payload.timelineStartMs) }
+          : {}),
+        ...(payload.layerOrder !== undefined && Number.isFinite(Number(payload.layerOrder))
+          ? { layerOrder: Math.round(Number(payload.layerOrder)) }
+          : {}),
         ...(payload.intensity !== undefined &&
         Number.isFinite(Number(payload.intensity))
           ? { intensity: Number(payload.intensity) }
           : {}),
         ...(optionalText(payload.color) ? { color: optionalText(payload.color) } : {}),
+        ...(payload.durationMs !== undefined && Number.isFinite(Number(payload.durationMs))
+          ? { durationMs: Number(payload.durationMs) }
+          : {}),
       },
     };
   }
 
   if (base.type === 'setNarrativeText') {
     const placement = getPlacementFromPayload(payload);
+    const timelineStartMs = toNonNegativeMs(payload.timelineStartMs);
     const backgroundMode = String(payload.backgroundMode ?? 'rect').trim();
     const normalizedBackgroundMode =
       backgroundMode === 'none' || backgroundMode === 'capsule'
         ? backgroundMode
         : 'rect';
     const richTextDoc = asRecord(payload.richTextDoc);
+    const rawVoiceConfig = asRecord(payload.voiceConfig);
+    const voiceModeRaw = rawVoiceConfig?.mode;
+    const voiceMode =
+      voiceModeRaw === 'retroBeep' || voiceModeRaw === 'animalese' || voiceModeRaw === 'tomodachi' || voiceModeRaw === 'qwenFormant'
+        ? voiceModeRaw
+        : 'retroBeep';
+    const voiceSpeedRaw = Number(rawVoiceConfig?.speed);
+    const voicePitchRangeRaw = Number(rawVoiceConfig?.pitchRange);
+    const rawTomodachi = asRecord(rawVoiceConfig?.tomodachi);
+    const sampleSetRaw = String(rawTomodachi?.sampleSet ?? '').trim();
+    const sampleSet =
+      sampleSetRaw === 'classic' || sampleSetRaw === 'bright' || sampleSetRaw === 'soft'
+        ? sampleSetRaw
+        : 'classic';
+    const consonantDensityRaw = Number(rawTomodachi?.consonantDensity);
+    const humanizeRaw = Number(rawTomodachi?.humanize);
+    const rawQwen = asRecord(rawVoiceConfig?.qwen);
+    const qwenPersonaRaw = String(rawQwen?.persona ?? '').trim();
+    const qwenPersona =
+      qwenPersonaRaw === 'male' || qwenPersonaRaw === 'female' || qwenPersonaRaw === 'child' || qwenPersonaRaw === 'robot'
+        ? qwenPersonaRaw
+        : 'male';
+    const qwenPitchMulRaw = Number(rawQwen?.pitchMul);
+    const qwenSpeedMsRaw = Number(rawQwen?.speedMs);
+    const qwenBrightnessRaw = Number(rawQwen?.brightness);
+    const qwenVolumeRaw = Number(rawQwen?.volume);
+    const qwenJitterRaw = Number(rawQwen?.jitter);
+    const qwenTransitionRaw = Number(rawQwen?.transitionMul);
+    const qwenVowelGlitchRaw = Number(rawQwen?.vowelGlitch);
+    const voiceTargetRaw = String(payload.voiceTarget ?? '').trim();
+    const voiceTarget =
+      voiceTargetRaw === 'main' || voiceTargetRaw === 'projection' || voiceTargetRaw === 'both'
+        ? voiceTargetRaw
+        : 'projection';
     return {
       ...base,
       payload: {
@@ -610,6 +737,7 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         Number.isFinite(Number(payload.durationMs))
           ? { durationMs: Number(payload.durationMs) }
           : {}),
+        ...(timelineStartMs !== undefined ? { timelineStartMs } : {}),
         ...(richTextDoc ? { richTextDoc } : {}),
         leftPct: placement.leftPct,
         topPct: placement.topPct,
@@ -620,6 +748,18 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
           : {}),
         ...(normalizedLayerOrder !== undefined
           ? { layerOrder: normalizedLayerOrder }
+          : {}),
+        // Transform & animation
+        ...(Number.isFinite(Number(payload.rotation)) && Number(payload.rotation) !== 0
+          ? { rotation: Number(payload.rotation) }
+          : {}),
+        ...(payload.flipH ? { flipH: true } : {}),
+        ...(payload.flipV ? { flipV: true } : {}),
+        ...(Array.isArray(payload.motionPath)
+          ? { motionPath: payload.motionPath }
+          : {}),
+        ...(payload.oscillation && typeof payload.oscillation === 'object'
+          ? { oscillation: payload.oscillation }
           : {}),
         ...(optionalText(payload.fontFamily)
           ? { fontFamily: optionalText(payload.fontFamily) }
@@ -686,11 +826,56 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
               paddingPx: Math.max(0, Math.min(64, Number(payload.paddingPx))),
             }
           : {}),
+        voiceConfig: {
+          mode: voiceMode,
+          speed: Number.isFinite(voiceSpeedRaw)
+            ? Math.max(0.25, Math.min(3, voiceSpeedRaw))
+            : 1,
+          pitchRange: Number.isFinite(voicePitchRangeRaw)
+            ? Math.max(0, Math.min(24, voicePitchRangeRaw))
+            : 8,
+          tomodachi: {
+            sampleSet,
+            consonantDensity: Number.isFinite(consonantDensityRaw)
+              ? Math.max(0, Math.min(1, consonantDensityRaw))
+              : 1,
+            humanize: Number.isFinite(humanizeRaw)
+              ? Math.max(0, Math.min(1, humanizeRaw))
+              : 0.65,
+          },
+          qwen: {
+            persona: qwenPersona,
+            pitchMul: Number.isFinite(qwenPitchMulRaw)
+              ? Math.max(0.5, Math.min(2.5, qwenPitchMulRaw))
+              : (qwenPersona === 'female' ? 1.3 : qwenPersona === 'child' ? 1.6 : 1),
+            speedMs: Number.isFinite(qwenSpeedMsRaw)
+              ? Math.max(30, Math.min(200, qwenSpeedMsRaw))
+              : (qwenPersona === 'child' ? 68 : qwenPersona === 'robot' ? 72 : 70),
+            brightness: Number.isFinite(qwenBrightnessRaw)
+              ? Math.max(0.3, Math.min(3, qwenBrightnessRaw))
+              : (qwenPersona === 'female' ? 1.3 : qwenPersona === 'child' ? 1.5 : qwenPersona === 'robot' ? 0.6 : 1),
+            volume: Number.isFinite(qwenVolumeRaw)
+              ? Math.max(0.1, Math.min(1, qwenVolumeRaw))
+              : (qwenPersona === 'female' ? 0.68 : qwenPersona === 'child' ? 0.66 : qwenPersona === 'robot' ? 0.72 : 0.7),
+            jitter: Number.isFinite(qwenJitterRaw)
+              ? Math.max(0, Math.min(0.3, qwenJitterRaw))
+              : (qwenPersona === 'robot' ? 0.02 : qwenPersona === 'child' ? 0.1 : 0.08),
+            transitionMul: Number.isFinite(qwenTransitionRaw)
+              ? Math.max(0, Math.min(0.8, qwenTransitionRaw))
+              : (qwenPersona === 'female' ? 0.34 : qwenPersona === 'child' ? 0.38 : qwenPersona === 'robot' ? 0.14 : 0.3),
+            vowelGlitch: Number.isFinite(qwenVowelGlitchRaw)
+              ? Math.max(0, Math.min(1, qwenVowelGlitchRaw))
+              : (qwenPersona === 'female' ? 0.3 : qwenPersona === 'child' ? 0.34 : qwenPersona === 'robot' ? 0.08 : 0.28),
+          },
+        },
+        voiceTarget,
       },
     };
   }
 
   if (base.type === 'playMusic') {
+    const timelineStartMs = toNonNegativeMs(payload.timelineStartMs);
+    const durationMs = toPositiveDurationMs(payload.durationMs);
     return {
       ...base,
       payload: {
@@ -706,11 +891,53 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         Number.isFinite(Number(payload.volume))
           ? { volume: Number(payload.volume) }
           : {}),
+        ...(timelineStartMs !== undefined ? { timelineStartMs } : {}),
+        ...(durationMs !== undefined ? { durationMs } : {}),
+        ...clipMetadata,
+      },
+    };
+  }
+
+  if (base.type === 'playPreset') {
+    return {
+      ...base,
+      payload: {
+        ...(displayName ? { displayName } : {}),
+        ...(optionalText(payload.presetId)
+          ? { presetId: optionalText(payload.presetId) }
+          : {}),
+        ...(payload.volume !== undefined && Number.isFinite(Number(payload.volume))
+          ? { volume: Number(payload.volume) }
+          : {}),
+        ...(payload.playbackRate !== undefined && Number.isFinite(Number(payload.playbackRate))
+          ? { playbackRate: Number(payload.playbackRate) }
+          : {}),
+        ...(payload.pitchSemitones !== undefined && Number.isFinite(Number(payload.pitchSemitones))
+          ? { pitchSemitones: Number(payload.pitchSemitones) }
+          : {}),
+        ...(payload.echoEnabled !== undefined ? { echoEnabled: Boolean(payload.echoEnabled) } : {}),
+        ...(payload.echoDelayMs !== undefined && Number.isFinite(Number(payload.echoDelayMs))
+          ? { echoDelayMs: Number(payload.echoDelayMs) }
+          : {}),
+        ...(payload.echoFeedback !== undefined && Number.isFinite(Number(payload.echoFeedback))
+          ? { echoFeedback: Number(payload.echoFeedback) }
+          : {}),
+        ...(optionalText(payload.filterType)
+          ? { filterType: optionalText(payload.filterType) }
+          : {}),
+        ...(payload.filterFrequency !== undefined && Number.isFinite(Number(payload.filterFrequency))
+          ? { filterFrequency: Number(payload.filterFrequency) }
+          : {}),
+        ...(payload.filterQ !== undefined && Number.isFinite(Number(payload.filterQ))
+          ? { filterQ: Number(payload.filterQ) }
+          : {}),
       },
     };
   }
 
   if (base.type === 'playSound') {
+    const timelineStartMs = toNonNegativeMs(payload.timelineStartMs);
+    const durationMs = toPositiveDurationMs(payload.durationMs);
     return {
       ...base,
       payload: {
@@ -719,6 +946,28 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         ...(payload.volume !== undefined &&
         Number.isFinite(Number(payload.volume))
           ? { volume: Number(payload.volume) }
+          : {}),
+        ...(payload.playbackRate !== undefined && Number.isFinite(Number(payload.playbackRate))
+          ? { playbackRate: Number(payload.playbackRate) }
+          : {}),
+        ...(payload.pitchSemitones !== undefined && Number.isFinite(Number(payload.pitchSemitones))
+          ? { pitchSemitones: Number(payload.pitchSemitones) }
+          : {}),
+        ...(payload.echoEnabled !== undefined ? { echoEnabled: Boolean(payload.echoEnabled) } : {}),
+        ...(payload.echoDelayMs !== undefined && Number.isFinite(Number(payload.echoDelayMs))
+          ? { echoDelayMs: Number(payload.echoDelayMs) }
+          : {}),
+        ...(payload.echoFeedback !== undefined && Number.isFinite(Number(payload.echoFeedback))
+          ? { echoFeedback: Number(payload.echoFeedback) }
+          : {}),
+        ...(optionalText(payload.filterType)
+          ? { filterType: optionalText(payload.filterType) }
+          : {}),
+        ...(payload.filterFrequency !== undefined && Number.isFinite(Number(payload.filterFrequency))
+          ? { filterFrequency: Number(payload.filterFrequency) }
+          : {}),
+        ...(payload.filterQ !== undefined && Number.isFinite(Number(payload.filterQ))
+          ? { filterQ: Number(payload.filterQ) }
           : {}),
         ...(optionalText(payload.loopMode)
           ? { loopMode: optionalText(payload.loopMode) }
@@ -734,6 +983,9 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         Number.isFinite(Number(payload.randomMaxMs))
           ? { randomMaxMs: Number(payload.randomMaxMs) }
           : {}),
+        ...(timelineStartMs !== undefined ? { timelineStartMs } : {}),
+        ...(durationMs !== undefined ? { durationMs } : {}),
+        ...clipMetadata,
       },
     };
   }
@@ -768,6 +1020,19 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
     };
   }
 
+  if (base.type === 'setSoundVolume') {
+    return {
+      ...base,
+      payload: {
+        ...(displayName ? { displayName } : {}),
+        value: Number(payload.value ?? 80),
+        ...(optionalText(payload.effectId)
+          ? { effectId: optionalText(payload.effectId) }
+          : {}),
+      },
+    };
+  }
+
   if (base.type === 'stopMusic') {
     return {
       ...base,
@@ -775,6 +1040,18 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         ...(displayName ? { displayName } : {}),
         ...(payload.stopEffects !== undefined
           ? { stopEffects: Boolean(payload.stopEffects) }
+          : {}),
+      },
+    };
+  }
+
+  if (base.type === 'stopSound') {
+    return {
+      ...base,
+      payload: {
+        ...(displayName ? { displayName } : {}),
+        ...(optionalText(payload.effectId)
+          ? { effectId: optionalText(payload.effectId) }
           : {}),
       },
     };

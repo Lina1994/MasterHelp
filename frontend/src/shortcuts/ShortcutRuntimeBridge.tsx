@@ -9,6 +9,13 @@ import { listPlaylists, listSongsForCampaign } from '../api/soundtrack';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useGlobalPlayer } from '../components/player/GlobalPlayerContext';
 import { useSfxPlayer, type SfxLoopMode } from '../components/player/SfxPlayerContext';
+import {
+  estimateNarrationDurationMs,
+  normalizeNarratorVoiceConfig,
+  normalizeNarratorVoiceTarget,
+  playNarration,
+  type NarratorVoiceConfig,
+} from '../components/scenes/utils/narratorPlayback';
 import { dispatchSceneWindowCommand, dispatchWindowShortcutAction } from './ipcActions';
 import { useSceneClockSync } from '../hooks/useSceneClockSync';
 import { getAuthHeaders } from '../utils/auth';
@@ -17,8 +24,46 @@ import type { ExecuteSceneResponse, SceneRuntimeCommand } from '../types/scenes'
 
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 
+const toVolume01 = (value: unknown, fallback = 1): number => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return clamp01(fallback);
+  return clamp01(n > 1 ? n / 100 : n);
+};
+
+const toOptionalNumber = (value: unknown): number | undefined => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : undefined;
+};
+
+const toOptionalNonNegativeNumber = (value: unknown): number | undefined => {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
+};
+
+const toOptionalFilterType = (value: unknown): 'none' | 'lowpass' | 'highpass' | 'bandpass' | undefined => {
+  if (value === 'none' || value === 'lowpass' || value === 'highpass' || value === 'bandpass') {
+    return value;
+  }
+  return undefined;
+};
+
 const getPayload = (action: ShortcutActionDefinition): Record<string, unknown> => {
   return (action.payload ?? action.config ?? {}) as Record<string, unknown>;
+};
+
+const resolveNarrativeText = (payload: Record<string, unknown>): string => {
+  const text = payload.text;
+  return typeof text === 'string' ? text : '';
+};
+
+const resolveNarratorVoiceConfig = (payload: Record<string, unknown>): Partial<NarratorVoiceConfig> | undefined => {
+  const rawVoiceConfig = payload.voiceConfig;
+  if (!rawVoiceConfig || typeof rawVoiceConfig !== 'object') return undefined;
+  return rawVoiceConfig as Partial<NarratorVoiceConfig>;
+};
+
+const resolveNarratorVoiceTarget = (payload: Record<string, unknown>): 'main' | 'projection' | 'both' => {
+  return normalizeNarratorVoiceTarget(payload.voiceTarget);
 };
 
 const songStreamUrl = (songId: string, campaignId?: string | null): string => {
@@ -33,8 +78,50 @@ const asLoopMode = (value: unknown): SfxLoopMode => {
   return 'once';
 };
 
+const resolveAudioPlaybackWindow = (payload: Record<string, unknown>) => {
+  const clipInSec = toOptionalNonNegativeNumber(payload.clipInSec) ?? 0;
+  const explicitStartAtSec = toOptionalNonNegativeNumber(payload.startAtSec);
+  const startAtSec = explicitStartAtSec === undefined
+    ? clipInSec
+    : Math.max(clipInSec, explicitStartAtSec);
+  const clipOutSecRaw = toOptionalNonNegativeNumber(payload.clipOutSec);
+  const clipOutSec = clipOutSecRaw !== undefined && clipOutSecRaw > clipInSec
+    ? clipOutSecRaw
+    : undefined;
+  const clipDurationMs = toOptionalNonNegativeNumber(payload.clipDurationMs);
+  const payloadDurationMs = toOptionalNonNegativeNumber(payload.durationMs);
+
+  const candidates: number[] = [];
+  if (clipOutSec !== undefined && clipOutSec > startAtSec) {
+    candidates.push(Math.round((clipOutSec - startAtSec) * 1000));
+  }
+  if (clipDurationMs !== undefined && clipDurationMs > 0) {
+    candidates.push(Math.round(clipDurationMs));
+  }
+  if (payloadDurationMs !== undefined && payloadDurationMs > 0) {
+    candidates.push(Math.round(payloadDurationMs));
+  }
+
+  return {
+    startAtSec,
+    durationMs: candidates.length > 0 ? Math.min(...candidates) : undefined,
+    clipOutSec,
+  };
+};
+
 const inferCommandDurationMs = (command: SceneRuntimeCommand): number => {
   const payload = command.payload ?? {};
+  if (
+    command.kind === 'audio.playMusic'
+    || command.kind === 'audio.playPreset'
+    || command.kind === 'audio.playSound'
+  ) {
+    const playbackWindow = resolveAudioPlaybackWindow(payload);
+    if (playbackWindow.durationMs !== undefined && playbackWindow.durationMs > 0) {
+      return playbackWindow.durationMs;
+    }
+  }
+
   const durationMs = Number(payload.durationMs);
   if (Number.isFinite(durationMs) && durationMs > 0) return Math.round(durationMs);
 
@@ -43,7 +130,11 @@ const inferCommandDurationMs = (command: SceneRuntimeCommand): number => {
     return isLoop ? 6000 : 4000;
   }
   if (command.kind === 'window.sendImage') return 4000;
-  if (command.kind === 'narrative.setText') return 3500;
+  if (command.kind === 'narrative.setText') {
+    const text = resolveNarrativeText(payload);
+    const voiceConfig = resolveNarratorVoiceConfig(payload);
+    return Math.max(300, estimateNarrationDurationMs(text, voiceConfig));
+  }
   if (command.kind.startsWith('audio.')) return 1200;
   if (command.kind === 'shortcut.execute') return 1000;
   return 900;
@@ -107,6 +198,11 @@ const resolveSceneLoopWindow = (
 interface ActiveSceneExecutionController {
   stopped: boolean;
   timerId: number | null;
+  audioTimerIds: Set<number>;
+  narrationStops: Set<() => void>;
+  hasBoundedMusic: boolean;
+  audioDeadlineMs: number;
+  stopReason?: string;
 }
 
 /**
@@ -116,11 +212,29 @@ const ShortcutRuntimeBridge = () => {
   const { i18n } = useTranslation();
   const { activeCampaign } = useActiveCampaign();
   const { setMode } = useContext(ThemeContext);
-  const { play, playQueue, stop } = useGlobalPlayer();
-  const { playSfx, stopAllSfx } = useSfxPlayer();
+  const { current, play, playQueue, stop } = useGlobalPlayer();
+  const { items: sfxItems, playSfx, stopSfx, stopAllSfx, setSfxVolume } = useSfxPlayer();
   const { clockOffsetMs: sceneClockOffsetMs } = useSceneClockSync({ enabled: true, pollMs: 60000 });
   const sceneClockOffsetRef = useRef<number>(0);
   const activeSceneExecutionsRef = useRef<Map<string, ActiveSceneExecutionController>>(new Map());
+  const sceneAudioPolicyRef = useRef<Map<string, {
+    restorePreviousMusicOnFinish: boolean;
+    takeOverMusicOnStart: boolean;
+  }>>(new Map());
+  const scenePreviousMusicRef = useRef<Map<string, { id: string; name: string; size?: number; mimeType?: string } | null>>(new Map());
+  const activeMusicTakeoverOrderRef = useRef<string[]>([]);
+  const songNameCacheRef = useRef<Map<string, string>>(new Map());
+  const songNameCacheCampaignRef = useRef<string | null>(null);
+  const currentTrackRef = useRef(current);
+  const sfxItemsRef = useRef(sfxItems);
+
+  useEffect(() => {
+    currentTrackRef.current = current;
+  }, [current]);
+
+  useEffect(() => {
+    sfxItemsRef.current = sfxItems;
+  }, [sfxItems]);
 
   useEffect(() => {
     sceneClockOffsetRef.current = sceneClockOffsetMs;
@@ -141,14 +255,52 @@ const ShortcutRuntimeBridge = () => {
   }, []);
 
   useEffect(() => {
-    const stopSceneExecution = (executionId: string) => {
+    const runtimeTrace = (executionId: string, stage: string, details?: Record<string, unknown>) => {
+      const payload = details ?? {};
+      console.info('[scene-runtime]', {
+        at: new Date().toISOString(),
+        executionId,
+        stage,
+        ...payload,
+      });
+    };
+
+    const stopSceneExecution = (executionId: string, reason = 'unspecified') => {
       const controller = activeSceneExecutionsRef.current.get(executionId);
       if (!controller) return;
       controller.stopped = true;
+      controller.stopReason = reason;
+      runtimeTrace(executionId, 'stop-requested-local', {
+        reason,
+        activeAudioTimers: controller.audioTimerIds.size,
+        audioDeadlineMs: controller.audioDeadlineMs,
+      });
       if (controller.timerId !== null) {
         window.clearTimeout(controller.timerId);
         controller.timerId = null;
       }
+      controller.audioTimerIds.forEach((timerId) => window.clearTimeout(timerId));
+      controller.audioTimerIds.clear();
+      controller.narrationStops.forEach((stopNarration) => {
+        try {
+          stopNarration();
+        } catch {
+          // no-op
+        }
+      });
+      controller.narrationStops.clear();
+    };
+
+    const scheduleAudioStop = (controller: ActiveSceneExecutionController, delayMs: number, stopFn: () => void) => {
+      if (!Number.isFinite(delayMs) || delayMs <= 0) return;
+      const boundedDelayMs = Math.max(1, Math.round(delayMs));
+      controller.audioDeadlineMs = Math.max(controller.audioDeadlineMs, Date.now() + boundedDelayMs);
+      const timerId = window.setTimeout(() => {
+        controller.audioTimerIds.delete(timerId);
+        if (controller.stopped) return;
+        stopFn();
+      }, boundedDelayMs);
+      controller.audioTimerIds.add(timerId);
     };
 
     const broadcastSceneStopCommand = async (executionId: string) => {
@@ -187,6 +339,13 @@ const ShortcutRuntimeBridge = () => {
       });
     };
 
+    const waitForAudioBoundaries = async (controller: ActiveSceneExecutionController): Promise<boolean> => {
+      if (controller.stopped) return false;
+      const remainingMs = Math.max(0, controller.audioDeadlineMs - Date.now());
+      if (remainingMs <= 0) return true;
+      return waitWithController(controller, remainingMs);
+    };
+
     const applyAudioControl = (action: ShortcutActionDefinition) => {
       const payload = getPayload(action);
       const audioEl = document.querySelector('audio[data-global-player-audio="true"]') as HTMLAudioElement | null;
@@ -216,11 +375,42 @@ const ShortcutRuntimeBridge = () => {
       }
     };
 
-    const playSongById = async (songId: string) => {
+    const resolveSongNameById = async (songId: string): Promise<string> => {
+      const normalizedId = String(songId || '').trim();
+      if (!normalizedId) return '';
+      const cached = songNameCacheRef.current.get(normalizedId);
+      if (cached) return cached;
+      if (!activeCampaign?.id) return normalizedId;
+
+      try {
+        const songs = await listSongsForCampaign(activeCampaign.id);
+        const allSongs = [...(songs.associated || []), ...(songs.reusable || [])];
+        songNameCacheRef.current.clear();
+        for (const song of allSongs) {
+          if (song?.id && song?.name) {
+            songNameCacheRef.current.set(song.id, song.name);
+          }
+        }
+        return songNameCacheRef.current.get(normalizedId) || normalizedId;
+      } catch {
+        return normalizedId;
+      }
+    };
+
+    const sanitizeTrackLabel = (value: string): string => value.replace(/\s+/g, ' ').trim();
+
+    const playSongById = async (
+      songId: string,
+      preferredName?: string,
+      opts?: { forceLoop?: boolean },
+    ) => {
       if (!songId) return;
       const campaignId = activeCampaign?.id;
+      const resolvedName = sanitizeTrackLabel(
+        (preferredName && preferredName.trim()) ? preferredName : await resolveSongNameById(songId),
+      ) || songId;
       await play(
-        { id: songId, name: songId },
+        { id: songId, name: resolvedName },
         async () => {
           await api.post(`/soundtrack/songs/${songId}/played`, null, {
             headers: getAuthHeaders(),
@@ -228,6 +418,93 @@ const ShortcutRuntimeBridge = () => {
           }).catch(() => {});
 
           const res = await api.get(songStreamUrl(songId, campaignId), {
+            headers: getAuthHeaders(),
+            responseType: 'blob',
+          });
+          return URL.createObjectURL(res.data);
+        },
+        { forceLoop: opts?.forceLoop ?? true },
+      );
+    };
+
+    const seekGlobalPlayerAudio = (startAtSec?: number) => {
+      if (!Number.isFinite(Number(startAtSec)) || Number(startAtSec) < 0) return;
+      const targetSec = Number(startAtSec);
+      const audioEl = document.querySelector('audio[data-global-player-audio="true"]') as HTMLAudioElement | null;
+      if (!audioEl) return;
+
+      const applySeek = () => {
+        try {
+          audioEl.currentTime = targetSec;
+        } catch {
+          // Ignore seek failures for non-seekable states.
+        }
+      };
+
+      if (audioEl.readyState >= 1) {
+        applySeek();
+      } else {
+        audioEl.addEventListener('loadedmetadata', applySeek, { once: true });
+      }
+    };
+
+    const resolveMusicRuntimeDurationMs = async (startAtSec?: number): Promise<number | undefined> => {
+      const targetStartSec = Number.isFinite(Number(startAtSec)) && Number(startAtSec) >= 0
+        ? Number(startAtSec)
+        : 0;
+      const audioEl = document.querySelector('audio[data-global-player-audio="true"]') as HTMLAudioElement | null;
+      if (!audioEl) return undefined;
+
+      const computeDuration = (): number | undefined => {
+        const totalSec = Number(audioEl.duration);
+        if (!Number.isFinite(totalSec) || totalSec <= 0) return undefined;
+        const remainingSec = Math.max(0, totalSec - targetStartSec);
+        const ms = Math.round(remainingSec * 1000);
+        return ms > 0 ? ms : undefined;
+      };
+
+      const immediate = computeDuration();
+      if (immediate !== undefined) return immediate;
+
+      return new Promise<number | undefined>((resolve) => {
+        const timeoutMs = 2500;
+        let settled = false;
+        let timeoutId: number | null = null;
+
+        const finish = (value?: number) => {
+          if (settled) return;
+          settled = true;
+          if (timeoutId !== null) {
+            window.clearTimeout(timeoutId);
+          }
+          audioEl.removeEventListener('loadedmetadata', handleReady);
+          audioEl.removeEventListener('durationchange', handleReady);
+          resolve(value);
+        };
+
+        const handleReady = () => {
+          const resolved = computeDuration();
+          finish(resolved);
+        };
+
+        audioEl.addEventListener('loadedmetadata', handleReady, { once: true });
+        audioEl.addEventListener('durationchange', handleReady, { once: true });
+        timeoutId = window.setTimeout(() => finish(undefined), timeoutMs);
+      });
+    };
+
+    const restorePreviousMusic = async (snapshot: { id: string; name: string; size?: number; mimeType?: string } | null) => {
+      if (!snapshot?.id) return;
+      const campaignId = activeCampaign?.id;
+      await play(
+        {
+          id: snapshot.id,
+          name: snapshot.name,
+          size: snapshot.size,
+          mimeType: snapshot.mimeType,
+        },
+        async () => {
+          const res = await api.get(songStreamUrl(snapshot.id, campaignId), {
             headers: getAuthHeaders(),
             responseType: 'blob',
           });
@@ -450,13 +727,22 @@ const ShortcutRuntimeBridge = () => {
       const cycleDurationMs = loopWindow
         ? (hasWindowCommands ? loopWindow.durationMs : plannedDurationMs)
         : plannedDurationMs;
+      runtimeTrace(logicalExecutionId, 'cycle-duration-resolved', {
+        loopCycleIndex,
+        fullCycleDurationMs,
+        plannedDurationMs,
+        cycleDurationMs,
+        commandsTotal: commands.length,
+        plannedCommands: plannedCommands.length,
+        hasWindowCommands,
+      });
 
       let previousOffset = 0;
       for (const command of plannedCommands) {
         if (controller.stopped) return false;
 
         const executeAtMs = Number(command.executeAtMs);
-        const isWindowBoundCommand = command.kind.startsWith('window.') || command.kind === 'narrative.setText';
+        const isWindowBoundCommand = command.kind.startsWith('window.');
 
         if (!isWindowBoundCommand) {
           let waitMs = 0;
@@ -476,10 +762,127 @@ const ShortcutRuntimeBridge = () => {
         if (command.kind === 'audio.playMusic') {
           const songId = typeof command.payload.songId === 'string' ? command.payload.songId : '';
           const playlistId = typeof command.payload.playlistId === 'string' ? command.payload.playlistId : '';
+          const commandOffsetMs = Number.isFinite(command.issuedAtOffsetMs) ? command.issuedAtOffsetMs : 0;
+          const remainingSceneWindowMs = Math.max(0, cycleDurationMs - commandOffsetMs);
+          const playbackWindow = resolveAudioPlaybackWindow(command.payload);
+          let boundedDurationMs = playbackWindow.durationMs;
+          const displayName = typeof command.payload.displayName === 'string'
+            ? sanitizeTrackLabel(command.payload.displayName)
+            : '';
           if (songId) {
-            await playSongById(songId);
+            await playSongById(songId, displayName || undefined, { forceLoop: false });
+            seekGlobalPlayerAudio(playbackWindow.startAtSec);
+            if (boundedDurationMs === undefined) {
+              boundedDurationMs = await resolveMusicRuntimeDurationMs(playbackWindow.startAtSec);
+            }
+            if (!execution.scene?.loop && remainingSceneWindowMs > 0) {
+              boundedDurationMs = boundedDurationMs === undefined
+                ? remainingSceneWindowMs
+                : Math.min(boundedDurationMs, remainingSceneWindowMs);
+            }
+            runtimeTrace(logicalExecutionId, 'music-bounds', {
+              loopCycleIndex,
+              source: 'song',
+              songId,
+              commandOffsetMs,
+              cycleDurationMs,
+              remainingSceneWindowMs,
+              clipStartAtSec: playbackWindow.startAtSec,
+              clipOutSec: playbackWindow.clipOutSec,
+              boundedDurationMs,
+            });
+            if (boundedDurationMs !== undefined) {
+              controller.hasBoundedMusic = true;
+              scheduleAudioStop(controller, boundedDurationMs, () => stop());
+            } else if (!execution.scene?.loop) {
+              // Keep non-loop scenes bounded even when metadata is unavailable.
+              controller.hasBoundedMusic = true;
+              scheduleAudioStop(controller, Math.max(1500, inferCommandDurationMs(command)), () => stop());
+            }
           } else if (playlistId) {
             await playPlaylistById(playlistId);
+            if (!execution.scene?.loop && remainingSceneWindowMs > 0) {
+              boundedDurationMs = boundedDurationMs === undefined
+                ? remainingSceneWindowMs
+                : Math.min(boundedDurationMs, remainingSceneWindowMs);
+            }
+            runtimeTrace(logicalExecutionId, 'music-bounds', {
+              loopCycleIndex,
+              source: 'playlist',
+              playlistId,
+              commandOffsetMs,
+              cycleDurationMs,
+              remainingSceneWindowMs,
+              clipStartAtSec: playbackWindow.startAtSec,
+              clipOutSec: playbackWindow.clipOutSec,
+              boundedDurationMs,
+            });
+            if (boundedDurationMs !== undefined) {
+              controller.hasBoundedMusic = true;
+              scheduleAudioStop(controller, boundedDurationMs, () => stop());
+            } else if (!execution.scene?.loop) {
+              controller.hasBoundedMusic = true;
+              scheduleAudioStop(controller, Math.max(1500, inferCommandDurationMs(command)), () => stop());
+            }
+          }
+          continue;
+        }
+
+        if (command.kind === 'audio.playPreset') {
+          if (!activeCampaign?.id) continue;
+          const presetId = typeof command.payload.presetId === 'string' ? command.payload.presetId : '';
+          if (!presetId) continue;
+          const res = await api.get(`/soundtrack/presets/campaigns/${activeCampaign.id}`, { headers: getAuthHeaders() });
+          const presets = Array.isArray(res.data) ? res.data : [];
+          const target = presets.find((preset: any) => preset.id === presetId);
+          if (!target?.items?.length) continue;
+
+          const presetVolume = toOptionalNumber(command.payload.volume);
+          const presetVolumeMultiplier = presetVolume === undefined ? 1 : (presetVolume > 1 ? presetVolume / 100 : presetVolume);
+          const presetPlaybackRate = toOptionalNumber(command.payload.playbackRate);
+          const presetPitchSemitones = toOptionalNumber(command.payload.pitchSemitones);
+          const presetEchoEnabled = command.payload.echoEnabled === undefined
+            ? undefined
+            : Boolean(command.payload.echoEnabled);
+          const presetEchoDelayMs = toOptionalNumber(command.payload.echoDelayMs);
+          const presetEchoFeedback = toOptionalNumber(command.payload.echoFeedback);
+          const presetFilterType = toOptionalFilterType(command.payload.filterType);
+          const presetFilterFrequency = toOptionalNumber(command.payload.filterFrequency);
+          const presetFilterQ = toOptionalNumber(command.payload.filterQ);
+          const playbackWindow = resolveAudioPlaybackWindow(command.payload);
+
+          for (const item of target.items) {
+            const effectId = item?.soundEffect?.id;
+            const effectName = item?.soundEffect?.name || 'Preset effect';
+            if (!effectId) continue;
+            await playSfx(
+              { effectId, name: effectName },
+              async () => {
+                const req = await api.get(`${api.defaults.baseURL}/soundtrack/effects/${effectId}/stream?campaignId=${activeCampaign.id}`, {
+                  headers: getAuthHeaders(),
+                  responseType: 'blob',
+                });
+                return URL.createObjectURL(req.data);
+              },
+              {
+                volume: clamp01(toVolume01(item.volume ?? 1) * clamp01(presetVolumeMultiplier)),
+                loopMode: asLoopMode(item.loopMode),
+                startAtSec: playbackWindow.startAtSec,
+                durationMs: playbackWindow.durationMs,
+                clipOutSec: playbackWindow.clipOutSec,
+                waitMs: item.waitMs ?? undefined,
+                randomMinMs: item.randomMinMs ?? undefined,
+                randomMaxMs: item.randomMaxMs ?? undefined,
+                playbackRate: presetPlaybackRate,
+                echoEnabled: presetEchoEnabled ?? Boolean(item.echoEnabled ?? false),
+                echoDelayMs: presetEchoDelayMs ?? item.echoDelayMs ?? undefined,
+                echoFeedback: presetEchoFeedback ?? item.echoFeedback ?? undefined,
+                pitchSemitones: presetPitchSemitones ?? item.pitchSemitones ?? undefined,
+                filterType: presetFilterType,
+                filterFrequency: presetFilterFrequency,
+                filterQ: presetFilterQ,
+              },
+            );
           }
           continue;
         }
@@ -495,6 +898,7 @@ const ShortcutRuntimeBridge = () => {
         if (command.kind === 'audio.playSound') {
           const effectId = typeof command.payload.effectId === 'string' ? command.payload.effectId : '';
           if (!effectId) continue;
+          const playbackWindow = resolveAudioPlaybackWindow(command.payload);
           await playSfx(
             { effectId, name: effectId },
             async () => {
@@ -505,13 +909,55 @@ const ShortcutRuntimeBridge = () => {
               return URL.createObjectURL(req.data);
             },
             {
-              volume: clamp01(Number(command.payload.volume ?? 1)),
+              volume: toVolume01(command.payload.volume, 1),
               loopMode: asLoopMode(command.payload.loopMode),
+              startAtSec: playbackWindow.startAtSec,
+              durationMs: playbackWindow.durationMs,
+              clipOutSec: playbackWindow.clipOutSec,
               waitMs: typeof command.payload.waitMs === 'number' ? command.payload.waitMs : undefined,
               randomMinMs: typeof command.payload.randomMinMs === 'number' ? command.payload.randomMinMs : undefined,
               randomMaxMs: typeof command.payload.randomMaxMs === 'number' ? command.payload.randomMaxMs : undefined,
+              playbackRate: toOptionalNumber(command.payload.playbackRate),
+              pitchSemitones: toOptionalNumber(command.payload.pitchSemitones),
+              echoEnabled: command.payload.echoEnabled === undefined ? undefined : Boolean(command.payload.echoEnabled),
+              echoDelayMs: toOptionalNumber(command.payload.echoDelayMs),
+              echoFeedback: toOptionalNumber(command.payload.echoFeedback),
+              filterType: toOptionalFilterType(command.payload.filterType),
+              filterFrequency: toOptionalNumber(command.payload.filterFrequency),
+              filterQ: toOptionalNumber(command.payload.filterQ),
             },
           );
+          continue;
+        }
+
+        if (command.kind === 'audio.stopSound') {
+          const effectId = typeof command.payload.effectId === 'string' ? command.payload.effectId.trim() : '';
+          if (!effectId) {
+            stopAllSfx();
+            continue;
+          }
+          for (const item of sfxItemsRef.current) {
+            if (item.effectId === effectId) {
+              stopSfx(item.instanceId);
+            }
+          }
+          continue;
+        }
+
+        if (command.kind === 'audio.setSoundVolume') {
+          const value = toVolume01(command.payload.value, 1);
+          const effectId = typeof command.payload.effectId === 'string' ? command.payload.effectId.trim() : '';
+          if (!effectId) {
+            for (const item of sfxItemsRef.current) {
+              setSfxVolume(item.instanceId, value);
+            }
+            continue;
+          }
+          for (const item of sfxItemsRef.current) {
+            if (item.effectId === effectId) {
+              setSfxVolume(item.instanceId, value);
+            }
+          }
           continue;
         }
 
@@ -523,6 +969,85 @@ const ShortcutRuntimeBridge = () => {
         if (command.kind === 'shortcut.execute') {
           const shortcut = normalizeShortcut(command.payload.shortcut);
           window.dispatchEvent(new CustomEvent('scene:shortcut-command', { detail: { shortcut } }));
+          continue;
+        }
+
+        if (command.kind === 'narrative.setText') {
+          const text = resolveNarrativeText(command.payload);
+          const voiceConfig = normalizeNarratorVoiceConfig(resolveNarratorVoiceConfig(command.payload));
+          const voiceTarget = resolveNarratorVoiceTarget(command.payload);
+          const commandOffsetMs = Number.isFinite(command.issuedAtOffsetMs) ? command.issuedAtOffsetMs : 0;
+          const remainingSceneWindowMs = Math.max(0, cycleDurationMs - commandOffsetMs);
+          const shouldPlayOnMainWindow = voiceTarget === 'main' || voiceTarget === 'both';
+
+          runtimeTrace(logicalExecutionId, 'narrative-command-received', {
+            loopCycleIndex,
+            commandOffsetMs,
+            cycleDurationMs,
+            remainingSceneWindowMs,
+            voiceTarget,
+            shouldPlayOnMainWindow,
+            voiceMode: voiceConfig.mode,
+            qwenPersona: voiceConfig.qwen?.persona,
+            qwenPitchMul: voiceConfig.qwen?.pitchMul,
+            qwenSpeedMs: voiceConfig.qwen?.speedMs,
+            qwenBrightness: voiceConfig.qwen?.brightness,
+            qwenVolume: voiceConfig.qwen?.volume,
+            qwenJitter: voiceConfig.qwen?.jitter,
+            qwenTransitionMul: voiceConfig.qwen?.transitionMul,
+            qwenVowelGlitch: voiceConfig.qwen?.vowelGlitch,
+            textLength: text.length,
+          });
+
+          if (shouldPlayOnMainWindow && text.trim().length > 0) {
+            const narration = await playNarration({ text, voiceConfig, locale: i18n.language });
+            controller.narrationStops.add(narration.stop);
+            void narration.finished.finally(() => {
+              controller.narrationStops.delete(narration.stop);
+            });
+
+            const boundedNarrationMs = remainingSceneWindowMs > 0
+              ? Math.min(narration.durationMs, remainingSceneWindowMs)
+              : narration.durationMs;
+            if (boundedNarrationMs > 0) {
+              scheduleAudioStop(controller, boundedNarrationMs, () => {
+                if (controller.narrationStops.has(narration.stop)) {
+                  narration.stop();
+                }
+              });
+            }
+
+            runtimeTrace(logicalExecutionId, 'narrative-voice-playback', {
+              loopCycleIndex,
+              commandOffsetMs,
+              cycleDurationMs,
+              remainingSceneWindowMs,
+              boundedNarrationMs,
+              voiceTarget,
+              voiceMode: voiceConfig.mode,
+              voiceSpeed: voiceConfig.speed,
+              voicePitchRange: voiceConfig.pitchRange,
+              qwenPersona: voiceConfig.qwen?.persona,
+              qwenPitchMul: voiceConfig.qwen?.pitchMul,
+              qwenSpeedMs: voiceConfig.qwen?.speedMs,
+              qwenBrightness: voiceConfig.qwen?.brightness,
+              qwenVolume: voiceConfig.qwen?.volume,
+              qwenJitter: voiceConfig.qwen?.jitter,
+              qwenTransitionMul: voiceConfig.qwen?.transitionMul,
+              qwenVowelGlitch: voiceConfig.qwen?.vowelGlitch,
+              textLength: text.length,
+            });
+          } else {
+            runtimeTrace(logicalExecutionId, 'narrative-voice-skipped-main-window', {
+              loopCycleIndex,
+              voiceTarget,
+              shouldPlayOnMainWindow,
+              textLength: text.length,
+              reason: text.trim().length === 0 ? 'empty-text' : 'voice-target-not-main',
+            });
+          }
+
+          await dispatchSceneWindowCommand(command as SceneRuntimeCommand, activeCampaign?.id);
           continue;
         }
 
@@ -542,13 +1067,63 @@ const ShortcutRuntimeBridge = () => {
     const handleSceneRuntimeExecute = async (event: Event) => {
       const custom = event as CustomEvent<ExecuteSceneResponse>;
       const initialExecution = custom.detail;
+      console.info('[scene-runtime]', {
+        at: new Date().toISOString(),
+        executionId: String(initialExecution?.executionId || 'missing'),
+        stage: 'runtime-event-received',
+        hasDetail: Boolean(initialExecution),
+        rawStatus: initialExecution?.status,
+        rawSceneId: initialExecution?.scene?.id ?? null,
+        rawCommands: Array.isArray(initialExecution?.commands) ? initialExecution.commands.length : null,
+      });
       const logicalExecutionId = String(initialExecution?.executionId || '');
       if (!logicalExecutionId) return;
 
-      stopSceneExecution(logicalExecutionId);
+      runtimeTrace(logicalExecutionId, 'execution-start', {
+        sceneId: initialExecution.scene?.id ?? null,
+        sceneName: initialExecution.scene?.name ?? null,
+        sceneLoop: Boolean(initialExecution.scene?.loop),
+        commands: Array.isArray(initialExecution.commands) ? initialExecution.commands.length : 0,
+        status: initialExecution.status,
+      });
 
-      const controller: ActiveSceneExecutionController = { stopped: false, timerId: null };
+      stopSceneExecution(logicalExecutionId, 'replace-existing-execution');
+
+      const controller: ActiveSceneExecutionController = {
+        stopped: false,
+        timerId: null,
+        audioTimerIds: new Set<number>(),
+        narrationStops: new Set<() => void>(),
+        hasBoundedMusic: false,
+        audioDeadlineMs: 0,
+      };
       activeSceneExecutionsRef.current.set(logicalExecutionId, controller);
+
+      const shouldTakeOverMusic = Boolean(initialExecution.scene?.takeOverMusicOnStart);
+      const shouldRestoreMusic = initialExecution.scene?.restorePreviousMusicOnFinish !== false;
+      sceneAudioPolicyRef.current.set(logicalExecutionId, {
+        restorePreviousMusicOnFinish: shouldRestoreMusic,
+        takeOverMusicOnStart: shouldTakeOverMusic,
+      });
+
+      if (shouldTakeOverMusic) {
+        activeMusicTakeoverOrderRef.current = activeMusicTakeoverOrderRef.current.filter((id) => id !== logicalExecutionId);
+        activeMusicTakeoverOrderRef.current.push(logicalExecutionId);
+        scenePreviousMusicRef.current.set(
+          logicalExecutionId,
+          currentTrackRef.current
+            ? {
+                id: currentTrackRef.current.id,
+                name: currentTrackRef.current.name,
+                size: currentTrackRef.current.size,
+                mimeType: currentTrackRef.current.mimeType,
+              }
+            : null,
+        );
+        stop();
+      } else {
+        scenePreviousMusicRef.current.set(logicalExecutionId, null);
+      }
 
       window.dispatchEvent(new CustomEvent('scene:execution-started', {
         detail: {
@@ -592,14 +1167,57 @@ const ShortcutRuntimeBridge = () => {
       } catch {
         // Execution failures are surfaced by normal error UX and should not break bridge subscriptions.
       } finally {
+        if (!controller.stopped) {
+          await waitForAudioBoundaries(controller);
+        }
+
         const wasStopped = controller.stopped;
         activeSceneExecutionsRef.current.delete(logicalExecutionId);
+        const policy = sceneAudioPolicyRef.current.get(logicalExecutionId);
+        const previousMusic = scenePreviousMusicRef.current.get(logicalExecutionId) ?? null;
+
+        if (policy?.takeOverMusicOnStart) {
+          activeMusicTakeoverOrderRef.current = activeMusicTakeoverOrderRef.current
+            .filter((id) => id !== logicalExecutionId);
+        }
+
+        const hasPendingTakeover = activeMusicTakeoverOrderRef.current.length > 0;
+        sceneAudioPolicyRef.current.delete(logicalExecutionId);
+        scenePreviousMusicRef.current.delete(logicalExecutionId);
+
+        if (!wasStopped && controller.hasBoundedMusic && !initialExecution.scene?.loop) {
+          stop();
+        }
+
+        if (
+          policy?.restorePreviousMusicOnFinish
+          && policy.takeOverMusicOnStart
+          && previousMusic
+          && !hasPendingTakeover
+        ) {
+          try {
+            await restorePreviousMusic(previousMusic);
+          } catch {
+            // ignore restore failures, scene completion should remain successful
+          }
+        }
+
         window.dispatchEvent(new CustomEvent(wasStopped ? 'scene:execution-stopped' : 'scene:execution-completed', {
           detail: {
             executionId: logicalExecutionId,
             sceneId: initialExecution.scene?.id,
           },
         }));
+
+        runtimeTrace(logicalExecutionId, wasStopped ? 'execution-stopped' : 'execution-completed', {
+          sceneId: initialExecution.scene?.id ?? null,
+          sceneLoop: Boolean(initialExecution.scene?.loop),
+          stopReason: controller.stopReason ?? null,
+          hasBoundedMusic: controller.hasBoundedMusic,
+          audioDeadlineMs: controller.audioDeadlineMs,
+          activeNarrationVoices: controller.narrationStops.size,
+          pendingAudioTimers: controller.audioTimerIds.size,
+        });
       }
     };
 
@@ -607,7 +1225,7 @@ const ShortcutRuntimeBridge = () => {
       const custom = event as CustomEvent<{ executionId?: string }>;
       const executionId = String(custom.detail?.executionId || '');
       if (!executionId) return;
-      stopSceneExecution(executionId);
+      stopSceneExecution(executionId, 'event-scene-execution-stop-request');
       void broadcastSceneStopCommand(executionId);
     };
 
@@ -623,14 +1241,26 @@ const ShortcutRuntimeBridge = () => {
       window.removeEventListener('scene:execution-stop-request', handleStopRequest as EventListener);
       activeSceneExecutionsRef.current.forEach((controller) => {
         controller.stopped = true;
+        controller.stopReason = 'bridge-cleanup';
         if (controller.timerId !== null) {
           window.clearTimeout(controller.timerId);
           controller.timerId = null;
         }
+        controller.audioTimerIds.forEach((timerId) => window.clearTimeout(timerId));
+        controller.audioTimerIds.clear();
+        controller.narrationStops.forEach((stopNarration) => {
+          try {
+            stopNarration();
+          } catch {
+            // no-op
+          }
+        });
+        controller.narrationStops.clear();
       });
       activeSceneExecutionsRef.current.clear();
+      activeMusicTakeoverOrderRef.current = [];
     };
-  }, [activeCampaign?.id, i18n, play, playQueue, playSfx, setMode, stop, stopAllSfx]);
+  }, [activeCampaign?.id, i18n, play, playQueue, playSfx, setMode, setSfxVolume, stop, stopAllSfx, stopSfx]);
 
   useEffect(() => {
     const handleCalendarAction = async (event: Event) => {
@@ -719,7 +1349,20 @@ const ShortcutRuntimeBridge = () => {
   // Optional preload when opening app to reduce latency for first shortcut playback.
   useEffect(() => {
     if (!activeCampaign?.id) return;
-    void listSongsForCampaign(activeCampaign.id).catch(() => {});
+    if (songNameCacheCampaignRef.current !== activeCampaign.id) {
+      songNameCacheCampaignRef.current = activeCampaign.id;
+      songNameCacheRef.current.clear();
+    }
+    void listSongsForCampaign(activeCampaign.id)
+      .then((songs) => {
+        const allSongs = [...(songs.associated || []), ...(songs.reusable || [])];
+        for (const song of allSongs) {
+          if (song?.id && song?.name) {
+            songNameCacheRef.current.set(song.id, song.name);
+          }
+        }
+      })
+      .catch(() => {});
   }, [activeCampaign?.id]);
 
   return null;

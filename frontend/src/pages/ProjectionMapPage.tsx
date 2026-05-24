@@ -23,6 +23,13 @@ import { useTokenImageResolver } from '../hooks/useTokenImageResolver';
 import { useMapElements } from '../hooks/useMapElements';
 import { useSceneClockSync } from '../hooks/useSceneClockSync';
 import { useRuntimeSceneVideoWarmup } from '../hooks/useRuntimeSceneVideoWarmup';
+import { buildWindowFilterBackdropStyle } from '../components/scenes/utils/sceneLayerUtils';
+import {
+  normalizeNarratorVoiceConfig,
+  normalizeNarratorVoiceTarget,
+  playNarration,
+  type NarratorPlaybackHandle,
+} from '../components/scenes/utils/narratorPlayback';
 import type { ShortcutActionDefinition } from '../types/actionTypes';
 import type { SceneRuntimeCommand } from '../types/scenes';
 
@@ -36,6 +43,14 @@ function parseCampaignIdFromUrl(): string | null {
   }
   return cid;
 }
+
+type ShortcutFilterOverlay = {
+  id: string;
+  filter: string;
+  color?: string;
+  intensity?: number;
+  layerOrder?: number;
+};
 
 /** Resolves relative backend media paths into absolute URLs for projection windows. */
 function resolveSceneMediaUrl(rawUrl: string): string {
@@ -244,10 +259,12 @@ const ProjectionMapPage: React.FC = () => {
   });
   const [shortcutTextOverlay, setShortcutTextOverlay] = useState<NarrativeTextOverlay | null>(null);
   const shortcutTextExecutionIdRef = React.useRef<string | null>(null);
-  const [shortcutFilterOverlay, setShortcutFilterOverlay] = useState<{ filter: string; color?: string; intensity?: number } | null>(null);
+  const [shortcutFilterOverlays, setShortcutFilterOverlays] = useState<ShortcutFilterOverlay[]>([]);
   const [shortcutVideoOverlays, setShortcutVideoOverlays] = useState<TimedVideoOverlay[]>([]);
   const shortcutTextTimeoutRef = React.useRef<number | null>(null);
+  const narrationHandlesByExecutionRef = React.useRef<Map<string, Set<NarratorPlaybackHandle>>>(new Map());
   const shortcutVideoTimeoutsRef = React.useRef<Map<string, number>>(new Map());
+  const shortcutFilterTimeoutsRef = React.useRef<Map<string, number>>(new Map());
   const introPlayedActionsByExecutionRef = React.useRef<Map<string, Set<string>>>(new Map());
   const {
     preloadVideoForOverlay,
@@ -268,6 +285,43 @@ const ProjectionMapPage: React.FC = () => {
   const [sceneSyncDiagnosticsVisible] = useState<boolean>(() => {
     try { return localStorage.getItem('app.sceneSync.showDiagnostics') === 'true'; } catch { return false; }
   });
+
+  const clearShortcutFilterOverlays = useCallback(() => {
+    shortcutFilterTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    shortcutFilterTimeoutsRef.current.clear();
+    setShortcutFilterOverlays([]);
+  }, []);
+
+  const upsertShortcutFilterOverlay = useCallback((overlay: ShortcutFilterOverlay & { durationMs?: number }) => {
+    const overlayId = overlay.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const nextOverlay: ShortcutFilterOverlay = {
+      id: overlayId,
+      filter: overlay.filter,
+      ...(overlay.color !== undefined ? { color: overlay.color } : {}),
+      ...(overlay.intensity !== undefined ? { intensity: overlay.intensity } : {}),
+      ...(overlay.layerOrder !== undefined ? { layerOrder: overlay.layerOrder } : {}),
+    };
+
+    const existingTimeoutId = shortcutFilterTimeoutsRef.current.get(overlayId);
+    if (existingTimeoutId !== undefined) {
+      window.clearTimeout(existingTimeoutId);
+      shortcutFilterTimeoutsRef.current.delete(overlayId);
+    }
+
+    setShortcutFilterOverlays((current) => {
+      const nextWithoutCurrent = current.filter((item) => item.id !== overlayId);
+      return [...nextWithoutCurrent, nextOverlay];
+    });
+
+    const durationMs = Math.max(0, Number(overlay.durationMs ?? 0));
+    if (durationMs > 0) {
+      const timeoutId = window.setTimeout(() => {
+        shortcutFilterTimeoutsRef.current.delete(overlayId);
+        setShortcutFilterOverlays((current) => current.filter((item) => item.id !== overlayId));
+      }, durationMs);
+      shortcutFilterTimeoutsRef.current.set(overlayId, timeoutId);
+    }
+  }, []);
   const [sceneSyncDiagnostics, setSceneSyncDiagnostics] = useState<{
     samples: number;
     p50: number;
@@ -514,7 +568,28 @@ const ProjectionMapPage: React.FC = () => {
         clearShortcutTextOverlay();
       }
 
+      const narrationHandles = narrationHandlesByExecutionRef.current.get(executionId);
+      if (narrationHandles) {
+        narrationHandles.forEach((handle) => handle.stop());
+        narrationHandlesByExecutionRef.current.delete(executionId);
+      }
+
       introPlayedActionsByExecutionRef.current.delete(executionId);
+    };
+
+    const registerNarrationHandle = (executionId: string | undefined, handle: NarratorPlaybackHandle) => {
+      if (!executionId) return;
+      const set = narrationHandlesByExecutionRef.current.get(executionId) ?? new Set<NarratorPlaybackHandle>();
+      set.add(handle);
+      narrationHandlesByExecutionRef.current.set(executionId, set);
+      void handle.finished.finally(() => {
+        const currentSet = narrationHandlesByExecutionRef.current.get(executionId);
+        if (!currentSet) return;
+        currentSet.delete(handle);
+        if (currentSet.size === 0) {
+          narrationHandlesByExecutionRef.current.delete(executionId);
+        }
+      });
     };
 
     const hasIntroBeenPlayed = (executionId: string, actionId: string): boolean => {
@@ -808,13 +883,25 @@ const ProjectionMapPage: React.FC = () => {
             paddingPx: Number.isFinite(Number(body.paddingPx)) ? Math.max(0, Math.min(64, Number(body.paddingPx))) : 16,
             segments,
           }, durationMs);
+
+          const voiceTarget = normalizeNarratorVoiceTarget(body.voiceTarget);
+          const shouldPlayProjectionVoice = voiceTarget === 'projection' || voiceTarget === 'both';
+          if (shouldPlayProjectionVoice && text) {
+            void playNarration({
+              text,
+              voiceConfig: normalizeNarratorVoiceConfig(body.voiceConfig as Record<string, unknown>),
+              locale: navigator.language,
+            }).then((handle) => {
+              registerNarrationHandle(sceneCommand.executionId, handle);
+            }).catch(() => {});
+          }
         }, 'narrative.setText', getLateExecutionPolicy(sceneCommand, durationMs));
         return;
       }
 
       if (sceneCommand?.kind === 'window.clearFilter') {
         scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
-          setShortcutFilterOverlay(null);
+          clearShortcutFilterOverlays();
         }, 'window.clearFilter');
         return;
       }
@@ -825,8 +912,17 @@ const ProjectionMapPage: React.FC = () => {
         if (!filter) return;
         const color = typeof body.color === 'string' ? body.color : undefined;
         const intensity = typeof body.intensity === 'number' ? body.intensity : undefined;
+        const layerOrder = Number.isFinite(Number(body.layerOrder)) ? Math.round(Number(body.layerOrder)) : undefined;
+        const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
         scheduleSceneExecution(sceneCommand, sceneCommand.executeAtMs, () => {
-          setShortcutFilterOverlay({ filter, color, intensity });
+          upsertShortcutFilterOverlay({
+            id: sceneCommand.actionId || `${sceneCommand.kind}-${sceneCommand.executeAtMs ?? Date.now()}`,
+            filter,
+            color,
+            intensity,
+            ...(layerOrder !== undefined ? { layerOrder } : {}),
+            ...(durationMs !== undefined ? { durationMs } : {}),
+          });
         }, 'window.applyFilter');
         return;
       }
@@ -839,7 +935,7 @@ const ProjectionMapPage: React.FC = () => {
       const body = (action.payload ?? (action as any).config ?? {}) as Record<string, unknown>;
 
       if (action.kind === 'window.clearFilter') {
-        setShortcutFilterOverlay(null);
+        clearShortcutFilterOverlays();
         return;
       }
 
@@ -848,7 +944,16 @@ const ProjectionMapPage: React.FC = () => {
         if (!filter) return;
         const color = typeof body.color === 'string' ? body.color : undefined;
         const intensity = typeof body.intensity === 'number' ? body.intensity : undefined;
-        setShortcutFilterOverlay({ filter, color, intensity });
+        const layerOrder = Number.isFinite(Number(body.layerOrder)) ? Math.round(Number(body.layerOrder)) : undefined;
+        const durationMs = typeof body.durationMs === 'number' ? body.durationMs : undefined;
+        upsertShortcutFilterOverlay({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          filter,
+          color,
+          intensity,
+          ...(layerOrder !== undefined ? { layerOrder } : {}),
+          ...(durationMs !== undefined ? { durationMs } : {}),
+        });
         return;
       }
 
@@ -910,43 +1015,31 @@ const ProjectionMapPage: React.FC = () => {
       sceneSkewSamplesRef.current = [];
       clearShortcutTextOverlay();
       clearShortcutVideoOverlay();
+      shortcutFilterTimeoutsRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      shortcutFilterTimeoutsRef.current.clear();
       shortcutVideoTimeoutsRef.current.forEach((timerId) => window.clearTimeout(timerId));
       shortcutVideoTimeoutsRef.current.clear();
+      narrationHandlesByExecutionRef.current.forEach((handles) => {
+        handles.forEach((handle) => handle.stop());
+      });
+      narrationHandlesByExecutionRef.current.clear();
       clearWarmupCache();
     };
   }, [clearWarmupCache, preloadVideoForOverlay, releaseOverlayVideo]);
 
   const shortcutFilterStyle = React.useMemo(() => {
-    if (!shortcutFilterOverlay) return undefined;
-    const name = shortcutFilterOverlay.filter.toLowerCase();
-    const intensity = Math.max(0, Math.min(1, Number(shortcutFilterOverlay.intensity ?? 1)));
-    const opacity = 0.08 + (0.32 * intensity);
-    const color = shortcutFilterOverlay.color || 'transparent';
-
-    const filterMap: Record<string, string> = {
-      grayscale: `grayscale(${Math.round(intensity * 100)}%)`,
-      sepia: `sepia(${Math.round(intensity * 100)}%)`,
-      blur: `blur(${(intensity * 8).toFixed(1)}px)`,
-      brightness: `brightness(${(0.6 + intensity).toFixed(2)})`,
-      contrast: `contrast(${(1 + intensity).toFixed(2)})`,
-      saturate: `saturate(${(1 + intensity * 1.5).toFixed(2)})`,
-      hue: `hue-rotate(${Math.round(intensity * 180)}deg)`,
-      hue_rotate: `hue-rotate(${Math.round(intensity * 180)}deg)`,
-      invert: `invert(${Math.round(intensity * 100)}%)`,
-    };
-
-    const filterCss = filterMap[name] || '';
-    return {
+    if (!shortcutFilterOverlays.length) return undefined;
+    return shortcutFilterOverlays
+      .slice()
+      .sort((left, right) => (left.layerOrder ?? 100) - (right.layerOrder ?? 100) || left.id.localeCompare(right.id))
+      .map((overlay) => ({
       position: 'absolute' as const,
       inset: 0,
-      zIndex: 7000,
+      zIndex: 9000 + (overlay.layerOrder ?? 100),
       pointerEvents: 'none' as const,
-      backdropFilter: filterCss || undefined,
-      WebkitBackdropFilter: filterCss || undefined,
-      backgroundColor: color === 'transparent' ? `rgba(0,0,0,${opacity.toFixed(3)})` : color,
-      mixBlendMode: color === 'transparent' ? 'normal' as const : 'multiply' as const,
-    };
-  }, [shortcutFilterOverlay]);
+      ...buildWindowFilterBackdropStyle(overlay.filter, overlay.intensity, overlay.color),
+    }));
+  }, [shortcutFilterOverlays]);
 
   // Load FoW settings from server so this web window matches Electron even across origins.
   useEffect(() => {
@@ -1595,7 +1688,9 @@ const ProjectionMapPage: React.FC = () => {
             </Box>
           </Box>
 
-          {shortcutFilterStyle ? <Box sx={shortcutFilterStyle} /> : null}
+          {(shortcutFilterStyle ?? []).map((style, index) => (
+            <Box key={index} sx={style} />
+          ))}
 
           {shortcutVideoOverlays
             .slice()

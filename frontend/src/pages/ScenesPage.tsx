@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Alert, Typography } from '@mui/material';
+import { Box, Alert } from '@mui/material';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { getCurrentUser } from '../utils/getCurrentUser';
 import { ScenesList } from '../components/scenes';
@@ -44,11 +44,10 @@ const ScenesPage: React.FC = () => {
   }
 
   return (
-    <Box>
-      <Typography variant="h5" fontWeight={700} mb={2}>
-        🎭 Escenas
-      </Typography>
-      <ScenesList />
+    <Box sx={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flex: 1, minHeight: 0 }}>
+        <ScenesList />
+      </Box>
     </Box>
   );
 };

@@ -1,15 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Box,
   Button,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
   FormControl,
-  FormControlLabel,
   IconButton,
   InputAdornment,
   Paper,
@@ -28,7 +26,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MovieCreationIcon from '@mui/icons-material/MovieCreation';
 import AuthImage from '../common/AuthImage';
-import type { Scene, SceneActionDto, ScenePayload } from '../../types/scenes';
+import type { MotionKeyframe, Scene, SceneActionDto, ScenePayload } from '../../types/scenes';
 import type { SceneVideoAsset } from '../../types/scenes';
 import {
   createSceneVideoClip,
@@ -39,8 +37,14 @@ import {
   updateSceneVideo,
   uploadSceneVideo,
 } from '../../api/sceneVideos';
+import { listPlaylists } from '../../api/soundtrack';
+import { api } from '../../apiBase';
 import { getMapImageUrlSized } from '../../api/maps';
+import { getAuthHeaders } from '../../utils/auth';
+import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useActiveMap } from '../Map/ActiveMapContext';
+import type { SoundSourceSelection } from '../Map/SoundSourcePickerDialog';
+import { useSfxPlayer } from '../player/SfxPlayerContext';
 import { useTimeOfDay } from '../player/TimeOfDayContext';
 import { useSecondaryWindowSizes, type WindowSize } from '../../hooks/useSecondaryWindowSizes';
 import SkylineViewportContent from '../Skyline/SkylineViewportContent';
@@ -64,6 +68,8 @@ import {
   emptyPayload,
   toVideoDragPayload,
   fromVideoDragPayload,
+  fromImageDragPayload,
+  resolveSceneMediaUrl,
   defaultAction,
   blankDraft,
 } from './utils/sceneEditorUtils';
@@ -78,6 +84,12 @@ import {
   normalizeActionForSave,
   normalizeFreePlacement,
 } from './utils/sceneLayerUtils';
+import {
+  normalizeNarratorVoiceConfig,
+  normalizeNarratorVoiceTarget,
+  playNarration,
+  type NarratorPlaybackHandle,
+} from './utils/narratorPlayback';
 import { useSceneDraft, useSceneVideoLibrary, useScenePreview, useSceneLayerDrag, type LeftToolPanelMode } from './hooks';
 import { SceneToolsPanel, SceneInspectorPanel, SceneTimelinePanel, ScenePreviewPanel } from './panels';
 import { ScenePreviewLayersRenderer } from './renderers';
@@ -93,14 +105,17 @@ interface Props {
   campaignId?: string | null;
   onClose: () => void;
   onSave: (payload: ScenePayload, id?: string) => Promise<void>;
+  embedded?: boolean;
 }
 
 /**
  * Dialog for creating or editing a Scene, including its action list.
  */
-const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, onSave }) => {
+const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, onSave, embedded = false }) => {
+  const { activeCampaign } = useActiveCampaign();
   const { activeMapId } = useActiveMap();
   const { timeOfDay } = useTimeOfDay();
+  const { items: sfxItems, playSfx, stopSfx, stopAllSfx, setSfxVolume } = useSfxPlayer();
   const { mode: secondaryWindowMode, customSizes } = useSecondaryWindowSizes();
   const {
     draft,
@@ -183,6 +198,23 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   } = useScenePreview(SCENE_EDITOR_MEMORY_WARMUP_KEY);
   const iconFileInputRef = useRef<HTMLInputElement | null>(null);
   const { layerDragRef, activeLayerDragPlacement, setActiveLayerDragPlacement } = useSceneLayerDrag();
+  const previewAudioTriggerRef = useRef<Set<string>>(new Set());
+  const previewSfxInstanceIdsRef = useRef<Set<string>>(new Set());
+  const previewMusicAudioRef = useRef<HTMLAudioElement | null>(null);
+  const previewMusicObjectUrlRef = useRef<string | null>(null);
+  const previewMusicQueueRef = useRef<Array<{ id: string; name: string }>>([]);
+  const previewMusicQueueIndexRef = useRef<number>(0);
+  const previewMusicStopTimerRef = useRef<number | null>(null);
+  const previewNarrationHandlesRef = useRef<Set<NarratorPlaybackHandle>>(new Set());
+  const [isSelectionModifierPressed, setIsSelectionModifierPressed] = useState(false);
+  const keyframeDragRef = useRef<{
+    actionId: string;
+    keyframeIndex: number;
+    startX: number;
+    startY: number;
+    originLeftPct: number;
+    originTopPct: number;
+  } | null>(null);
 
   // Fetch initial scene video assets when dialog opens
   useEffect(() => {
@@ -215,20 +247,100 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   // Populate form when editing or reset when creating
   useEffect(() => {
     if (!open) return;
+
+    setError(null);
+    setContextualMenu(null);
+    setLeftToolPanelMode('media');
+    setDragOverActionId(null);
+    setChromaPickActionId(null);
+    setNarrativeCanvasEditActionId(null);
+    setNarrativeCanvasDraft(null);
+    setCurrentTimelineTimeMs(0);
+    setIsPreviewPlaying(false);
+    setPreviewLoopCycleIndex(0);
+    setPreviewSeekVersion((v) => v + 1);
+
     if (editing) {
       const resolvedCampaignId = editing.campaignId ?? ((editing as unknown as { campaign?: { id?: string | null } }).campaign?.id ?? null);
-      // Aquí iría la lógica de inicialización del draft si es necesario
+      const normalizedActions = (editing.actions ?? []).map((action) => {
+        const clonedAction: SceneActionDto = {
+          ...action,
+          targetWindow: action.targetWindow ? { ...action.targetWindow } : undefined,
+          payload: { ...(action.payload ?? {}) },
+        };
+        return normalizeActionForEditor(clonedAction);
+      });
+
+      setDraft({
+        name: editing.name ?? '',
+        description: editing.description ?? '',
+        icon: editing.icon ?? null,
+        imageUrl: editing.imageUrl ?? null,
+        loop: Boolean(editing.loop),
+        loopDelayMs: editing.loopDelayMs ?? null,
+        loopDelayRandomMinMs: editing.loopDelayRandomMinMs ?? null,
+        loopDelayRandomMaxMs: editing.loopDelayRandomMaxMs ?? null,
+        loopWindowStartMs: editing.loopWindowStartMs ?? null,
+        loopWindowEndMs: editing.loopWindowEndMs ?? null,
+        takeOverMusicOnStart: Boolean(editing.takeOverMusicOnStart),
+        restorePreviousMusicOnFinish: editing.restorePreviousMusicOnFinish !== false,
+        scope: editing.scope === 'campaign' && resolvedCampaignId ? 'campaign' : (editing.scope ?? (resolvedCampaignId ? 'campaign' : 'global')),
+        campaignId: resolvedCampaignId,
+        actions: normalizedActions,
+      });
+      setSelectedActionId(normalizedActions[0]?.id ?? null);
       return;
     }
-    setSelectedActionId(draft.actions[0]?.id ?? null);
-  }, [draft.actions, selectedActionId, open, editing]);
+
+    setDraft(blankDraft(campaignId));
+    setSelectedActionId(null);
+    setVideoPreviewUrlsByActionId({});
+    setVideoPreviewErrorsByActionId({});
+    signedVideoUrlCacheRef.current.clear();
+  }, [
+    open,
+    editing,
+    campaignId,
+    setError,
+    setContextualMenu,
+    setLeftToolPanelMode,
+    setDragOverActionId,
+    setChromaPickActionId,
+    setNarrativeCanvasEditActionId,
+    setNarrativeCanvasDraft,
+    setCurrentTimelineTimeMs,
+    setIsPreviewPlaying,
+    setPreviewLoopCycleIndex,
+    setPreviewSeekVersion,
+    setDraft,
+    setSelectedActionId,
+    setVideoPreviewUrlsByActionId,
+    setVideoPreviewErrorsByActionId,
+    signedVideoUrlCacheRef,
+  ]);
 
   useEffect(() => {
     if (!open) return;
 
     const syncFromStorage = () => {
-      setProjectionWindowSize(readStoredWindowSize(PROJECTION_SIZE_KEY));
-      setSkylineWindowSize(readStoredWindowSize(SKYLINE_SIZE_KEY));
+      const nextProjection = readStoredWindowSize(PROJECTION_SIZE_KEY);
+      const nextSkyline = readStoredWindowSize(SKYLINE_SIZE_KEY);
+      setProjectionWindowSize((current) => (
+        current
+          && nextProjection
+          && current.width === nextProjection.width
+          && current.height === nextProjection.height
+          ? current
+          : nextProjection
+      ));
+      setSkylineWindowSize((current) => (
+        current
+          && nextSkyline
+          && current.width === nextSkyline.width
+          && current.height === nextSkyline.height
+          ? current
+          : nextSkyline
+      ));
     };
 
     syncFromStorage();
@@ -359,29 +471,46 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   useEffect(() => {
     if (!open || !isPreviewPlaying) return;
 
-    let rafId = 0;
+    const tickMs = 1000 / 30;
     let lastFrame = performance.now();
+    let pendingLoopCycleIncrements = 0;
+    let pendingSeekIncrements = 0;
 
-    const step = (now: number) => {
+    const flushPendingPreviewState = () => {
+      if (pendingLoopCycleIncrements > 0) {
+        const increments = pendingLoopCycleIncrements;
+        pendingLoopCycleIncrements = 0;
+        setPreviewLoopCycleIndex((cycle) => Math.max(1, cycle + increments));
+      }
+      if (pendingSeekIncrements > 0) {
+        const increments = pendingSeekIncrements;
+        pendingSeekIncrements = 0;
+        setPreviewSeekVersion((version) => version + increments);
+      }
+    };
+
+    const step = () => {
+      const now = performance.now();
       const delta = now - lastFrame;
       lastFrame = now;
+      let shouldStopPreview = false;
       setCurrentTimelineTimeMs((current) => {
         const next = current + delta;
         if (next >= timelineDurationMs) {
           if (isPreviewLooping && timelineDurationMs > 0) {
+            pendingLoopCycleIncrements += 1;
+            pendingSeekIncrements += 1;
             if (previewLoopWindow) {
               const overflowMs = Math.max(0, next - timelineDurationMs);
-              setPreviewLoopCycleIndex((cycle) => Math.max(1, cycle + 1));
-              setPreviewSeekVersion((version) => version + 1);
               return previewLoopWindow.startMs + (overflowMs % previewLoopWindow.durationMs);
             }
             return next % timelineDurationMs;
           }
-          setIsPreviewPlaying(false);
+          shouldStopPreview = true;
           return timelineDurationMs;
         }
 
-        if (isPreviewLooping && previewLoopWindow && previewLoopCycleIndex > 0) {
+        if (isPreviewLooping && previewLoopWindow) {
           if (next < previewLoopWindow.startMs) {
             return previewLoopWindow.startMs;
           }
@@ -391,12 +520,17 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
         }
         return next;
       });
-      rafId = window.requestAnimationFrame(step);
+      if (shouldStopPreview) {
+        setIsPreviewPlaying(false);
+      }
+      flushPendingPreviewState();
     };
 
-    rafId = window.requestAnimationFrame(step);
+    const timerId = window.setInterval(step, tickMs);
     return () => {
-      window.cancelAnimationFrame(rafId);
+      pendingLoopCycleIncrements = 0;
+      pendingSeekIncrements = 0;
+      window.clearInterval(timerId);
     };
   }, [
     isPreviewPlaying,
@@ -404,8 +538,413 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     open,
     timelineDurationMs,
     previewLoopWindow,
-    previewLoopCycleIndex,
   ]);
+
+  useEffect(() => {
+    if (!open || !isPreviewPlaying) {
+      previewAudioTriggerRef.current.clear();
+      for (const handle of previewNarrationHandlesRef.current) {
+        handle.stop();
+      }
+      previewNarrationHandlesRef.current.clear();
+      return;
+    }
+
+    const normalizeVolume01 = (value: unknown, fallback = 1): number => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return Math.max(0, Math.min(1, fallback));
+      return Math.max(0, Math.min(1, n > 1 ? n / 100 : n));
+    };
+
+    const streamSong = async (songId: string, campaignScopeId?: string | null) => {
+      const query = campaignScopeId ? `?campaignId=${campaignScopeId}` : '';
+      const req = await api.get(`/soundtrack/songs/${songId}/stream${query}`, {
+        headers: getAuthHeaders(),
+        responseType: 'blob',
+      });
+      return URL.createObjectURL(req.data);
+    };
+
+    const stopPreviewMusic = () => {
+      previewMusicQueueRef.current = [];
+      previewMusicQueueIndexRef.current = 0;
+      if (previewMusicStopTimerRef.current !== null) {
+        window.clearTimeout(previewMusicStopTimerRef.current);
+        previewMusicStopTimerRef.current = null;
+      }
+      if (previewMusicAudioRef.current) {
+        previewMusicAudioRef.current.onended = null;
+        previewMusicAudioRef.current.pause();
+        previewMusicAudioRef.current.removeAttribute('src');
+        previewMusicAudioRef.current.load();
+        previewMusicAudioRef.current = null;
+      }
+      if (previewMusicObjectUrlRef.current) {
+        URL.revokeObjectURL(previewMusicObjectUrlRef.current);
+        previewMusicObjectUrlRef.current = null;
+      }
+    };
+
+    const schedulePreviewMusicStop = (stopAfterMs?: number) => {
+      if (previewMusicStopTimerRef.current !== null) {
+        window.clearTimeout(previewMusicStopTimerRef.current);
+        previewMusicStopTimerRef.current = null;
+      }
+      if (!Number.isFinite(Number(stopAfterMs)) || Number(stopAfterMs) <= 0) return;
+      previewMusicStopTimerRef.current = window.setTimeout(() => {
+        stopPreviewMusic();
+      }, Math.max(1, Math.round(Number(stopAfterMs))));
+    };
+
+    const playPreviewSong = async (
+      songId: string,
+      songName: string,
+      campaignScopeId?: string | null,
+      startAtSec?: number,
+      stopAfterMs?: number,
+    ) => {
+      if (!songId) return;
+      if (previewMusicObjectUrlRef.current) {
+        URL.revokeObjectURL(previewMusicObjectUrlRef.current);
+        previewMusicObjectUrlRef.current = null;
+      }
+      let audio = previewMusicAudioRef.current;
+      if (!audio) {
+        audio = new Audio();
+        previewMusicAudioRef.current = audio;
+      }
+
+      const objectUrl = await streamSong(songId, campaignScopeId);
+      previewMusicObjectUrlRef.current = objectUrl;
+      audio.src = objectUrl;
+      audio.volume = 1;
+      (audio as any).__songName = songName;
+      const normalizedStartAtSec = Number.isFinite(Number(startAtSec)) && Number(startAtSec) >= 0
+        ? Number(startAtSec)
+        : undefined;
+      if (normalizedStartAtSec !== undefined) {
+        if (audio.readyState < 1) {
+          await new Promise<void>((resolve) => {
+            const finish = () => resolve();
+            audio.addEventListener('loadedmetadata', finish, { once: true });
+            audio.addEventListener('error', finish, { once: true });
+          });
+        }
+        try {
+          audio.currentTime = normalizedStartAtSec;
+        } catch {
+          // Ignore seek failures for streams that cannot seek immediately.
+        }
+      }
+      schedulePreviewMusicStop(stopAfterMs);
+      await audio.play().catch(() => undefined);
+    };
+
+    const playPreviewPlaylist = async (
+      playlistId: string,
+      campaignScopeId: string,
+      startAtSec?: number,
+      stopAfterMs?: number,
+    ) => {
+      const playlists = await listPlaylists(campaignScopeId);
+      const playlist = playlists.find((item) => item.id === playlistId);
+      const songs = Array.isArray(playlist?.songs)
+        ? playlist.songs
+            .filter((song) => typeof song?.id === 'string' && song.id.trim().length > 0)
+            .map((song) => ({ id: song.id, name: song.name || song.id }))
+        : [];
+      if (!songs.length) return;
+
+      previewMusicQueueRef.current = songs;
+      previewMusicQueueIndexRef.current = 0;
+
+      if (!previewMusicAudioRef.current) {
+        previewMusicAudioRef.current = new Audio();
+      }
+      previewMusicAudioRef.current.onended = () => {
+        const queue = previewMusicQueueRef.current;
+        if (!queue.length) return;
+        const nextIndex = previewMusicQueueIndexRef.current + 1;
+        if (nextIndex >= queue.length) {
+          stopPreviewMusic();
+          return;
+        }
+        previewMusicQueueIndexRef.current = nextIndex;
+        const nextSong = queue[nextIndex];
+        void playPreviewSong(nextSong.id, nextSong.name, campaignScopeId);
+      };
+
+      const firstSong = songs[0];
+      await playPreviewSong(firstSong.id, firstSong.name, campaignScopeId, startAtSec, stopAfterMs);
+    };
+
+    const streamEffect = async (effectId: string, campaignScopeId?: string | null) => {
+      const query = campaignScopeId ? `?campaignId=${campaignScopeId}` : '';
+      const req = await api.get(`/soundtrack/effects/${effectId}/stream${query}`, {
+        headers: getAuthHeaders(),
+        responseType: 'blob',
+      });
+      return URL.createObjectURL(req.data);
+    };
+
+    const resolveAudioPlaybackWindow = (
+      payload: Record<string, unknown>,
+      entry: { startMs: number; endMs: number; durationMs: number },
+    ): { startAtSec: number; stopAfterMs: number } => {
+      const clipInSec = toNonNegativeSec(payload.clipInSec) ?? 0;
+      const rawClipOutSec = toNonNegativeSec(payload.clipOutSec);
+      const entryDurationSec = Math.max(0, entry.durationMs / 1000);
+      const resolvedClipOutSec = rawClipOutSec !== undefined && rawClipOutSec > clipInSec
+        ? rawClipOutSec
+        : (clipInSec + entryDurationSec);
+
+      const offsetMs = Math.max(0, Math.min(entry.durationMs, currentTimelineTimeMs - entry.startMs));
+      const startAtSec = Math.max(clipInSec, Math.min(resolvedClipOutSec, clipInSec + (offsetMs / 1000)));
+
+      const payloadDurationMs = toPositiveDurationMs(payload.durationMs);
+      const clipDurationMs = toPositiveDurationMs(payload.clipDurationMs);
+      const remainingClipMs = Math.max(0, Math.round((resolvedClipOutSec - startAtSec) * 1000));
+      const candidates = [remainingClipMs, payloadDurationMs, clipDurationMs]
+        .filter((value): value is number => Number.isFinite(Number(value)) && Number(value) > 0)
+        .map((value) => Math.round(value));
+      const stopAfterMs = candidates.length > 0
+        ? Math.min(...candidates)
+        : Math.max(1, Math.round(entry.endMs - currentTimelineTimeMs));
+
+      return {
+        startAtSec,
+        stopAfterMs: Math.max(1, stopAfterMs),
+      };
+    };
+
+    const executePreviewAudioAction = async (
+      action: SceneActionDto,
+      entry: { startMs: number; endMs: number; durationMs: number },
+    ) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const campaignScopeId = activeCampaign?.id ?? campaignId ?? null;
+      const playbackWindow = resolveAudioPlaybackWindow(payload, entry);
+
+      if (action.type === 'playMusic') {
+        const songId = typeof payload.songId === 'string' ? payload.songId.trim() : '';
+        const playlistId = typeof payload.playlistId === 'string' ? payload.playlistId.trim() : '';
+
+        stopPreviewMusic();
+
+        if (songId) {
+          await playPreviewSong(
+            songId,
+            typeof payload.displayName === 'string' && payload.displayName.trim() ? payload.displayName.trim() : songId,
+            campaignScopeId,
+            playbackWindow.startAtSec,
+            playbackWindow.stopAfterMs,
+          );
+          return;
+        }
+
+        if (playlistId && campaignScopeId) {
+          await playPreviewPlaylist(playlistId, campaignScopeId, playbackWindow.startAtSec, playbackWindow.stopAfterMs);
+        }
+        return;
+      }
+
+      if (action.type === 'playSound') {
+        const effectId = typeof payload.effectId === 'string' ? payload.effectId.trim() : '';
+        if (!effectId) return;
+        const loopMode = payload.loopMode === 'continuous' || payload.loopMode === 'fixed' || payload.loopMode === 'random' || payload.loopMode === 'once'
+          ? payload.loopMode
+          : 'once';
+        const instanceId = await playSfx(
+          { effectId, name: typeof payload.displayName === 'string' && payload.displayName.trim() ? payload.displayName.trim() : effectId },
+          async () => streamEffect(effectId, campaignScopeId),
+          {
+            volume: normalizeVolume01(payload.volume, 1),
+            loopMode,
+            startAtSec: playbackWindow.startAtSec,
+            durationMs: playbackWindow.stopAfterMs,
+            waitMs: Number.isFinite(Number(payload.waitMs)) ? Number(payload.waitMs) : undefined,
+            randomMinMs: Number.isFinite(Number(payload.randomMinMs)) ? Number(payload.randomMinMs) : undefined,
+            randomMaxMs: Number.isFinite(Number(payload.randomMaxMs)) ? Number(payload.randomMaxMs) : undefined,
+            playbackRate: Number.isFinite(Number(payload.playbackRate)) ? Number(payload.playbackRate) : undefined,
+            pitchSemitones: Number.isFinite(Number(payload.pitchSemitones)) ? Number(payload.pitchSemitones) : undefined,
+            echoEnabled: payload.echoEnabled === undefined ? undefined : Boolean(payload.echoEnabled),
+            echoDelayMs: Number.isFinite(Number(payload.echoDelayMs)) ? Number(payload.echoDelayMs) : undefined,
+            echoFeedback: Number.isFinite(Number(payload.echoFeedback)) ? Number(payload.echoFeedback) : undefined,
+            filterType: payload.filterType === 'none' || payload.filterType === 'lowpass' || payload.filterType === 'highpass' || payload.filterType === 'bandpass'
+              ? payload.filterType
+              : undefined,
+            filterFrequency: Number.isFinite(Number(payload.filterFrequency)) ? Number(payload.filterFrequency) : undefined,
+            filterQ: Number.isFinite(Number(payload.filterQ)) ? Number(payload.filterQ) : undefined,
+          },
+        );
+        previewSfxInstanceIdsRef.current.add(instanceId);
+        return;
+      }
+
+      if (action.type === 'playPreset') {
+        const presetId = typeof payload.presetId === 'string' ? payload.presetId.trim() : '';
+        if (!presetId || !campaignScopeId) return;
+        const response = await api.get(`/soundtrack/presets/campaigns/${campaignScopeId}`, { headers: getAuthHeaders() });
+        const presets = Array.isArray(response.data) ? response.data : [];
+        const preset = presets.find((item: any) => item?.id === presetId);
+        const items = Array.isArray(preset?.items) ? preset.items : [];
+
+        const presetVolume = Number.isFinite(Number(payload.volume)) ? Number(payload.volume) : undefined;
+        const volumeMultiplier = presetVolume === undefined ? 1 : (presetVolume > 1 ? presetVolume / 100 : presetVolume);
+
+        for (const item of items) {
+          const effectId = item?.soundEffect?.id;
+          if (!effectId) continue;
+          const instanceId = await playSfx(
+            { effectId, name: item?.soundEffect?.name || effectId },
+            async () => streamEffect(effectId, campaignScopeId),
+            {
+              volume: Math.max(0, Math.min(1, normalizeVolume01(item?.volume ?? 1, 1) * Math.max(0, Math.min(1, volumeMultiplier)))),
+              loopMode: item?.loopMode === 'continuous' || item?.loopMode === 'fixed' || item?.loopMode === 'random' || item?.loopMode === 'once'
+                ? item.loopMode
+                : 'once',
+              startAtSec: playbackWindow.startAtSec,
+              durationMs: playbackWindow.stopAfterMs,
+              waitMs: Number.isFinite(Number(item?.waitMs)) ? Number(item.waitMs) : undefined,
+              randomMinMs: Number.isFinite(Number(item?.randomMinMs)) ? Number(item.randomMinMs) : undefined,
+              randomMaxMs: Number.isFinite(Number(item?.randomMaxMs)) ? Number(item.randomMaxMs) : undefined,
+              playbackRate: Number.isFinite(Number(payload.playbackRate)) ? Number(payload.playbackRate) : undefined,
+              pitchSemitones: Number.isFinite(Number(payload.pitchSemitones)) ? Number(payload.pitchSemitones) : (Number.isFinite(Number(item?.pitchSemitones)) ? Number(item.pitchSemitones) : undefined),
+              echoEnabled: payload.echoEnabled === undefined ? Boolean(item?.echoEnabled ?? false) : Boolean(payload.echoEnabled),
+              echoDelayMs: Number.isFinite(Number(payload.echoDelayMs)) ? Number(payload.echoDelayMs) : (Number.isFinite(Number(item?.echoDelayMs)) ? Number(item.echoDelayMs) : undefined),
+              echoFeedback: Number.isFinite(Number(payload.echoFeedback)) ? Number(payload.echoFeedback) : (Number.isFinite(Number(item?.echoFeedback)) ? Number(item.echoFeedback) : undefined),
+              filterType: payload.filterType === 'none' || payload.filterType === 'lowpass' || payload.filterType === 'highpass' || payload.filterType === 'bandpass'
+                ? payload.filterType
+                : undefined,
+              filterFrequency: Number.isFinite(Number(payload.filterFrequency)) ? Number(payload.filterFrequency) : undefined,
+              filterQ: Number.isFinite(Number(payload.filterQ)) ? Number(payload.filterQ) : undefined,
+            },
+          );
+          previewSfxInstanceIdsRef.current.add(instanceId);
+        }
+        return;
+      }
+
+      if (action.type === 'stopMusic') {
+        stopPreviewMusic();
+        if (Boolean(payload.stopEffects)) {
+          stopAllSfx();
+          previewSfxInstanceIdsRef.current.clear();
+        }
+        return;
+      }
+
+      if (action.type === 'stopSound') {
+        const effectId = typeof payload.effectId === 'string' ? payload.effectId.trim() : '';
+        if (!effectId) {
+          stopAllSfx();
+          previewSfxInstanceIdsRef.current.clear();
+          return;
+        }
+
+        for (const item of sfxItems) {
+          if (item.effectId === effectId) {
+            stopSfx(item.instanceId);
+            previewSfxInstanceIdsRef.current.delete(item.instanceId);
+          }
+        }
+        return;
+      }
+
+      if (action.type === 'setSoundVolume') {
+        const nextVolume = normalizeVolume01(payload.value, 1);
+        const effectId = typeof payload.effectId === 'string' ? payload.effectId.trim() : '';
+        for (const item of sfxItems) {
+          if (!effectId || item.effectId === effectId) {
+            setSfxVolume(item.instanceId, nextVolume);
+          }
+        }
+        return;
+      }
+
+      if (action.type === 'setNarrativeText') {
+        const rawText = typeof payload.text === 'string' ? payload.text : '';
+        const text = rawText.trim();
+        if (!text) return;
+        const voiceTarget = normalizeNarratorVoiceTarget(payload.voiceTarget);
+        const previewIsMainWindow = previewWindowKind === 'main';
+        const shouldPlayOnPreviewWindow = voiceTarget === 'both'
+          || (voiceTarget === 'main' && previewIsMainWindow)
+          || (voiceTarget === 'projection' && !previewIsMainWindow);
+        if (!shouldPlayOnPreviewWindow) return;
+
+        const narration = await playNarration({
+          text,
+          voiceConfig: normalizeNarratorVoiceConfig(payload.voiceConfig as Record<string, unknown>),
+          locale: navigator.language,
+        });
+        previewNarrationHandlesRef.current.add(narration);
+        void narration.finished.finally(() => {
+          previewNarrationHandlesRef.current.delete(narration);
+        });
+      }
+    };
+
+    const activeAudioEntries = timelineModel.entries.filter((entry) => {
+      if (!['playMusic', 'playPreset', 'stopMusic', 'playSound', 'stopSound', 'setSoundVolume', 'setNarrativeText'].includes(entry.type)) {
+        return false;
+      }
+      return currentTimelineTimeMs >= entry.startMs && currentTimelineTimeMs < entry.endMs;
+    });
+
+    for (const entry of activeAudioEntries) {
+      const triggerKey = `${previewSeekVersion}:${previewLoopCycleIndex}:${entry.actionId}`;
+      if (previewAudioTriggerRef.current.has(triggerKey)) continue;
+      previewAudioTriggerRef.current.add(triggerKey);
+      const action = draft.actions.find((item) => item.id === entry.actionId);
+      if (!action) continue;
+      void executePreviewAudioAction(action, entry);
+    }
+  }, [
+    open,
+    isPreviewPlaying,
+    timelineModel.entries,
+    currentTimelineTimeMs,
+    previewSeekVersion,
+    previewLoopCycleIndex,
+    draft.actions,
+    activeCampaign?.id,
+    campaignId,
+    previewWindowKind,
+    playSfx,
+    setSfxVolume,
+    sfxItems,
+    stopAllSfx,
+    stopSfx,
+  ]);
+
+  useEffect(() => {
+    if (open && isPreviewPlaying) return;
+    if (previewMusicAudioRef.current) {
+      previewMusicAudioRef.current.pause();
+      previewMusicAudioRef.current.removeAttribute('src');
+      previewMusicAudioRef.current.load();
+      previewMusicAudioRef.current = null;
+    }
+    if (previewMusicObjectUrlRef.current) {
+      URL.revokeObjectURL(previewMusicObjectUrlRef.current);
+      previewMusicObjectUrlRef.current = null;
+    }
+    if (previewMusicStopTimerRef.current !== null) {
+      window.clearTimeout(previewMusicStopTimerRef.current);
+      previewMusicStopTimerRef.current = null;
+    }
+    previewMusicQueueRef.current = [];
+    previewMusicQueueIndexRef.current = 0;
+    for (const instanceId of previewSfxInstanceIdsRef.current) {
+      stopSfx(instanceId);
+    }
+    previewSfxInstanceIdsRef.current.clear();
+    for (const handle of previewNarrationHandlesRef.current) {
+      handle.stop();
+    }
+    previewNarrationHandlesRef.current.clear();
+  }, [open, isPreviewPlaying, stopSfx]);
 
   useEffect(() => {
     if (!open) return;
@@ -447,18 +986,46 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     };
   }, [open, timelineDurationMs, narrativeCanvasEditActionId]);
 
+  useEffect(() => {
+    if (!open) {
+      setIsSelectionModifierPressed(false);
+      return;
+    }
+
+    const syncModifierState = (event: KeyboardEvent) => {
+      setIsSelectionModifierPressed(Boolean(event.ctrlKey || event.metaKey));
+    };
+
+    const clearModifierState = () => {
+      setIsSelectionModifierPressed(false);
+    };
+
+    window.addEventListener('keydown', syncModifierState);
+    window.addEventListener('keyup', syncModifierState);
+    window.addEventListener('blur', clearModifierState);
+
+    return () => {
+      window.removeEventListener('keydown', syncModifierState);
+      window.removeEventListener('keyup', syncModifierState);
+      window.removeEventListener('blur', clearModifierState);
+      setIsSelectionModifierPressed(false);
+    };
+  }, [open]);
+
   const set = <K extends keyof ScenePayload>(key: K, value: ScenePayload[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
 
-  const loopDelayMode = useMemo<'immediate' | 'fixed' | 'random'>(() => {
-    if ((draft.loopDelayRandomMinMs ?? null) !== null || (draft.loopDelayRandomMaxMs ?? null) !== null) {
-      return 'random';
-    }
-    if ((draft.loopDelayMs ?? null) !== null) {
-      return 'fixed';
-    }
-    return 'immediate';
-  }, [draft.loopDelayMs, draft.loopDelayRandomMaxMs, draft.loopDelayRandomMinMs]);
+  const handleToggleSceneLoop = useCallback((enabled: boolean) => {
+    setDraft((d) => ({
+      ...d,
+      loop: enabled,
+      loopDelayMs: enabled ? d.loopDelayMs : null,
+      loopDelayRandomMinMs: enabled ? d.loopDelayRandomMinMs : null,
+      loopDelayRandomMaxMs: enabled ? d.loopDelayRandomMaxMs : null,
+      loopWindowStartMs: enabled ? (d.loopWindowStartMs ?? 0) : null,
+      loopWindowEndMs: enabled ? (d.loopWindowEndMs ?? Math.max(1, Math.round(timelineDurationMs))) : null,
+    }));
+  }, [setDraft, timelineDurationMs]);
 
   const addAction = () => {
     if (draft.actions.length >= SCENE_MAX_ACTIONS) return;
@@ -480,20 +1047,191 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     setSelectedActionId(next.id);
   };
 
-  const updateAction = (index: number, updated: SceneActionDto) => {
+  const updateAction = useCallback((index: number, updated: SceneActionDto) => {
     setDraft((d) => {
       const actions = [...d.actions];
       actions[index] = updated;
       return { ...d, actions };
     });
-  };
+  }, [setDraft]);
 
-  const updateActionById = (actionId: string, updater: (action: SceneActionDto) => SceneActionDto) => {
+  const updateActionById = useCallback((actionId: string, updater: (action: SceneActionDto) => SceneActionDto) => {
     setDraft((d) => ({
       ...d,
       actions: d.actions.map((action) => (action.id === actionId ? updater(action) : action)),
     }));
-  };
+  }, [setDraft]);
+
+  const startMotionKeyframeDrag = useCallback((actionId: string, keyframeIndex: number, event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.button !== 0) return;
+
+    const action = draft.actions.find((item) => item.id === actionId);
+    if (!action) return;
+
+    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const motionPath = Array.isArray(payload.motionPath)
+      ? (payload.motionPath as MotionKeyframe[])
+      : [];
+    const keyframe = motionPath[keyframeIndex];
+    if (!keyframe) return;
+
+    keyframeDragRef.current = {
+      actionId,
+      keyframeIndex,
+      startX: event.clientX,
+      startY: event.clientY,
+      originLeftPct: Number(keyframe.leftPct),
+      originTopPct: Number(keyframe.topPct),
+    };
+  }, [draft.actions]);
+
+  const addMotionKeyframeAtPreview = useCallback((actionId: string, leftPct: number, topPct: number) => {
+    updateActionById(actionId, (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const motionPath = Array.isArray(payload.motionPath)
+        ? [...(payload.motionPath as MotionKeyframe[])]
+        : [];
+      const timelineEntry = timelineEntriesByActionId.get(actionId);
+      const elapsedMs = timelineEntry
+        ? Math.max(0, currentTimelineTimeMs - timelineEntry.startMs)
+        : currentTimelineTimeMs;
+      const rawDurationMs = Number(payload.durationMs);
+      const fallbackDurationMs = Number.isFinite(rawDurationMs) && rawDurationMs > 0
+        ? rawDurationMs
+        : 3000;
+      const timeMs = Math.max(0, Math.round(Math.min(fallbackDurationMs, elapsedMs)));
+
+      motionPath.push({
+        timeMs,
+        leftPct,
+        topPct,
+        easing: 'linear',
+      });
+      motionPath.sort((a, b) => a.timeMs - b.timeMs);
+
+      return {
+        ...action,
+        payload: {
+          ...payload,
+          motionPath,
+        },
+      };
+    });
+  }, [currentTimelineTimeMs, timelineEntriesByActionId, updateActionById]);
+
+  const removeMotionKeyframeAtPreview = useCallback((actionId: string, keyframeIndex: number) => {
+    updateActionById(actionId, (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const motionPath = Array.isArray(payload.motionPath)
+        ? [...(payload.motionPath as MotionKeyframe[])]
+        : [];
+      if (keyframeIndex < 0 || keyframeIndex >= motionPath.length) return action;
+      motionPath.splice(keyframeIndex, 1);
+      return {
+        ...action,
+        payload: {
+          ...payload,
+          motionPath,
+        },
+      };
+    });
+  }, [updateActionById]);
+
+  const toggleMotionKeyframeFlipAtPreview = useCallback((actionId: string, keyframeIndex: number, axis: 'h' | 'v') => {
+    updateActionById(actionId, (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const motionPath = Array.isArray(payload.motionPath)
+        ? [...(payload.motionPath as MotionKeyframe[])]
+        : [];
+      if (keyframeIndex < 0 || keyframeIndex >= motionPath.length) return action;
+      const keyframe = motionPath[keyframeIndex];
+      const nextValue = axis === 'h' ? !Boolean(keyframe.flipH) : !Boolean(keyframe.flipV);
+      motionPath[keyframeIndex] = {
+        ...keyframe,
+        ...(axis === 'h' ? { flipH: nextValue } : { flipV: nextValue }),
+      };
+      return {
+        ...action,
+        payload: {
+          ...payload,
+          motionPath,
+        },
+      };
+    });
+  }, [updateActionById]);
+
+  const updateMotionKeyframeHoldAtPreview = useCallback((actionId: string, keyframeIndex: number, holdMs: number) => {
+    updateActionById(actionId, (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const motionPath = Array.isArray(payload.motionPath)
+        ? [...(payload.motionPath as MotionKeyframe[])]
+        : [];
+      if (keyframeIndex < 0 || keyframeIndex >= motionPath.length) return action;
+      motionPath[keyframeIndex] = {
+        ...motionPath[keyframeIndex],
+        holdMs: Math.max(0, Math.round(holdMs)),
+      };
+      return {
+        ...action,
+        payload: {
+          ...payload,
+          motionPath,
+        },
+      };
+    });
+  }, [updateActionById]);
+
+  const toggleMotionKeyframeOscillationPauseAtPreview = useCallback((actionId: string, keyframeIndex: number) => {
+    updateActionById(actionId, (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const motionPath = Array.isArray(payload.motionPath)
+        ? [...(payload.motionPath as MotionKeyframe[])]
+        : [];
+      if (keyframeIndex < 0 || keyframeIndex >= motionPath.length) return action;
+      const keyframe = motionPath[keyframeIndex];
+      motionPath[keyframeIndex] = {
+        ...keyframe,
+        pauseOscillationDuringHold: !Boolean(keyframe.pauseOscillationDuringHold),
+      };
+      return {
+        ...action,
+        payload: {
+          ...payload,
+          motionPath,
+        },
+      };
+    });
+  }, [updateActionById]);
+
+  const propagateMotionKeyframeFlipFromPreview = useCallback((actionId: string, keyframeIndex: number, axis: 'h' | 'v') => {
+    updateActionById(actionId, (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const motionPath = Array.isArray(payload.motionPath)
+        ? [...(payload.motionPath as MotionKeyframe[])]
+        : [];
+      if (keyframeIndex < 0 || keyframeIndex >= motionPath.length) return action;
+
+      const axisField = axis === 'h' ? 'flipH' : 'flipV';
+      const nextValue = !Boolean(motionPath[keyframeIndex][axisField]);
+
+      for (let i = keyframeIndex; i < motionPath.length; i += 1) {
+        motionPath[i] = {
+          ...motionPath[i],
+          ...(axis === 'h' ? { flipH: nextValue } : { flipV: nextValue }),
+        };
+      }
+
+      return {
+        ...action,
+        payload: {
+          ...payload,
+          motionPath,
+        },
+      };
+    });
+  }, [updateActionById]);
 
   const beginNarrativeCanvasEdit = (action: SceneActionDto) => {
     if (action.type !== 'setNarrativeText') return;
@@ -733,11 +1471,152 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
       payload: {
         ...emptyPayload('applyWindowFilter'),
         filter: filterType,
+        durationMs: 2500,
       },
     };
     setDraft((d) => ({ ...d, actions: [...d.actions, next] }));
     setSelectedActionId(next.id);
   }, [draft.actions.length, setDraft, setSelectedActionId]);
+
+  const measureAudioBlobDurationMs = useCallback((blob: Blob): Promise<number | undefined> => {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio();
+      let settled = false;
+
+      const cleanup = () => {
+        audio.onloadedmetadata = null;
+        audio.onerror = null;
+        URL.revokeObjectURL(url);
+      };
+
+      const finish = (value?: number) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(value);
+      };
+
+      const timeoutId = window.setTimeout(() => {
+        window.clearTimeout(timeoutId);
+        finish(undefined);
+      }, 10000);
+
+      audio.onloadedmetadata = () => {
+        window.clearTimeout(timeoutId);
+        const durationMs = toPositiveDurationMs(audio.duration * 1000);
+        finish(durationMs);
+      };
+
+      audio.onerror = () => {
+        window.clearTimeout(timeoutId);
+        finish(undefined);
+      };
+
+      audio.preload = 'metadata';
+      audio.src = url;
+      audio.load();
+    });
+  }, []);
+
+  const handleCreateAudioAction = useCallback((selection: SoundSourceSelection) => {
+    if (draft.actions.length >= SCENE_MAX_ACTIONS) return;
+
+    let next: SceneActionDto;
+
+    if (selection.sourceType === 'song') {
+      next = {
+        id: uuidv4(),
+        type: 'playMusic',
+        delay: 0,
+        payload: {
+          ...emptyPayload('playMusic'),
+          songId: selection.sourceId,
+          playlistId: '',
+          displayName: selection.sourceName,
+        },
+      };
+    } else if (selection.sourceType === 'playlist') {
+      next = {
+        id: uuidv4(),
+        type: 'playMusic',
+        delay: 0,
+        payload: {
+          ...emptyPayload('playMusic'),
+          songId: '',
+          playlistId: selection.sourceId,
+          displayName: selection.sourceName,
+        },
+      };
+    } else if (selection.sourceType === 'preset') {
+      next = {
+        id: uuidv4(),
+        type: 'playPreset',
+        delay: 0,
+        payload: {
+          ...emptyPayload('playPreset'),
+          presetId: selection.sourceId,
+          displayName: selection.sourceName,
+        },
+      };
+    } else {
+      next = {
+        id: uuidv4(),
+        type: 'playSound',
+        delay: 0,
+        payload: {
+          ...emptyPayload('playSound'),
+          effectId: selection.sourceId,
+          displayName: selection.sourceName,
+        },
+      };
+    }
+
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      actions: [...currentDraft.actions, next],
+    }));
+    setSelectedActionId(next.id);
+
+    if (selection.sourceType === 'song') {
+      const songId = selection.sourceId;
+      const actionId = next.id;
+      const campaignScopeId = activeCampaign?.id ?? campaignId ?? null;
+      void (async () => {
+        try {
+          const query = campaignScopeId ? `?campaignId=${campaignScopeId}` : '';
+          const response = await api.get(`/soundtrack/songs/${songId}/stream${query}`, {
+            headers: getAuthHeaders(),
+            responseType: 'blob',
+          });
+          const measuredDurationMs = await measureAudioBlobDurationMs(response.data);
+          if (!measuredDurationMs) return;
+          updateActionById(actionId, (action) => {
+            if (action.type !== 'playMusic') return action;
+            const payload = (action.payload ?? {}) as Record<string, unknown>;
+            if (toPositiveDurationMs(payload.durationMs) !== undefined) return action;
+            return {
+              ...action,
+              payload: {
+                ...payload,
+                durationMs: measuredDurationMs,
+              },
+            };
+          });
+        } catch {
+          // keep default timeline duration if metadata is unavailable
+        }
+      })();
+    }
+  }, [
+    draft.actions.length,
+    setDraft,
+    setSelectedActionId,
+    activeCampaign?.id,
+    campaignId,
+    measureAudioBlobDurationMs,
+    updateActionById,
+  ]);
 
   const handleCreateNarrativeFromPreset = useCallback((patch?: Record<string, unknown>) => {
     if (draft.actions.length >= SCENE_MAX_ACTIONS) return;
@@ -854,6 +1733,71 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
         };
       });
   }, [draft.actions]);
+
+  useEffect(() => {
+    if (!open) {
+      setVideoPreviewUrlsByActionId({});
+      setVideoPreviewErrorsByActionId({});
+      return;
+    }
+
+    let active = true;
+
+    const resolveVideoPreviewUrls = async () => {
+      const nextUrlsByActionId: Record<string, string> = {};
+      const nextErrorsByActionId: Record<string, string> = {};
+
+      for (const source of videoActionSources) {
+        if (source.directVideoUrl) {
+          nextUrlsByActionId[source.actionId] = resolveSceneMediaUrl(source.directVideoUrl);
+          continue;
+        }
+
+        if (!source.videoAssetId) continue;
+
+        const nowMs = Date.now();
+        const cached = signedVideoUrlCacheRef.current.get(source.videoAssetId);
+        if (cached && cached.expiresAtMs > nowMs + 15000) {
+          nextUrlsByActionId[source.actionId] = resolveSceneMediaUrl(cached.url);
+          continue;
+        }
+
+        try {
+          const signed = await createSceneVideoSignedUrl(source.videoAssetId, 600);
+          const expiresAtRaw = Number(signed.expiresAt);
+          const expiresAtMs = Number.isFinite(expiresAtRaw)
+            ? (expiresAtRaw > 1_000_000_000_000 ? expiresAtRaw : expiresAtRaw * 1000)
+            : (nowMs + 600000);
+
+          signedVideoUrlCacheRef.current.set(source.videoAssetId, {
+            url: signed.url,
+            expiresAtMs,
+          });
+          nextUrlsByActionId[source.actionId] = resolveSceneMediaUrl(signed.url);
+        } catch (err: any) {
+          nextErrorsByActionId[source.actionId] = String(
+            err?.response?.data?.message ?? err?.message ?? 'No se pudo generar URL de preview de video.',
+          );
+        }
+      }
+
+      if (!active) return;
+      setVideoPreviewUrlsByActionId(nextUrlsByActionId);
+      setVideoPreviewErrorsByActionId(nextErrorsByActionId);
+    };
+
+    void resolveVideoPreviewUrls();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    open,
+    videoActionSources,
+    signedVideoUrlCacheRef,
+    setVideoPreviewUrlsByActionId,
+    setVideoPreviewErrorsByActionId,
+  ]);
   const prioritizedVideoActionIds = useMemo(() => {
     const ids = videoActionSources.map((source) => source.actionId);
     if (!selectedActionId || !ids.includes(selectedActionId)) {
@@ -1013,20 +1957,44 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
    * Nuevo: handler para drop contextualizado en pista/ventana del timeline.
    * info: { trackKey, startMs, clientX, clientY }
    */
-  const handleDropAssetOnTimeline = (info: { assetId: string; trackKey: string; startMs: number; clientX: number; clientY: number }) => {
-    if (!info.assetId) return;
+  const handleDropAssetOnTimeline = (info: { dragPayload: string; trackKey: string; startMs: number; clientX: number; clientY: number }) => {
+    const draggedVideoAssetId = fromVideoDragPayload(info.dragPayload);
+    const draggedImage = fromImageDragPayload(info.dragPayload);
+    if (!draggedVideoAssetId && !draggedImage) return;
     if (draft.actions.length >= SCENE_MAX_ACTIONS) return;
+
     // Determinar ventana a partir de trackKey
     let windowKind: ScenePreviewWindowKind = 'projection';
     if (info.trackKey.startsWith('window.')) {
       const k = info.trackKey.split('.')[1];
       if (k === 'main' || k === 'projection' || k === 'skyline') windowKind = k;
     }
+
+    if (draggedImage) {
+      const next: SceneActionDto = {
+        id: uuidv4(),
+        type: 'sendImageToWindow',
+        delay: 0,
+        targetWindow: { kind: windowKind },
+        payload: {
+          ...emptyPayload('sendImageToWindow'),
+          imageUrl: draggedImage.url,
+          imageAssetName: draggedImage.label,
+          timelineStartMs: info.startMs,
+        },
+      };
+      setDraft((d) => ({ ...d, actions: [...d.actions, next] }));
+      setSelectedActionId(next.id);
+      return;
+    }
+
+    if (!draggedVideoAssetId) return;
+
     const next = {
-      ...createVideoActionFromAsset(info.assetId),
+      ...createVideoActionFromAsset(draggedVideoAssetId),
       targetWindow: { kind: windowKind },
       payload: {
-        ...createVideoActionFromAsset(info.assetId).payload,
+        ...createVideoActionFromAsset(draggedVideoAssetId).payload,
         timelineStartMs: info.startMs,
       },
     };
@@ -1049,11 +2017,230 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     createActionByDroppingVideoAsset(assetId);
   };
 
-  const startLayerDrag = (action: SceneActionDto, _mode: 'move' | 'resize', event: React.MouseEvent) => {
+  const startLayerDrag = (action: SceneActionDto, mode: 'move' | 'resize', event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
+
+    if (event.button !== 0) return;
+
+    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const placement = action.type === 'setNarrativeText'
+      ? getPlacementFromPayload(payload)
+      : {
+          leftPct: normalizeFreePlacement(payload.leftPct, 10),
+          topPct: normalizeFreePlacement(payload.topPct, 10),
+          widthPct: Math.max(1, normalizeFreePlacement(payload.widthPct, 80)),
+          heightPct: Math.max(1, normalizeFreePlacement(payload.heightPct, 80)),
+        };
+
+    layerDragRef.current = {
+      actionId: action.id,
+      mode,
+      startX: event.clientX,
+      startY: event.clientY,
+      originLeftPct: placement.leftPct,
+      originTopPct: placement.topPct,
+      originWidthPct: placement.widthPct,
+      originHeightPct: placement.heightPct,
+    };
+
+    setActiveLayerDragPlacement({
+      actionId: action.id,
+      leftPct: placement.leftPct,
+      topPct: placement.topPct,
+      widthPct: placement.widthPct,
+      heightPct: placement.heightPct,
+    });
+
     setSelectedActionId(action.id);
   };
+
+  useEffect(() => {
+    if (!open) {
+      layerDragRef.current = null;
+      setActiveLayerDragPlacement(null);
+      return;
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const drag = layerDragRef.current;
+      if (!drag) return;
+
+      const stage = previewStageRef.current;
+      if (!stage) return;
+
+      const stageRect = stage.getBoundingClientRect();
+      if (stageRect.width <= 0 || stageRect.height <= 0) return;
+
+      const unscaledWidth = Math.max(1, stage.offsetWidth || Math.round(stageRect.width));
+      const unscaledHeight = Math.max(1, stage.offsetHeight || Math.round(stageRect.height));
+
+      // The stage is rendered with CSS transform scale, so rect dimensions are scaled.
+      // Convert pointer deltas back to logical (unscaled) stage space for stable drag.
+      const effectiveScaleX = stageRect.width / unscaledWidth;
+      const effectiveScaleY = stageRect.height / unscaledHeight;
+      const logicalStageWidth = stageRect.width / Math.max(0.0001, effectiveScaleX);
+      const logicalStageHeight = stageRect.height / Math.max(0.0001, effectiveScaleY);
+
+      const deltaXPct = ((event.clientX - drag.startX) / logicalStageWidth) * 100;
+      const deltaYPct = ((event.clientY - drag.startY) / logicalStageHeight) * 100;
+
+      let nextPlacement = {
+        actionId: drag.actionId,
+        leftPct: drag.originLeftPct,
+        topPct: drag.originTopPct,
+        widthPct: drag.originWidthPct,
+        heightPct: drag.originHeightPct,
+      };
+
+      if (drag.mode === 'move') {
+        const movedLeft = snapPct(drag.originLeftPct + deltaXPct);
+        const movedTop = snapPct(drag.originTopPct + deltaYPct);
+        const clamped = clampLayerMoveInsideStage(
+          movedLeft,
+          movedTop,
+          drag.originWidthPct,
+          drag.originHeightPct,
+        );
+        nextPlacement = {
+          ...nextPlacement,
+          leftPct: clamped.leftPct,
+          topPct: clamped.topPct,
+        };
+      } else {
+        const rawWidth = drag.originWidthPct + deltaXPct;
+        const rawHeight = drag.originHeightPct + deltaYPct;
+        const aspectRatio = drag.originHeightPct > 0
+          ? drag.originWidthPct / drag.originHeightPct
+          : 1;
+
+        let resizedWidth = rawWidth;
+        let resizedHeight = rawHeight;
+
+        if (event.shiftKey) {
+          const widthDominant = Math.abs(deltaXPct) >= Math.abs(deltaYPct);
+          if (widthDominant) {
+            resizedWidth = rawWidth;
+            resizedHeight = aspectRatio > 0 ? (resizedWidth / aspectRatio) : rawHeight;
+          } else {
+            resizedHeight = rawHeight;
+            resizedWidth = resizedHeight * aspectRatio;
+          }
+        }
+
+        resizedWidth = snapPct(resizedWidth);
+        resizedHeight = snapPct(resizedHeight);
+        const clampedSize = clampLayerSizeInsideStage(
+          resizedWidth,
+          resizedHeight,
+          drag.originLeftPct,
+          drag.originTopPct,
+        );
+        nextPlacement = {
+          ...nextPlacement,
+          widthPct: clampedSize.widthPct,
+          heightPct: clampedSize.heightPct,
+        };
+      }
+
+      setActiveLayerDragPlacement(nextPlacement);
+      updateActionById(drag.actionId, (currentAction) => ({
+        ...currentAction,
+        payload: {
+          ...(currentAction.payload ?? {}),
+          leftPct: nextPlacement.leftPct,
+          topPct: nextPlacement.topPct,
+          widthPct: nextPlacement.widthPct,
+          heightPct: nextPlacement.heightPct,
+        },
+      }));
+    };
+
+    const stopDrag = () => {
+      if (!layerDragRef.current) return;
+      layerDragRef.current = null;
+      setActiveLayerDragPlacement(null);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', stopDrag);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', stopDrag);
+      layerDragRef.current = null;
+      setActiveLayerDragPlacement(null);
+    };
+  }, [open, previewStageRef, layerDragRef, setActiveLayerDragPlacement, updateActionById]);
+
+  useEffect(() => {
+    if (!layerDragRef.current) return;
+    layerDragRef.current = null;
+    setActiveLayerDragPlacement(null);
+  }, [previewZoom, open, setActiveLayerDragPlacement, layerDragRef]);
+
+  useEffect(() => {
+    if (!open) {
+      keyframeDragRef.current = null;
+      return;
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const drag = keyframeDragRef.current;
+      if (!drag) return;
+
+      const stage = previewStageRef.current;
+      if (!stage) return;
+
+      const stageRect = stage.getBoundingClientRect();
+      if (stageRect.width <= 0 || stageRect.height <= 0) return;
+
+      const unscaledWidth = Math.max(1, stage.offsetWidth || Math.round(stageRect.width));
+      const unscaledHeight = Math.max(1, stage.offsetHeight || Math.round(stageRect.height));
+      const effectiveScaleX = stageRect.width / unscaledWidth;
+      const effectiveScaleY = stageRect.height / unscaledHeight;
+      const logicalStageWidth = stageRect.width / Math.max(0.0001, effectiveScaleX);
+      const logicalStageHeight = stageRect.height / Math.max(0.0001, effectiveScaleY);
+
+      const deltaXPct = ((event.clientX - drag.startX) / logicalStageWidth) * 100;
+      const deltaYPct = ((event.clientY - drag.startY) / logicalStageHeight) * 100;
+      const nextLeftPct = Math.max(-200, Math.min(200, snapPct(drag.originLeftPct + deltaXPct)));
+      const nextTopPct = Math.max(-200, Math.min(200, snapPct(drag.originTopPct + deltaYPct)));
+
+      updateActionById(drag.actionId, (action) => {
+        const payload = (action.payload ?? {}) as Record<string, unknown>;
+        const motionPath = Array.isArray(payload.motionPath)
+          ? [...(payload.motionPath as MotionKeyframe[])]
+          : [];
+        if (drag.keyframeIndex < 0 || drag.keyframeIndex >= motionPath.length) return action;
+        motionPath[drag.keyframeIndex] = {
+          ...motionPath[drag.keyframeIndex],
+          leftPct: nextLeftPct,
+          topPct: nextTopPct,
+        };
+        return {
+          ...action,
+          payload: {
+            ...payload,
+            motionPath,
+          },
+        };
+      });
+    };
+
+    const stopDrag = () => {
+      if (!keyframeDragRef.current) return;
+      keyframeDragRef.current = null;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', stopDrag);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', stopDrag);
+      keyframeDragRef.current = null;
+    };
+  }, [open, previewStageRef, updateActionById]);
 
   useEffect(() => {
     if (!selectedAction || !WINDOW_ACTION_TYPES.has(selectedAction.type)) return;
@@ -1304,10 +2491,24 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     if (targetIndex < 0) return;
 
     const draggedAssetId = fromVideoDragPayload(draggedData);
+    const draggedImage = fromImageDragPayload(draggedData);
     const targetAction = draft.actions[targetIndex];
 
     if (draggedAssetId && targetAction.type === 'sendVideoToWindow') {
       updateAction(targetIndex, assignVideoAssetToAction(targetAction, draggedAssetId));
+      setSelectedActionId(targetAction.id);
+      return;
+    }
+
+    if (draggedImage && (targetAction.type === 'sendImageToWindow' || targetAction.type === 'setWindowBackground')) {
+      updateAction(targetIndex, {
+        ...targetAction,
+        payload: {
+          ...(targetAction.payload ?? {}),
+          imageUrl: draggedImage.url,
+          ...(targetAction.type === 'sendImageToWindow' ? { imageAssetName: draggedImage.label } : {}),
+        },
+      });
       setSelectedActionId(targetAction.id);
       return;
     }
@@ -1546,24 +2747,14 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     );
   })();
 
-  return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth={false}
-      fullWidth
-      PaperProps={{
-        sx: {
-          width: '96vw',
-          maxWidth: '96vw',
-          height: '92vh',
-          maxHeight: '92vh',
-        },
-      }}
-    >
-      <DialogTitle sx={{ py: 1.5, px: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Stack direction="row" spacing={2.5} alignItems="center">
-          <Box sx={{ flexShrink: 0 }}>
+  if (!open) return null;
+
+  const sections = (
+    <>
+      <DialogTitle sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Stack direction="row" spacing={2} alignItems="flex-start" justifyContent="space-between">
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
+            <Box sx={{ flexShrink: 0 }}>
             <ShortcutThumbnailPreview
               icon={draft.icon}
               imageUrl={draft.imageUrl}
@@ -1571,9 +2762,9 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
               onClick={() => setIconPickerOpen(true)}
               hideLabel={true}
             />
-          </Box>
-          <Stack spacing={1.25} sx={{ flex: 1 }}>
-            <Stack direction="row" spacing={1.5} alignItems="center">
+            </Box>
+            <Stack spacing={1} sx={{ minWidth: 0, flex: 1 }}>
+              <Stack direction="row" spacing={1} alignItems="center">
               <TextField
                 label="Nombre *"
                 size="small"
@@ -1582,7 +2773,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                 inputProps={{ maxLength: 80 }}
                 sx={{ flex: 1 }}
               />
-              <FormControl size="small" sx={{ width: 150 }}>
+              <FormControl size="small" sx={{ width: 132 }}>
                 <InputLabel>Alcance</InputLabel>
                 <Select
                   value={draft.scope}
@@ -1593,26 +2784,61 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                   <MenuItem value="global">Global</MenuItem>
                 </Select>
               </FormControl>
+              </Stack>
+              <TextField
+                label="Descripción"
+                size="small"
+                placeholder="Descripción breve de la escena..."
+                value={draft.description ?? ''}
+                onChange={(e) => set('description', e.target.value)}
+                inputProps={{ maxLength: 500 }}
+                fullWidth
+              />
             </Stack>
-            <TextField
-              label="Descripción"
-              size="small"
-              placeholder="Descripción breve de la escena..."
-              value={draft.description ?? ''}
-              onChange={(e) => set('description', e.target.value)}
-              inputProps={{ maxLength: 500 }}
-              fullWidth
-            />
+            {uploadingIcon ? (
+              <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', ml: 1 }}>
+                Subiendo...
+              </Typography>
+            ) : null}
           </Stack>
-          {uploadingIcon ? (
-            <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', ml: 1 }}>
-              Subiendo...
-            </Typography>
-          ) : null}
+
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ pl: 1, flexShrink: 0 }}>
+            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mr: 0.5 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                Escena en loop
+              </Typography>
+              <Switch
+                checked={Boolean(draft.loop)}
+                onChange={(event) => handleToggleSceneLoop(event.target.checked)}
+              />
+            </Stack>
+            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mr: 0.5 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                Tomar control de musica
+              </Typography>
+              <Switch
+                checked={Boolean(draft.takeOverMusicOnStart)}
+                onChange={(event) => setDraft((d) => ({ ...d, takeOverMusicOnStart: event.target.checked }))}
+              />
+            </Stack>
+            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mr: 0.5 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                Restaurar musica previa
+              </Typography>
+              <Switch
+                checked={Boolean(draft.restorePreviousMusicOnFinish)}
+                onChange={(event) => setDraft((d) => ({ ...d, restorePreviousMusicOnFinish: event.target.checked }))}
+              />
+            </Stack>
+            <Button onClick={onClose} disabled={saving}>Cancelar</Button>
+            <Button variant="contained" onClick={handleSave} disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar'}
+            </Button>
+          </Stack>
         </Stack>
       </DialogTitle>
 
-      <DialogContent dividers>
+      <DialogContent dividers sx={{ flex: 1, minHeight: 0 }}>
         <Stack spacing={1.25} sx={{ height: '100%' }}>
           <input
             ref={fileInputRef}
@@ -1639,133 +2865,14 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
             isUploadingImage={uploadingIcon}
           />
 
-          <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
-            sx={{
-              bgcolor: 'background.paper',
-              px: 1.5,
-              py: 0.75,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-              flexWrap: 'wrap',
-            }}
-          >
-            <FormControlLabel
-              control={(
-                <Switch
-                  checked={Boolean(draft.loop)}
-                  onChange={(event) => {
-                    const enabled = event.target.checked;
-                    setDraft((d) => ({
-                      ...d,
-                      loop: enabled,
-                      loopDelayMs: enabled ? d.loopDelayMs : null,
-                      loopDelayRandomMinMs: enabled ? d.loopDelayRandomMinMs : null,
-                      loopDelayRandomMaxMs: enabled ? d.loopDelayRandomMaxMs : null,
-                      loopWindowStartMs: enabled ? (d.loopWindowStartMs ?? 0) : null,
-                      loopWindowEndMs: enabled ? (d.loopWindowEndMs ?? Math.max(1, Math.round(timelineDurationMs))) : null,
-                    }));
-                  }}
-                />
-              )}
-              label="Escena en loop"
-              sx={{ mr: 1 }}
-            />
-
-            {draft.loop ? (
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1, minWidth: 280, flexWrap: 'wrap', gap: 1 }}>
-                <FormControl size="small" sx={{ minWidth: 140 }}>
-                  <InputLabel>Reinicio loop</InputLabel>
-                  <Select
-                    value={loopDelayMode}
-                    label="Reinicio loop"
-                    onChange={(event) => {
-                      const mode = event.target.value as 'immediate' | 'fixed' | 'random';
-                      setDraft((d) => {
-                        if (mode === 'immediate') {
-                          return {
-                            ...d,
-                            loopDelayMs: null,
-                            loopDelayRandomMinMs: null,
-                            loopDelayRandomMaxMs: null,
-                          };
-                        }
-                        if (mode === 'fixed') {
-                          return {
-                            ...d,
-                            loopDelayMs: d.loopDelayMs ?? 1000,
-                            loopDelayRandomMinMs: null,
-                            loopDelayRandomMaxMs: null,
-                          };
-                        }
-                        return {
-                          ...d,
-                          loopDelayMs: null,
-                          loopDelayRandomMinMs: d.loopDelayRandomMinMs ?? 500,
-                          loopDelayRandomMaxMs: d.loopDelayRandomMaxMs ?? 1500,
-                        };
-                      });
-                    }}
-                  >
-                    <MenuItem value="immediate">Inmediato</MenuItem>
-                    <MenuItem value="fixed">Delay fijo</MenuItem>
-                    <MenuItem value="random">Delay aleatorio</MenuItem>
-                  </Select>
-                </FormControl>
-
-                {loopDelayMode === 'fixed' ? (
-                  <TextField
-                    size="small"
-                    type="number"
-                    label="Delay loop (ms)"
-                    value={draft.loopDelayMs ?? 0}
-                    onChange={(event) => set('loopDelayMs', Math.max(0, Number(event.target.value || 0)))}
-                    inputProps={{ min: 0, step: 100 }}
-                    sx={{ width: 140 }}
-                  />
-                ) : null}
-
-                {loopDelayMode === 'random' ? (
-                  <>
-                    <TextField
-                      size="small"
-                      type="number"
-                      label="Delay min (ms)"
-                      value={draft.loopDelayRandomMinMs ?? 0}
-                      onChange={(event) => set('loopDelayRandomMinMs', Math.max(0, Number(event.target.value || 0)))}
-                      inputProps={{ min: 0, step: 100 }}
-                      sx={{ width: 130 }}
-                    />
-                    <TextField
-                      size="small"
-                      type="number"
-                      label="Delay max (ms)"
-                      value={draft.loopDelayRandomMaxMs ?? 0}
-                      onChange={(event) => set('loopDelayRandomMaxMs', Math.max(0, Number(event.target.value || 0)))}
-                      inputProps={{ min: 0, step: 100 }}
-                      sx={{ width: 130 }}
-                    />
-                  </>
-                ) : null}
-
-                <Typography variant="caption" color="text.secondary">
-                  El loop parcial se edita visualmente en el timeline (caja inferior).
-                </Typography>
-              </Stack>
-            ) : null}
-          </Stack>
-
           <Box
             sx={{
               display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
-                md: '240px minmax(0, 1fr)',
-                lg: '250px minmax(0, 1fr) 320px',
-                xl: '260px minmax(0, 1fr) 360px',
+                md: '280px minmax(0, 1fr)',
+                lg: '320px minmax(0, 1fr) 420px',
+                xl: '360px minmax(0, 1fr) 460px',
               },
               gap: 1.5,
               minHeight: 0,
@@ -1773,6 +2880,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
             }}
           >
             <SceneToolsPanel
+              campaignId={campaignId}
               actionsCount={draft.actions.length}
               maxActions={SCENE_MAX_ACTIONS}
               contextualMenu={contextualMenu}
@@ -1782,6 +2890,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
               onCreateNarrativeAction={handleCreateNarrativeFromPreset}
               onCreateImageAction={handleCreateImageAction}
               onCreateFilterAction={handleCreateFilterAction}
+              onCreateAudioAction={handleCreateAudioAction}
               loadingAssets={loadingAssets}
               uploadingVideo={uploadingVideo}
               sceneVideoAssets={sceneVideoAssets}
@@ -1898,6 +3007,13 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                     setChromaPickActionId={setChromaPickActionId}
                     selectActionAndSeekToStart={selectActionAndSeekToStart}
                     startLayerDrag={startLayerDrag}
+                    startMotionKeyframeDrag={startMotionKeyframeDrag}
+                    addMotionKeyframeAtPreview={addMotionKeyframeAtPreview}
+                    removeMotionKeyframeAtPreview={removeMotionKeyframeAtPreview}
+                    toggleMotionKeyframeFlipAtPreview={toggleMotionKeyframeFlipAtPreview}
+                    updateMotionKeyframeHoldAtPreview={updateMotionKeyframeHoldAtPreview}
+                    toggleMotionKeyframeOscillationPauseAtPreview={toggleMotionKeyframeOscillationPauseAtPreview}
+                    propagateMotionKeyframeFlipFromPreview={propagateMotionKeyframeFlipFromPreview}
                     updateActionById={updateActionById}
                     previewMediaUrlsByActionId={previewMediaUrlsByActionId}
                     videoPreviewErrorsByActionId={videoPreviewErrorsByActionId}
@@ -1915,6 +3031,7 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
                     finishNarrativeCanvasEdit={finishNarrativeCanvasEdit}
                     previewWindowSize={previewWindowSize}
                     previewScale={previewScale}
+                    isSelectionModifierPressed={isSelectionModifierPressed}
                   />
                 )}
                 formatPreviewClock={formatPreviewClock}
@@ -1983,12 +3100,44 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
         </Stack>
 
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={saving}>Cancelar</Button>
-        <Button variant="contained" onClick={handleSave} disabled={saving}>
-          {saving ? 'Guardandoâ€¦' : 'Guardar'}
-        </Button>
-      </DialogActions>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <Paper
+        variant="outlined"
+        sx={{
+          height: '100%',
+          maxHeight: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          overflow: 'hidden',
+          borderRadius: 2,
+        }}
+      >
+        {sections}
+      </Paper>
+    );
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth={false}
+      fullWidth
+      PaperProps={{
+        sx: {
+          width: '96vw',
+          maxWidth: '96vw',
+          height: '92vh',
+          maxHeight: '92vh',
+        },
+      }}
+    >
+      {sections}
     </Dialog>
   );
 };

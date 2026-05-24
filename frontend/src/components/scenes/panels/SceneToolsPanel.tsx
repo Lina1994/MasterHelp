@@ -17,20 +17,26 @@ import SearchIcon from '@mui/icons-material/Search';
 import ImageIcon from '@mui/icons-material/Image';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import MovieCreationIcon from '@mui/icons-material/MovieCreation';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useTranslation } from 'react-i18next';
 import type { SceneVideoAsset } from '../../../types/scenes';
+import type { SoundSourceSelection } from '../../Map/SoundSourcePickerDialog';
 import { ImageContextualMenu } from '../menus/ImageContextualMenu';
 import { FilterContextualMenu } from '../menus/FilterContextualMenu';
+import { MusicContextualMenu } from '../menus/MusicContextualMenu';
+import { NarratorContextualMenu } from '../menus/NarratorContextualMenu';
 import { NARRATIVE_TOOL_STYLE_PRESETS } from '../constants/narrativePresets';
 import { toVideoDragPayload } from '../utils/sceneEditorUtils';
 import type { LeftToolPanelMode } from '../hooks/useSceneDraft';
 
-export type SceneContextualMenu = null | 'image' | 'music' | 'filter';
+export type SceneContextualMenu = null | 'image' | 'music' | 'filter' | 'narrator';
 
 interface SceneToolsPanelProps {
+  campaignId?: string | null;
   actionsCount: number;
   maxActions: number;
   contextualMenu: SceneContextualMenu;
@@ -40,6 +46,7 @@ interface SceneToolsPanelProps {
   onCreateNarrativeAction: (patch?: Record<string, unknown>) => void;
   onCreateImageAction: (image: { url: string; label: string }) => void;
   onCreateFilterAction: (filterType: string) => void;
+  onCreateAudioAction: (selection: SoundSourceSelection) => void;
   loadingAssets: boolean;
   uploadingVideo: boolean;
   sceneVideoAssets: SceneVideoAsset[];
@@ -63,6 +70,7 @@ interface SceneToolsPanelProps {
  * Left tools panel of SceneFormDialog (media/text actions and video library).
  */
 export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
+  campaignId,
   actionsCount,
   maxActions,
   contextualMenu,
@@ -72,6 +80,7 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
   onCreateNarrativeAction,
   onCreateImageAction,
   onCreateFilterAction,
+  onCreateAudioAction,
   loadingAssets,
   uploadingVideo,
   sceneVideoAssets,
@@ -90,9 +99,11 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
   onCancelRenameVideo,
   onCreateActionByDroppingVideoAsset,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Paper variant="outlined" sx={{ p: 1.25, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>Herramientas</Typography>
+      <Typography variant="subtitle2" sx={{ mb: 1 }}>{t('scene_tools_title', 'Herramientas')}</Typography>
 
       <Stack spacing={0.8}>
         <Button
@@ -104,7 +115,7 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
             setContextualMenu(null);
           }}
         >
-          Anadir video
+          {t('scene_tools_add_video', 'Añadir vídeo')}
         </Button>
         <Button
           size="small"
@@ -112,7 +123,7 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
           startIcon={<ImageIcon />}
           onClick={() => setContextualMenu((curr) => curr === 'image' ? null : 'image')}
         >
-          Anadir imagen
+          {t('scene_tools_add_image', 'Añadir imagen')}
         </Button>
         <Button
           size="small"
@@ -123,7 +134,7 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
             setContextualMenu(null);
           }}
         >
-          Anadir texto
+          {t('scene_tools_add_text', 'Añadir texto')}
         </Button>
         <Button
           size="small"
@@ -131,7 +142,15 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
           startIcon={<MusicNoteIcon />}
           onClick={() => setContextualMenu((curr) => curr === 'music' ? null : 'music')}
         >
-          Anadir musica
+          {t('scene_tools_add_music', 'Añadir música')}
+        </Button>
+        <Button
+          size="small"
+          variant={contextualMenu === 'narrator' ? 'contained' : 'outlined'}
+          startIcon={<RecordVoiceOverIcon />}
+          onClick={() => setContextualMenu((curr) => curr === 'narrator' ? null : 'narrator')}
+        >
+          {t('scene_tools_add_narrator', 'Añadir narrador')}
         </Button>
         <Button
           size="small"
@@ -139,11 +158,12 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
           startIcon={<FilterAltIcon />}
           onClick={() => setContextualMenu((curr) => curr === 'filter' ? null : 'filter')}
         >
-          Anadir filtro
+          {t('scene_tools_add_filter', 'Añadir filtro')}
         </Button>
 
         {contextualMenu === 'image' && (
           <ImageContextualMenu
+            campaignId={campaignId}
             onSelect={(image) => {
               if (actionsCount >= maxActions) return;
               onCreateImageAction(image);
@@ -162,6 +182,27 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
             onClose={() => setContextualMenu(null)}
           />
         )}
+        {contextualMenu === 'music' && campaignId ? (
+          <MusicContextualMenu
+            campaignId={campaignId}
+            onSelect={(selection) => {
+              if (actionsCount >= maxActions) return;
+              onCreateAudioAction(selection);
+              setContextualMenu(null);
+            }}
+            onClose={() => setContextualMenu(null)}
+          />
+        ) : null}
+        {contextualMenu === 'narrator' ? (
+          <NarratorContextualMenu
+            onSelect={(patch) => {
+              if (actionsCount >= maxActions) return;
+              onCreateNarrativeAction(patch);
+              setContextualMenu(null);
+            }}
+            onClose={() => setContextualMenu(null)}
+          />
+        ) : null}
       </Stack>
 
       {contextualMenu === null && (

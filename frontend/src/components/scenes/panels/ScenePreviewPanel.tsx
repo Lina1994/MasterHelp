@@ -1,7 +1,36 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Chip, FormControl, InputLabel, MenuItem, Paper, Select, Stack, Typography } from '@mui/material';
 import type { WindowSize } from '../../../hooks/useSecondaryWindowSizes';
 import type { ScenePreviewWindowKind } from '../utils/sceneLayerUtils';
+
+const PREVIEW_SCALE_OPTIONS = [
+  0.3,
+  0.35,
+  0.4,
+  0.45,
+  0.5,
+  0.55,
+  0.6,
+  0.65,
+  0.7,
+  0.75,
+  0.8,
+  0.85,
+  0.9,
+  0.95,
+  1,
+] as const;
+
+function pickBestAutoScale(rawFitScale: number): number {
+  const clamped = Math.max(0.3, Math.min(1, rawFitScale));
+  let best = 0.3;
+  for (const option of PREVIEW_SCALE_OPTIONS) {
+    if (option <= clamped) {
+      best = option;
+    }
+  }
+  return best;
+}
 
 interface ScenePreviewPanelProps {
   effectivePreviewLoopMode: 'full' | 'partial';
@@ -57,8 +86,57 @@ export const ScenePreviewPanel: React.FC<ScenePreviewPanelProps> = ({
   previewLayersContent,
   formatPreviewClock,
 }) => {
+  const previewViewportRef = useRef<HTMLDivElement | null>(null);
+  const hasAppliedInitialAutoScaleRef = useRef(false);
+
+  useEffect(() => {
+    const viewport = previewViewportRef.current;
+    if (!viewport) return;
+
+    const applyInitialAutoScale = () => {
+      if (hasAppliedInitialAutoScaleRef.current) return;
+      const rect = viewport.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      const styles = window.getComputedStyle(viewport);
+      const horizontalPadding = Number.parseFloat(styles.paddingLeft) + Number.parseFloat(styles.paddingRight);
+      const verticalPadding = Number.parseFloat(styles.paddingTop) + Number.parseFloat(styles.paddingBottom);
+      const availableWidth = Math.max(1, rect.width - (Number.isFinite(horizontalPadding) ? horizontalPadding : 0));
+      const availableHeight = Math.max(1, rect.height - (Number.isFinite(verticalPadding) ? verticalPadding : 0));
+      const fitByWidth = availableWidth / Math.max(1, previewWindowSize.width);
+      const fitByHeight = availableHeight / Math.max(1, previewWindowSize.height);
+      const bestScale = pickBestAutoScale(Math.min(fitByWidth, fitByHeight));
+
+      hasAppliedInitialAutoScaleRef.current = true;
+      if (Math.abs(previewZoom - bestScale) > 0.0001) {
+        onChangePreviewZoom(bestScale);
+      }
+    };
+
+    applyInitialAutoScale();
+
+    const resizeObserver = new ResizeObserver(() => {
+      applyInitialAutoScale();
+    });
+    resizeObserver.observe(viewport);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [onChangePreviewZoom, previewWindowSize.height, previewWindowSize.width, previewZoom]);
+
   return (
-    <Paper variant="outlined" sx={{ p: 1.25, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: 0 }}>
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 1.25,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.25,
+        minHeight: 0,
+        flex: 1,
+      }}
+    >
       <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle2">Previsualizador</Typography>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -135,6 +213,7 @@ export const ScenePreviewPanel: React.FC<ScenePreviewPanelProps> = ({
         </Stack>
       </Stack>
       <Box
+        ref={previewViewportRef}
         onDragOver={(event) => event.preventDefault()}
         onDrop={onDropVideoAsset}
         sx={{
@@ -143,11 +222,12 @@ export const ScenePreviewPanel: React.FC<ScenePreviewPanelProps> = ({
           border: '1px solid',
           borderColor: 'divider',
           minHeight: 280,
-          maxHeight: 460,
+          flex: 1,
+          minWidth: 0,
           p: 1.5,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          boxSizing: 'border-box',
+          display: 'grid',
+          placeItems: 'center',
           overflow: 'auto',
           position: 'relative',
         }}
@@ -159,12 +239,15 @@ export const ScenePreviewPanel: React.FC<ScenePreviewPanelProps> = ({
             width: Math.max(1, Math.round(previewWindowSize.width * previewScale)),
             height: Math.max(1, Math.round(previewWindowSize.height * previewScale)),
             overflow: 'visible',
+            flex: '0 0 auto',
           }}
         >
           <Box
             ref={previewStageRef}
             sx={{
-              position: 'relative',
+              position: 'absolute',
+              left: 0,
+              top: 0,
               width: previewWindowSize.width,
               height: previewWindowSize.height,
               transform: `scale(${previewScale})`,

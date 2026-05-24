@@ -48,6 +48,7 @@ import { ShortcutsProvider } from '../contexts/ShortcutsContext';
 import { SidebarShortcutsPanel, ShortcutHotbar } from '../components/shortcuts/ShortcutsShell';
 import ActiveScenesBar from '../components/scenes/ActiveScenesBar';
 import { ActiveScenesProvider } from '../contexts/ActiveScenesContext';
+import { LayoutChromeProvider, useLayoutChrome } from '../contexts/LayoutChromeContext';
 
 /** Maps iconName strings (from SidebarItemDef) to actual MUI icon elements. */
 const ICON_MAP: Record<string, ReactElement> = {
@@ -84,6 +85,8 @@ const MainLayoutInner = () => {
   const currentUserId = getCurrentUser()?.id as number | undefined;
   const isMaster = isUserMaster(activeCampaign, currentUserId);
   const { sidebarItems } = useSidebarConfig();
+  const { workspaceMode } = useLayoutChrome();
+  const isScenesEditorWorkspace = workspaceMode === 'scenesEditor' && location.pathname.startsWith('/scenes');
 
   // Auto-cargar el día actual del calendario si hay campaña activa y no hay día seleccionado
   useEffect(() => {
@@ -323,7 +326,7 @@ const MainLayoutInner = () => {
               position="fixed"
               elevation={1}
               sx={{
-                display: { xs: 'flex', sm: 'none' },
+                display: isScenesEditorWorkspace ? 'none' : { xs: 'flex', sm: 'none' },
                 top: TB,
                 bgcolor: 'background.paper',
                 color: 'text.primary',
@@ -355,69 +358,79 @@ const MainLayoutInner = () => {
             </AppBar>
             {/* Headless orchestrator to auto-play map audio based on active map and time-of-day */}
             <MapAudioOrchestrator />
-            <Box
-              component="nav"
-              sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}
-              aria-label="sidebar navigation"
-            >
-              {/* Drawer temporal (mobile): NO incluye reproductor para evitar doble <audio> oculto. */}
-              <Drawer
-                variant="temporary"
-                open={mobileOpen}
-                onClose={handleDrawerToggle}
-                ModalProps={{ keepMounted: true }}
-                sx={{
-                  display: { xs: 'block', sm: 'none' },
-                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
-                }}
+            {isScenesEditorWorkspace ? null : (
+              <Box
+                component="nav"
+                sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}
+                aria-label="sidebar navigation"
               >
-                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                  {drawerContent}
-                  {/* Opcional: si se quiere el reproductor también en mobile, moverlo aquí y asegurarse de desmontar el permanente. */}
-                </Box>
-              </Drawer>
-              {/* Drawer permanente (desktop): ÚNICO lugar donde se monta el reproductor */}
-              <Drawer
-                variant="permanent"
-                sx={{
-                  display: { xs: 'none', sm: 'block' },
-                  '& .MuiDrawer-paper': {
-                    boxSizing: 'border-box',
-                    width: 240,
-                    top: `${TB}px`,
-                    height: `calc(100% - ${TB}px)`,
-                  },
-                }}
-                open
-              >
-                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                  {drawerContent}
-                  <TimeOfDaySidebarControls />
-                  <GlobalPlayerDrawerControls />
-                  <SfxPlayerDrawerControls />
-                </Box>
-              </Drawer>
-            </Box>
+                {/* Drawer temporal (mobile): NO incluye reproductor para evitar doble <audio> oculto. */}
+                <Drawer
+                  variant="temporary"
+                  open={mobileOpen}
+                  onClose={handleDrawerToggle}
+                  ModalProps={{ keepMounted: true }}
+                  sx={{
+                    display: { xs: 'block', sm: 'none' },
+                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    {drawerContent}
+                    {/* Opcional: si se quiere el reproductor también en mobile, moverlo aquí y asegurarse de desmontar el permanente. */}
+                  </Box>
+                </Drawer>
+                {/* Drawer permanente (desktop): ÚNICO lugar donde se monta el reproductor */}
+                <Drawer
+                  variant="permanent"
+                  sx={{
+                    display: { xs: 'none', sm: 'block' },
+                    '& .MuiDrawer-paper': {
+                      boxSizing: 'border-box',
+                      width: 240,
+                      top: `${TB}px`,
+                      height: `calc(100% - ${TB}px)`,
+                    },
+                  }}
+                  open
+                >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    {drawerContent}
+                    <TimeOfDaySidebarControls />
+                    <GlobalPlayerDrawerControls />
+                    <SfxPlayerDrawerControls />
+                  </Box>
+                </Drawer>
+              </Box>
+            )}
             <Box
               component="main"
               sx={{
                 flexGrow: 1,
-                width: { sm: `calc(100% - 240px)` },
+                width: isScenesEditorWorkspace ? '100%' : { sm: `calc(100% - 240px)` },
                 height: `calc(100vh - ${TB}px)`,
                 overflow: 'auto',
-                p: 3,
-                pb: { xs: 20, sm: 22 },
+                display: isScenesEditorWorkspace ? 'flex' : 'block',
+                flexDirection: isScenesEditorWorkspace ? 'column' : undefined,
+                p: isScenesEditorWorkspace ? { xs: 1, sm: 1.5 } : 3,
+                pb: isScenesEditorWorkspace ? { xs: 1, sm: 1.5 } : { xs: 20, sm: 22 },
                 // On xs the fixed mobile AppBar (56px) sits above the content;
                 // extra top padding prevents content from hiding behind it.
-                pt: { xs: `calc(56px + ${TB}px + 24px)`, sm: 3 },
+                pt: isScenesEditorWorkspace ? { xs: 1, sm: 1.5 } : { xs: `calc(56px + ${TB}px + 24px)`, sm: 3 },
               }}
             >
-              <div style={{ marginBottom: 24 }}>
-                <InvitationsList />
-              </div>
-              <Outlet />
-              {isMaster ? <ActiveScenesBar /> : null}
-              {isMaster ? <ShortcutHotbar /> : null}
+              {isScenesEditorWorkspace ? null : (
+                <div style={{ marginBottom: 24 }}>
+                  <InvitationsList />
+                </div>
+              )}
+              <Box
+                sx={isScenesEditorWorkspace ? { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' } : undefined}
+              >
+                <Outlet />
+              </Box>
+              {isMaster && !isScenesEditorWorkspace ? <ActiveScenesBar /> : null}
+              {isMaster && !isScenesEditorWorkspace ? <ShortcutHotbar /> : null}
               <SkylinePreviewOverlay />
             </Box>
           </Box>
@@ -431,7 +444,9 @@ const MainLayoutInner = () => {
 
 const MainLayout = () => (
   <DiarySidebarProvider>
-    <MainLayoutInner />
+    <LayoutChromeProvider>
+      <MainLayoutInner />
+    </LayoutChromeProvider>
   </DiarySidebarProvider>
 );
 

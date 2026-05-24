@@ -30,6 +30,7 @@ import {
   SendImagePayloadRenderer,
   SendVideoPayloadRenderer,
 } from './renderers';
+import { TransformAnimationSection } from './panels/TransformAnimationSection';
 
 interface SceneAction {
   id: string;
@@ -104,7 +105,35 @@ const SceneActionEditor: React.FC<SceneActionEditorProps> = ({
       payload: {
         ...(action.payload ?? {}),
         displayName: action.payload?.displayName ?? 'Texto Narrativo',
-      }
+        voiceConfig: action.payload?.voiceConfig ?? {
+          mode: 'retroBeep',
+          speed: 1,
+          pitchRange: 8,
+          tomodachi: {
+            sampleSet: 'classic',
+            consonantDensity: 1,
+            humanize: 0.65,
+          },
+          qwen: {
+            persona: 'male',
+            pitchMul: 1,
+            speedMs: 70,
+            brightness: 1,
+            volume: 0.7,
+            jitter: 0.08,
+            transitionMul: 0.3,
+            vowelGlitch: 0.28,
+          },
+        },
+      },
+    } : type === 'applyWindowFilter' ? {
+      payload: {
+        ...(action.payload ?? {}),
+        filter: action.payload?.filter ?? 'blur',
+        intensity: typeof action.payload?.intensity === 'number' ? action.payload.intensity : 0.5,
+        color: typeof action.payload?.color === 'string' ? action.payload.color : '',
+        durationMs: typeof action.payload?.durationMs === 'number' ? action.payload.durationMs : 2500,
+      },
     } : {};
 
     onChange({
@@ -423,6 +452,120 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
         </FormControl>
       );
 
+    case 'playPreset':
+      return (
+        <Stack spacing={1}>
+          <TextField label="ID de preset (presetId)" size="small" value={str('presetId')} onChange={(e) => setPayload('presetId', e.target.value)} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Volumen (0-100)"
+                type="number"
+                size="small"
+                fullWidth
+                value={num('volume', 100)}
+                inputProps={{ min: 0, max: 100, step: 1 }}
+                onChange={(e) => setPayload('volume', Number(e.target.value))}
+              />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Velocidad (0.5-2.0)"
+                type="number"
+                size="small"
+                fullWidth
+                value={num('playbackRate', 1)}
+                inputProps={{ min: 0.5, max: 2, step: 0.05 }}
+                onChange={(e) => setPayload('playbackRate', Number(e.target.value))}
+              />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Tono (semitonos)"
+                type="number"
+                size="small"
+                fullWidth
+                value={num('pitchSemitones', 0)}
+                inputProps={{ min: -24, max: 24, step: 1 }}
+                onChange={(e) => setPayload('pitchSemitones', Number(e.target.value))}
+              />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Eco</InputLabel>
+                <Select value={bool('echoEnabled') ? 'si' : 'no'} label="Eco" onChange={(e) => setPayload('echoEnabled', e.target.value === 'si')}>
+                  <MenuItem value="si">Sí</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            {bool('echoEnabled') ? (
+              <>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Retardo eco (ms)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={num('echoDelayMs', 300)}
+                    inputProps={{ min: 0, max: 3000, step: 10 }}
+                    onChange={(e) => setPayload('echoDelayMs', Number(e.target.value))}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Feedback eco (0-1)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={num('echoFeedback', 0.3)}
+                    inputProps={{ min: 0, max: 1, step: 0.05 }}
+                    onChange={(e) => setPayload('echoFeedback', Number(e.target.value))}
+                  />
+                </Box>
+              </>
+            ) : null}
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Filtro</InputLabel>
+                <Select value={str('filterType') || 'none'} label="Filtro" onChange={(e) => setPayload('filterType', e.target.value)}>
+                  <MenuItem value="none">none</MenuItem>
+                  <MenuItem value="lowpass">lowpass</MenuItem>
+                  <MenuItem value="highpass">highpass</MenuItem>
+                  <MenuItem value="bandpass">bandpass</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            {str('filterType') && str('filterType') !== 'none' ? (
+              <>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Frecuencia filtro (Hz)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={num('filterFrequency', 1000)}
+                    inputProps={{ min: 20, max: 20000, step: 10 }}
+                    onChange={(e) => setPayload('filterFrequency', Number(e.target.value))}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Q filtro"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={num('filterQ', 1)}
+                    inputProps={{ min: 0.1, max: 30, step: 0.1 }}
+                    onChange={(e) => setPayload('filterQ', Number(e.target.value))}
+                  />
+                </Box>
+              </>
+            ) : null}
+          </Box>
+        </Stack>
+      );
+
     case 'playSound':
       return (
         <Stack spacing={1}>
@@ -442,6 +585,100 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
                 </Select>
               </FormControl>
             </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Velocidad (0.5-2.0)"
+                type="number"
+                size="small"
+                fullWidth
+                value={num('playbackRate', 1)}
+                inputProps={{ min: 0.5, max: 2, step: 0.05 }}
+                onChange={(e) => setPayload('playbackRate', Number(e.target.value))}
+              />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <TextField
+                label="Tono (semitonos)"
+                type="number"
+                size="small"
+                fullWidth
+                value={num('pitchSemitones', 0)}
+                inputProps={{ min: -24, max: 24, step: 1 }}
+                onChange={(e) => setPayload('pitchSemitones', Number(e.target.value))}
+              />
+            </Box>
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Eco</InputLabel>
+                <Select value={bool('echoEnabled') ? 'si' : 'no'} label="Eco" onChange={(e) => setPayload('echoEnabled', e.target.value === 'si')}>
+                  <MenuItem value="si">Sí</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            {bool('echoEnabled') ? (
+              <>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Retardo eco (ms)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={num('echoDelayMs', 300)}
+                    inputProps={{ min: 0, max: 3000, step: 10 }}
+                    onChange={(e) => setPayload('echoDelayMs', Number(e.target.value))}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Feedback eco (0-1)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={num('echoFeedback', 0.3)}
+                    inputProps={{ min: 0, max: 1, step: 0.05 }}
+                    onChange={(e) => setPayload('echoFeedback', Number(e.target.value))}
+                  />
+                </Box>
+              </>
+            ) : null}
+            <Box sx={{ gridColumn: 'span 6' }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Filtro</InputLabel>
+                <Select value={str('filterType') || 'none'} label="Filtro" onChange={(e) => setPayload('filterType', e.target.value)}>
+                  <MenuItem value="none">none</MenuItem>
+                  <MenuItem value="lowpass">lowpass</MenuItem>
+                  <MenuItem value="highpass">highpass</MenuItem>
+                  <MenuItem value="bandpass">bandpass</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            {str('filterType') && str('filterType') !== 'none' ? (
+              <>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Frecuencia filtro (Hz)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={num('filterFrequency', 1000)}
+                    inputProps={{ min: 20, max: 20000, step: 10 }}
+                    onChange={(e) => setPayload('filterFrequency', Number(e.target.value))}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Q filtro"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={num('filterQ', 1)}
+                    inputProps={{ min: 0.1, max: 30, step: 0.1 }}
+                    onChange={(e) => setPayload('filterQ', Number(e.target.value))}
+                  />
+                </Box>
+              </>
+            ) : null}
           </Box>
         </Stack>
       );
@@ -449,36 +686,60 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
     case 'setMusicVolume':
     case 'setSoundVolume':
       return (
-        <TextField label="Volumen (0-100)" type="number" size="small" sx={{ width: '100%' }} value={num('value', 80)} inputProps={{ min: 0, max: 100 }} onChange={(e) => setPayload('value', Number(e.target.value))} />
+        <Stack spacing={1}>
+          <TextField label="Volumen (0-100)" type="number" size="small" sx={{ width: '100%' }} value={num('value', 80)} inputProps={{ min: 0, max: 100 }} onChange={(e) => setPayload('value', Number(e.target.value))} />
+          {type === 'setSoundVolume' ? (
+            <TextField label="ID de efecto (opcional)" size="small" value={str('effectId')} onChange={(e) => setPayload('effectId', e.target.value)} />
+          ) : null}
+        </Stack>
+      );
+
+    case 'stopSound':
+      return (
+        <TextField label="ID de efecto (vacío = todos)" size="small" fullWidth value={str('effectId')} onChange={(e) => setPayload('effectId', e.target.value)} />
       );
 
     case 'sendImageToWindow':
       return (
-        <SendImagePayloadRenderer
-          str={str}
-          num={num}
-          setPayload={setPayload}
-          chroma={chroma}
-          setChroma={setChroma}
-          onStartChromaColorPick={onStartChromaColorPick}
-          isChromaColorPicking={isChromaColorPicking}
-        />
+        <>
+          <SendImagePayloadRenderer
+            str={str}
+            num={num}
+            setPayload={setPayload}
+            chroma={chroma}
+            setChroma={setChroma}
+            onStartChromaColorPick={onStartChromaColorPick}
+            isChromaColorPicking={isChromaColorPicking}
+          />
+          <TransformAnimationSection
+            payload={payload}
+            setPayloadPatch={setPayloadPatch}
+            durationMs={num('durationMs', 0)}
+          />
+        </>
       );
 
     case 'sendVideoToWindow':
       return (
-        <SendVideoPayloadRenderer
-          str={str}
-          num={num}
-          bool={bool}
-          setPayload={setPayload}
-          chroma={chroma}
-          setChroma={setChroma}
-          sceneVideoAssets={sceneVideoAssets}
-          onRequestUploadVideo={onRequestUploadVideo}
-          onStartChromaColorPick={onStartChromaColorPick}
-          isChromaColorPicking={isChromaColorPicking}
-        />
+        <>
+          <SendVideoPayloadRenderer
+            str={str}
+            num={num}
+            bool={bool}
+            setPayload={setPayload}
+            chroma={chroma}
+            setChroma={setChroma}
+            sceneVideoAssets={sceneVideoAssets}
+            onRequestUploadVideo={onRequestUploadVideo}
+            onStartChromaColorPick={onStartChromaColorPick}
+            isChromaColorPicking={isChromaColorPicking}
+          />
+          <TransformAnimationSection
+            payload={payload}
+            setPayloadPatch={setPayloadPatch}
+            durationMs={num('durationMs', 0)}
+          />
+        </>
       );
 
     case 'setWindowBackground':
@@ -507,6 +768,9 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
             <Box sx={{ gridColumn: 'span 6' }}>
               <TextField label="Color (hex, opcional)" size="small" fullWidth value={str('color')} onChange={(e) => setPayload('color', e.target.value)} />
             </Box>
+            <Box sx={{ gridColumn: 'span 12' }}>
+              <TextField label="Duración (ms)" type="number" size="small" fullWidth value={num('durationMs', 2500)} inputProps={{ min: 200, max: 1800000, step: 100 }} onChange={(e) => setPayload('durationMs', Number(e.target.value))} />
+            </Box>
           </Box>
         </Stack>
       );
@@ -533,14 +797,22 @@ const PayloadFields: React.FC<PayloadFieldsProps> = ({
 
     case 'setNarrativeText':
       return (
-        <NarrativePayloadRenderer
-          str={str}
-          num={num}
-          setPayload={setPayload}
-          setPayloadPatch={setPayloadPatch}
-          getNarrativeEditorSegments={getNarrativeEditorSegments}
-          setNarrativeEditorSegments={setNarrativeEditorSegments}
-        />
+        <>
+          <NarrativePayloadRenderer
+            str={str}
+            num={num}
+            payload={payload}
+            setPayload={setPayload}
+            setPayloadPatch={setPayloadPatch}
+            getNarrativeEditorSegments={getNarrativeEditorSegments}
+            setNarrativeEditorSegments={setNarrativeEditorSegments}
+          />
+          <TransformAnimationSection
+            payload={payload}
+            setPayloadPatch={setPayloadPatch}
+            durationMs={num('durationMs', 0)}
+          />
+        </>
       );
 
     case 'runShortcut':

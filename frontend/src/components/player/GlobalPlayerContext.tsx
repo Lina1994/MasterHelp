@@ -12,7 +12,11 @@ interface GlobalPlayerContextType {
   current: GlobalPlayerTrackMeta | null;
   loop: boolean;
   loading: boolean;
-  play: (meta: Omit<GlobalPlayerTrackMeta,'objectUrl'>, objectUrlLoader: () => Promise<string>) => Promise<void>;
+  play: (
+    meta: Omit<GlobalPlayerTrackMeta,'objectUrl'>,
+    objectUrlLoader: () => Promise<string>,
+    opts?: { forceLoop?: boolean },
+  ) => Promise<void>;
   playQueue: (items: Array<Omit<GlobalPlayerTrackMeta,'objectUrl'>>, loader: (id: string) => Promise<string>, opts?: { shuffle?: boolean; startIndex?: number }) => Promise<void>;
   stop: () => void;
   toggleLoop: () => void;
@@ -61,13 +65,13 @@ export const GlobalPlayerProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   }, []);
 
-  const play: GlobalPlayerContextType['play'] = useCallback(async (meta, loader) => {
+  const play: GlobalPlayerContextType['play'] = useCallback(async (meta, loader, opts) => {
     // Single track mode: clear queue and enable loop automatically
     queueRef.current = [];
     queueIndexRef.current = -1;
     queueLoaderRef.current = null;
     setQueueActive(false);
-    setLoop(true);
+    setLoop(opts?.forceLoop ?? true);
     setLoading(true);
     try {
       const url = await loader();
@@ -128,6 +132,18 @@ export const GlobalPlayerProvider: React.FC<{ children: ReactNode }> = ({ childr
   }, [playQueueItem, nextMode]);
 
   const stop = useCallback(() => {
+    const audioEl = document.querySelector('audio[data-global-player-audio="true"]') as HTMLAudioElement | null;
+    if (audioEl) {
+      try {
+        audioEl.pause();
+        audioEl.currentTime = 0;
+        audioEl.removeAttribute('src');
+        audioEl.load();
+      } catch {
+        // no-op: best effort hard stop
+      }
+    }
+
     setCurrent(prev => {
       if (prev && prev.objectUrl) {
         URL.revokeObjectURL(prev.objectUrl);

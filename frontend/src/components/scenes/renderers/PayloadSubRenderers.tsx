@@ -33,6 +33,44 @@ export type NarrativeSegment = {
   fontFamily?: string;
 };
 
+type VoiceMode = 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant';
+type TomodachiSampleSet = 'classic' | 'bright' | 'soft';
+type QwenPersona = 'male' | 'female' | 'child' | 'robot';
+
+type VoiceTomodachiConfig = {
+  sampleSet: TomodachiSampleSet;
+  consonantDensity: number;
+  humanize: number;
+};
+
+type VoiceQwenConfig = {
+  persona: QwenPersona;
+  pitchMul: number;
+  speedMs: number;
+  brightness: number;
+  volume: number;
+  jitter: number;
+  transitionMul: number;
+  vowelGlitch: number;
+};
+
+const QWEN_PERSONA_PRESETS: Record<QwenPersona, VoiceQwenConfig> = {
+  male: { persona: 'male', pitchMul: 1, speedMs: 70, brightness: 1, volume: 0.7, jitter: 0.08, transitionMul: 0.3, vowelGlitch: 0.28 },
+  female: { persona: 'female', pitchMul: 1.3, speedMs: 70, brightness: 1.3, volume: 0.68, jitter: 0.08, transitionMul: 0.34, vowelGlitch: 0.3 },
+  child: { persona: 'child', pitchMul: 1.6, speedMs: 68, brightness: 1.5, volume: 0.66, jitter: 0.1, transitionMul: 0.38, vowelGlitch: 0.34 },
+  robot: { persona: 'robot', pitchMul: 1, speedMs: 72, brightness: 0.6, volume: 0.72, jitter: 0.02, transitionMul: 0.14, vowelGlitch: 0.08 },
+};
+
+type VoiceConfig = {
+  mode: VoiceMode;
+  speed: number;
+  pitchRange: number;
+  tomodachi: VoiceTomodachiConfig;
+  qwen: VoiceQwenConfig;
+};
+
+type VoiceTarget = 'main' | 'projection' | 'both';
+
 type BasePayloadProps = {
   str: (key: string) => string;
   num: (key: string, fallback?: number) => number;
@@ -296,6 +334,7 @@ export const SendVideoPayloadRenderer: React.FC<SendVideoPayloadRendererProps> =
 };
 
 export type NarrativePayloadRendererProps = BasePayloadProps & {
+  payload: Record<string, unknown>;
   setPayloadPatch: (patch: Record<string, unknown>) => void;
   getNarrativeEditorSegments: () => NarrativeSegment[];
   setNarrativeEditorSegments: (nextSegments: NarrativeSegment[]) => void;
@@ -304,12 +343,13 @@ export type NarrativePayloadRendererProps = BasePayloadProps & {
 export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> = ({
   str,
   num,
+  payload,
   setPayload,
   setPayloadPatch,
   getNarrativeEditorSegments,
   setNarrativeEditorSegments,
 }) => {
-  const [narrativeTab, setNarrativeTab] = React.useState<'content' | 'style' | 'position'>('content');
+  const [narrativeTab, setNarrativeTab] = React.useState<'content' | 'style' | 'position' | 'voice'>('content');
   const [showSegmentEditor, setShowSegmentEditor] = React.useState<boolean>(false);
   const [showCustomFontInput, setShowCustomFontInput] = React.useState<boolean>(false);
 
@@ -317,6 +357,100 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
   const availableFonts = NARRATIVE_FONT_OPTIONS;
   const selectedFont = str('fontFamily') || 'Merriweather';
   const hasCuratedFont = availableFonts.includes(selectedFont as any);
+  const rawVoiceConfig = payload.voiceConfig;
+  const voiceConfig: VoiceConfig = rawVoiceConfig && typeof rawVoiceConfig === 'object' && !Array.isArray(rawVoiceConfig)
+    ? {
+        mode: (['retroBeep', 'animalese', 'tomodachi', 'qwenFormant'].includes(String((rawVoiceConfig as Record<string, unknown>).mode))
+          ? String((rawVoiceConfig as Record<string, unknown>).mode)
+          : 'retroBeep') as VoiceMode,
+        speed: Number.isFinite(Number((rawVoiceConfig as Record<string, unknown>).speed))
+          ? Math.max(0.25, Math.min(3, Number((rawVoiceConfig as Record<string, unknown>).speed)))
+          : 1,
+        pitchRange: Number.isFinite(Number((rawVoiceConfig as Record<string, unknown>).pitchRange))
+          ? Math.max(0, Math.min(24, Number((rawVoiceConfig as Record<string, unknown>).pitchRange)))
+          : 8,
+        tomodachi: (() => {
+          const rawTomodachi = (rawVoiceConfig as Record<string, unknown>).tomodachi;
+          if (!rawTomodachi || typeof rawTomodachi !== 'object' || Array.isArray(rawTomodachi)) {
+            return {
+              sampleSet: 'classic' as TomodachiSampleSet,
+              consonantDensity: 1,
+              humanize: 0.65,
+            };
+          }
+          const body = rawTomodachi as Record<string, unknown>;
+          return {
+            sampleSet: body.sampleSet === 'bright' || body.sampleSet === 'soft' || body.sampleSet === 'classic'
+              ? body.sampleSet
+              : 'classic',
+            consonantDensity: Number.isFinite(Number(body.consonantDensity))
+              ? Math.max(0, Math.min(1, Number(body.consonantDensity)))
+              : 1,
+            humanize: Number.isFinite(Number(body.humanize))
+              ? Math.max(0, Math.min(1, Number(body.humanize)))
+              : 0.65,
+          };
+        })(),
+        qwen: (() => {
+          const rawQwen = (rawVoiceConfig as Record<string, unknown>).qwen;
+          if (!rawQwen || typeof rawQwen !== 'object' || Array.isArray(rawQwen)) {
+            return { ...QWEN_PERSONA_PRESETS.male };
+          }
+          const body = rawQwen as Record<string, unknown>;
+          const persona = body.persona === 'female' || body.persona === 'child' || body.persona === 'robot' || body.persona === 'male'
+            ? body.persona
+            : 'male';
+          return {
+            persona,
+            pitchMul: Number.isFinite(Number(body.pitchMul))
+              ? Math.max(0.5, Math.min(2.5, Number(body.pitchMul)))
+              : QWEN_PERSONA_PRESETS[persona].pitchMul,
+            speedMs: Number.isFinite(Number(body.speedMs))
+              ? Math.max(30, Math.min(200, Number(body.speedMs)))
+              : QWEN_PERSONA_PRESETS[persona].speedMs,
+            brightness: Number.isFinite(Number(body.brightness))
+              ? Math.max(0.3, Math.min(3, Number(body.brightness)))
+              : QWEN_PERSONA_PRESETS[persona].brightness,
+            volume: Number.isFinite(Number(body.volume))
+              ? Math.max(0.1, Math.min(1, Number(body.volume)))
+              : QWEN_PERSONA_PRESETS[persona].volume,
+            jitter: Number.isFinite(Number(body.jitter))
+              ? Math.max(0, Math.min(0.3, Number(body.jitter)))
+              : QWEN_PERSONA_PRESETS[persona].jitter,
+            transitionMul: Number.isFinite(Number(body.transitionMul))
+              ? Math.max(0, Math.min(0.8, Number(body.transitionMul)))
+              : QWEN_PERSONA_PRESETS[persona].transitionMul,
+            vowelGlitch: Number.isFinite(Number(body.vowelGlitch))
+              ? Math.max(0, Math.min(1, Number(body.vowelGlitch)))
+              : QWEN_PERSONA_PRESETS[persona].vowelGlitch,
+          };
+        })(),
+      }
+    : {
+        mode: 'retroBeep',
+        speed: 1,
+        pitchRange: 8,
+        tomodachi: {
+          sampleSet: 'classic',
+          consonantDensity: 1,
+          humanize: 0.65,
+        },
+        qwen: {
+          ...QWEN_PERSONA_PRESETS.male,
+        },
+      };
+
+  const setVoiceConfig = (patch: Partial<VoiceConfig>) => {
+    setPayload('voiceConfig', {
+      ...voiceConfig,
+      ...patch,
+    });
+  };
+  const voiceTargetRaw = String(payload.voiceTarget ?? '').trim();
+  const voiceTarget: VoiceTarget = voiceTargetRaw === 'main' || voiceTargetRaw === 'projection' || voiceTargetRaw === 'both'
+    ? voiceTargetRaw
+    : 'both';
+  const pitchLabel = voiceConfig.mode === 'tomodachi' ? 'Tono base' : 'Rango de pitch';
 
   return (
     <Stack spacing={1.5}>
@@ -357,6 +491,7 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
         <Tab value="content" label="Contenido" />
         <Tab value="style" label="Diseno" />
         <Tab value="position" label="Posicion" />
+        <Tab value="voice" label="Voz" />
       </Tabs>
 
       {narrativeTab === 'content' && (
@@ -889,6 +1024,243 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
               Consejo: Tambien puedes ordenar las capas arrastrando los bloques verticalmente en la pista del timeline.
             </Typography>
           </Box>
+        </Stack>
+      )}
+
+      {narrativeTab === 'voice' && (
+        <Stack spacing={1.25}>
+          <Typography variant="caption" color="text.secondary">
+            Configura como se interpreta la narracion al reproducirla.
+          </Typography>
+          <FormControl size="small" fullWidth>
+            <InputLabel>Salida de voz</InputLabel>
+            <Select
+              label="Salida de voz"
+              value={voiceTarget}
+              onChange={(event) => setPayload('voiceTarget', event.target.value as VoiceTarget)}
+            >
+              <MenuItem value="main">Principal</MenuItem>
+              <MenuItem value="projection">Proyeccion</MenuItem>
+              <MenuItem value="both">Ambas</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size="small" fullWidth>
+            <InputLabel>Modo de voz</InputLabel>
+            <Select
+              label="Modo de voz"
+              value={voiceConfig.mode}
+              onChange={(event) => setVoiceConfig({ mode: event.target.value as VoiceMode })}
+            >
+              <MenuItem value="retroBeep">Retro Beeps</MenuItem>
+              <MenuItem value="animalese">Animalese</MenuItem>
+              <MenuItem value="tomodachi">Tomodachi Style</MenuItem>
+              <MenuItem value="qwenFormant">Qwen Formant</MenuItem>
+            </Select>
+          </FormControl>
+          {voiceConfig.mode !== 'qwenFormant' && (
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+              <Box sx={{ gridColumn: 'span 6' }}>
+                <TextField
+                  label="Velocidad"
+                  type="number"
+                  size="small"
+                  fullWidth
+                  value={voiceConfig.speed}
+                  inputProps={{ min: 0.25, max: 3, step: 0.05 }}
+                  onChange={(event) => setVoiceConfig({ speed: Number(event.target.value) })}
+                />
+              </Box>
+              <Box sx={{ gridColumn: 'span 6' }}>
+                <TextField
+                  label={pitchLabel}
+                  type="number"
+                  size="small"
+                  fullWidth
+                  value={voiceConfig.pitchRange}
+                  inputProps={{ min: 0, max: 24, step: 1 }}
+                  onChange={(event) => setVoiceConfig({ pitchRange: Number(event.target.value) })}
+                />
+              </Box>
+            </Box>
+          )}
+          {voiceConfig.mode === 'tomodachi' && (
+            <>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Preset de claridad</InputLabel>
+                <Select
+                  label="Preset de claridad"
+                  value={voiceConfig.tomodachi.sampleSet}
+                  onChange={(event) => {
+                    setVoiceConfig({
+                      tomodachi: {
+                        ...voiceConfig.tomodachi,
+                        sampleSet: event.target.value as TomodachiSampleSet,
+                      },
+                    });
+                  }}
+                >
+                  <MenuItem value="soft">Suave</MenuItem>
+                  <MenuItem value="classic">Claro</MenuItem>
+                  <MenuItem value="bright">Muy claro</MenuItem>
+                </Select>
+              </FormControl>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Densidad consonante"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.tomodachi.consonantDensity}
+                    inputProps={{ min: 0, max: 1, step: 0.05 }}
+                    onChange={(event) => {
+                      setVoiceConfig({
+                        tomodachi: {
+                          ...voiceConfig.tomodachi,
+                          consonantDensity: Number(event.target.value),
+                        },
+                      });
+                    }}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Humanizacion"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.tomodachi.humanize}
+                    inputProps={{ min: 0, max: 1, step: 0.05 }}
+                    onChange={(event) => {
+                      setVoiceConfig({
+                        tomodachi: {
+                          ...voiceConfig.tomodachi,
+                          humanize: Number(event.target.value),
+                        },
+                      });
+                    }}
+                  />
+                </Box>
+              </Box>
+            </>
+          )}
+          {voiceConfig.mode === 'qwenFormant' && (
+            <>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Perfil de voz</InputLabel>
+                <Select
+                  label="Perfil de voz"
+                  value={voiceConfig.qwen.persona}
+                  onChange={(event) => {
+                    const persona = event.target.value as QwenPersona;
+                    setVoiceConfig({
+                      qwen: {
+                        ...QWEN_PERSONA_PRESETS[persona],
+                      },
+                    });
+                  }}
+                >
+                  <MenuItem value="male">Masculina</MenuItem>
+                  <MenuItem value="female">Femenina</MenuItem>
+                  <MenuItem value="child">Infantil</MenuItem>
+                  <MenuItem value="robot">Robotica</MenuItem>
+                </Select>
+              </FormControl>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Tono base"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.qwen.pitchMul}
+                    inputProps={{ min: 0.5, max: 2.5, step: 0.05 }}
+                    onChange={(event) => setVoiceConfig({ qwen: { ...voiceConfig.qwen, pitchMul: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Velocidad (ms)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.qwen.speedMs}
+                    inputProps={{ min: 30, max: 200, step: 1 }}
+                    onChange={(event) => setVoiceConfig({ qwen: { ...voiceConfig.qwen, speedMs: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Brillo"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.qwen.brightness}
+                    inputProps={{ min: 0.3, max: 3, step: 0.1 }}
+                    onChange={(event) => setVoiceConfig({ qwen: { ...voiceConfig.qwen, brightness: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Volumen"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.qwen.volume}
+                    inputProps={{ min: 0.1, max: 1, step: 0.05 }}
+                    onChange={(event) => setVoiceConfig({ qwen: { ...voiceConfig.qwen, volume: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Jitter (variacion)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.qwen.jitter}
+                    inputProps={{ min: 0, max: 0.3, step: 0.01 }}
+                    onChange={(event) => setVoiceConfig({ qwen: { ...voiceConfig.qwen, jitter: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Transicion (coarticulacion)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.qwen.transitionMul}
+                    inputProps={{ min: 0, max: 0.8, step: 0.05 }}
+                    onChange={(event) => setVoiceConfig({ qwen: { ...voiceConfig.qwen, transitionMul: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Glitch de transicion (vocales/consonantes)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.qwen.vowelGlitch}
+                    inputProps={{ min: 0, max: 1, step: 0.01 }}
+                    onChange={(event) => setVoiceConfig({ qwen: { ...voiceConfig.qwen, vowelGlitch: Number(event.target.value) } })}
+                  />
+                </Box>
+              </Box>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  const preset = QWEN_PERSONA_PRESETS[voiceConfig.qwen.persona];
+                  setVoiceConfig({ qwen: { ...preset } });
+                }}
+                sx={{ textTransform: 'none' }}
+              >
+                Restaurar valores del perfil
+              </Button>
+            </>
+          )}
+          <Alert severity="info" sx={{ py: 0 }}>
+            En Qwen Formant puedes crear variantes ajustando tono base, velocidad en ms, brillo, volumen, jitter y transicion, y volver al preset del perfil cuando quieras.
+          </Alert>
         </Stack>
       )}
     </Stack>

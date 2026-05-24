@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Síntesis de Voz por Formantes - Avanzado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.08);
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(148, 163, 184, 0.15);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+            cursor: pointer;
+            border: none;
+        }
+        
+        textarea {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            transition: all 0.3s;
+        }
+        
+        textarea:focus {
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .phoneme-tag {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            transition: all 0.15s;
+        }
+        
+        .phoneme-tag.active {
+            background: rgba(99, 102, 241, 0.4);
+            border-color: rgba(99, 102, 241, 0.8);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        }
+        
+        .phoneme-tag.space-tag {
+            background: rgba(148, 163, 184, 0.05);
+            border-color: rgba(148, 163, 184, 0.15);
+        }
+        
+        canvas {
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.9);
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.6); }
+        }
+        
+        .playing-indicator {
+            animation: pulse-glow 1s infinite;
+        }
+        
+        .tab-btn.active {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.5);
+            color: #818cf8;
+        }
+        
+        .voice-select-btn {
+            transition: all 0.2s;
+        }
+        
+        .voice-select-btn.selected {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.7);
+        }
+        
+        .voice-select-btn:hover:not(.selected) {
+            background: rgba(148, 163, 184, 0.1);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent glow-text mb-2">
+                Síntesis por Formantes
+            </h1>
+            <p class="text-slate-400 text-sm md:text-base">Motor de voz procedural sin IA — Inspirado en Tomodachi Life / Animal Crossing</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Panel: Controls -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Voice Selection -->
+                <div class="glass rounded-2xl p-5">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">Perfil de Voz</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="voice-select-btn selected rounded-xl p-3 border border-slate-600 text-center" data-voice="male" onclick="selectVoice('male')">
+                            <div class="text-2xl mb-1">👨</div>
+                            <div class="text-xs text-slate-300">Masculina</div>
+                        </button>
+                        <button class="voice-select-btn rounded-xl p-3 border border-slate-600 text-center" data-voice="female" onclick="selectVoice('female')">
+                            <div class="text-2xl mb-1">👩</div>
+                            <div class="text-xs text-slate-300">Femenina</div>
+                        </button>
+                        <button class="voice-select-btn rounded-xl p-3 border border-slate-600 text-center" data-voice="child" onclick="selectVoice('child')">
+                            <div class="text-2xl mb-1">👶</div>
+                            <div class="text-xs text-slate-300">Infantil</div>
+                        </button>
+                        <button class="voice-select-btn rounded-xl p-3 border border-slate-600 text-center" data-voice="robot" onclick="selectVoice('robot')">
+                            <div class="text-2xl mb-1">🤖</div>
+                            <div class="text-xs text-slate-300">Robot</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Parameters -->
+                <div class="glass rounded-2xl p-5 space-y-5">
+                    <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Parámetros</h3>
+                    
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs text-slate-400">Tono Base</label>
+                            <span id="pitchDisplay" class="text-xs mono text-indigo-400">1.00x</span>
+                        </div>
+                        <input type="range" id="pitchSlider" min="0.5" max="2.5" step="0.05" value="1.0">
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs text-slate-400">Velocidad</label>
+                            <span id="speedDisplay" class="text-xs mono text-indigo-400">70ms</span>
+                        </div>
+                        <input type="range" id="speedSlider" min="30" max="200" step="5" value="70">
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs text-slate-400">Brillo</label>
+                            <span id="brightnessDisplay" class="text-xs mono text-indigo-400">1.00</span>
+                        </div>
+                        <input type="range" id="brightnessSlider" min="0.3" max="3.0" step="0.1" value="1.0">
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs text-slate-400">Volumen</label>
+                            <span id="volumeDisplay" class="text-xs mono text-indigo-400">0.70</span>
+                        </div>
+                        <input type="range" id="volumeSlider" min="0.1" max="1.0" step="0.05" value="0.7">
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs text-slate-400">Jitter (Variación)</label>
+                            <span id="jitterDisplay" class="text-xs mono text-indigo-400">0.08</span>
+                        </div>
+                        <input type="range" id="jitterSlider" min="0" max="0.3" step="0.01" value="0.08">
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs text-slate-400">Transición (Coarticulación)</label>
+                            <span id="transitionDisplay" class="text-xs mono text-indigo-400">0.30</span>
+                        </div>
+                        <input type="range" id="transitionSlider" min="0" max="0.8" step="0.05" value="0.3">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel: Input & Visualization -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Text Input -->
+                <div class="glass rounded-2xl p-5">
+                    <label class="block text-sm font-semibold text-slate-300 mb-3">Texto a Sintetizar</label>
+                    <textarea id="textInput" rows="4" class="w-full p-4 rounded-xl text-slate-200 mono text-sm resize-none outline-none" placeholder="Escribe algo aquí... (ej: Hola amigo, como estas hoy?)"></textarea>
+                    <div class="flex items-center justify-between mt-3">
+                        <span id="charCount" class="text-xs text-slate-500">0 caracteres</span>
+                        <button id="clearBtn" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Limpiar</button>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="glass rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-slate-300">Visualización</h3>
+                        <div class="flex gap-2">
+                            <button class="tab-btn active text-xs px-3 py-1 rounded-lg border border-slate-600 text-slate-400" data-view="waveform" onclick="setView('waveform')">Onda</button>
+                            <button class="tab-btn text-xs px-3 py-1 rounded-lg border border-slate-600 text-slate-400" data-view="spectrum" onclick="setView('spectrum')">Espectro</button>
+                            <button class="tab-btn text-xs px-3 py-1 rounded-lg border border-slate-600 text-slate-400" data-view="spectrogram" onclick="setView('spectrogram')">Espectrograma</button>
+                        </div>
+                    </div>
+                    <canvas id="visualizer" width="800" height="180" class="w-full"></canvas>
+                </div>
+
+                <!-- Phoneme Display -->
+                <div class="glass rounded-2xl p-5">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3">Secuencia de Fonemas</h3>
+                    <div id="phonemeDisplay" class="flex flex-wrap gap-1.5 min-h-[40px] items-center">
+                        <span class="text-xs text-slate-500">Los fonemas aparecerán aquí...</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="btnPlay" class="btn-primary flex-1 py-3.5 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 text-white">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+                        Reproducir
+                    </button>
+                    <button id="btnStop" class="btn-secondary py-3.5 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 text-slate-300">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"/></svg>
+                        Detener
+                    </button>
+                    <button id="btnDownload" class="btn-secondary py-3.5 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 text-slate-300">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                        Descargar WAV
+                    </button>
+                </div>
+
+                <div id="statusMessage" class="text-center text-sm font-medium text-slate-400 h-5"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // AUDIO ENGINE - Formant Synthesis
+        // ==========================================
+        
+        let audioCtx = null;
+        let analyserNode = null;
+        let isPlaying = false;
+        let currentPlayback = { sources: [], timeouts: [] };
+        let currentView = 'waveform';
+        let spectrogramData = [];
+        let animFrameId = null;
+
+        // Voice presets
+        const voicePresets = {
+            male: { baseFreq: 120, pitchMul: 1.0, brightness: 1.0, formantShift: 1.0 },
+            female: { baseFreq: 200, pitchMul: 1.3, brightness: 1.3, formantShift: 1.15 },
+            child: { baseFreq: 260, pitchMul: 1.6, brightness: 1.5, formantShift: 1.25 },
+            robot: { baseFreq: 150, pitchMul: 1.0, brightness: 0.6, formantShift: 0.9 }
+        };
+
+        let currentVoice = 'male';
+
+        // Formant data [F1, F2, F3] in Hz for Spanish vowels
+        const vowelFormants = {
+            'a': { f1: 730, f2: 1090, f3: 2440, f1bw: 80, f2bw: 100, f3bw: 120, amp: [1.0, 0.5, 0.15] },
+            'e': { f1: 530, f2: 1840, f3: 2480, f1bw: 70, f2bw: 110, f3bw: 130, amp: [1.0, 0.4, 0.1] },
+            'i': { f1: 270, f2: 2290, f3: 3010, f1bw: 50, f2bw: 120, f3bw: 140, amp: [0.8, 0.5, 0.2] },
+            'o': { f1: 570, f2: 840, f3: 2410, f1bw: 75, f2bw: 90, f3bw: 110, amp: [1.0, 0.45, 0.12] },
+            'u': { f1: 300, f2: 870, f3: 2240, f1bw: 55, f2bw: 85, f3bw: 100, amp: [0.9, 0.4, 0.1] }
+        };
+
+        // Consonant configurations
+        const consonantConfig = {
+            's': { type: 'fricative', freq: 6500, bw: 2000, durMul: 0.9 },
+            'f': { type: 'fricative', freq: 4200, bw: 1800, durMul: 0.9 },
+            'ch': { type: 'affricate', freq: 3800, bw: 2500, durMul: 1.1, hasBurst: true },
+            'j': { type: 'fricative', freq: 1800, bw: 1200, durMul: 0.9 },
+            'x': { type: 'fricative', freq: 3200, bw: 1500, durMul: 0.8 },
+            'h': { type: 'fricative', freq: 1500, bw: 1000, durMul: 0.8 },
+            'z': { type: 'fricative', freq: 6000, bw: 2200, durMul: 0.85 },
+            'm': { type: 'nasal', freq: 350, durMul: 1.0, formants: [{ f: 300, bw: 60 }, { f: 850, bw: 80 }, { f: 2500, bw: 100 }] },
+            'n': { type: 'nasal', freq: 400, durMul: 1.0, formants: [{ f: 350, bw: 60 }, { f: 1200, bw: 80 }, { f: 2600, bw: 100 }] },
+            'ñ': { type: 'nasal', freq: 380, durMul: 1.1, formants: [{ f: 320, bw: 60 }, { f: 1000, bw: 80 }, { f: 2550, bw: 100 }] },
+            'l': { type: 'liquid', freq: 800, durMul: 1.0, formants: [{ f: 400, bw: 70 }, { f: 1600, bw: 100 }, { f: 2800, bw: 120 }] },
+            'r': { type: 'trill', freq: 140, durMul: 1.3, trillFreq: 28 },
+            'rr': { type: 'trill', freq: 140, durMul: 1.6, trillFreq: 30 },
+            'y': { type: 'glide', durMul: 0.7, startFormants: { f1: 400, f2: 2000 }, endVowel: true },
+            'll': { type: 'affricate', freq: 3500, bw: 2000, durMul: 1.0, hasBurst: true },
+            'w': { type: 'glide', durMul: 0.7, startFormants: { f1: 300, f2: 800 }, endVowel: true },
+            'p': { type: 'plosive', burstFreq: 800, burstDur: 0.04, vtt: 0.06 },
+            't': { type: 'plosive', burstFreq: 3200, burstDur: 0.03, vtt: 0.07 },
+            'k': { type: 'plosive', burstFreq: 1600, burstDur: 0.035, vtt: 0.08 },
+            'c': { type: 'plosive', burstFreq: 1600, burstDur: 0.035, vtt: 0.08 },
+            'q': { type: 'plosive', burstFreq: 1600, burstDur: 0.035, vtt: 0.08 },
+            'b': { type: 'plosive', burstFreq: 700, burstDur: 0.04, vtt: 0.05, voiced: true },
+            'd': { type: 'plosive', burstFreq: 2800, burstDur: 0.03, vtt: 0.06, voiced: true },
+            'g': { type: 'plosive', burstFreq: 1400, burstDur: 0.035, vtt: 0.07, voiced: true }
+        };
+
+        // Phoneme duration multipliers (relative to base)
+        const phonemeDurMul = {
+            'a': 1.2, 'e': 1.1, 'i': 1.0, 'o': 1.2, 'u': 1.0,
+            's': 0.8, 'f': 0.8, 'ch': 1.0, 'j': 0.8, 'x': 0.7,
+            'h': 0.7, 'z': 0.7, 'm': 0.9, 'n': 0.9, 'ñ': 0.9,
+            'l': 0.9, 'r': 1.0, 'rr': 1.2, 'y': 0.6, 'll': 0.9, 'w': 0.6,
+            'p': 0.5, 't': 0.5, 'k': 0.5, 'c': 0.5, 'q': 0.5,
+            'b': 0.5, 'd': 0.5, 'g': 0.5
+        };
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyserNode = audioCtx.createAnalyser();
+                analyserNode.fftSize = 2048;
+                analyserNode.smoothingTimeConstant = 0.8;
+                analyserNode.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function selectVoice(voice) {
+            currentVoice = voice;
+            document.querySelectorAll('.voice-select-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.voice === voice);
+            });
+            const preset = voicePresets[voice];
+            document.getElementById('pitchSlider').value = preset.pitchMul;
+            document.getElementById('pitchDisplay').textContent = preset.pitchMul.toFixed(2) + 'x';
+            document.getElementById('brightnessSlider').value = preset.brightness;
+            document.getElementById('brightnessDisplay').textContent = preset.brightness.toFixed(2);
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+            if (view === 'spectrogram') {
+                spectrogramData = [];
+            }
+        }
+
+        // ==========================================
+        // TEXT TO PHONEMES
+        // ==========================================
+        
+        function textToPhonemes(text) {
+            let processed = text.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/ch/g, '§')
+                .replace(/ll/g, '¶')
+                .replace(/rr/g, '~')
+                .replace(/qu/g, 'k')
+                .replace(/ce/g, 'se')
+                .replace(/ci/g, 'si')
+                .replace(/ge/g, 'je')
+                .replace(/gi/g, 'ji');
+            
+            let phonemes = [];
+            let words = processed.split(/[\s,;.!?]+/).filter(w => w.length > 0);
+            let allTokens = [];
+            
+            for (let char of processed) {
+                if (char === '§') allTokens.push('ch');
+                else if (char === '¶') allTokens.push('ll');
+                else if (char === '~') allTokens.push('rr');
+                else if (char.match(/[a-zñ]/)) allTokens.push(char);
+                else if (char === ' ') allTokens.push('_');
+                else if ('.,;!?'.includes(char)) allTokens.push('.');
+            }
+            
+            // Group into words with word boundaries
+            let result = [];
+            let currentWord = [];
+            
+            for (let token of allTokens) {
+                if (token === '_') {
+                    if (currentWord.length > 0) {
+                        result.push({ type: 'word', phonemes: [...currentWord] });
+                        currentWord = [];
+                    }
+                    result.push({ type: 'space' });
+                } else if (token === '.') {
+                    if (currentWord.length > 0) {
+                        result.push({ type: 'word', phonemes: [...currentWord], sentenceEnd: true });
+                        currentWord = [];
+                    }
+                } else {
+                    currentWord.push(token);
+                }
+            }
+            if (currentWord.length > 0) {
+                result.push({ type: 'word', phonemes: [...currentWord] });
+            }
+            
+            return result;
+        }
+
+        // ==========================================
+        // PROSODY GENERATOR
+        // ==========================================
+        
+        function generateProsody(structuredPhonemes) {
+            let prosody = [];
+            let wordIdx = 0;
+            
+            for (let item of structuredPhonemes) {
+                if (item.type === 'space') {
+                    prosody.push({ type: 'space', duration: 0.15 });
+                    continue;
+                }
+                
+                let wordPhonemes = item.phonemes;
+                let isSentenceEnd = item.sentenceEnd || false;
+                let wordLen = wordPhonemes.length;
+                
+                // Find stressed syllable (simple heuristic: second-to-last vowel)
+                let vowelIndices = [];
+                wordPhonemes.forEach((p, i) => {
+                    if ('aeiou'.includes(p)) vowelIndices.push(i);
+                });
+                
+                let stressIdx = vowelIndices.length > 1 ? vowelIndices[vowelIndices.length - 2] : 
+                               vowelIndices.length === 1 ? vowelIndices[0] : 0;
+                
+                for (let i = 0; i < wordPhonemes.length; i++) {
+                    let p = wordPhonemes[i];
+                    let isVowel = 'aeiou'.includes(p);
+                    let pitchOffset = 0;
+                    let durMul = 1.0;
+                    
+                    // Pitch contour within word
+                    if (isVowel) {
+                        let posInWord = i / Math.max(wordLen - 1, 1);
+                        
+                        // Rising pitch on stressed syllable
+                        if (i === stressIdx) {
+                            pitchOffset = 0.25;
+                            durMul = 1.2;
+                        }
+                        
+                        // Gradual fall toward end of sentence
+                        if (isSentenceEnd) {
+                            let endFall = -0.3 * (posInWord);
+                            pitchOffset += endFall;
+                        } else {
+                            // Slight rise for non-final words
+                            pitchOffset += 0.05;
+                        }
+                    } else {
+                        // Consonants get slightly lower pitch
+                        pitchOffset = -0.05;
+                    }
+                    
+                    prosody.push({
+                        type: 'phoneme',
+                        phoneme: p,
+                        pitchOffset: pitchOffset,
+                        durMul: durMul * (phonemeDurMul[p] || 1.0),
+                        isVowel: isVowel,
+                        wordIndex: wordIdx
+                    });
+                }
+                wordIdx++;
+            }
+            
+            return prosody;
+        }
+
+        // ==========================================
+        // AUDIO GENERATION
+        // ==========================================
+        
+        function createNoiseBuffer(ctx, duration) {
+            const sampleRate = ctx.sampleRate;
+            const length = Math.floor(sampleRate * duration);
+            const buffer = ctx.createBuffer(1, length, sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < length; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            return buffer;
+        }
+
+        // Generate a glottal pulse train with phase continuity across phonemes
+        function createGlottalSource(offlineCtx, duration, baseFreq, phaseIn = 0) {
+            const sampleRate = offlineCtx.sampleRate;
+            const length = Math.floor(sampleRate * duration);
+            const buffer = offlineCtx.createBuffer(1, length, sampleRate);
+            const data = buffer.getChannelData(0);
+            const safeFreq = Math.max(40, baseFreq || 120);
+            let phase = phaseIn - Math.floor(phaseIn);
+            const phaseStep = safeFreq / sampleRate;
+            
+            for (let i = 0; i < length; i++) {
+                // Rosenberg glottal model approximation
+                const t = phase;
+                let sample = 0;
+                
+                if (t < 0.4) {
+                    // Open phase (rising)
+                    sample = Math.pow(Math.sin(Math.PI * t / 0.4), 2);
+                } else if (t < 0.7) {
+                    // Closing phase (falling)
+                    sample = Math.pow(Math.cos(Math.PI * (t - 0.4) / 0.6), 1.5);
+                } else {
+                    // Closed phase
+                    sample = 0;
+                }
+                
+                data[i] = sample;
+                phase += phaseStep;
+                if (phase >= 1) phase -= Math.floor(phase);
+            }
+            
+            const source = offlineCtx.createBufferSource();
+            source.buffer = buffer;
+            return { source, phaseOut: phase };
+        }
+
+        async function generatePhonemeOffline(phoneme, durationMs, params, phaseIn = 0) {
+            const duration = durationMs / 1000;
+            const sampleRate = audioCtx ? audioCtx.sampleRate : 44100;
+            const offlineCtx = new OfflineAudioContext(1, Math.max(1, Math.floor(sampleRate * duration)), sampleRate);
+            
+            const { baseFreq, brightness, formantShift, volume, jitterAmount } = params;
+            
+            // Master gain with envelope
+            const masterGain = offlineCtx.createGain();
+            const attack = 0.005;
+            const release = 0.01;
+            
+            masterGain.gain.setValueAtTime(0, offlineCtx.currentTime);
+            masterGain.gain.linearRampToValueAtTime(volume, offlineCtx.currentTime + attack);
+            if (duration > attack + release) {
+                masterGain.gain.setValueAtTime(volume, offlineCtx.currentTime + duration - release);
+            }
+            masterGain.gain.linearRampToValueAtTime(0, offlineCtx.currentTime + duration);
+            masterGain.connect(offlineCtx.destination);
+            
+            const p = phoneme.toLowerCase();
+            const adjustedBaseFreq = baseFreq * (1 + (Math.random() * jitterAmount - jitterAmount / 2));
+            let phaseOut = phaseIn;
+            
+            // VOWELS - Formant synthesis with glottal source
+            if (vowelFormants[p]) {
+                const vf = vowelFormants[p];
+                
+                // Use glottal pulse source
+                const glottalResult = createGlottalSource(offlineCtx, duration, adjustedBaseFreq, phaseIn);
+                const glottal = glottalResult.source;
+                phaseOut = glottalResult.phaseOut;
+                
+                // Create formant filters
+                const formants = [
+                    { freq: vf.f1 * formantShift, bw: vf.f1bw, amp: vf.amp[0] * brightness },
+                    { freq: vf.f2 * formantShift, bw: vf.f2bw, amp: vf.amp[1] * brightness },
+                    { freq: vf.f3 * formantShift, bw: vf.f3bw, amp: vf.amp[2] * brightness }
+                ];
+                
+                formants.forEach(f => {
+                    const filter = offlineCtx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = f.freq;
+                    filter.Q.value = f.freq / f.bw;
+                    
+                    const gain = offlineCtx.createGain();
+                    gain.gain.value = f.amp;
+                    
+                    glottal.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(masterGain);
+                });
+                
+                glottal.start(offlineCtx.currentTime);
+                
+            } else if (consonantConfig[p]) {
+                const cc = consonantConfig[p];
+                
+                if (cc.type === 'fricative' || cc.type === 'affricate') {
+                    const noise = offlineCtx.createBufferSource();
+                    noise.buffer = createNoiseBuffer(offlineCtx, duration);
+                    
+                    const filter = offlineCtx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = cc.freq * formantShift;
+                    filter.Q.value = cc.freq / (cc.bw || 1500);
+                    
+                    const gain = offlineCtx.createGain();
+                    gain.gain.value = volume * 0.6 * brightness;
+                    
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(masterGain);
+                    noise.start(offlineCtx.currentTime);
+                    
+                } else if (cc.type === 'nasal') {
+                    const glottalResult = createGlottalSource(offlineCtx, duration, adjustedBaseFreq, phaseIn);
+                    const glottal = glottalResult.source;
+                    phaseOut = glottalResult.phaseOut;
+                    
+                    cc.formants.forEach(f => {
+                        const filter = offlineCtx.createBiquadFilter();
+                        filter.type = 'bandpass';
+                        filter.frequency.value = f.f * formantShift;
+                        filter.Q.value = f.f / f.bw;
+                        
+                        const gain = offlineCtx.createGain();
+                        gain.gain.value = volume * 0.4;
+                        
+                        glottal.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(masterGain);
+                    });
+                    
+                    glottal.start(offlineCtx.currentTime);
+                    
+                } else if (cc.type === 'liquid') {
+                    const glottalResult = createGlottalSource(offlineCtx, duration, adjustedBaseFreq * 0.95, phaseIn);
+                    const glottal = glottalResult.source;
+                    phaseOut = glottalResult.phaseOut;
+                    
+                    cc.formants.forEach(f => {
+                        const filter = offlineCtx.createBiquadFilter();
+                        filter.type = 'bandpass';
+                        filter.frequency.value = f.f * formantShift;
+                        filter.Q.value = f.f / f.bw;
+                        
+                        const gain = offlineCtx.createGain();
+                        gain.gain.value = volume * 0.5;
+                        
+                        glottal.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(masterGain);
+                    });
+                    
+                    glottal.start(offlineCtx.currentTime);
+                    
+                } else if (cc.type === 'trill') {
+                    const glottalResult = createGlottalSource(offlineCtx, duration, adjustedBaseFreq, phaseIn);
+                    const glottal = glottalResult.source;
+                    phaseOut = glottalResult.phaseOut;
+                    
+                    // LFO for trill effect
+                    const lfo = offlineCtx.createOscillator();
+                    lfo.frequency.value = cc.trillFreq;
+                    const lfoGain = offlineCtx.createGain();
+                    lfoGain.gain.value = adjustedBaseFreq * 0.15;
+                    lfo.connect(lfoGain);
+                    lfoGain.connect(glottal.playbackRate || glottal.detune);
+                    
+                    const filter = offlineCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 2000 * formantShift;
+                    filter.Q.value = 2;
+                    
+                    const gain = offlineCtx.createGain();
+                    gain.gain.value = volume * 0.6;
+                    
+                    glottal.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(masterGain);
+                    glottal.start(offlineCtx.currentTime);
+                    lfo.start(offlineCtx.currentTime);
+                    
+                } else if (cc.type === 'glide') {
+                    // Glide: transition from consonant-like to vowel-like
+                    const halfDur = duration / 2;
+                    
+                    // First half: noise
+                    const noise1 = offlineCtx.createBufferSource();
+                    noise1.buffer = createNoiseBuffer(offlineCtx, halfDur);
+                    const noiseFilter = offlineCtx.createBiquadFilter();
+                    noiseFilter.type = 'bandpass';
+                    noiseFilter.frequency.value = cc.startFormants.f2 * formantShift;
+                    noiseFilter.Q.value = 3;
+                    const noiseGain = offlineCtx.createGain();
+                    noiseGain.gain.value = volume * 0.3;
+                    noiseGain.gain.exponentialRampToValueAtTime(0.01, offlineCtx.currentTime + halfDur);
+                    
+                    noise1.connect(noiseFilter);
+                    noiseFilter.connect(noiseGain);
+                    noiseGain.connect(masterGain);
+                    noise1.start(offlineCtx.currentTime);
+                    noise1.stop(offlineCtx.currentTime + halfDur);
+                    
+                } else if (cc.type === 'plosive') {
+                    const burstDur = cc.burstDur;
+                    const noise = offlineCtx.createBufferSource();
+                    noise.buffer = createNoiseBuffer(offlineCtx, burstDur);
+                    
+                    const filter = offlineCtx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = cc.burstFreq * formantShift;
+                    filter.Q.value = cc.burstFreq / 800;
+                    
+                    const burstGain = offlineCtx.createGain();
+                    burstGain.gain.setValueAtTime(volume * 0.8, offlineCtx.currentTime);
+                    burstGain.gain.exponentialRampToValueAtTime(0.01, offlineCtx.currentTime + burstDur);
+                    
+                    noise.connect(filter);
+                    filter.connect(burstGain);
+                    burstGain.connect(masterGain);
+                    noise.start(offlineCtx.currentTime);
+                    noise.stop(offlineCtx.currentTime + burstDur);
+                    
+                    // Voiced plosives have vocalic portion
+                    if (cc.voiced) {
+                        const voiceDur = duration - cc.vtt;
+                        if (voiceDur > 0.01) {
+                            const glottalResult = createGlottalSource(offlineCtx, voiceDur, adjustedBaseFreq * 0.9, phaseIn);
+                            const glottal = glottalResult.source;
+                            phaseOut = glottalResult.phaseOut;
+                            const vFilter = offlineCtx.createBiquadFilter();
+                            vFilter.type = 'lowpass';
+                            vFilter.frequency.value = 1200 * formantShift;
+                            
+                            const vGain = offlineCtx.createGain();
+                            vGain.gain.value = volume * 0.4;
+                            
+                            glottal.connect(vFilter);
+                            vFilter.connect(vGain);
+                            vGain.connect(masterGain);
+                            glottal.start(offlineCtx.currentTime + cc.vtt);
+                        }
+                    }
+                }
+            }
+            
+            const buffer = await offlineCtx.startRendering();
+            return { buffer, phaseOut };
+        }
+
+        // ==========================================
+        // PLAYBACK ENGINE
+        // ==========================================
+        
+        function stopPlayback() {
+            currentPlayback.sources.forEach(s => {
+                try { s.stop(); } catch(e) {}
+            });
+            currentPlayback.timeouts.forEach(t => clearTimeout(t));
+            currentPlayback = { sources: [], timeouts: [] };
+            isPlaying = false;
+            updateStatus('');
+        }
+
+        async function playTTS(text) {
+            if (isPlaying) stopPlayback();
+            
+            initAudio();
+            isPlaying = true;
+            updateStatus('Procesando...');
+            
+            const pitchMul = parseFloat(document.getElementById('pitchSlider').value);
+            const baseDuration = parseInt(document.getElementById('speedSlider').value);
+            const brightness = parseFloat(document.getElementById('brightnessSlider').value);
+            const volume = parseFloat(document.getElementById('volumeSlider').value);
+            const jitterAmount = parseFloat(document.getElementById('jitterSlider').value);
+            
+            const preset = voicePresets[currentVoice];
+            const baseFreq = preset.baseFreq * pitchMul;
+            const formantShift = preset.formantShift;
+            
+            const structuredPhonemes = textToPhonemes(text);
+            const prosody = generateProsody(structuredPhonemes);
+            
+            // Update phoneme display
+            updatePhonemeDisplay(prosody);
+            
+            let currentTime = audioCtx.currentTime + 0.05;
+            const params = { baseFreq, brightness, formantShift, volume, jitterAmount };
+            
+            // Pre-generate all phoneme buffers for smooth playback
+            const buffers = [];
+            let phaseCursor = 0;
+            for (let i = 0; i < prosody.length; i++) {
+                const item = prosody[i];
+                if (item.type === 'phoneme') {
+                    const dur = baseDuration * item.durMul;
+                    const rendered = await generatePhonemeOffline(item.phoneme, dur, params, phaseCursor);
+                    const buffer = rendered.buffer;
+                    phaseCursor = rendered.phaseOut;
+                    buffers.push({ buffer, item });
+                } else {
+                    buffers.push({ item });
+                }
+            }
+            
+            // Schedule playback with crossfade transitions
+            for (let i = 0; i < buffers.length; i++) {
+                const { buffer, item } = buffers[i];
+                
+                if (item.type === 'space') {
+                    currentTime += item.duration;
+                    continue;
+                }
+                
+                const bufferDuration = buffer.duration;
+                const overlap = Math.min(bufferDuration * transitionMul, bufferDuration * 0.4, 0.05);
+                
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                
+                const gainNode = audioCtx.createGain();
+                
+                // Envelope with overlap crossfade
+                if (i > 0 && buffers[i-1].buffer) {
+                    gainNode.gain.setValueAtTime(0, currentTime);
+                    gainNode.gain.linearRampToValueAtTime(1, currentTime + overlap);
+                } else {
+                    gainNode.gain.setValueAtTime(1, currentTime);
+                }
+                
+                if (i < buffers.length - 1 && buffers[i+1].buffer) {
+                    gainNode.gain.setValueAtTime(1, currentTime + bufferDuration - overlap);
+                    gainNode.gain.linearRampToValueAtTime(0, currentTime + bufferDuration);
+                } else {
+                    gainNode.gain.setValueAtTime(1, currentTime + bufferDuration - 0.02);
+                    gainNode.gain.linearRampToValueAtTime(0, currentTime + bufferDuration);
+                }
+                
+                source.connect(gainNode);
+                gainNode.connect(analyserNode);
+                source.start(currentTime);
+                
+                currentPlayback.sources.push(source);
+                
+                // Highlight current phoneme
+                const highlightTime = (currentTime - audioCtx.currentTime) * 1000;
+                const t1 = setTimeout(() => highlightPhoneme(i), highlightTime);
+                currentPlayback.timeouts.push(t1);
+                
+                // Move time forward with slight overlap
+                currentTime += bufferDuration - overlap * 0.5;
+            }
+            
+            const totalTime = (currentTime - audioCtx.currentTime) * 1000;
+            const endTimeout = setTimeout(() => {
+                isPlaying = false;
+                updateStatus('');
+                clearPhonemeHighlight();
+            }, totalTime + 100);
+            currentPlayback.timeouts.push(endTimeout);
+            
+            updateStatus('Reproduciendo...');
+        }
+
+        // ==========================================
+        // WAV GENERATION & DOWNLOAD
+        // ==========================================
+        
+        function overlapAddFloat32(chunks, sampleRate, crossfadeMs = 12) {
+            if (!chunks || chunks.length === 0) return new Float32Array(0);
+
+            const validChunks = chunks.filter(c => c && c.length > 0);
+            if (validChunks.length === 0) return new Float32Array(0);
+
+            const baseOverlap = Math.max(0, Math.floor(sampleRate * (crossfadeMs / 1000)));
+
+            let totalLength = validChunks[0].length;
+            for (let i = 1; i < validChunks.length; i++) {
+                const prev = validChunks[i - 1];
+                const curr = validChunks[i];
+                const overlap = Math.max(1, Math.min(baseOverlap, prev.length, curr.length));
+                totalLength += curr.length - overlap;
+            }
+
+            const out = new Float32Array(Math.max(0, totalLength));
+            out.set(validChunks[0], 0);
+            let writePos = validChunks[0].length;
+
+            for (let i = 1; i < validChunks.length; i++) {
+                const curr = validChunks[i];
+                const overlap = Math.max(1, Math.min(baseOverlap, writePos, curr.length));
+                const crossStart = writePos - overlap;
+
+                for (let j = 0; j < overlap; j++) {
+                    const t = (j + 0.5) / Math.max(1, overlap);
+                    const fadeOut = Math.cos(t * Math.PI * 0.5);
+                    const fadeIn = Math.sin(t * Math.PI * 0.5);
+                    out[crossStart + j] = (out[crossStart + j] * fadeOut) + (curr[j] * fadeIn);
+                }
+
+                out.set(curr.subarray(overlap), writePos);
+                writePos += curr.length - overlap;
+            }
+
+            return writePos === out.length ? out : out.subarray(0, writePos);
+        }
+
+        function trimEdgeZeros(data, sampleRate, maxTrimMs = 6, threshold = 1e-5) {
+            if (!data || data.length === 0) return new Float32Array(0);
+            const maxTrim = Math.max(0, Math.floor(sampleRate * (maxTrimMs / 1000)));
+
+            let start = 0;
+            const startLimit = Math.min(maxTrim, data.length - 1);
+            while (start < startLimit && Math.abs(data[start]) <= threshold) start++;
+
+            let end = data.length;
+            const endLimit = Math.max(0, data.length - maxTrim);
+            while (end > endLimit && Math.abs(data[end - 1]) <= threshold) end--;
+
+            if (end <= start) {
+                return new Float32Array(data);
+            }
+            return data.slice(start, end);
+        }
+
+        function removeDcAndApplyHeadroom(data, targetDbfs = -1.5) {
+            if (!data || data.length === 0) return data;
+
+            let sum = 0;
+            for (let i = 0; i < data.length; i++) sum += data[i];
+            const mean = sum / data.length;
+
+            const centered = new Float32Array(data.length);
+            let peak = 0;
+            for (let i = 0; i < data.length; i++) {
+                const v = data[i] - mean;
+                centered[i] = v;
+                const a = Math.abs(v);
+                if (a > peak) peak = a;
+            }
+
+            if (peak <= 0) return centered;
+
+            const targetPeak = Math.pow(10, targetDbfs / 20);
+            const gain = Math.min(1, targetPeak / peak);
+            if (gain < 1) {
+                for (let i = 0; i < centered.length; i++) centered[i] *= gain;
+            }
+            return centered;
+        }
+
+        function float32ToPcm16Dithered(floatData) {
+            const pcm = new Int16Array(floatData.length);
+            const softClipNorm = Math.tanh(1.5);
+
+            for (let i = 0; i < floatData.length; i++) {
+                const x = Number.isFinite(floatData[i]) ? floatData[i] : 0;
+                const soft = Math.tanh(1.5 * x) / softClipNorm;
+                const tpdf = (Math.random() - Math.random()) / 32768;
+                const y = Math.max(-1, Math.min(1, soft + tpdf));
+                pcm[i] = y < 0
+                    ? Math.max(-32768, Math.round(y * 32768))
+                    : Math.min(32767, Math.round(y * 32767));
+            }
+
+            return pcm;
+        }
+
+        function encodeWav16FromFloat32(floatData, sampleRate, numChannels = 1) {
+            const format = 1; // PCM
+            const bitDepth = 16;
+            const pcm16 = float32ToPcm16Dithered(floatData);
+            const byteRate = sampleRate * numChannels * (bitDepth / 8);
+            const blockAlign = numChannels * (bitDepth / 8);
+            const dataLength = pcm16.length * (bitDepth / 8);
+            const headerLength = 44;
+            const totalLength = headerLength + dataLength;
+            
+            const arrayBuffer = new ArrayBuffer(totalLength);
+            const view = new DataView(arrayBuffer);
+            
+            // WAV header
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, totalLength - 8, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, format, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataLength, true);
+            
+            let offset = 44;
+            for (let i = 0; i < pcm16.length; i++) {
+                view.setInt16(offset, pcm16[i], true);
+                offset += 2;
+            }
+            
+            return new Blob([arrayBuffer], { type: 'audio/wav' });
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        async function generateFullWav(text) {
+            initAudio();
+            updateStatus('Generando WAV...');
+            
+            const pitchMul = parseFloat(document.getElementById('pitchSlider').value);
+            const baseDuration = parseInt(document.getElementById('speedSlider').value);
+            const brightness = parseFloat(document.getElementById('brightnessSlider').value);
+            const volume = parseFloat(document.getElementById('volumeSlider').value);
+            const jitterAmount = parseFloat(document.getElementById('jitterSlider').value);
+            const transitionMul = parseFloat(document.getElementById('transitionSlider').value);
+            
+            const preset = voicePresets[currentVoice];
+            const baseFreq = preset.baseFreq * pitchMul;
+            const formantShift = preset.formantShift;
+            const params = { baseFreq, brightness, formantShift, volume, jitterAmount };
+            
+            const structuredPhonemes = textToPhonemes(text);
+            const prosody = generateProsody(structuredPhonemes);
+            
+            const chunks = [];
+            let phaseCursor = 0;
+            
+            for (let i = 0; i < prosody.length; i++) {
+                const item = prosody[i];
+                if (item.type === 'space') {
+                    const silenceDur = item.duration;
+                    chunks.push(new Float32Array(Math.floor(audioCtx.sampleRate * silenceDur)));
+                    continue;
+                }
+                
+                const dur = baseDuration * item.durMul;
+                const rendered = await generatePhonemeOffline(item.phoneme, dur, params, phaseCursor);
+                const buffer = rendered.buffer;
+                phaseCursor = rendered.phaseOut;
+                const data = trimEdgeZeros(new Float32Array(buffer.getChannelData(0)), audioCtx.sampleRate);
+                chunks.push(data);
+            }
+            const stitched = overlapAddFloat32(chunks, audioCtx.sampleRate, 12);
+            const mastered = removeDcAndApplyHeadroom(stitched, -1.5);
+
+            return {
+                samples: mastered,
+                sampleRate: audioCtx.sampleRate
+            };
+        }
+
+        // ==========================================
+        // VISUALIZATION
+        // ==========================================
+        
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        
+        function startVisualization() {
+            if (animFrameId) return;
+            resizeCanvas();
+            drawFrame();
+        }
+        
+        function stopVisualization() {
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
+            // Clear canvas
+            const w = canvas.width / window.devicePixelRatio;
+            const h = canvas.height / window.devicePixelRatio;
+            canvasCtx.clearRect(0, 0, w, h);
+        }
+        
+        function drawFrame() {
+            animFrameId = requestAnimationFrame(drawFrame);
+            
+            const w = canvas.width / window.devicePixelRatio;
+            const h = canvas.height / window.devicePixelRatio;
+            
+            canvasCtx.fillStyle = 'rgba(15, 23, 42, 0.3)';
+            canvasCtx.fillRect(0, 0, w, h);
+            
+            if (!analyserNode) return;
+            
+            const bufferLength = analyserNode.frequencyBinCount;
+            
+            if (currentView === 'waveform') {
+                const dataArray = new Uint8Array(bufferLength);
+                analyserNode.getByteTimeDomainData(dataArray);
+                
+                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeStyle = '#818cf8';
+                canvasCtx.beginPath();
+                
+                const sliceWidth = w / bufferLength;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * h / 2;
+                    
+                    if (i === 0) canvasCtx.moveTo(x, y);
+                    else canvasCtx.lineTo(x, y);
+                    
+                    x += sliceWidth;
+                }
+                
+                canvasCtx.lineTo(w, h / 2);
+                canvasCtx.stroke();
+                
+                // Glow effect
+                canvasCtx.shadowColor = '#818cf8';
+                canvasCtx.shadowBlur = 10;
+                canvasCtx.stroke();
+                canvasCtx.shadowBlur = 0;
+                
+            } else if (currentView === 'spectrum') {
+                const dataArray = new Uint8Array(bufferLength);
+                analyserNode.getByteFrequencyData(dataArray);
+                
+                const barWidth = w / bufferLength * 2.5;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = (dataArray[i] / 255) * h;
+                    
+                    const hue = 240 + (i / bufferLength) * 60;
+                    canvasCtx.fillStyle = `hsla(${hue}, 70%, 60%, 0.8)`;
+                    canvasCtx.fillRect(x, h - barHeight, barWidth - 1, barHeight);
+                    
+                    x += barWidth;
+                }
+                
+            } else if (currentView === 'spectrogram') {
+                const dataArray = new Uint8Array(bufferLength);
+                analyserNode.getByteFrequencyData(dataArray);
+                
+                spectrogramData.push(new Uint8Array(dataArray));
+                if (spectrogramData.length > w) spectrogramData.shift();
+                
+                const imgData = canvasCtx.createImageData(w, h);
+                
+                for (let x = 0; x < spectrogramData.length; x++) {
+                    const freqData = spectrogramData[x];
+                    for (let y = 0; y < h; y++) {
+                        const freqIdx = Math.floor((1 - y / h) * (bufferLength / 2));
+                        const val = freqData[freqIdx] || 0;
+                        const intensity = val / 255;
+                        
+                        const pixelIdx = (y * w + x) * 4;
+                        imgData.data[pixelIdx] = Math.floor(intensity * 129);     // R
+                        imgData.data[pixelIdx + 1] = Math.floor(intensity * 140); // G
+                        imgData.data[pixelIdx + 2] = Math.floor(200 + intensity * 55); // B
+                        imgData.data[pixelIdx + 3] = 255; // Alpha
+                    }
+                }
+                
+                canvasCtx.putImageData(imgData, 0, 0);
+            }
+        }
+
+        // ==========================================
+        // UI FUNCTIONS
+        // ==========================================
+        
+        function updateStatus(msg) {
+            document.getElementById('statusMessage').textContent = msg;
+        }
+
+        function updatePhonemeDisplay(prosody) {
+            const display = document.getElementById('phonemeDisplay');
+            display.innerHTML = '';
+            
+            prosody.forEach((item, idx) => {
+                const tag = document.createElement('span');
+                tag.className = 'phoneme-tag inline-flex items-center justify-center min-w-[28px] h-8 px-1.5 rounded-lg text-xs mono font-semibold cursor-default';
+                tag.dataset.idx = idx;
+                
+                if (item.type === 'space') {
+                    tag.classList.add('space-tag');
+                    tag.innerHTML = '·';
+                } else {
+                    tag.textContent = item.phoneme;
+                    tag.style.color = item.isVowel ? '#c4b5fd' : '#94a3b8';
+                }
+                
+                display.appendChild(tag);
+            });
+        }
+
+        function highlightPhoneme(idx) {
+            const tags = document.querySelectorAll('.phoneme-tag');
+            tags.forEach(t => t.classList.remove('active'));
+            const tag = document.querySelector(`.phoneme-tag[data-idx="${idx}"]`);
+            if (tag) {
+                tag.classList.add('active');
+                tag.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
+        function clearPhonemeHighlight() {
+            document.querySelectorAll('.phoneme-tag').forEach(t => t.classList.remove('active'));
+        }
+
+        // ==========================================
+        // EVENT LISTENERS
+        // ==========================================
+        
+        document.getElementById('pitchSlider').addEventListener('input', (e) => {
+            document.getElementById('pitchDisplay').textContent = parseFloat(e.target.value).toFixed(2) + 'x';
+        });
+        
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            document.getElementById('speedDisplay').textContent = e.target.value + 'ms';
+        });
+        
+        document.getElementById('brightnessSlider').addEventListener('input', (e) => {
+            document.getElementById('brightnessDisplay').textContent = parseFloat(e.target.value).toFixed(2);
+        });
+        
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            document.getElementById('volumeDisplay').textContent = parseFloat(e.target.value).toFixed(2);
+        });
+        
+        document.getElementById('jitterSlider').addEventListener('input', (e) => {
+            document.getElementById('jitterDisplay').textContent = parseFloat(e.target.value).toFixed(2);
+        });
+        
+        document.getElementById('transitionSlider').addEventListener('input', (e) => {
+            document.getElementById('transitionDisplay').textContent = parseFloat(e.target.value).toFixed(2);
+        });
+        
+        document.getElementById('textInput').addEventListener('input', (e) => {
+            const text = e.target.value;
+            document.getElementById('charCount').textContent = text.length + ' caracteres';
+            
+            if (text.trim()) {
+                const structured = textToPhonemes(text);
+                updatePhonemeDisplay(generateProsody(structured));
+            }
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('textInput').value = '';
+            document.getElementById('charCount').textContent = '0 caracteres';
+            document.getElementById('phonemeDisplay').innerHTML = '<span class="text-xs text-slate-500">Los fonemas aparecerán aquí...</span>';
+        });
+        
+        document.getElementById('btnPlay').addEventListener('click', () => {
+            const text = document.getElementById('textInput').value.trim();
+            if (text) {
+                playTTS(text);
+                startVisualization();
+            }
+        });
+        
+        document.getElementById('btnStop').addEventListener('click', () => {
+            stopPlayback();
+            stopVisualization();
+        });
+        
+        document.getElementById('btnDownload').addEventListener('click', async () => {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) return;
+            
+            const btn = document.getElementById('btnDownload');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            updateStatus('Generando archivo WAV...');
+            
+            try {
+                const rendered = await generateFullWav(text);
+                const wavBlob = encodeWav16FromFloat32(rendered.samples, rendered.sampleRate, 1);
+                const url = URL.createObjectURL(wavBlob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tts_output.wav`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                updateStatus('¡Descarga completada!');
+            } catch (err) {
+                updateStatus('Error al generar WAV: ' + err.message);
+            }
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                updateStatus('');
+            }, 2000);
+        });
+
+        // Initialize
+        window.addEventListener('resize', () => {
+            if (animFrameId) resizeCanvas();
+        });
+        
+        selectVoice('male');
+    </script>
+</body>
+</html>
+

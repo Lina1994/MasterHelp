@@ -4,6 +4,10 @@ export type SfxLoopMode = 'once' | 'continuous' | 'fixed' | 'random';
 
 export interface SfxPlayOptions {
   volume?: number; // 0..1
+  startAtSec?: number; // start playback offset in seconds
+  durationMs?: number; // max playback duration in ms
+  clipOutSec?: number; // optional absolute end offset in seconds (relative to original source)
+  playbackRate?: number; // 0.25..4
   loopMode?: SfxLoopMode;
   waitMs?: number; // for fixed
   randomMinMs?: number; // for random
@@ -16,6 +20,9 @@ export interface SfxPlayOptions {
   echoDelayMs?: number;
   echoFeedback?: number; // 0..1
   pitchSemitones?: number; // negative lower, positive higher
+  filterType?: 'none' | 'lowpass' | 'highpass' | 'bandpass';
+  filterFrequency?: number;
+  filterQ?: number;
 }
 
 export interface SfxListItem {
@@ -40,8 +47,10 @@ interface Controller {
   ctx?: AudioContext;
   sourceNode?: MediaElementAudioSourceNode;
   gainNode?: GainNode;
+  filterNode?: BiquadFilterNode;
   delayNode?: DelayNode;
   feedbackGain?: GainNode;
+  durationTimer?: number | null;
 }
 
 interface SfxPlayerContextType {
@@ -90,10 +99,14 @@ export const SfxPlayerProvider: React.FC<{ children: ReactNode }> = ({ children 
     if (c.pendingTimer) {
       window.clearTimeout(c.pendingTimer);
     }
+    if (c.durationTimer) {
+      window.clearTimeout(c.durationTimer);
+    }
     c.audio.pause();
     // teardown Web Audio graph
     try { if (c.sourceNode) c.sourceNode.disconnect(); } catch {}
     try { if (c.gainNode) c.gainNode.disconnect(); } catch {}
+    try { if (c.filterNode) c.filterNode.disconnect(); } catch {}
     try { if (c.delayNode) c.delayNode.disconnect(); } catch {}
     try { if (c.feedbackGain) c.feedbackGain.disconnect(); } catch {}
     try { if (c.ctx) c.ctx.close(); } catch {}
@@ -164,21 +177,57 @@ export const SfxPlayerProvider: React.FC<{ children: ReactNode }> = ({ children 
       randomMinMs: options?.randomMinMs,
       randomMaxMs: options?.randomMaxMs,
       pendingTimer: null,
+      durationTimer: null,
       isWaiting: false,
     };
 
+    const startAtSec = Number.isFinite(Number(options?.startAtSec)) && Number(options?.startAtSec) >= 0
+      ? Number(options?.startAtSec)
+      : 0;
+    const clipOutSec = Number.isFinite(Number(options?.clipOutSec)) && Number(options?.clipOutSec) > startAtSec
+      ? Number(options?.clipOutSec)
+      : undefined;
+    const requestedDurationMs = Number.isFinite(Number(options?.durationMs)) && Number(options?.durationMs) > 0
+      ? Math.round(Number(options?.durationMs))
+      : undefined;
+    const clipWindowDurationMs = clipOutSec !== undefined
+      ? Math.max(0, Math.round((clipOutSec - startAtSec) * 1000))
+      : undefined;
+    const effectiveDurationMs =
+      requestedDurationMs !== undefined && clipWindowDurationMs !== undefined
+        ? Math.min(requestedDurationMs, clipWindowDurationMs)
+        : (requestedDurationMs ?? clipWindowDurationMs);
+
     // Web Audio modifiers
-    if (options?.echoEnabled || (options?.pitchSemitones && options.pitchSemitones !== 0)) {
+    if (options?.playbackRate !== undefined && Number.isFinite(Number(options.playbackRate))) {
+      audio.playbackRate = Math.max(0.25, Math.min(4, Number(options.playbackRate)));
+    }
+
+    if (
+      options?.echoEnabled
+      || (options?.pitchSemitones && options.pitchSemitones !== 0)
+      || (options?.filterType && options.filterType !== 'none')
+    ) {
       try {
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         const source = ctx.createMediaElementSource(audio);
         const gain = ctx.createGain();
         gain.gain.value = 1;
         let lastNode: AudioNode = source;
-        // pitch via playbackRate (approx)
+        // pitch via playbackRate (approx), compounded over explicit playbackRate if provided
         if (options?.pitchSemitones && options.pitchSemitones !== 0) {
           const ratio = Math.pow(2, (options.pitchSemitones as number) / 12);
-          audio.playbackRate = ratio;
+          audio.playbackRate = audio.playbackRate * ratio;
+        }
+        // optional frequency filter
+        if (options?.filterType && options.filterType !== 'none') {
+          const filter = ctx.createBiquadFilter();
+          filter.type = options.filterType;
+          filter.frequency.value = Math.max(20, Math.min(20000, Number(options.filterFrequency ?? 1000)));
+          filter.Q.value = Math.max(0.1, Math.min(30, Number(options.filterQ ?? 1)));
+          lastNode.connect(filter);
+          lastNode = filter;
+          controller.filterNode = filter;
         }
         // echo via delay + feedback loop
         if (options?.echoEnabled) {
@@ -217,6 +266,37 @@ export const SfxPlayerProvider: React.FC<{ children: ReactNode }> = ({ children 
         }
       };
       audio.addEventListener('ended', controller.endedHandler);
+    }
+    if (startAtSec > 0) {
+      const applyStartOffset = () => {
+        try {
+          audio.currentTime = startAtSec;
+        } catch {
+          // Ignore seek failures for sources that cannot seek immediately.
+        }
+      };
+      if (audio.readyState >= 1) {
+        applyStartOffset();
+      } else {
+        audio.addEventListener('loadedmetadata', applyStartOffset, { once: true });
+      }
+    }
+
+    if (effectiveDurationMs !== undefined && effectiveDurationMs > 0) {
+      const scheduleDurationStop = () => {
+        if (controller.durationTimer) {
+          window.clearTimeout(controller.durationTimer);
+        }
+        controller.durationTimer = window.setTimeout(() => {
+          destroyController(instanceId);
+          setVersion(v => v + 1);
+        }, Math.max(1, effectiveDurationMs));
+      };
+      if (audio.readyState >= 2) {
+        scheduleDurationStop();
+      } else {
+        audio.addEventListener('playing', scheduleDurationStop, { once: true });
+      }
     }
     // eslint-disable-next-line no-console
     console.debug('[SFX] play', { instanceId, effectId: meta.effectId, name: meta.name, loopMode, audioLoop: audio.loop, waitMs: controller.waitMs, randomMinMs: controller.randomMinMs, randomMaxMs: controller.randomMaxMs });
