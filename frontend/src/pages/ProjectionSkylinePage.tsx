@@ -4,6 +4,7 @@ import { alpha } from '@mui/material/styles';
 import { QRCodeSVG } from 'qrcode.react';
 import AuthImage from '../components/common/AuthImage';
 import { getMapSkylineUrlSized, listMaps } from '../api/maps';
+import { getVisualFilterCss, TimeOfDayFilterConfig } from '../utils/mapVisualFilters';
 import { useActiveMap } from '../components/Map/ActiveMapContext';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
@@ -422,6 +423,7 @@ const ProjectionSkylinePage: React.FC = () => {
   const { timeOfDay } = useTimeOfDay();
   const { setActiveCampaignId, activeCampaign, activeCampaignId: rawCampaignId } = useActiveCampaign();
   const [hasSkyline, setHasSkyline] = useState<boolean>(true);
+  const [activeSkylineFilters, setActiveSkylineFilters] = useState<TimeOfDayFilterConfig | null>(null);
   const [hasDefaultSkylineImg, setHasDefaultSkylineImg] = useState(false);
   // Initialize synchronously from URL so that the first render already has the campaign ID.
   // In HashRouter, ?campaignId=X is part of the hash (e.g. #/projection/skyline?campaignId=abc),
@@ -1517,7 +1519,28 @@ const ProjectionSkylinePage: React.FC = () => {
     else setSelectedDayLabel(null);
   }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
 
-  useEffect(() => { try { const d = (window as any).electronAPI?.onProjectionPoke?.(async () => { await refreshFromServer(); }); return () => { if (typeof d === 'function') d(); }; } catch {} }, [refreshFromServer]);
+  const refreshSkylineMapVisualConfig = useCallback(async () => {
+    const cid = activeCampaign?.id || campaignIdFromQuery || rawCampaignId || undefined;
+    if (!activeMapId) {
+      setHasSkyline(false);
+      setActiveSkylineFilters(null);
+      return;
+    }
+    const maps = await listMaps({ campaignId: cid });
+    const m = maps.find(x => x.id === activeMapId);
+    setHasSkyline(Boolean((m as any)?.skylineAvailable));
+    setActiveSkylineFilters((m as any)?.skylineFilters || null);
+  }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId, activeMapId]);
+
+  useEffect(() => {
+    try {
+      const d = (window as any).electronAPI?.onProjectionPoke?.(async () => {
+        await refreshFromServer();
+        try { await refreshSkylineMapVisualConfig(); } catch {}
+      });
+      return () => { if (typeof d === 'function') d(); };
+    } catch {}
+  }, [refreshFromServer, refreshSkylineMapVisualConfig]);
 
   const loadSkylineCharacter = useCallback(async () => {
     let charId: string | null | undefined = activeCampaign?.activeSkylineCharacter?.id;
@@ -1677,6 +1700,10 @@ const ProjectionSkylinePage: React.FC = () => {
           if (data?.type === 'activeSkylineChanged' && data?.campaignId === cid) {
             loadSkylineCharacter();
           }
+          if (data?.type === 'map-transform-updated') {
+            // Map editor save event; includes visual filters for map/skyline.
+            refreshSkylineMapVisualConfig().catch(() => {});
+          }
           if (data?.type === 'skylineItemsChanged' && data?.campaignId === cid) {
             loadSkylineItems();
           }
@@ -1740,7 +1767,7 @@ const ProjectionSkylinePage: React.FC = () => {
       }
     } catch {}
     return () => { try { bc?.close(); } catch {} };
-  }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter, loadSkylineItems]);
+  }, [activeCampaign?.id, campaignIdFromQuery, loadSkylineCharacter, loadSkylineItems, refreshSkylineMapVisualConfig]);
 
   // Poll server periodically to reflect remote changes (multi-device control).
   // Uses a ref to avoid restarting the interval when callbacks change,
@@ -2008,19 +2035,32 @@ const ProjectionSkylinePage: React.FC = () => {
     return () => { disposed = true; };
   }, [activeCampaign?.id, campaignIdFromQuery]);
 
-  // Probe if active map has skyline available to avoid loading spinner forever
+  // Keep skyline availability and filters synced for the active map
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        if (!activeMapId) { setHasSkyline(false); return; }
-        const maps = await listMaps({ campaignId: activeCampaign?.id || campaignIdFromQuery || undefined });
-        const m = maps.find(x => x.id === activeMapId);
-        if (!cancelled) setHasSkyline(Boolean((m as any)?.skylineAvailable));
-      } catch { if (!cancelled) setHasSkyline(false); }
+        await refreshSkylineMapVisualConfig();
+      } catch {
+        if (!cancelled) {
+          setHasSkyline(false);
+          setActiveSkylineFilters(null);
+        }
+      }
     })();
     return () => { cancelled = true; };
-  }, [activeMapId, activeCampaign?.id, campaignIdFromQuery]);
+  }, [refreshSkylineMapVisualConfig]);
+
+  // Poll as fallback so visual filter changes are reflected even without explicit events.
+  useEffect(() => {
+    let disposed = false;
+    const tick = async () => {
+      if (disposed) return;
+      try { await refreshSkylineMapVisualConfig(); } catch {}
+    };
+    const id = window.setInterval(tick, 2000);
+    return () => { disposed = true; window.clearInterval(id); };
+  }, [refreshSkylineMapVisualConfig]);
 
   // Check if campaign has a default skyline fallback image
   useEffect(() => {
@@ -2260,7 +2300,7 @@ const ProjectionSkylinePage: React.FC = () => {
           <AuthImage
             src={getMapSkylineUrlSized(activeMapId, 'full', { timeOfDay, cacheBust: timeOfDay })}
             alt="Skyline proyectado"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: getVisualFilterCss(activeSkylineFilters?.[timeOfDay]) }}
           />
         ) : hasDefaultSkylineImg && (activeCampaign?.id || campaignIdFromQuery) ? (
           <img

@@ -292,7 +292,7 @@ const normalizeOscillation = (
 const normalizeVoiceConfig = (
   value: unknown,
 ): {
-  mode: 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant';
+  mode: 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant' | 'roboti' | 'orchestra';
   speed: number;
   pitchRange: number;
   tomodachi: {
@@ -310,11 +310,31 @@ const normalizeVoiceConfig = (
     transitionMul: number;
     vowelGlitch: number;
   };
+  roboti: {
+    voice: 'male' | 'female' | 'neutral';
+    pitchSemitones: number;
+    vibratoPct: number;
+    brightness: number;
+    noiseAmount: number;
+    lfRd: number;
+    aspiration: number;
+    transitionMs: number;
+    spacePauseMs: number;
+    punctuationPauseMs: number;
+    volume: number;
+  };
+  orchestra: {
+    instrumentType: 'piano' | 'marimba' | 'guitar' | 'violin' | 'flute' | 'oboe' | 'trumpet' | 'retro';
+    toneHz: number;
+    timbreHz: number;
+    speedMs: number;
+    expressiveness: number;
+  };
 } | undefined => {
   if (value === undefined || value === null) return undefined;
   const body = asObject(value, 'voiceConfig');
-  const mode = asOptionalEnum(body.mode, 'voiceConfig.mode', ['retroBeep', 'animalese', 'tomodachi', 'qwenFormant'] as const) ?? 'retroBeep';
-  const speed = body.speed === undefined ? 1 : asBoundedNumber(body.speed, 'voiceConfig.speed', 0.25, 3);
+  const mode = asOptionalEnum(body.mode, 'voiceConfig.mode', ['retroBeep', 'animalese', 'tomodachi', 'qwenFormant', 'roboti', 'orchestra'] as const) ?? 'retroBeep';
+  const speed = body.speed === undefined ? 1 : asBoundedNumber(body.speed, 'voiceConfig.speed', 0.2, 2);
   const pitchRange = body.pitchRange === undefined ? 8 : asBoundedNumber(body.pitchRange, 'voiceConfig.pitchRange', 0, 24);
   const tomodachiBody = body.tomodachi === undefined
     ? {}
@@ -359,6 +379,64 @@ const normalizeVoiceConfig = (
   const vowelGlitch = qwenBody.vowelGlitch === undefined
     ? (persona === 'female' ? 0.3 : persona === 'child' ? 0.34 : persona === 'robot' ? 0.08 : 0.28)
     : asBoundedNumber(qwenBody.vowelGlitch, 'voiceConfig.qwen.vowelGlitch', 0, 1);
+  const robotiBody = body.roboti === undefined
+    ? {}
+    : asObject(body.roboti, 'voiceConfig.roboti');
+  const robotiVoice = asOptionalEnum(
+    robotiBody.voice,
+    'voiceConfig.roboti.voice',
+    ['male', 'female', 'neutral'] as const,
+  ) ?? 'neutral';
+  const pitchSemitones = robotiBody.pitchSemitones === undefined
+    ? (robotiVoice === 'female' ? 3 : robotiVoice === 'male' ? -1 : 0)
+    : asBoundedNumber(robotiBody.pitchSemitones, 'voiceConfig.roboti.pitchSemitones', -12, 12);
+  const vibratoPct = robotiBody.vibratoPct === undefined
+    ? (robotiVoice === 'female' ? 28 : robotiVoice === 'male' ? 18 : 22)
+    : asBoundedNumber(robotiBody.vibratoPct, 'voiceConfig.roboti.vibratoPct', 0, 100);
+  const brightnessRoboti = robotiBody.brightness === undefined
+    ? (robotiVoice === 'female' ? 1.04 : robotiVoice === 'male' ? 0.9 : 0.96)
+    : asBoundedNumber(robotiBody.brightness, 'voiceConfig.roboti.brightness', 0.4, 2);
+  const noiseAmount = robotiBody.noiseAmount === undefined
+    ? (robotiVoice === 'female' ? 0.13 : robotiVoice === 'male' ? 0.14 : 0.15)
+    : asBoundedNumber(robotiBody.noiseAmount, 'voiceConfig.roboti.noiseAmount', 0, 0.8);
+  const lfRd = robotiBody.lfRd === undefined
+    ? (robotiVoice === 'female' ? 1.55 : robotiVoice === 'male' ? 1.95 : 1.8)
+    : asBoundedNumber(robotiBody.lfRd, 'voiceConfig.roboti.lfRd', 0.7, 2.7);
+  const aspiration = robotiBody.aspiration === undefined
+    ? (robotiVoice === 'female' ? 0.2 : robotiVoice === 'male' ? 0.26 : 0.24)
+    : asBoundedNumber(robotiBody.aspiration, 'voiceConfig.roboti.aspiration', 0, 0.8);
+  const transitionMs = robotiBody.transitionMs === undefined
+    ? (robotiVoice === 'female' ? 13 : 14)
+    : asBoundedNumber(robotiBody.transitionMs, 'voiceConfig.roboti.transitionMs', 4, 30);
+  const spacePauseMs = robotiBody.spacePauseMs === undefined
+    ? 70
+    : asBoundedNumber(robotiBody.spacePauseMs, 'voiceConfig.roboti.spacePauseMs', 20, 300);
+  const punctuationPauseMs = robotiBody.punctuationPauseMs === undefined
+    ? 300
+    : asBoundedNumber(robotiBody.punctuationPauseMs, 'voiceConfig.roboti.punctuationPauseMs', 80, 700);
+  const volumeRoboti = robotiBody.volume === undefined
+    ? (robotiVoice === 'female' ? 0.76 : robotiVoice === 'male' ? 0.8 : 0.78)
+    : asBoundedNumber(robotiBody.volume, 'voiceConfig.roboti.volume', 0.1, 1);
+  const orchestraBody = body.orchestra === undefined
+    ? {}
+    : asObject(body.orchestra, 'voiceConfig.orchestra');
+  const orchestraInstrument = asOptionalEnum(
+    orchestraBody.instrumentType,
+    'voiceConfig.orchestra.instrumentType',
+    ['piano', 'marimba', 'guitar', 'violin', 'flute', 'oboe', 'trumpet', 'retro'] as const,
+  ) ?? 'piano';
+  const orchestraToneHz = orchestraBody.toneHz === undefined
+    ? 500
+    : asBoundedNumber(orchestraBody.toneHz, 'voiceConfig.orchestra.toneHz', 150, 1200);
+  const orchestraTimbreHz = orchestraBody.timbreHz === undefined
+    ? 4000
+    : asBoundedNumber(orchestraBody.timbreHz, 'voiceConfig.orchestra.timbreHz', 500, 10000);
+  const orchestraSpeedMs = orchestraBody.speedMs === undefined
+    ? 70
+    : asBoundedNumber(orchestraBody.speedMs, 'voiceConfig.orchestra.speedMs', 20, 150);
+  const orchestraExpressiveness = orchestraBody.expressiveness === undefined
+    ? 120
+    : asBoundedNumber(orchestraBody.expressiveness, 'voiceConfig.orchestra.expressiveness', 0, 250);
   return {
     mode,
     speed,
@@ -377,6 +455,26 @@ const normalizeVoiceConfig = (
       jitter,
       transitionMul,
       vowelGlitch,
+    },
+    roboti: {
+      voice: robotiVoice,
+      pitchSemitones,
+      vibratoPct,
+      brightness: brightnessRoboti,
+      noiseAmount,
+      lfRd,
+      aspiration,
+      transitionMs,
+      spacePauseMs,
+      punctuationPauseMs,
+      volume: volumeRoboti,
+    },
+    orchestra: {
+      instrumentType: orchestraInstrument,
+      toneHz: orchestraToneHz,
+      timbreHz: orchestraTimbreHz,
+      speedMs: orchestraSpeedMs,
+      expressiveness: orchestraExpressiveness,
     },
   };
 };
@@ -621,6 +719,7 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
       {
         const richTextDoc = normalizeNarrativeRichTextDoc(body.richTextDoc);
         const text = body.text === undefined ? undefined : asOptionalNonEmptyString(body.text, 'text');
+        const durationAuto = body.durationAuto === undefined ? undefined : asBoolean(body.durationAuto, 'durationAuto');
         if (!text && !richTextDoc) {
           throw new BadRequestException('setNarrativeText requires text or richTextDoc');
         }
@@ -628,6 +727,7 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
           ...(displayName ? { displayName } : {}),
           ...(text ? { text } : {}),
           title: body.title === undefined ? undefined : asString(body.title, 'title'),
+          ...(durationAuto !== undefined ? { durationAuto } : {}),
           durationMs: body.durationMs === undefined ? undefined : asNumber(body.durationMs, 'durationMs'),
           timelineStartMs: body.timelineStartMs === undefined ? undefined : asNumber(body.timelineStartMs, 'timelineStartMs'),
           ...(richTextDoc ? { richTextDoc } : {}),
@@ -659,7 +759,7 @@ const normalizePayload = (type: SceneActionType, payload: unknown): Record<strin
           borderRadiusPx: body.borderRadiusPx === undefined ? undefined : asFreePercentage(body.borderRadiusPx, 'borderRadiusPx', 0, 128),
           paddingPx: body.paddingPx === undefined ? undefined : asFreePercentage(body.paddingPx, 'paddingPx', 0, 64),
           voiceConfig: normalizeVoiceConfig(body.voiceConfig),
-          voiceTarget: asOptionalEnum(body.voiceTarget, 'voiceTarget', ['main', 'projection', 'both'] as const) ?? 'projection',
+          voiceTarget: asOptionalEnum(body.voiceTarget, 'voiceTarget', ['main', 'projection', 'both', 'none'] as const) ?? 'projection',
         };
       }
     case 'runShortcut':

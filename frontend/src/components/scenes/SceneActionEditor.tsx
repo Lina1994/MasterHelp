@@ -23,6 +23,7 @@ import {
   DEST_WINDOW_LABELS,
 } from './constants/actionTypes';
 import { toNonNegativeMs, toNonNegativeSec } from './utils/sceneEditorUtils';
+import { estimateNarrationDurationMs } from './utils/narratorPlayback';
 import type { SceneVideoAsset } from '../../types/scenes';
 import {
   type NarrativeSegment,
@@ -105,6 +106,10 @@ const SceneActionEditor: React.FC<SceneActionEditorProps> = ({
       payload: {
         ...(action.payload ?? {}),
         displayName: action.payload?.displayName ?? 'Texto Narrativo',
+        durationMs: estimateNarrationDurationMs(
+          String(action.payload?.text ?? ''),
+          action.payload?.voiceConfig as Record<string, unknown> | undefined,
+        ),
         voiceConfig: action.payload?.voiceConfig ?? {
           mode: 'retroBeep',
           speed: 1,
@@ -123,6 +128,19 @@ const SceneActionEditor: React.FC<SceneActionEditorProps> = ({
             jitter: 0.08,
             transitionMul: 0.3,
             vowelGlitch: 0.28,
+          },
+          roboti: {
+            voice: 'neutral',
+            pitchSemitones: 0,
+            vibratoPct: 22,
+            brightness: 0.96,
+            noiseAmount: 0.15,
+            lfRd: 1.8,
+            aspiration: 0.24,
+            transitionMs: 14,
+            spacePauseMs: 70,
+            punctuationPauseMs: 300,
+            volume: 0.78,
           },
         },
       },

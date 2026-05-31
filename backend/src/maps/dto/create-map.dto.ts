@@ -99,6 +99,40 @@ export class CreateMapDto {
 
   @IsOptional()
   @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'object') return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && parsed !== null ? parsed : undefined;
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
+  })
+  @IsObject()
+  imageFilters?: Record<string, any>;
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'object') return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === 'object' && parsed !== null ? parsed : undefined;
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
+  })
+  @IsObject()
+  skylineFilters?: Record<string, any>;
+
+  @IsOptional()
+  @Transform(({ value }) => {
     if (value === undefined) return undefined;
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') return value === 'true';

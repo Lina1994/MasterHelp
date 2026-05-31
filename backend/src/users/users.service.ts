@@ -31,13 +31,14 @@ export class UsersService {
   }
 
   /**
-  * Updates user preferences (language, theme, sidebarConfig, shortcutsConfig).
+  * Updates user preferences (language, theme, sidebarConfig, shortcutsConfig, mapsConfig).
    *
    * @param id - User ID.
    * @param language - Optional new UI language.
    * @param theme - Optional new UI theme.
    * @param sidebarConfig - Optional sidebar configuration (JSON string or null to reset).
    * @param shortcutsConfig - Optional shortcuts shell configuration.
+   * @param mapsConfig - Optional maps UI configuration.
    * @returns The updated user.
    */
   async updatePreferences(
@@ -46,6 +47,7 @@ export class UsersService {
     theme?: string,
     sidebarConfig?: string | null,
     shortcutsConfig?: string | null,
+    mapsConfig?: string | null,
   ): Promise<User> {
     const user = await this.usersRepository.findOneBy({ id });
     if (!user) throw new NotFoundException(`User with ID "${id}" not found`);
@@ -53,6 +55,7 @@ export class UsersService {
     if (theme) user.theme = theme;
     if (sidebarConfig !== undefined) user.sidebarConfig = sidebarConfig;
     if (shortcutsConfig !== undefined) user.shortcutsConfig = shortcutsConfig;
+    if (mapsConfig !== undefined) user.mapsConfig = mapsConfig;
     await this.usersRepository.save(user);
     return user;
   }

@@ -62,7 +62,7 @@ const resolveNarratorVoiceConfig = (payload: Record<string, unknown>): Partial<N
   return rawVoiceConfig as Partial<NarratorVoiceConfig>;
 };
 
-const resolveNarratorVoiceTarget = (payload: Record<string, unknown>): 'main' | 'projection' | 'both' => {
+const resolveNarratorVoiceTarget = (payload: Record<string, unknown>): 'main' | 'projection' | 'both' | 'none' => {
   return normalizeNarratorVoiceTarget(payload.voiceTarget);
 };
 

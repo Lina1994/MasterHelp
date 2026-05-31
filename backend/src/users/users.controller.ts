@@ -39,6 +39,7 @@ export class UsersController {
       body.theme,
       body.sidebarConfig,
       body.shortcutsConfig,
+      body.mapsConfig,
     );
   }
 

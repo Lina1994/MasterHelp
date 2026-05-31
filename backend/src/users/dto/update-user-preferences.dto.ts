@@ -18,4 +18,7 @@ export class UpdateUserPreferencesDto {
 
   @IsOptional()
   shortcutsConfig?: string | null;
+
+  @IsOptional()
+  mapsConfig?: string | null;
 }

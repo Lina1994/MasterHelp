@@ -1,4 +1,5 @@
 import { api } from '../apiBase';
+import { TimeOfDayFilterConfig } from '../utils/mapVisualFilters';
 
 export interface MapItemDto {
   id: string;
@@ -12,6 +13,8 @@ export interface MapItemDto {
   musicConfig?: Record<string, any>;
   sfxConfig?: Record<string, any>;
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
+  imageFilters?: TimeOfDayFilterConfig;
+  skylineFilters?: TimeOfDayFilterConfig;
   campaignId?: string;
   imageAvailable: boolean;
   skylineAvailable?: boolean;
@@ -36,6 +39,8 @@ export async function createMap(payload: {
   musicConfig?: Record<string, any>;
   sfxConfig?: Record<string, any>;
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
+  imageFilters?: TimeOfDayFilterConfig;
+  skylineFilters?: TimeOfDayFilterConfig;
 }) {
   const form = new FormData();
   form.append('name', payload.name);
@@ -54,6 +59,8 @@ export async function createMap(payload: {
   if (payload.musicConfig) form.append('musicConfig', JSON.stringify(payload.musicConfig));
   if (payload.sfxConfig) form.append('sfxConfig', JSON.stringify(payload.sfxConfig));
   if (payload.transform) form.append('transform', JSON.stringify(payload.transform));
+  if (payload.imageFilters) form.append('imageFilters', JSON.stringify(payload.imageFilters));
+  if (payload.skylineFilters) form.append('skylineFilters', JSON.stringify(payload.skylineFilters));
   if ((import.meta as any).env?.DEV) {
     // eslint-disable-next-line no-console
     console.log('[createMap] form entries:', Array.from(form.entries()).map(([k, v]) => [k, typeof v === 'string' ? v : (v as File).name]));
@@ -75,6 +82,8 @@ export async function updateMap(id: string, payload: {
   sfxConfig?: Record<string, any>;
   imageTimeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night';
   transform?: { zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number };
+  imageFilters?: TimeOfDayFilterConfig;
+  skylineFilters?: TimeOfDayFilterConfig;
 }) {
   const form = new FormData();
   if (payload.name !== undefined) form.append('name', payload.name);
@@ -93,6 +102,8 @@ export async function updateMap(id: string, payload: {
   if (payload.musicConfig !== undefined) form.append('musicConfig', JSON.stringify(payload.musicConfig));
   if (payload.sfxConfig !== undefined) form.append('sfxConfig', JSON.stringify(payload.sfxConfig));
   if (payload.transform !== undefined) form.append('transform', JSON.stringify(payload.transform));
+  if (payload.imageFilters !== undefined) form.append('imageFilters', JSON.stringify(payload.imageFilters));
+  if (payload.skylineFilters !== undefined) form.append('skylineFilters', JSON.stringify(payload.skylineFilters));
   const params: Record<string, string> = {};
   if (payload.imageTimeOfDay) params['imageTimeOfDay'] = payload.imageTimeOfDay;
   if ((import.meta as any).env?.DEV) {
@@ -170,6 +181,23 @@ export async function hasMapSkylineForTod(
 ) {
   try {
     await api.get(`/maps/${id}/skyline`, { params: { size, timeOfDay, strict: '1' }, responseType: 'arraybuffer' });
+    return true;
+  } catch (e: any) {
+    if (e?.response?.status === 404) return false;
+    throw e;
+  }
+}
+
+/**
+ * Checks whether the map has any skyline source available (direct or fallback)
+ * without constraining by a specific time-of-day.
+ */
+export async function hasAnyMapSkyline(
+  id: string,
+  size: 'thumb' | 'preview' | 'full' = 'preview',
+) {
+  try {
+    await api.get(`/maps/${id}/skyline`, { params: { size }, responseType: 'arraybuffer' });
     return true;
   } catch (e: any) {
     if (e?.response?.status === 404) return false;

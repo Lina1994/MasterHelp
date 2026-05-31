@@ -39,6 +39,13 @@ export class User {
   @Column({ type: 'text', nullable: true, default: null })
   shortcutsConfig: string | null;
 
+  /**
+   * JSON-serialised maps UI preferences.
+   * Schema: `{ mapsPageScrollMode: 'list' | 'page' }`
+   */
+  @Column({ type: 'text', nullable: true, default: null })
+  mapsConfig: string | null;
+
   @OneToMany(() => Campaign, (campaign) => campaign.owner)
   ownedCampaigns: Campaign[]; // Renamed from 'campaigns' to match the relation
 }

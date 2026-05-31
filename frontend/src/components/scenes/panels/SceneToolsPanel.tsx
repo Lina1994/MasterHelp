@@ -221,7 +221,11 @@ export const SceneToolsPanel: React.FC<SceneToolsPanelProps> = ({
                     key={preset.id}
                     variant="outlined"
                     sx={{ p: 0.9, cursor: 'pointer', borderColor: 'divider' }}
-                    onClick={() => onCreateNarrativeAction(preset.patch)}
+                    onClick={() => onCreateNarrativeAction({
+                      ...preset.patch,
+                      voiceTarget: 'none',
+                      displayName: String(preset.label ?? 'Texto'),
+                    })}
                   >
                     <Stack spacing={0.5}>
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>

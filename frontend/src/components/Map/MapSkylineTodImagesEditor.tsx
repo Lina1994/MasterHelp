@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Chip, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import AuthImage from '../common/AuthImage';
 import { getMapSkylineUrlSized, hasMapSkylineForTod, uploadMapSkylineForTod } from '../../api/maps';
+import { getFilterPreset, getVisualFilterCss, TimeOfDayFilterConfig, TimeOfDayFilterValue, VISUAL_FILTER_PRESET_OPTIONS, VisualFilterPreset } from '../../utils/mapVisualFilters';
 
-type Props = { mapId: string };
+type Props = {
+  mapId: string;
+  filters?: TimeOfDayFilterConfig;
+  onFilterChange?: (timeOfDay: typeof TDS[number]['key'], value: TimeOfDayFilterValue | null) => void;
+};
 
 const TDS = [
   { key: 'dawn', label: 'Amanecer' },
@@ -16,7 +21,7 @@ const TDS = [
  * MapSkylineTodImagesEditor
  * Editor de imágenes Skyline por momento del día (dawn/morning/afternoon/night).
  */
-const MapSkylineTodImagesEditor: React.FC<Props> = ({ mapId }) => {
+const MapSkylineTodImagesEditor: React.FC<Props> = ({ mapId, filters, onFilterChange }) => {
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [cacheBuster, setCacheBuster] = useState<number>(Date.now());
   const [presence, setPresence] = useState<Record<string, boolean>>({});
@@ -51,13 +56,25 @@ const MapSkylineTodImagesEditor: React.FC<Props> = ({ mapId }) => {
                 <AuthImage
                   src={getMapSkylineUrlSized(mapId, 'full', { timeOfDay: key as any, cacheBust: cacheBuster, strict: true })}
                   alt={`${label} skyline`}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', filter: getVisualFilterCss(filters?.[key]) }}
                   onErrorIcon={<Typography variant="caption" color="text.secondary">Sin imagen</Typography>}
                 />
               </Box>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', flex: 1 }}>
                 <Typography sx={{ minWidth: 86 }}>{label}</Typography>
                 {!presence[key] && (<Chip size="small" label="Sin imagen" variant="outlined" />)}
+                <TextField
+                  select
+                  size="small"
+                  label="Filtro"
+                  value={getFilterPreset(filters?.[key]) ?? ''}
+                  onChange={(e) => onFilterChange?.(key, (e.target.value || null) as VisualFilterPreset | null)}
+                  sx={{ minWidth: 170 }}
+                >
+                  {VISUAL_FILTER_PRESET_OPTIONS.map((option) => (
+                    <MenuItem key={option.label} value={option.value}>{option.label}</MenuItem>
+                  ))}
+                </TextField>
                 <Button component="label" variant="outlined" size="small" disabled={busyKey === key}>
                   {busyKey === key ? 'Subiendo…' : 'Reemplazar'}
                   <input type="file" hidden accept="image/*" onChange={async (e) => {
@@ -72,7 +89,7 @@ const MapSkylineTodImagesEditor: React.FC<Props> = ({ mapId }) => {
         ))}
       </Grid>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-        Consejo: Si no subes alguna franja, no habrá fallback automático; considera subir al menos una imagen base.
+        Consejo: Si no subes alguna franja, no habra fallback automatico; considera subir al menos una imagen base. El filtro es opcional y se aplica por franja.
       </Typography>
     </Box>
   );

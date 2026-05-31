@@ -267,8 +267,9 @@ export interface SetNarrativeTextSceneAction extends SceneActionBase {
     backgroundOpacity?: number;
     borderRadiusPx?: number;
     paddingPx?: number;
+    durationAuto?: boolean;
     voiceConfig?: {
-      mode: 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant';
+      mode: 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant' | 'roboti' | 'orchestra';
       speed?: number;
       pitchRange?: number;
       tomodachi?: {
@@ -286,8 +287,28 @@ export interface SetNarrativeTextSceneAction extends SceneActionBase {
         transitionMul?: number;
         vowelGlitch?: number;
       };
+      roboti?: {
+        voice?: 'male' | 'female' | 'neutral';
+        pitchSemitones?: number;
+        vibratoPct?: number;
+        brightness?: number;
+        noiseAmount?: number;
+        lfRd?: number;
+        aspiration?: number;
+        transitionMs?: number;
+        spacePauseMs?: number;
+        punctuationPauseMs?: number;
+        volume?: number;
+      };
+      orchestra?: {
+        instrumentType?: 'piano' | 'marimba' | 'guitar' | 'violin' | 'flute' | 'oboe' | 'trumpet' | 'retro';
+        toneHz?: number;
+        timbreHz?: number;
+        speedMs?: number;
+        expressiveness?: number;
+      };
     };
-    voiceTarget?: 'main' | 'projection' | 'both';
+    voiceTarget?: 'main' | 'projection' | 'both' | 'none';
   };
 }
 

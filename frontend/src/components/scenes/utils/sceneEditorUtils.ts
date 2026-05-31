@@ -275,8 +275,21 @@ export function emptyPayload(type: string): Record<string, unknown> {
             transitionMul: 0.3,
             vowelGlitch: 0.28,
           },
+          roboti: {
+            voice: 'neutral',
+            pitchSemitones: 0,
+            vibratoPct: 22,
+            brightness: 0.96,
+            noiseAmount: 0.15,
+            lfRd: 1.8,
+            aspiration: 0.24,
+            transitionMs: 14,
+            spacePauseMs: 70,
+            punctuationPauseMs: 300,
+            volume: 0.78,
+          },
         },
-        voiceTarget: 'both',
+        voiceTarget: 'none',
       };
     case 'runShortcut':
       return { shortcutId: '' };

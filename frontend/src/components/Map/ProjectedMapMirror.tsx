@@ -21,6 +21,7 @@ import { getFogOfWarSettings, setFogOfWarSettings } from '../../api/campaigns/fo
 import type { FogMode } from '../../api/campaigns/fogOfWar';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../player/TimeOfDayContext';
+import { getVisualFilterCss, TimeOfDayFilterConfig } from '../../utils/mapVisualFilters';
 import { useMapTokens } from '../../hooks/useMapTokens';
 import MapTokensOverlay, { TokenEditMode } from './MapTokensOverlay';
 import { computeAllFogCells, computeClearedFogByAllies, subtractClearedFog, computeAllyRevealStrokes, computeLightRevealStrokes, computeClearedFogByLights } from '../../utils/fogHelpers';
@@ -85,6 +86,7 @@ const ProjectedMapMirror: React.FC<{
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [previewZoom, setPreviewZoom] = useState<number>(0.5);
   const [activeTransform, setActiveTransform] = useState<{ zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number } | null>(null);
+  const [activeFilters, setActiveFilters] = useState<{ imageFilters?: TimeOfDayFilterConfig; skylineFilters?: TimeOfDayFilterConfig } | null>(null);
   const [previewMode, setPreviewMode] = useState<'players' | 'skyline'>('players');
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
   const { activeCampaign } = useActiveCampaign();
@@ -373,10 +375,11 @@ const ProjectedMapMirror: React.FC<{
     let cancelled = false;
     (async () => {
       try {
-        if (!activeMapId) { setActiveTransform(null); return; }
+        if (!activeMapId) { setActiveTransform(null); setActiveFilters(null); return; }
         const maps = await listMaps({});
         const m = maps.find(x => x.id === activeMapId);
         if (!cancelled) setActiveTransform((m as any)?.transform || null);
+        if (!cancelled) setActiveFilters({ imageFilters: (m as any)?.imageFilters, skylineFilters: (m as any)?.skylineFilters });
       } catch { if (!cancelled) setActiveTransform(null); }
     })();
     return () => { cancelled = true; };
@@ -653,7 +656,7 @@ const ProjectedMapMirror: React.FC<{
                           <AuthImage
                             src={getMapImageUrlSized(mapId, 'full', { timeOfDay, cacheBust: timeOfDay })}
                             alt="Mapa proyectado"
-                            style={{ display: 'block' }}
+                            style={{ display: 'block', filter: getVisualFilterCss(activeFilters?.imageFilters?.[timeOfDay]) }}
                             onLoad={(e) => {
                               const img = e.currentTarget as HTMLImageElement;
                               const w = img.naturalWidth || img.width;
@@ -836,7 +839,7 @@ const ProjectedMapMirror: React.FC<{
                         <AuthImage
                           src={getMapSkylineUrlSized(mapId, 'full', { timeOfDay, cacheBust: timeOfDay })}
                           alt="Skyline proyectado"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', filter: getVisualFilterCss(activeFilters?.skylineFilters?.[timeOfDay]) }}
                         />
                       )
                     )}

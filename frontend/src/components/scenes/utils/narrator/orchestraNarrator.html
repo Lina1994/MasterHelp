@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orchestra Narrator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+    :root {
+      --bg: #f4f1e7;
+      --bg2: #fffaf0;
+      --ink: #1f2937;
+      --accent: #d97706;
+      --accent2: #0f766e;
+      --accent3: #7c3aed;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      color: var(--ink);
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(217, 119, 6, 0.10), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.08), transparent 28%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+    }
+
+    .panel-shadow {
+      box-shadow: 0 24px 60px -18px rgba(15, 23, 42, 0.22), 0 10px 20px -10px rgba(15, 23, 42, 0.14);
+    }
+
+    .talk-animation {
+      animation: bounce 0.15s infinite alternate ease-in-out;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-8px) scale(1.05); }
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+
+    input[type=range]:focus { outline: none; }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      cursor: pointer;
+      margin-top: -7px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.20);
+      border: 2px solid white;
+      transition: transform 0.1s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.08); }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #d1d5db;
+      border-radius: 9999px;
+    }
+
+    .instrument-card {
+      transition: all 0.2s ease;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(10px);
+    }
+
+    input:checked + .instrument-card {
+      border-color: #f59e0b;
+      background-color: #fef3c7;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px -4px rgba(0, 0, 0, 0.12);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 lg:p-8">
+  <div class="bg-white/90 rounded-3xl p-6 lg:p-8 max-w-5xl w-full panel-shadow border-4 border-white/80">
+    <header class="text-center mb-8">
+      <div class="inline-flex items-center gap-3 rounded-full px-4 py-2 bg-amber-50 border border-amber-100 mb-4">
+        <i class="fa-solid fa-music text-amber-500"></i>
+        <span class="text-xs font-black uppercase tracking-[0.25em] text-amber-700">Narrador musical</span>
+      </div>
+      <h1 class="text-4xl lg:text-5xl font-black text-amber-600 mb-2 drop-shadow-sm flex justify-center items-center gap-3">
+        <i class="fa-solid fa-symphony text-emerald-500"></i> Orchestra
+      </h1>
+      <p class="text-slate-500 font-bold text-lg">Síntesis procedural por instrumentos para lectura expresiva</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="space-y-6 flex flex-col h-full">
+        <div class="bg-amber-50 rounded-3xl p-6 flex flex-col items-center justify-center border-4 border-amber-100 relative h-56 shrink-0 shadow-inner overflow-hidden">
+          <div class="absolute inset-0 opacity-30" style="background: radial-gradient(circle at center, rgba(245,158,11,0.25), transparent 50%);"></div>
+          <div id="character" class="text-8xl transition-transform duration-100 filter drop-shadow-md relative z-10">🎼</div>
+          <div id="speaking-indicator" class="absolute top-4 right-4 flex space-x-1 opacity-0 transition-opacity duration-200 z-10">
+            <div class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></div>
+            <div class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" style="animation-delay: 0.1s"></div>
+            <div class="w-2.5 h-2.5 bg-purple-500 rounded-full animate-ping" style="animation-delay: 0.2s"></div>
+          </div>
+        </div>
+
+        <div class="flex-grow flex flex-col">
+          <label for="textInput" class="block text-sm font-black text-slate-700 mb-2 uppercase tracking-wide">Texto del narrador</label>
+          <textarea id="textInput" class="w-full flex-grow rounded-2xl border-2 border-slate-200 p-4 focus:border-amber-400 focus:ring-4 focus:ring-amber-200 transition-all resize-none text-xl font-medium shadow-sm min-h-[150px]" placeholder="Escribe aquí el diálogo. Orchestra lo interpretará con notas e instrumentos..."></textarea>
+        </div>
+
+        <div class="flex gap-4 shrink-0 flex-wrap">
+          <button id="playBtn" class="flex-1 min-w-[180px] bg-amber-500 hover:bg-amber-600 text-white font-black text-lg py-4 px-6 rounded-2xl transition-all transform hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-3">
+            <i class="fa-solid fa-play text-xl"></i> Hablar / Grabar
+          </button>
+          <button id="stopBtn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 px-6 rounded-2xl transition-all shadow-sm hidden items-center justify-center gap-2">
+            <i class="fa-solid fa-stop text-xl text-red-500"></i> Detener
+          </button>
+          <button id="downloadBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg py-4 px-6 rounded-2xl transition-all transform hover:-translate-y-1 hover:shadow-lg hidden items-center justify-center gap-3" title="Descargar Audio en WebM">
+            <i class="fa-solid fa-download text-xl"></i> Guardar Audio
+          </button>
+        </div>
+
+        <div id="recordingStatus" class="text-center text-sm font-bold text-red-500 hidden animate-pulse bg-red-50 rounded-lg py-2 border border-red-100">
+          <i class="fa-solid fa-circle text-xs mr-2"></i> Grabando audio internamente...
+        </div>
+      </div>
+
+      <div class="bg-slate-50 rounded-3xl p-6 border-4 border-slate-100 space-y-7 shadow-inner">
+        <h2 class="text-xl font-black text-slate-800 border-b-2 border-slate-200 pb-3 mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-amber-500"></i> Ajustes de audio
+        </h2>
+
+        <div>
+          <label class="block text-sm font-black text-slate-700 mb-3 uppercase tracking-wide">Instrumento base</label>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <label class="cursor-pointer group">
+              <input type="radio" name="instrumentType" value="piano" class="peer sr-only" checked />
+              <div class="instrument-card border-2 border-slate-200 rounded-xl p-3 text-center flex flex-col items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <i class="fa-solid fa-keyboard text-lg text-slate-500"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-600">Piano</span>
+              </div>
+            </label>
+            <label class="cursor-pointer group">
+              <input type="radio" name="instrumentType" value="marimba" class="peer sr-only" />
+              <div class="instrument-card border-2 border-slate-200 rounded-xl p-3 text-center flex flex-col items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <i class="fa-solid fa-grip-lines text-lg text-slate-500"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-600">Marimba</span>
+              </div>
+            </label>
+            <label class="cursor-pointer group">
+              <input type="radio" name="instrumentType" value="guitar" class="peer sr-only" />
+              <div class="instrument-card border-2 border-slate-200 rounded-xl p-3 text-center flex flex-col items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <i class="fa-solid fa-guitar text-lg text-slate-500"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-600">Guitarra</span>
+              </div>
+            </label>
+            <label class="cursor-pointer group">
+              <input type="radio" name="instrumentType" value="violin" class="peer sr-only" />
+              <div class="instrument-card border-2 border-slate-200 rounded-xl p-3 text-center flex flex-col items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <i class="fa-solid fa-music text-lg text-slate-500"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-600">Violín</span>
+              </div>
+            </label>
+            <label class="cursor-pointer group">
+              <input type="radio" name="instrumentType" value="flute" class="peer sr-only" />
+              <div class="instrument-card border-2 border-slate-200 rounded-xl p-3 text-center flex flex-col items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <i class="fa-solid fa-wind text-lg text-slate-500"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-600">Flauta</span>
+              </div>
+            </label>
+            <label class="cursor-pointer group">
+              <input type="radio" name="instrumentType" value="oboe" class="peer sr-only" />
+              <div class="instrument-card border-2 border-slate-200 rounded-xl p-3 text-center flex flex-col items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <i class="fa-solid fa-fan text-lg text-slate-500"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-600">Oboe</span>
+              </div>
+            </label>
+            <label class="cursor-pointer group">
+              <input type="radio" name="instrumentType" value="trumpet" class="peer sr-only" />
+              <div class="instrument-card border-2 border-slate-200 rounded-xl p-3 text-center flex flex-col items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <i class="fa-solid fa-bullhorn text-lg text-slate-500"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-600">Trompeta</span>
+              </div>
+            </label>
+            <label class="cursor-pointer group">
+              <input type="radio" name="instrumentType" value="retro" class="peer sr-only" />
+              <div class="instrument-card border-2 border-slate-200 rounded-xl p-3 text-center flex flex-col items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <i class="fa-solid fa-gamepad text-lg text-slate-500"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-600">8-Bit Retro</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="space-y-5 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+          <div>
+            <div class="flex justify-between mb-1 items-end">
+              <label class="text-sm font-black text-slate-700">Tono general</label>
+              <span id="pitchValue" class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">Normal</span>
+            </div>
+            <input type="range" id="pitchSlider" min="150" max="1200" value="500" class="w-full" />
+            <div class="flex justify-between text-xs font-bold text-slate-400 mt-1">
+              <span>Grave</span>
+              <span>Agudo</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1 items-end">
+              <label class="text-sm font-black text-slate-700">Timbre (filtro acústico)</label>
+              <span id="timbreValue" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-200">Equilibrado</span>
+            </div>
+            <input type="range" id="timbreSlider" min="500" max="10000" value="4000" class="w-full" />
+            <div class="flex justify-between text-xs font-bold text-slate-400 mt-1">
+              <span>Apagado</span>
+              <span>Brillante</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1 items-end">
+              <label class="text-sm font-black text-slate-700">Velocidad del habla</label>
+              <span id="speedValue" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">Media</span>
+            </div>
+            <input type="range" id="speedSlider" min="20" max="150" value="70" class="w-full" />
+            <div class="flex justify-between text-xs font-bold text-slate-400 mt-1">
+              <span>Rápido</span>
+              <span>Lento</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1 items-end">
+              <label class="text-sm font-black text-slate-700">Expresividad (saltos de nota)</label>
+              <span id="varValue" class="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-md border border-purple-200">Melódico</span>
+            </div>
+            <input type="range" id="varSlider" min="0" max="250" value="120" class="w-full" />
+            <div class="flex justify-between text-xs font-bold text-slate-400 mt-1">
+              <span>Monótono</span>
+              <span>Cantarín</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isPlaying = false;
+    let currentTimeout = null;
+    let isToneInitialized = false;
+    let dest = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioBlobUrl = null;
+    let masterFilter = null;
+    let masterVibrato = null;
+    let synths = {};
+
+    const textInput = document.getElementById('textInput');
+    const playBtn = document.getElementById('playBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const character = document.getElementById('character');
+    const speakingIndicator = document.getElementById('speaking-indicator');
+    const recordingStatus = document.getElementById('recordingStatus');
+    const pitchSlider = document.getElementById('pitchSlider');
+    const timbreSlider = document.getElementById('timbreSlider');
+    const speedSlider = document.getElementById('speedSlider');
+    const varSlider = document.getElementById('varSlider');
+    const instrumentRadios = document.getElementsByName('instrumentType');
+
+    async function initToneJS() {
+      if (isToneInitialized) return;
+      await Tone.start();
+
+      masterFilter = new Tone.Filter({ type: 'lowpass', frequency: parseInt(timbreSlider.value, 10), rolloff: -24, Q: 1 }).toDestination();
+      masterVibrato = new Tone.Vibrato({ frequency: 5, depth: 0.1 }).connect(masterFilter);
+
+      synths.piano = new Tone.Synth({ oscillator: { type: 'amtriangle' }, envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 1 } }).connect(masterFilter);
+      synths.marimba = new Tone.FMSynth({ harmonicity: 3.01, modulationIndex: 14, oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.2, sustain: 0, release: 0.2 }, modulation: { type: 'square' }, modulationEnvelope: { attack: 0.005, decay: 0.2, sustain: 0, release: 0.2 } }).connect(masterFilter);
+      synths.guitar = new Tone.PluckSynth({ attackNoise: 1.5, dampening: 4000, resonance: 0.95 }).connect(masterFilter);
+      synths.violin = new Tone.Synth({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.1, decay: 0.1, sustain: 0.8, release: 0.3 } }).connect(masterVibrato);
+      synths.flute = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.9, release: 0.2 } }).connect(masterVibrato);
+      synths.oboe = new Tone.FMSynth({ harmonicity: 2, modulationIndex: 2, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.03, decay: 0.1, sustain: 0.8, release: 0.2 }, modulation: { type: 'square' } }).connect(masterVibrato);
+      synths.trumpet = new Tone.FMSynth({ harmonicity: 1, modulationIndex: 10, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.8, release: 0.1 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.1 } }).connect(masterFilter);
+      synths.retro = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.1 } }).connect(masterFilter);
+
+      dest = Tone.context.createMediaStreamDestination();
+      Tone.Destination.connect(dest);
+      isToneInitialized = true;
+    }
+
+    pitchSlider.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      const label = document.getElementById('pitchValue');
+      if (val < 300) { label.innerText = 'Muy grave'; character.innerText = '🐻'; }
+      else if (val < 600) { label.innerText = 'Grave'; character.innerText = '🦍'; }
+      else if (val < 800) { label.innerText = 'Normal'; character.innerText = '🎼'; }
+      else if (val < 1000) { label.innerText = 'Agudo'; character.innerText = '🎻'; }
+      else { label.innerText = 'Muy agudo'; character.innerText = '🎺'; }
+    });
+
+    timbreSlider.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      const label = document.getElementById('timbreValue');
+      if (val < 2000) label.innerText = 'Muy suave / oscuro';
+      else if (val < 4000) label.innerText = 'Suave';
+      else if (val < 7000) label.innerText = 'Equilibrado';
+      else label.innerText = 'Brillante / estridente';
+      if (masterFilter) masterFilter.frequency.rampTo(val, 0.1);
+    });
+
+    speedSlider.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      const label = document.getElementById('speedValue');
+      if (val < 40) label.innerText = 'Muy rápida';
+      else if (val < 60) label.innerText = 'Rápida';
+      else if (val < 100) label.innerText = 'Media';
+      else label.innerText = 'Lenta';
+    });
+
+    varSlider.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      const label = document.getElementById('varValue');
+      if (val < 20) label.innerText = 'Robótico';
+      else if (val < 80) label.innerText = 'Poca variación';
+      else if (val < 150) label.innerText = 'Melódico';
+      else label.innerText = 'Muy cantarín';
+    });
+
+    function getFrequencyForChar(char, basePitch, variation) {
+      if (!char.match(/[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/)) return null;
+      const charCode = char.toLowerCase().charCodeAt(0);
+      const offset = (charCode % 20) - 10;
+      const freq = basePitch + (offset * (variation / 10));
+      return Math.max(freq, 50);
+    }
+
+    function speakText(text, index) {
+      if (!isPlaying) return;
+      if (index >= text.length) {
+        stopSpeaking();
+        return;
+      }
+
+      const char = text[index];
+      const basePitch = parseInt(pitchSlider.value, 10);
+      const speed = parseInt(speedSlider.value, 10);
+      const variation = parseInt(varSlider.value, 10);
+      let activeInstrument = 'piano';
+      instrumentRadios.forEach((radio) => { if (radio.checked) activeInstrument = radio.value; });
+      const synth = synths[activeInstrument];
+      const freq = getFrequencyForChar(char, basePitch, variation);
+      const noteDuration = (speed * 0.8) / 1000;
+
+      if (freq && synth) {
+        if (activeInstrument === 'guitar') synth.triggerAttack(freq, Tone.now());
+        else synth.triggerAttackRelease(freq, noteDuration, Tone.now());
+        character.classList.add('talk-animation');
+      } else {
+        character.classList.remove('talk-animation');
+      }
+
+      let nextDelay = speed;
+      if (char === '.' || char === '!' || char === '?') nextDelay = speed * 4.5;
+      else if (char === ',' || char === ':' || char === ';') nextDelay = speed * 2.5;
+      else if (char === ' ') nextDelay = speed * 1.5;
+
+      currentTimeout = setTimeout(() => speakText(text, index + 1), nextDelay);
+    }
+
+    function startRecording() {
+      if (!dest) return;
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(dest.stream);
+
+      mediaRecorder.ondataavailable = (evt) => {
+        if (evt.data.size > 0) audioChunks.push(evt.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
+        audioBlobUrl = URL.createObjectURL(audioBlob);
+        downloadBtn.classList.remove('hidden');
+        recordingStatus.classList.add('hidden');
+        downloadBtn.onclick = () => {
+          const a = document.createElement('a');
+          a.href = audioBlobUrl;
+          a.download = `Orchestra_${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        };
+      };
+
+      mediaRecorder.start();
+      recordingStatus.classList.remove('hidden');
+      downloadBtn.classList.add('hidden');
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    }
+
+    function stopSpeaking() {
+      isPlaying = false;
+      clearTimeout(currentTimeout);
+      character.classList.remove('talk-animation');
+      if (isToneInitialized) {
+        Object.values(synths).forEach((synth) => { if (synth.releaseAll) synth.releaseAll(); });
+      }
+      playBtn.classList.remove('hidden');
+      stopBtn.classList.add('hidden');
+      speakingIndicator.classList.add('opacity-0');
+      stopRecording();
+    }
+
+    playBtn.addEventListener('click', async () => {
+      const text = textInput.value.trim();
+      if (!text) {
+        textInput.classList.add('border-red-500', 'ring-red-200');
+        setTimeout(() => textInput.classList.remove('border-red-500', 'ring-red-200'), 500);
+        return;
+      }
+
+      await initToneJS();
+      masterFilter.frequency.value = parseInt(timbreSlider.value, 10);
+      clearTimeout(currentTimeout);
+      isPlaying = true;
+      playBtn.classList.add('hidden');
+      stopBtn.classList.remove('hidden');
+      speakingIndicator.classList.remove('opacity-0');
+      startRecording();
+      speakText(text, 0);
+    });
+
+    stopBtn.addEventListener('click', stopSpeaking);
+  </script>
+</body>
+</html>

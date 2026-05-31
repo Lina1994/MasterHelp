@@ -87,6 +87,7 @@ import {
 import {
   normalizeNarratorVoiceConfig,
   normalizeNarratorVoiceTarget,
+  estimateNarrationDurationMs,
   playNarration,
   type NarratorPlaybackHandle,
 } from './utils/narratorPlayback';
@@ -1263,12 +1264,19 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
       ...basePayload,
       ...(presetPatch ?? {}),
     } as Record<string, unknown>;
+    const durationMs = estimateNarrationDurationMs(
+      String(payload.text ?? ''),
+      payload.voiceConfig as Record<string, unknown> | undefined,
+    );
 
     const next: SceneActionDto = {
       id: uuidv4(),
       type: 'setNarrativeText',
       delay: 0,
-      payload,
+      payload: {
+        ...payload,
+        ...(durationMs > 0 ? { durationMs } : {}),
+      },
     };
 
     setDraft((d) => ({ ...d, actions: [...d.actions, next] }));
@@ -1283,11 +1291,18 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
     if (mode === 'save' && narrativeCanvasDraft) {
       const title = narrativeCanvasDraft.title.trim();
       const text = narrativeCanvasDraft.text;
+      const currentAction = draft.actions.find((action) => action.id === narrativeCanvasEditActionId);
+      const currentPayload = (currentAction?.payload ?? {}) as Record<string, unknown>;
+      const durationMs = estimateNarrationDurationMs(
+        text,
+        currentPayload.voiceConfig as Record<string, unknown> | undefined,
+      );
       updateActionById(narrativeCanvasEditActionId, (action) => ({
         ...action,
         payload: {
           ...(action.payload ?? {}),
           text,
+          ...(durationMs > 0 ? { durationMs } : {}),
           ...(title ? { title } : { title: '' }),
           fontSizePx: narrativeCanvasDraft.fontSizePx,
           fontColor: narrativeCanvasDraft.fontColor,
@@ -1311,7 +1326,18 @@ const SceneFormDialog: React.FC<Props> = ({ open, editing, campaignId, onClose, 
   };
 
   const handleChangeActionType = (index: number, type: string) => {
-    updateAction(index, { ...draft.actions[index], type, payload: emptyPayload(type) });
+    const currentAction = draft.actions[index];
+    const basePayload = emptyPayload(type);
+    const nextPayload = type === 'setNarrativeText'
+      ? {
+          ...basePayload,
+          durationMs: estimateNarrationDurationMs(
+            String(currentAction?.payload?.text ?? ''),
+            currentAction?.payload?.voiceConfig as Record<string, unknown> | undefined,
+          ),
+        }
+      : basePayload;
+    updateAction(index, { ...currentAction, type, payload: nextPayload });
   };
 
   const handleSave = async () => {

@@ -9,6 +9,7 @@ import type { SceneActionDto } from '../../../types/scenes';
 import type { WindowSize } from '../../../hooks/useSecondaryWindowSizes';
 import { WINDOW_ACTION_TYPES } from '../constants/actionTypes';
 import { toNonNegativeMs, toPositiveDurationMs } from './sceneEditorUtils';
+import { estimateNarrationDurationMs } from './narratorPlayback';
 
 export type { WindowSize };
 
@@ -87,6 +88,43 @@ export function normalizeOpacity(value: unknown): number {
   const n = Number(value);
   if (!Number.isFinite(n)) return 1;
   return Math.max(0, Math.min(1, n));
+}
+
+/**
+ * Resolves narration duration and whether it should keep auto-adjusting.
+ * @param text - Narration text to estimate.
+ * @param voiceConfig - Optional narration voice configuration.
+ * @param currentDurationMs - Existing duration to preserve when already long enough.
+ * @param durationAuto - Optional explicit auto/manual flag.
+ * @returns Normalized narration duration state.
+ */
+export function resolveNarrationDurationState(
+  text: string,
+  voiceConfig: unknown,
+  currentDurationMs: unknown,
+  durationAuto?: unknown,
+): { durationAuto: boolean; durationMs?: number } {
+  const normalizedCurrentDurationMs = toPositiveDurationMs(currentDurationMs);
+  const estimate = estimateNarrationDurationMs(text, voiceConfig as Record<string, unknown> | undefined);
+  const normalizedEstimate = Number.isFinite(estimate) && estimate > 0 ? Math.max(0, Math.round(estimate)) : 0;
+  const shouldAutoAdjust = durationAuto === undefined || durationAuto === null
+    ? true
+    : Boolean(durationAuto);
+
+  if (shouldAutoAdjust) {
+    if (normalizedEstimate <= 0) {
+      return { durationAuto: true, durationMs: normalizedCurrentDurationMs };
+    }
+    return {
+      durationAuto: true,
+      durationMs: normalizedEstimate,
+    };
+  }
+
+  return {
+    durationAuto: false,
+    durationMs: normalizedCurrentDurationMs ?? (normalizedEstimate > 0 ? normalizedEstimate : undefined),
+  };
 }
 
 /**
@@ -480,6 +518,9 @@ export function normalizeActionForEditor(action: SceneActionDto): SceneActionDto
 
   const payload = (base.payload ?? {}) as Record<string, unknown>;
   const placement = getPlacementFromPayload(payload);
+  const narrationDurationState = base.type === 'setNarrativeText'
+    ? resolveNarrationDurationState(String(payload.text ?? ''), payload.voiceConfig, payload.durationMs, payload.durationAuto)
+    : undefined;
   return {
     ...base,
     payload: {
@@ -489,6 +530,8 @@ export function normalizeActionForEditor(action: SceneActionDto): SceneActionDto
       widthPct: placement.widthPct,
       heightPct: placement.heightPct,
       chromaKey: getChromaFromPayload(payload),
+      ...(narrationDurationState ? { durationAuto: narrationDurationState.durationAuto } : {}),
+      ...(narrationDurationState?.durationMs !== undefined ? { durationMs: narrationDurationState.durationMs } : {}),
     },
   };
 }
@@ -694,7 +737,7 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
     const rawVoiceConfig = asRecord(payload.voiceConfig);
     const voiceModeRaw = rawVoiceConfig?.mode;
     const voiceMode =
-      voiceModeRaw === 'retroBeep' || voiceModeRaw === 'animalese' || voiceModeRaw === 'tomodachi' || voiceModeRaw === 'qwenFormant'
+      voiceModeRaw === 'retroBeep' || voiceModeRaw === 'animalese' || voiceModeRaw === 'tomodachi' || voiceModeRaw === 'qwenFormant' || voiceModeRaw === 'roboti' || voiceModeRaw === 'orchestra'
         ? voiceModeRaw
         : 'retroBeep';
     const voiceSpeedRaw = Number(rawVoiceConfig?.speed);
@@ -720,11 +763,45 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
     const qwenJitterRaw = Number(rawQwen?.jitter);
     const qwenTransitionRaw = Number(rawQwen?.transitionMul);
     const qwenVowelGlitchRaw = Number(rawQwen?.vowelGlitch);
+    const rawRoboti = asRecord(rawVoiceConfig?.roboti);
+    const robotiVoiceRaw = String(rawRoboti?.voice ?? '').trim();
+    const robotiVoice =
+      robotiVoiceRaw === 'male' || robotiVoiceRaw === 'female' || robotiVoiceRaw === 'neutral'
+        ? robotiVoiceRaw
+        : 'neutral';
+    const robotiPitchSemitonesRaw = Number(rawRoboti?.pitchSemitones);
+    const robotiVibratoPctRaw = Number(rawRoboti?.vibratoPct);
+    const robotiBrightnessRaw = Number(rawRoboti?.brightness);
+    const robotiNoiseAmountRaw = Number(rawRoboti?.noiseAmount);
+    const robotiLfRdRaw = Number(rawRoboti?.lfRd);
+    const robotiAspirationRaw = Number(rawRoboti?.aspiration);
+    const robotiTransitionMsRaw = Number(rawRoboti?.transitionMs);
+    const robotiSpacePauseMsRaw = Number(rawRoboti?.spacePauseMs);
+    const robotiPunctuationPauseMsRaw = Number(rawRoboti?.punctuationPauseMs);
+    const robotiVolumeRaw = Number(rawRoboti?.volume);
+    const rawOrchestra = asRecord(rawVoiceConfig?.orchestra);
+    const orchestraInstrumentRaw = String(rawOrchestra?.instrumentType ?? '').trim();
+    const orchestraInstrument =
+      orchestraInstrumentRaw === 'piano'
+      || orchestraInstrumentRaw === 'marimba'
+      || orchestraInstrumentRaw === 'guitar'
+      || orchestraInstrumentRaw === 'violin'
+      || orchestraInstrumentRaw === 'flute'
+      || orchestraInstrumentRaw === 'oboe'
+      || orchestraInstrumentRaw === 'trumpet'
+      || orchestraInstrumentRaw === 'retro'
+        ? orchestraInstrumentRaw
+        : 'piano';
+    const orchestraToneRaw = Number(rawOrchestra?.toneHz);
+    const orchestraTimbreRaw = Number(rawOrchestra?.timbreHz);
+    const orchestraSpeedRaw = Number(rawOrchestra?.speedMs);
+    const orchestraExpressivenessRaw = Number(rawOrchestra?.expressiveness);
     const voiceTargetRaw = String(payload.voiceTarget ?? '').trim();
     const voiceTarget =
-      voiceTargetRaw === 'main' || voiceTargetRaw === 'projection' || voiceTargetRaw === 'both'
+      voiceTargetRaw === 'main' || voiceTargetRaw === 'projection' || voiceTargetRaw === 'both' || voiceTargetRaw === 'none'
         ? voiceTargetRaw
         : 'projection';
+    const narrationDurationState = resolveNarrationDurationState(String(payload.text ?? ''), rawVoiceConfig, payload.durationMs, payload.durationAuto);
     return {
       ...base,
       payload: {
@@ -733,10 +810,8 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
         ...(optionalText(payload.title)
           ? { title: optionalText(payload.title) }
           : {}),
-        ...(payload.durationMs !== undefined &&
-        Number.isFinite(Number(payload.durationMs))
-          ? { durationMs: Number(payload.durationMs) }
-          : {}),
+        ...(narrationDurationState ? { durationAuto: narrationDurationState.durationAuto } : {}),
+        ...(narrationDurationState?.durationMs !== undefined ? { durationMs: narrationDurationState.durationMs } : {}),
         ...(timelineStartMs !== undefined ? { timelineStartMs } : {}),
         ...(richTextDoc ? { richTextDoc } : {}),
         leftPct: placement.leftPct,
@@ -866,6 +941,54 @@ export function normalizeActionForSave(action: SceneActionDto): SceneActionDto {
             vowelGlitch: Number.isFinite(qwenVowelGlitchRaw)
               ? Math.max(0, Math.min(1, qwenVowelGlitchRaw))
               : (qwenPersona === 'female' ? 0.3 : qwenPersona === 'child' ? 0.34 : qwenPersona === 'robot' ? 0.08 : 0.28),
+          },
+          roboti: {
+            voice: robotiVoice,
+            pitchSemitones: Number.isFinite(robotiPitchSemitonesRaw)
+              ? Math.max(-12, Math.min(12, robotiPitchSemitonesRaw))
+              : (robotiVoice === 'male' ? -1 : robotiVoice === 'female' ? 3 : 0),
+            vibratoPct: Number.isFinite(robotiVibratoPctRaw)
+              ? Math.max(0, Math.min(100, robotiVibratoPctRaw))
+              : (robotiVoice === 'male' ? 18 : robotiVoice === 'female' ? 28 : 22),
+            brightness: Number.isFinite(robotiBrightnessRaw)
+              ? Math.max(0.4, Math.min(2, robotiBrightnessRaw))
+              : (robotiVoice === 'male' ? 0.9 : robotiVoice === 'female' ? 1.04 : 0.96),
+            noiseAmount: Number.isFinite(robotiNoiseAmountRaw)
+              ? Math.max(0, Math.min(0.8, robotiNoiseAmountRaw))
+              : (robotiVoice === 'female' ? 0.13 : robotiVoice === 'male' ? 0.14 : 0.15),
+            lfRd: Number.isFinite(robotiLfRdRaw)
+              ? Math.max(0.7, Math.min(2.7, robotiLfRdRaw))
+              : (robotiVoice === 'female' ? 1.55 : robotiVoice === 'male' ? 1.95 : 1.8),
+            aspiration: Number.isFinite(robotiAspirationRaw)
+              ? Math.max(0, Math.min(0.8, robotiAspirationRaw))
+              : (robotiVoice === 'female' ? 0.2 : robotiVoice === 'male' ? 0.26 : 0.24),
+            transitionMs: Number.isFinite(robotiTransitionMsRaw)
+              ? Math.max(4, Math.min(30, robotiTransitionMsRaw))
+              : (robotiVoice === 'female' ? 13 : 14),
+            spacePauseMs: Number.isFinite(robotiSpacePauseMsRaw)
+              ? Math.max(20, Math.min(300, robotiSpacePauseMsRaw))
+              : 70,
+            punctuationPauseMs: Number.isFinite(robotiPunctuationPauseMsRaw)
+              ? Math.max(80, Math.min(700, robotiPunctuationPauseMsRaw))
+              : 300,
+            volume: Number.isFinite(robotiVolumeRaw)
+              ? Math.max(0.1, Math.min(1, robotiVolumeRaw))
+              : (robotiVoice === 'female' ? 0.76 : robotiVoice === 'male' ? 0.8 : 0.78),
+          },
+          orchestra: {
+            instrumentType: orchestraInstrument,
+            toneHz: Number.isFinite(orchestraToneRaw)
+              ? Math.max(150, Math.min(1200, orchestraToneRaw))
+              : 500,
+            timbreHz: Number.isFinite(orchestraTimbreRaw)
+              ? Math.max(500, Math.min(10000, orchestraTimbreRaw))
+              : 4000,
+            speedMs: Number.isFinite(orchestraSpeedRaw)
+              ? Math.max(20, Math.min(150, orchestraSpeedRaw))
+              : 70,
+            expressiveness: Number.isFinite(orchestraExpressivenessRaw)
+              ? Math.max(0, Math.min(250, orchestraExpressivenessRaw))
+              : 120,
           },
         },
         voiceTarget,

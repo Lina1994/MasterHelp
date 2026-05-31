@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Chip, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import AuthImage from '../common/AuthImage';
 import { getMapImageUrlSized, hasMapImageForTod, uploadMapImageForTod } from '../../api/maps';
+import { getFilterPreset, getVisualFilterCss, TimeOfDayFilterConfig, TimeOfDayFilterValue, VISUAL_FILTER_PRESET_OPTIONS, VisualFilterPreset } from '../../utils/mapVisualFilters';
 
 type Props = {
   mapId: string;
+  filters?: TimeOfDayFilterConfig;
+  onFilterChange?: (timeOfDay: typeof TDS[number]['key'], value: TimeOfDayFilterValue | null) => void;
 };
 
 const TDS = [
@@ -20,7 +23,7 @@ const TDS = [
  * Muestra 4 ranuras (dawn/morning/afternoon/night) con preview (variant preview)
  * y un botón para subir/actualizar cada imagen de forma independiente.
  */
-const MapTodImagesEditor: React.FC<Props> = ({ mapId }) => {
+const MapTodImagesEditor: React.FC<Props> = ({ mapId, filters, onFilterChange }) => {
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [cacheBuster, setCacheBuster] = useState<number>(Date.now());
   const [presence, setPresence] = useState<Record<string, boolean>>({});
@@ -61,15 +64,27 @@ const MapTodImagesEditor: React.FC<Props> = ({ mapId }) => {
                 <AuthImage
                   src={getMapImageUrlSized(mapId, 'full', { timeOfDay: key as any, cacheBust: cacheBuster, strict: true })}
                   alt={`${label} preview`}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', filter: getVisualFilterCss(filters?.[key]) }}
                   onErrorIcon={<Typography variant="caption" color="text.secondary">Sin imagen</Typography>}
                 />
               </Box>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', flex: 1 }}>
                 <Typography sx={{ minWidth: 86 }}>{label}</Typography>
                 {!presence[key] && (
                   <Chip size="small" label="Sin imagen" variant="outlined" />
                 )}
+                <TextField
+                  select
+                  size="small"
+                  label="Filtro"
+                  value={getFilterPreset(filters?.[key]) ?? ''}
+                  onChange={(e) => onFilterChange?.(key, (e.target.value || null) as VisualFilterPreset | null)}
+                  sx={{ minWidth: 170 }}
+                >
+                  {VISUAL_FILTER_PRESET_OPTIONS.map((option) => (
+                    <MenuItem key={option.label} value={option.value}>{option.label}</MenuItem>
+                  ))}
+                </TextField>
                 <Button
                   component="label"
                   variant="outlined"
@@ -99,7 +114,7 @@ const MapTodImagesEditor: React.FC<Props> = ({ mapId }) => {
         ))}
       </Grid>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-        Consejo: Si no subes alguna franja, se usará la imagen base como fallback.
+        Consejo: Si no subes alguna franja, se usara la imagen base como fallback. El filtro es opcional y se aplica por franja.
       </Typography>
     </Box>
   );

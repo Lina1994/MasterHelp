@@ -3,6 +3,7 @@ import { Box, Paper, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import AuthImage from '../components/common/AuthImage';
 import { getMapImageUrlSized, listMaps, listMapMarkers, MapMarkerDto } from '../api/maps';
+import { getVisualFilterCss, TimeOfDayFilterConfig } from '../utils/mapVisualFilters';
 import { useActiveMap } from '../components/Map/ActiveMapContext';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
@@ -201,6 +202,7 @@ const ProjectionMapPage: React.FC = () => {
   const rawCampaignId = React.useRef<string | null>(parseCampaignIdFromUrl()).current;
   const KEY_SIZE = 'app.projection.size';
   const [activeTransform, setActiveTransform] = useState<{ zoom?: number; rotationDeg?: number; translateXPct?: number; translateYPct?: number } | null>(null);
+  const [activeImageFilters, setActiveImageFilters] = useState<TimeOfDayFilterConfig | null>(null);
   const [gridSettings, setGridSettings] = useState<GridSettings>({ enabled: false, type: 'square', cellSize: 40, color: '#FFFFFF', opacity: 0.4, lineWidth: 1 });
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const { cells } = useFogOfWar(activeCampaign?.id, activeMapId || undefined, gridSettings);
@@ -1301,6 +1303,7 @@ const ProjectionMapPage: React.FC = () => {
         const maps = await listMaps({ campaignId: activeCampaign?.id });
         const m = maps.find(x => x.id === activeMapId);
         if (!cancelled) setActiveTransform((m as any)?.transform || null);
+        if (!cancelled) setActiveImageFilters((m as any)?.imageFilters || null);
       } catch { if (!cancelled) setActiveTransform(null); }
     })();
     return () => { cancelled = true; };
@@ -1515,6 +1518,7 @@ const ProjectionMapPage: React.FC = () => {
         const maps = await listMaps({ campaignId: activeCampaign?.id });
         const m = maps.find(x => x.id === activeMapId);
         setActiveTransform((m as any)?.transform || null);
+        setActiveImageFilters((m as any)?.imageFilters || null);
       } catch {}
     };
     try {
@@ -1552,6 +1556,7 @@ const ProjectionMapPage: React.FC = () => {
         const maps = await listMaps({ campaignId: activeCampaign?.id });
         const m = maps.find(x => x.id === activeMapId);
         const next = ((m as any)?.transform || null) as any;
+        setActiveImageFilters((m as any)?.imageFilters || null);
         setActiveTransform(prev => {
           const changed = JSON.stringify(prev) !== JSON.stringify(next);
           return changed ? next : prev;
@@ -1597,7 +1602,7 @@ const ProjectionMapPage: React.FC = () => {
               <AuthImage
                 src={getMapImageUrlSized(activeMapId, 'full', { timeOfDay, cacheBust: timeOfDay })}
                 alt="Mapa proyectado"
-                style={{ display: 'block' }}
+                style={{ display: 'block', filter: getVisualFilterCss(activeImageFilters?.[timeOfDay]) }}
                 onLoad={(e) => {
                   const img = e.currentTarget as HTMLImageElement;
                   const w = img.naturalWidth || img.width;

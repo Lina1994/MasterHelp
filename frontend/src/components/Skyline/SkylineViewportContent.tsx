@@ -24,6 +24,7 @@ import AuthImage from '../common/AuthImage';
 import { getMapSkylineUrlSized } from '../../api/maps';
 import { getCellStreamUrl } from '../../api/shops';
 import { api } from '../../apiBase';
+import { getVisualFilterCss, MapTimeOfDay, TimeOfDayFilterConfig } from '../../utils/mapVisualFilters';
 import { getActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
 import { getSkylineItems, type SkylineItemOverlay } from '../../api/campaigns/skylineItems';
 import { getSkylineOverlaySettingsPublic } from '../../api/campaigns/skylineOverlay';
@@ -201,7 +202,7 @@ interface Props {
   /** Active map ID (null → "No active map" message). */
   mapId: string | null;
   /** Time-of-day key used for skyline image variant. */
-  timeOfDay: string;
+  timeOfDay: MapTimeOfDay;
   /** Whether this map has a skyline image available (undefined = unknown). */
   hasSkyline?: boolean;
 }
@@ -223,6 +224,7 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
   const [selectedDayLabel, setSelectedDayLabel] = useState<string | null>(() => readSelectedDay(campaignId));
   const [showDayInSkyline, setShowDayInSkyline] = useState<boolean>(readShowDayInSkyline);
   const [hasDefaultSkylineImg, setHasDefaultSkylineImg] = useState(false);
+  const [skylineFilters, setSkylineFilters] = useState<TimeOfDayFilterConfig | null>(null);
   /** Tracks which overlay source was last activated; the last entry is the visible one. */
   const [overlayStack, setOverlayStack] = useState<Array<'character' | 'turnImage' | 'shopItem'>>([]);  /** Manual override written by SkylinePreviewOverlay. */
   const [forcedOverlay, setForcedOverlay] = useState<'character' | 'shopItem' | 'turnImage' | null>(() => {
@@ -252,6 +254,24 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
     hasDefaultSkylinePublic(campaignId).then(v => { if (!cancelled) setHasDefaultSkylineImg(v); }).catch(() => {});
     return () => { cancelled = true; };
   }, [campaignId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!mapId) {
+      setSkylineFilters(null);
+      return () => { cancelled = true; };
+    }
+    api.get('/maps', { params: { campaignId } })
+      .then((response) => {
+        if (cancelled) return;
+        const current = (response.data as Array<{ id: string; skylineFilters?: TimeOfDayFilterConfig }>).find((map) => map.id === mapId);
+        setSkylineFilters(current?.skylineFilters || null);
+      })
+      .catch(() => {
+        if (!cancelled) setSkylineFilters(null);
+      });
+    return () => { cancelled = true; };
+  }, [campaignId, mapId]);
 
   // ── data fetching ───────────────────────────────────────────────────────
 
@@ -516,9 +536,9 @@ const SkylineViewportContent: React.FC<Props> = ({ campaignId, mapId, timeOfDay,
       {mapId ? (
         hasSkyline !== false ? (
           <AuthImage
-            src={getMapSkylineUrlSized(mapId, 'full', { timeOfDay: timeOfDay as any, cacheBust: timeOfDay })}
+            src={getMapSkylineUrlSized(mapId, 'full', { timeOfDay, cacheBust: timeOfDay })}
             alt="Skyline"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: getVisualFilterCss(skylineFilters?.[timeOfDay]) }}
           />
         ) : hasDefaultSkylineImg ? (
           <img

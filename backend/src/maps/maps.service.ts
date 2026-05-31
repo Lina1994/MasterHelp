@@ -287,6 +287,8 @@ export class MapsService {
         'm.musicConfig',
         'm.sfxConfig',
         'm.transform',
+        'm.imageFilters',
+        'm.skylineFilters',
         'm.updatedAt',
         'm.createdAt',
         'c.id',
@@ -328,6 +330,8 @@ export class MapsService {
       musicConfig: (r as any).musicConfig,
       sfxConfig: (r as any).sfxConfig,
       transform: (r as any).transform,
+      imageFilters: (r as any).imageFilters,
+      skylineFilters: (r as any).skylineFilters,
       campaignId: r.campaign?.id,
       imageAvailable: (countByMap.get(r.id) || 0) > 0,
       skylineAvailable: (skylineCountByMap.get(r.id) || 0) > 0,
@@ -369,6 +373,8 @@ export class MapsService {
     entity.musicConfig = dto.musicConfig ?? null;
     entity.sfxConfig = dto.sfxConfig ?? null;
     (entity as any).transform = (dto as any).transform ?? null;
+    (entity as any).imageFilters = (dto as any).imageFilters ?? null;
+    (entity as any).skylineFilters = (dto as any).skylineFilters ?? null;
     if (dto.campaignId) {
       const c = await this.campaignsRepo.findOne({ where: { id: dto.campaignId } });
       if (!c) throw new NotFoundException('Campaign not found');
@@ -439,6 +445,8 @@ export class MapsService {
     if (dto.musicConfig !== undefined) (entity as any).musicConfig = dto.musicConfig ?? null;
     if (dto.sfxConfig !== undefined) (entity as any).sfxConfig = dto.sfxConfig ?? null;
     if ((dto as any).transform !== undefined) (entity as any).transform = (dto as any).transform ?? null;
+    if ((dto as any).imageFilters !== undefined) (entity as any).imageFilters = (dto as any).imageFilters ?? null;
+    if ((dto as any).skylineFilters !== undefined) (entity as any).skylineFilters = (dto as any).skylineFilters ?? null;
     if (dto.isPrepared !== undefined) (entity as any).isPrepared = dto.isPrepared;
     if ((dto as any).fogEnabledByDefault !== undefined) (entity as any).fogEnabledByDefault = (dto as any).fogEnabledByDefault;
     if (dto.campaignId !== undefined) {

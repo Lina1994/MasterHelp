@@ -8,6 +8,8 @@ export interface User {
   sidebarConfig?: string | null;
   /** JSON-serialised shortcuts shell config, or null for defaults. */
   shortcutsConfig?: string | null;
+  /** JSON-serialised maps UI config, or null for defaults. */
+  mapsConfig?: string | null;
 }
 
 export interface SpellSummary {

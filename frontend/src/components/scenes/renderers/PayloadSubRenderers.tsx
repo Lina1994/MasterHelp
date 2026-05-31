@@ -11,6 +11,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Slider,
   Stack,
   Switch,
   Tab,
@@ -22,6 +23,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NARRATIVE_FONT_OPTIONS, NARRATIVE_STYLE_PRESETS } from '../constants/narrativePresets';
 import type { SceneVideoAsset } from '../../../types/scenes';
+import { estimateNarrationDurationMs } from '../utils/narratorPlayback';
 
 export type NarrativeSegment = {
   text: string;
@@ -33,9 +35,11 @@ export type NarrativeSegment = {
   fontFamily?: string;
 };
 
-type VoiceMode = 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant';
+type VoiceMode = 'retroBeep' | 'animalese' | 'tomodachi' | 'qwenFormant' | 'roboti' | 'orchestra';
 type TomodachiSampleSet = 'classic' | 'bright' | 'soft';
 type QwenPersona = 'male' | 'female' | 'child' | 'robot';
+type RobotiVoice = 'male' | 'female' | 'neutral';
+type OrchestraInstrument = 'piano' | 'marimba' | 'guitar' | 'violin' | 'flute' | 'oboe' | 'trumpet' | 'retro';
 
 type VoiceTomodachiConfig = {
   sampleSet: TomodachiSampleSet;
@@ -54,11 +58,50 @@ type VoiceQwenConfig = {
   vowelGlitch: number;
 };
 
+type VoiceRobotiConfig = {
+  voice: RobotiVoice;
+  pitchSemitones: number;
+  vibratoPct: number;
+  brightness: number;
+  noiseAmount: number;
+  lfRd: number;
+  aspiration: number;
+  transitionMs: number;
+  spacePauseMs: number;
+  punctuationPauseMs: number;
+  volume: number;
+};
+
+type VoiceOrchestraConfig = {
+  instrumentType: OrchestraInstrument;
+  toneHz: number;
+  timbreHz: number;
+  speedMs: number;
+  expressiveness: number;
+};
+
 const QWEN_PERSONA_PRESETS: Record<QwenPersona, VoiceQwenConfig> = {
   male: { persona: 'male', pitchMul: 1, speedMs: 70, brightness: 1, volume: 0.7, jitter: 0.08, transitionMul: 0.3, vowelGlitch: 0.28 },
   female: { persona: 'female', pitchMul: 1.3, speedMs: 70, brightness: 1.3, volume: 0.68, jitter: 0.08, transitionMul: 0.34, vowelGlitch: 0.3 },
   child: { persona: 'child', pitchMul: 1.6, speedMs: 68, brightness: 1.5, volume: 0.66, jitter: 0.1, transitionMul: 0.38, vowelGlitch: 0.34 },
   robot: { persona: 'robot', pitchMul: 1, speedMs: 72, brightness: 0.6, volume: 0.72, jitter: 0.02, transitionMul: 0.14, vowelGlitch: 0.08 },
+};
+
+const ROBOTI_VOICE_PRESETS: Record<RobotiVoice, VoiceRobotiConfig> = {
+  male: { voice: 'male', pitchSemitones: -1, vibratoPct: 18, brightness: 0.9, noiseAmount: 0.14, lfRd: 1.95, aspiration: 0.26, transitionMs: 14, spacePauseMs: 70, punctuationPauseMs: 300, volume: 0.8 },
+  female: { voice: 'female', pitchSemitones: 3, vibratoPct: 28, brightness: 1.04, noiseAmount: 0.13, lfRd: 1.55, aspiration: 0.2, transitionMs: 13, spacePauseMs: 70, punctuationPauseMs: 300, volume: 0.76 },
+  neutral: { voice: 'neutral', pitchSemitones: 0, vibratoPct: 22, brightness: 0.96, noiseAmount: 0.15, lfRd: 1.8, aspiration: 0.24, transitionMs: 14, spacePauseMs: 70, punctuationPauseMs: 300, volume: 0.78 },
+};
+
+const ORCHESTRA_PRESETS: Record<OrchestraInstrument, VoiceOrchestraConfig> = {
+  piano: { instrumentType: 'piano', toneHz: 500, timbreHz: 4000, speedMs: 70, expressiveness: 120 },
+  marimba: { instrumentType: 'marimba', toneHz: 640, timbreHz: 5200, speedMs: 62, expressiveness: 95 },
+  guitar: { instrumentType: 'guitar', toneHz: 460, timbreHz: 3600, speedMs: 78, expressiveness: 140 },
+  violin: { instrumentType: 'violin', toneHz: 560, timbreHz: 5200, speedMs: 88, expressiveness: 170 },
+  flute: { instrumentType: 'flute', toneHz: 720, timbreHz: 6800, speedMs: 84, expressiveness: 110 },
+  oboe: { instrumentType: 'oboe', toneHz: 610, timbreHz: 5400, speedMs: 74, expressiveness: 130 },
+  trumpet: { instrumentType: 'trumpet', toneHz: 760, timbreHz: 7600, speedMs: 80, expressiveness: 160 },
+  retro: { instrumentType: 'retro', toneHz: 520, timbreHz: 3000, speedMs: 58, expressiveness: 75 },
 };
 
 type VoiceConfig = {
@@ -67,9 +110,34 @@ type VoiceConfig = {
   pitchRange: number;
   tomodachi: VoiceTomodachiConfig;
   qwen: VoiceQwenConfig;
+  roboti: VoiceRobotiConfig;
+  orchestra: VoiceOrchestraConfig;
 };
 
-type VoiceTarget = 'main' | 'projection' | 'both';
+type VoiceTarget = 'main' | 'projection' | 'both' | 'none';
+
+const resolveNarrativeDurationMs = (
+  text: string,
+  voiceConfig: VoiceConfig,
+  currentDurationMs: unknown,
+): number | undefined => {
+  const normalizedCurrentDurationMs = Number(currentDurationMs);
+  const currentDuration = Number.isFinite(normalizedCurrentDurationMs) && normalizedCurrentDurationMs > 0
+    ? Math.max(0, Math.round(normalizedCurrentDurationMs))
+    : undefined;
+  let estimatedDuration = 0;
+  try {
+    estimatedDuration = Math.max(0, Math.round(estimateNarrationDurationMs(text, voiceConfig)));
+  } catch (error) {
+    // Keep editor responsive if synthesis estimation receives unexpected payloads.
+    console.warn('[NarrativePayloadRenderer] duration estimation failed', error);
+    return currentDuration;
+  }
+  if (estimatedDuration <= 0) {
+    return currentDuration;
+  }
+  return estimatedDuration;
+};
 
 type BasePayloadProps = {
   str: (key: string) => string;
@@ -358,9 +426,10 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
   const selectedFont = str('fontFamily') || 'Merriweather';
   const hasCuratedFont = availableFonts.includes(selectedFont as any);
   const rawVoiceConfig = payload.voiceConfig;
+  const durationAuto = payload.durationAuto === undefined ? true : Boolean(payload.durationAuto);
   const voiceConfig: VoiceConfig = rawVoiceConfig && typeof rawVoiceConfig === 'object' && !Array.isArray(rawVoiceConfig)
     ? {
-        mode: (['retroBeep', 'animalese', 'tomodachi', 'qwenFormant'].includes(String((rawVoiceConfig as Record<string, unknown>).mode))
+        mode: (['retroBeep', 'animalese', 'tomodachi', 'qwenFormant', 'roboti', 'orchestra'].includes(String((rawVoiceConfig as Record<string, unknown>).mode))
           ? String((rawVoiceConfig as Record<string, unknown>).mode)
           : 'retroBeep') as VoiceMode,
         speed: Number.isFinite(Number((rawVoiceConfig as Record<string, unknown>).speed))
@@ -425,6 +494,77 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
               : QWEN_PERSONA_PRESETS[persona].vowelGlitch,
           };
         })(),
+        roboti: (() => {
+          const rawRoboti = (rawVoiceConfig as Record<string, unknown>).roboti;
+          if (!rawRoboti || typeof rawRoboti !== 'object' || Array.isArray(rawRoboti)) {
+            return { ...ROBOTI_VOICE_PRESETS.neutral };
+          }
+          const body = rawRoboti as Record<string, unknown>;
+          const voice = body.voice === 'male' || body.voice === 'female' || body.voice === 'neutral'
+            ? body.voice
+            : 'neutral';
+          return {
+            voice,
+            pitchSemitones: Number.isFinite(Number(body.pitchSemitones))
+              ? Math.max(-12, Math.min(12, Number(body.pitchSemitones)))
+              : ROBOTI_VOICE_PRESETS[voice].pitchSemitones,
+            vibratoPct: Number.isFinite(Number(body.vibratoPct))
+              ? Math.max(0, Math.min(100, Number(body.vibratoPct)))
+              : ROBOTI_VOICE_PRESETS[voice].vibratoPct,
+            brightness: Number.isFinite(Number(body.brightness))
+              ? Math.max(0.4, Math.min(2, Number(body.brightness)))
+              : ROBOTI_VOICE_PRESETS[voice].brightness,
+            noiseAmount: Number.isFinite(Number(body.noiseAmount))
+              ? Math.max(0, Math.min(0.8, Number(body.noiseAmount)))
+              : ROBOTI_VOICE_PRESETS[voice].noiseAmount,
+            lfRd: Number.isFinite(Number(body.lfRd))
+              ? Math.max(0.7, Math.min(2.7, Number(body.lfRd)))
+              : ROBOTI_VOICE_PRESETS[voice].lfRd,
+            aspiration: Number.isFinite(Number(body.aspiration))
+              ? Math.max(0, Math.min(0.8, Number(body.aspiration)))
+              : ROBOTI_VOICE_PRESETS[voice].aspiration,
+            transitionMs: Number.isFinite(Number(body.transitionMs))
+              ? Math.max(4, Math.min(30, Number(body.transitionMs)))
+              : ROBOTI_VOICE_PRESETS[voice].transitionMs,
+            spacePauseMs: Number.isFinite(Number(body.spacePauseMs))
+              ? Math.max(20, Math.min(300, Number(body.spacePauseMs)))
+              : ROBOTI_VOICE_PRESETS[voice].spacePauseMs,
+            punctuationPauseMs: Number.isFinite(Number(body.punctuationPauseMs))
+              ? Math.max(80, Math.min(700, Number(body.punctuationPauseMs)))
+              : ROBOTI_VOICE_PRESETS[voice].punctuationPauseMs,
+            volume: Number.isFinite(Number(body.volume))
+              ? Math.max(0.1, Math.min(1, Number(body.volume)))
+              : ROBOTI_VOICE_PRESETS[voice].volume,
+          };
+        })(),
+        orchestra: (() => {
+          const rawOrchestra = (rawVoiceConfig as Record<string, unknown>).orchestra;
+          if (!rawOrchestra || typeof rawOrchestra !== 'object' || Array.isArray(rawOrchestra)) {
+            return { ...ORCHESTRA_PRESETS.piano };
+          }
+          const body = rawOrchestra as Record<string, unknown>;
+          const instrumentType =
+            body.instrumentType === 'piano' || body.instrumentType === 'marimba' || body.instrumentType === 'guitar'
+            || body.instrumentType === 'violin' || body.instrumentType === 'flute' || body.instrumentType === 'oboe'
+            || body.instrumentType === 'trumpet' || body.instrumentType === 'retro'
+              ? body.instrumentType
+              : 'piano';
+          return {
+            instrumentType,
+            toneHz: Number.isFinite(Number(body.toneHz))
+              ? Math.max(150, Math.min(1200, Number(body.toneHz)))
+              : ORCHESTRA_PRESETS[instrumentType].toneHz,
+            timbreHz: Number.isFinite(Number(body.timbreHz))
+              ? Math.max(500, Math.min(10000, Number(body.timbreHz)))
+              : ORCHESTRA_PRESETS[instrumentType].timbreHz,
+            speedMs: Number.isFinite(Number(body.speedMs))
+              ? Math.max(20, Math.min(150, Number(body.speedMs)))
+              : ORCHESTRA_PRESETS[instrumentType].speedMs,
+            expressiveness: Number.isFinite(Number(body.expressiveness))
+              ? Math.max(0, Math.min(250, Number(body.expressiveness)))
+              : ORCHESTRA_PRESETS[instrumentType].expressiveness,
+          };
+        })(),
       }
     : {
         mode: 'retroBeep',
@@ -438,16 +578,56 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
         qwen: {
           ...QWEN_PERSONA_PRESETS.male,
         },
+        roboti: {
+          ...ROBOTI_VOICE_PRESETS.neutral,
+        },
+        orchestra: {
+          ...ORCHESTRA_PRESETS.piano,
+        },
       };
 
   const setVoiceConfig = (patch: Partial<VoiceConfig>) => {
-    setPayload('voiceConfig', {
+    const nextVoiceConfig = {
       ...voiceConfig,
       ...patch,
-    });
+    };
+    const payloadPatch: Record<string, unknown> = { voiceConfig: nextVoiceConfig };
+    if (durationAuto) {
+      const nextDurationMs = resolveNarrativeDurationMs(String(payload.text ?? ''), nextVoiceConfig, payload.durationMs);
+      if (nextDurationMs !== undefined) {
+        payloadPatch.durationMs = nextDurationMs;
+      }
+    }
+    setPayloadPatch(payloadPatch);
+  };
+  const setNarrativeText = (nextText: string) => {
+    const payloadPatch: Record<string, unknown> = { text: nextText };
+    if (durationAuto) {
+      const nextDurationMs = resolveNarrativeDurationMs(nextText, voiceConfig, payload.durationMs);
+      if (nextDurationMs !== undefined) {
+        payloadPatch.durationMs = nextDurationMs;
+      }
+    }
+    setPayloadPatch(payloadPatch);
+  };
+  const setNarrativeDurationMode = (enabled: boolean) => {
+    const payloadPatch: Record<string, unknown> = { durationAuto: enabled };
+    if (enabled) {
+      const nextDurationMs = resolveNarrativeDurationMs(String(payload.text ?? ''), voiceConfig, payload.durationMs);
+      if (nextDurationMs !== undefined) {
+        payloadPatch.durationMs = nextDurationMs;
+      }
+    }
+    setPayloadPatch(payloadPatch);
+  };
+  const applyNarrativeDurationEstimate = () => {
+    const nextDurationMs = resolveNarrativeDurationMs(String(payload.text ?? ''), voiceConfig, payload.durationMs);
+    if (nextDurationMs !== undefined) {
+      setPayload('durationMs', nextDurationMs);
+    }
   };
   const voiceTargetRaw = String(payload.voiceTarget ?? '').trim();
-  const voiceTarget: VoiceTarget = voiceTargetRaw === 'main' || voiceTargetRaw === 'projection' || voiceTargetRaw === 'both'
+  const voiceTarget: VoiceTarget = voiceTargetRaw === 'main' || voiceTargetRaw === 'projection' || voiceTargetRaw === 'both' || voiceTargetRaw === 'none'
     ? voiceTargetRaw
     : 'both';
   const pitchLabel = voiceConfig.mode === 'tomodachi' ? 'Tono base' : 'Rango de pitch';
@@ -507,17 +687,45 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
               />
             </Box>
             <Box sx={{ gridColumn: 'span 5' }}>
-              <TextField
-                label="Duracion (ms)"
-                placeholder="0 = manual"
-                type="number"
-                size="small"
-                value={num('durationMs', 0)}
-                inputProps={{ min: 0 }}
-                onChange={(e) => setPayload('durationMs', Number(e.target.value))}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
+              <Stack spacing={0.6}>
+                <TextField
+                  label="Duracion (ms)"
+                  placeholder={durationAuto ? 'Auto' : 'Manual'}
+                  type="number"
+                  size="small"
+                  value={num('durationMs', 0)}
+                  inputProps={{ min: 0 }}
+                  onChange={(e) => {
+                    setPayloadPatch({
+                      durationMs: Number(e.target.value),
+                      durationAuto: false,
+                    });
+                  }}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={durationAuto}
+                      onChange={(_, checked) => setNarrativeDurationMode(checked)}
+                      size="small"
+                    />
+                  )}
+                  label={durationAuto ? 'Ajuste automatico' : 'Duracion manual'}
+                  sx={{ m: 0, '& .MuiFormControlLabel-label': { fontSize: '0.7rem' } }}
+                />
+                {!durationAuto ? (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={applyNarrativeDurationEstimate}
+                    sx={{ textTransform: 'none', py: 0.35, fontSize: '0.68rem', alignSelf: 'flex-start' }}
+                  >
+                    Ajustar ahora
+                  </Button>
+                ) : null}
+              </Stack>
             </Box>
           </Box>
 
@@ -529,7 +737,7 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
                 rows={3}
                 size="small"
                 value={str('text')}
-                onChange={(e) => setPayload('text', e.target.value)}
+                onChange={(e) => setNarrativeText(e.target.value)}
                 fullWidth
               />
               <Button
@@ -553,7 +761,7 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
                   onClick={() => {
                     if (confirm('¿Volver a texto plano? Perderas los formatos individuales de color/tamano de cada palabra.')) {
                       const combined = currentSegments.map((s) => s.text).join(' ');
-                      setPayload('text', combined);
+                      setNarrativeText(combined);
                       setPayload('richTextDoc', undefined);
                       setShowSegmentEditor(false);
                     }
@@ -1042,6 +1250,7 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
               <MenuItem value="main">Principal</MenuItem>
               <MenuItem value="projection">Proyeccion</MenuItem>
               <MenuItem value="both">Ambas</MenuItem>
+              <MenuItem value="none">Sin narrador</MenuItem>
             </Select>
           </FormControl>
           <FormControl size="small" fullWidth>
@@ -1053,11 +1262,13 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
             >
               <MenuItem value="retroBeep">Retro Beeps</MenuItem>
               <MenuItem value="animalese">Animalese</MenuItem>
-              <MenuItem value="tomodachi">Tomodachi Style</MenuItem>
-              <MenuItem value="qwenFormant">Qwen Formant</MenuItem>
+              <MenuItem value="tomodachi">Bibepo</MenuItem>
+              <MenuItem value="qwenFormant">Queque</MenuItem>
+              <MenuItem value="orchestra">Orchestra</MenuItem>
+              <MenuItem value="roboti">Roboti</MenuItem>
             </Select>
           </FormControl>
-          {voiceConfig.mode !== 'qwenFormant' && (
+          {voiceConfig.mode !== 'qwenFormant' && voiceConfig.mode !== 'roboti' && voiceConfig.mode !== 'orchestra' && (
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
               <Box sx={{ gridColumn: 'span 6' }}>
                 <TextField
@@ -1082,6 +1293,156 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
                 />
               </Box>
             </Box>
+          )}
+          {voiceConfig.mode === 'orchestra' && (
+            <>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Instrumento base</InputLabel>
+                <Select
+                  label="Instrumento base"
+                  value={voiceConfig.orchestra.instrumentType}
+                  onChange={(event) => {
+                    const instrument = event.target.value as OrchestraInstrument;
+                    setVoiceConfig({ orchestra: { ...ORCHESTRA_PRESETS[instrument] } });
+                  }}
+                >
+                  <MenuItem value="piano">Piano</MenuItem>
+                  <MenuItem value="marimba">Marimba</MenuItem>
+                  <MenuItem value="guitar">Guitarra</MenuItem>
+                  <MenuItem value="violin">Violin</MenuItem>
+                  <MenuItem value="flute">Flauta</MenuItem>
+                  <MenuItem value="oboe">Oboe</MenuItem>
+                  <MenuItem value="trumpet">Trompeta</MenuItem>
+                  <MenuItem value="retro">8-Bit Retro</MenuItem>
+                </Select>
+              </FormControl>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                <Box sx={{ gridColumn: 'span 12' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Tono General
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Slider
+                      size="small"
+                      min={150}
+                      max={1200}
+                      step={1}
+                      value={voiceConfig.orchestra.toneHz}
+                      onChange={(_, value) => setVoiceConfig({ orchestra: { ...voiceConfig.orchestra, toneHz: Array.isArray(value) ? value[0] : value } })}
+                      valueLabelDisplay="auto"
+                      valueLabelFormat={(value) => `${Math.round(value)} Hz`}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="Hz"
+                      type="number"
+                      size="small"
+                      value={voiceConfig.orchestra.toneHz}
+                      inputProps={{ min: 150, max: 1200, step: 1 }}
+                      onChange={(event) => {
+                        const next = Number(event.target.value);
+                        if (!Number.isFinite(next)) return;
+                        setVoiceConfig({ orchestra: { ...voiceConfig.orchestra, toneHz: Math.max(150, Math.min(1200, next)) } });
+                      }}
+                      sx={{ width: 110 }}
+                    />
+                  </Stack>
+                </Box>
+                <Box sx={{ gridColumn: 'span 12' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Timbre (Filtro Acustico)
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Slider
+                      size="small"
+                      min={500}
+                      max={10000}
+                      step={10}
+                      value={voiceConfig.orchestra.timbreHz}
+                      onChange={(_, value) => setVoiceConfig({ orchestra: { ...voiceConfig.orchestra, timbreHz: Array.isArray(value) ? value[0] : value } })}
+                      valueLabelDisplay="auto"
+                      valueLabelFormat={(value) => `${Math.round(value)} Hz`}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="Hz"
+                      type="number"
+                      size="small"
+                      value={voiceConfig.orchestra.timbreHz}
+                      inputProps={{ min: 500, max: 10000, step: 10 }}
+                      onChange={(event) => {
+                        const next = Number(event.target.value);
+                        if (!Number.isFinite(next)) return;
+                        setVoiceConfig({ orchestra: { ...voiceConfig.orchestra, timbreHz: Math.max(500, Math.min(10000, next)) } });
+                      }}
+                      sx={{ width: 110 }}
+                    />
+                  </Stack>
+                </Box>
+                <Box sx={{ gridColumn: 'span 12' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Velocidad del Habla
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Slider
+                      size="small"
+                      min={20}
+                      max={150}
+                      step={1}
+                      value={voiceConfig.orchestra.speedMs}
+                      onChange={(_, value) => setVoiceConfig({ orchestra: { ...voiceConfig.orchestra, speedMs: Array.isArray(value) ? value[0] : value } })}
+                      valueLabelDisplay="auto"
+                      valueLabelFormat={(value) => `${Math.round(value)} ms`}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="ms"
+                      type="number"
+                      size="small"
+                      value={voiceConfig.orchestra.speedMs}
+                      inputProps={{ min: 20, max: 150, step: 1 }}
+                      onChange={(event) => {
+                        const next = Number(event.target.value);
+                        if (!Number.isFinite(next)) return;
+                        setVoiceConfig({ orchestra: { ...voiceConfig.orchestra, speedMs: Math.max(20, Math.min(150, next)) } });
+                      }}
+                      sx={{ width: 110 }}
+                    />
+                  </Stack>
+                </Box>
+                <Box sx={{ gridColumn: 'span 12' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Expresividad (Saltos de notas)
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Slider
+                      size="small"
+                      min={0}
+                      max={250}
+                      step={1}
+                      value={voiceConfig.orchestra.expressiveness}
+                      onChange={(_, value) => setVoiceConfig({ orchestra: { ...voiceConfig.orchestra, expressiveness: Array.isArray(value) ? value[0] : value } })}
+                      valueLabelDisplay="auto"
+                      valueLabelFormat={(value) => `${Math.round(value)}`}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="Nivel"
+                      type="number"
+                      size="small"
+                      value={voiceConfig.orchestra.expressiveness}
+                      inputProps={{ min: 0, max: 250, step: 1 }}
+                      onChange={(event) => {
+                        const next = Number(event.target.value);
+                        if (!Number.isFinite(next)) return;
+                        setVoiceConfig({ orchestra: { ...voiceConfig.orchestra, expressiveness: Math.max(0, Math.min(250, next)) } });
+                      }}
+                      sx={{ width: 110 }}
+                    />
+                  </Stack>
+                </Box>
+              </Box>
+            </>
           )}
           {voiceConfig.mode === 'tomodachi' && (
             <>
@@ -1258,9 +1619,179 @@ export const NarrativePayloadRenderer: React.FC<NarrativePayloadRendererProps> =
               </Button>
             </>
           )}
-          <Alert severity="info" sx={{ py: 0 }}>
-            En Qwen Formant puedes crear variantes ajustando tono base, velocidad en ms, brillo, volumen, jitter y transicion, y volver al preset del perfil cuando quieras.
-          </Alert>
+          {voiceConfig.mode === 'roboti' && (
+            <>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Perfil Roboti</InputLabel>
+                <Select
+                  label="Perfil Roboti"
+                  value={voiceConfig.roboti.voice}
+                  onChange={(event) => {
+                    const voice = event.target.value as RobotiVoice;
+                    setVoiceConfig({ roboti: { ...ROBOTI_VOICE_PRESETS[voice] } });
+                  }}
+                >
+                  <MenuItem value="male">Masculina</MenuItem>
+                  <MenuItem value="female">Femenina</MenuItem>
+                  <MenuItem value="neutral">Neutra</MenuItem>
+                </Select>
+              </FormControl>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
+                <Box sx={{ gridColumn: 'span 12' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Velocidad de lectura
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Slider
+                      size="small"
+                      min={0.2}
+                      max={2}
+                      step={0.05}
+                      value={voiceConfig.speed}
+                      onChange={(_, value) => setVoiceConfig({ speed: Array.isArray(value) ? value[0] : value })}
+                      valueLabelDisplay="auto"
+                      valueLabelFormat={(value) => `${value.toFixed(2)}x`}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="x"
+                      type="number"
+                      size="small"
+                      value={voiceConfig.speed}
+                      inputProps={{ min: 0.2, max: 2, step: 0.05 }}
+                      onChange={(event) => {
+                        const next = Number(event.target.value);
+                        if (!Number.isFinite(next)) return;
+                        setVoiceConfig({ speed: Math.max(0.2, Math.min(2, next)) });
+                      }}
+                      sx={{ width: 110 }}
+                    />
+                  </Stack>
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Tono base (semitonos)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.pitchSemitones}
+                    inputProps={{ min: -12, max: 12, step: 1 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, pitchSemitones: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Vibrato (%)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.vibratoPct}
+                    inputProps={{ min: 0, max: 100, step: 1 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, vibratoPct: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Brillo"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.brightness}
+                    inputProps={{ min: 0.4, max: 2, step: 0.05 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, brightness: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Ruido"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.noiseAmount}
+                    inputProps={{ min: 0, max: 0.8, step: 0.01 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, noiseAmount: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="LF Rd"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.lfRd}
+                    inputProps={{ min: 0.7, max: 2.7, step: 0.05 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, lfRd: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Aspiracion"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.aspiration}
+                    inputProps={{ min: 0, max: 0.8, step: 0.01 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, aspiration: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Transicion (ms)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.transitionMs}
+                    inputProps={{ min: 4, max: 30, step: 1 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, transitionMs: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Volumen"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.volume}
+                    inputProps={{ min: 0.1, max: 1, step: 0.05 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, volume: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Pausa por espacio (ms)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.spacePauseMs}
+                    inputProps={{ min: 20, max: 300, step: 5 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, spacePauseMs: Number(event.target.value) } })}
+                  />
+                </Box>
+                <Box sx={{ gridColumn: 'span 6' }}>
+                  <TextField
+                    label="Pausa por puntuacion (ms)"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={voiceConfig.roboti.punctuationPauseMs}
+                    inputProps={{ min: 80, max: 700, step: 10 }}
+                    onChange={(event) => setVoiceConfig({ roboti: { ...voiceConfig.roboti, punctuationPauseMs: Number(event.target.value) } })}
+                  />
+                </Box>
+              </Box>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  const preset = ROBOTI_VOICE_PRESETS[voiceConfig.roboti.voice];
+                  setVoiceConfig({ roboti: { ...preset } });
+                }}
+                sx={{ textTransform: 'none' }}
+              >
+                Restaurar valores del perfil
+              </Button>
+            </>
+          )}
         </Stack>
       )}
     </Stack>
