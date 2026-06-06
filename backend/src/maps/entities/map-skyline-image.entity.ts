@@ -23,8 +23,21 @@ export class MapSkylineImage {
   @Column('int')
   size: number;
 
-  @Column({ type: 'blob' })
-  data: Buffer;
+  @Column({ type: 'blob', nullable: true })
+  data: Buffer | null;
+
+  @Index()
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  storageKind?: 'db' | 'fs' | null;
+
+  @Column({ type: 'text', nullable: true })
+  relativePath?: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  originalFileName?: string | null;
+
+  @Column({ type: 'datetime', nullable: true })
+  migratedAt?: Date | null;
 
   @ManyToOne(() => MapEntity, (map) => map.skylines, { onDelete: 'CASCADE' })
   map: MapEntity;

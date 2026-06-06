@@ -14,10 +14,19 @@ import { MapSkylineImage } from './entities/map-skyline-image.entity';
 import { MapFogState, OrganicFogStroke } from './entities/map-fog-state.entity';
 import { MapTokensState, MapTokenItem } from './entities/map-tokens-state.entity';
 import { MapElementsState, MapElement } from './entities/map-elements-state.entity';
-import sharp from 'sharp';
+import { promises as fs } from 'node:fs';
+import { dirname, join } from 'node:path';
+
+const sharpLib = require('sharp');
 
 @Injectable()
 export class MapsService {
+  private readonly thumbGenerationLocks = new Map<string, Promise<void>>();
+
+  private getSharpInstance(): any {
+    return sharpLib;
+  }
+
   constructor(
     @InjectRepository(MapEntity) private readonly repo: Repository<MapEntity>,
     @InjectRepository(MapImage) private readonly imagesRepo: Repository<MapImage>,
@@ -28,6 +37,952 @@ export class MapsService {
     @InjectRepository(Campaign) private readonly campaignsRepo: Repository<Campaign>,
     @InjectRepository(MapMarker) private readonly markersRepo: Repository<MapMarker>,
   ) {}
+
+  private getDbPath(): string {
+    return process.env.DB_DATABASE || join(process.cwd(), 'data', 'dm_app.db');
+  }
+
+  private getDataDir(): string {
+    return join(this.getDbPath(), '..');
+  }
+
+  private getMediaRootDir(): string {
+    return join(this.getDataDir(), 'media');
+  }
+
+  private getMapMediaDir(folderName: string): string {
+    return join(this.getMediaRootDir(), 'maps', folderName);
+  }
+
+  private slugifyFolderName(name: string): string {
+    const base = (name || 'map')
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 64);
+    return base || 'map';
+  }
+
+  private buildMediaFolderName(mapId: string, mapName: string): string {
+    return `${this.slugifyFolderName(mapName)}-${mapId}`;
+  }
+
+  private extractMediaFolderFromRelativePath(relativePath?: string | null): string | null {
+    if (!relativePath) return null;
+    const normalized = relativePath.replace(/\\/g, '/');
+    const parts = normalized.split('/').filter(Boolean);
+    if (parts.length < 3) return null;
+    if (parts[0] !== 'maps') return null;
+    return parts[1] || null;
+  }
+
+  private async resolveExistingFolderFromMapAssets(mapId: string): Promise<string | null> {
+    const [mapRows, skylineRows] = await Promise.all([
+      this.imagesRepo.createQueryBuilder('img')
+        .select('img.relativePath', 'relativePath')
+        .where('img.mapId = :mapId', { mapId })
+        .andWhere('img.relativePath IS NOT NULL')
+        .orderBy('img.migratedAt', 'DESC')
+        .addOrderBy('img.id', 'DESC')
+        .limit(1)
+        .getRawMany<{ relativePath: string | null }>(),
+      this.skylinesRepo.createQueryBuilder('img')
+        .select('img.relativePath', 'relativePath')
+        .where('img.mapId = :mapId', { mapId })
+        .andWhere('img.relativePath IS NOT NULL')
+        .orderBy('img.migratedAt', 'DESC')
+        .addOrderBy('img.id', 'DESC')
+        .limit(1)
+        .getRawMany<{ relativePath: string | null }>(),
+    ]);
+
+    const folders = [
+      this.extractMediaFolderFromRelativePath(mapRows[0]?.relativePath ?? null),
+      this.extractMediaFolderFromRelativePath(skylineRows[0]?.relativePath ?? null),
+    ].filter((v): v is string => !!v);
+
+    return folders.length > 0 ? folders[0] : null;
+  }
+
+  private async resolveMediaFolderName(mapId: string): Promise<string> {
+    const map = await this.repo.findOne({ where: { id: mapId } });
+    if (!map) throw new NotFoundException('Map not found');
+    if (map.mediaFolder) return map.mediaFolder;
+
+    const existingFolder = await this.resolveExistingFolderFromMapAssets(map.id);
+    if (existingFolder) {
+      await this.repo.createQueryBuilder()
+        .update(MapEntity)
+        .set({ mediaFolder: existingFolder } as any)
+        .where('id = :id', { id: map.id })
+        .andWhere('mediaFolder IS NULL')
+        .execute();
+      return existingFolder;
+    }
+
+    const generated = this.buildMediaFolderName(map.id, map.name || 'map');
+    await this.repo.createQueryBuilder()
+      .update(MapEntity)
+      .set({ mediaFolder: generated } as any)
+      .where('id = :id', { id: map.id })
+      .andWhere('mediaFolder IS NULL')
+      .execute();
+
+    return generated;
+  }
+
+  private async ensureDir(dirPath: string): Promise<void> {
+    await fs.mkdir(dirPath, { recursive: true });
+  }
+
+  private sanitizePathSegment(value: string): string {
+    return value.replace(/[^a-zA-Z0-9_-]/g, '_');
+  }
+
+  private extensionFromMime(mimeType: string): string {
+    if (mimeType === 'image/jpeg') return '.jpg';
+    if (mimeType === 'image/png') return '.png';
+    if (mimeType === 'image/webp') return '.webp';
+    if (mimeType === 'image/gif') return '.gif';
+    if (mimeType === 'image/avif') return '.avif';
+    return '.bin';
+  }
+
+  private buildVariantFileName(
+    kind: 'map' | 'skyline',
+    variant: 'thumb' | 'preview' | 'full',
+    timeOfDay: 'dawn' | 'morning' | 'afternoon' | 'night' | null | undefined,
+    mimeType: string,
+  ): string {
+    const safeTod = timeOfDay ? this.sanitizePathSegment(timeOfDay) : 'base';
+    const ext = this.extensionFromMime(mimeType);
+    return `${kind}-${variant}-${safeTod}${ext}`;
+  }
+
+  private async writeMapMediaFile(
+    mapId: string,
+    kind: 'map' | 'skyline',
+    variant: 'thumb' | 'preview' | 'full',
+    timeOfDay: 'dawn' | 'morning' | 'afternoon' | 'night' | null | undefined,
+    mimeType: string,
+    buffer: Buffer,
+    mediaFolder?: string,
+  ): Promise<{ relativePath: string; size: number }> {
+    const effectiveFolder = mediaFolder || await this.resolveMediaFolderName(mapId);
+    const mapDir = this.getMapMediaDir(effectiveFolder);
+    await this.ensureDir(mapDir);
+    const fileName = this.buildVariantFileName(kind, variant, timeOfDay, mimeType);
+    const absolutePath = join(mapDir, fileName);
+    await fs.writeFile(absolutePath, buffer);
+    const relativePath = join('maps', effectiveFolder, fileName).replace(/\\/g, '/');
+    return { relativePath, size: buffer.length };
+  }
+
+  private async readFsBuffer(relativePath: string): Promise<Buffer | null> {
+    const mediaRoot = this.getMediaRootDir();
+    const normalizedRelative = relativePath.replace(/\\/g, '/');
+    const safeSegments = normalizedRelative.split('/').filter(Boolean);
+    if (safeSegments.some((segment) => segment === '.' || segment === '..')) {
+      return null;
+    }
+    const absolutePath = join(mediaRoot, ...safeSegments);
+    try {
+      return await fs.readFile(absolutePath);
+    } catch {
+      return null;
+    }
+  }
+
+  private async migrateMapImageToFs(img: MapImage, mapId: string): Promise<void> {
+    if (img.relativePath || !img.data) return;
+    const saved = await this.writeMapMediaFile(
+      mapId,
+      'map',
+      img.variant,
+      img.timeOfDay ?? null,
+      img.mimeType,
+      img.data,
+    );
+    img.storageKind = 'fs';
+    img.relativePath = saved.relativePath;
+    img.size = saved.size;
+    img.migratedAt = new Date();
+    await this.imagesRepo.save(img);
+  }
+
+  private async migrateSkylineImageToFs(img: MapSkylineImage, mapId: string): Promise<void> {
+    if (img.relativePath || !img.data) return;
+    const saved = await this.writeMapMediaFile(
+      mapId,
+      'skyline',
+      img.variant,
+      img.timeOfDay ?? null,
+      img.mimeType,
+      img.data,
+    );
+    img.storageKind = 'fs';
+    img.relativePath = saved.relativePath;
+    img.size = saved.size;
+    img.migratedAt = new Date();
+    await this.skylinesRepo.save(img);
+  }
+
+  private async getMapImageBuffer(img: MapImage, mapId: string): Promise<Buffer | null> {
+    if (img.relativePath) {
+      const fsBuffer = await this.readFsBuffer(img.relativePath);
+      if (fsBuffer) return fsBuffer;
+    }
+    if (img.data) {
+      await this.migrateMapImageToFs(img, mapId);
+      return img.data;
+    }
+    return null;
+  }
+
+  private async getSkylineImageBuffer(img: MapSkylineImage, mapId: string): Promise<Buffer | null> {
+    if (img.relativePath) {
+      const fsBuffer = await this.readFsBuffer(img.relativePath);
+      if (fsBuffer) return fsBuffer;
+    }
+    if (img.data) {
+      await this.migrateSkylineImageToFs(img, mapId);
+      return img.data;
+    }
+    return null;
+  }
+
+  private async persistMapVariantsToFs(mapId: string, variants: MapImage[], mediaFolder?: string): Promise<void> {
+    const effectiveFolder = mediaFolder || await this.resolveMediaFolderName(mapId);
+    for (const variant of variants) {
+      if (!variant.data) continue;
+      const saved = await this.writeMapMediaFile(
+        mapId,
+        'map',
+        variant.variant,
+        variant.timeOfDay ?? null,
+        variant.mimeType,
+        variant.data,
+        effectiveFolder,
+      );
+      variant.storageKind = 'fs';
+      variant.relativePath = saved.relativePath;
+      variant.size = saved.size;
+      variant.migratedAt = new Date();
+    }
+    await this.imagesRepo.save(variants);
+  }
+
+  private async persistSkylineVariantsToFs(mapId: string, variants: MapSkylineImage[], mediaFolder?: string): Promise<void> {
+    const effectiveFolder = mediaFolder || await this.resolveMediaFolderName(mapId);
+    for (const variant of variants) {
+      if (!variant.data) continue;
+      const saved = await this.writeMapMediaFile(
+        mapId,
+        'skyline',
+        variant.variant,
+        variant.timeOfDay ?? null,
+        variant.mimeType,
+        variant.data,
+        effectiveFolder,
+      );
+      variant.storageKind = 'fs';
+      variant.relativePath = saved.relativePath;
+      variant.size = saved.size;
+      variant.migratedAt = new Date();
+    }
+    await this.skylinesRepo.save(variants);
+  }
+
+  private async deleteMapMediaDirectory(mapId: string, mediaFolder?: string | null): Promise<void> {
+    const targets = new Set<string>([mapId]);
+    if (mediaFolder) targets.add(mediaFolder);
+    for (const folderName of targets) {
+      const mapDir = this.getMapMediaDir(folderName);
+      try {
+        await fs.rmdir(mapDir);
+      } catch {
+        // Best-effort cleanup only.
+      }
+    }
+  }
+
+  private async listFilesRecursive(rootDir: string): Promise<string[]> {
+    const out: string[] = [];
+    let entries: Array<{ name: string; isDirectory: () => boolean; isFile: () => boolean }> = [];
+    try {
+      entries = await fs.readdir(rootDir, { withFileTypes: true }) as any;
+    } catch {
+      return out;
+    }
+    for (const entry of entries) {
+      const absolute = join(rootDir, entry.name);
+      if (entry.isDirectory()) {
+        const nested = await this.listFilesRecursive(absolute);
+        out.push(...nested);
+      } else if (entry.isFile()) {
+        out.push(absolute);
+      }
+    }
+    return out;
+  }
+
+  private normalizeToRelativeMediaPath(absolutePath: string): string {
+    const mediaRoot = this.getMediaRootDir().replace(/\\/g, '/');
+    const normalizedAbsolute = absolutePath.replace(/\\/g, '/');
+    if (!normalizedAbsolute.startsWith(mediaRoot)) return '';
+    return normalizedAbsolute.slice(mediaRoot.length).replace(/^\/+/, '');
+  }
+
+  private async getReferencedRelativePathsForOwner(
+    ownerId: string | number,
+    campaignId?: string | null,
+  ): Promise<Set<string>> {
+    const mapRows = await this.imagesRepo.createQueryBuilder('img')
+      .innerJoin('img.map', 'map')
+      .where('map.ownerId = :ownerId', { ownerId })
+      .andWhere(campaignId ? 'map.campaignId = :campaignId' : '1=1', { campaignId })
+      .andWhere('img.relativePath IS NOT NULL')
+      .select('DISTINCT img.relativePath', 'relativePath')
+      .getRawMany<{ relativePath: string | null }>();
+
+    const skylineRows = await this.skylinesRepo.createQueryBuilder('img')
+      .innerJoin('img.map', 'map')
+      .where('map.ownerId = :ownerId', { ownerId })
+      .andWhere(campaignId ? 'map.campaignId = :campaignId' : '1=1', { campaignId })
+      .andWhere('img.relativePath IS NOT NULL')
+      .select('DISTINCT img.relativePath', 'relativePath')
+      .getRawMany<{ relativePath: string | null }>();
+
+    return new Set([
+      ...mapRows.map((r) => r.relativePath).filter((p): p is string => !!p),
+      ...skylineRows.map((r) => r.relativePath).filter((p): p is string => !!p),
+    ]);
+  }
+
+  private async getOwnedMaps(ownerId: string | number): Promise<Array<{ id: string; mediaFolder: string | null }>> {
+    const rows = await this.repo.createQueryBuilder('map')
+      .select(['map.id AS id', 'map.mediaFolder AS mediaFolder'])
+      .where('map.ownerId = :ownerId', { ownerId })
+      .getRawMany<{ id: string; mediaFolder: string | null }>();
+    return rows;
+  }
+
+  private async computePhysicalSize(relativePaths: Set<string>): Promise<number> {
+    let total = 0;
+    for (const relativePath of relativePaths) {
+      const absPath = this.getAbsoluteMediaPath(relativePath);
+      try {
+        const stats = await fs.stat(absPath);
+        if (stats.isFile()) total += stats.size;
+      } catch {
+        // Ignore missing files here; diagnostics method reports them.
+      }
+    }
+    return total;
+  }
+
+  /**
+   * Inspects owner-scoped map media consistency across database and filesystem.
+   * Returns counts and sample paths to help detect orphaned files or broken DB pointers.
+   */
+  async getMediaDiagnostics(user: User | any, campaignId?: string | null): Promise<{
+    referencedPathCount: number;
+    existingReferencedPathCount: number;
+    missingReferencedPathCount: number;
+    unreferencedDiskFileCount: number;
+    sampleMissingReferencedPaths: string[];
+    sampleUnreferencedDiskFiles: string[];
+  }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const referenced = await this.getReferencedRelativePathsForOwner(authUserId, campaignId);
+    const ownedMaps = await this.getOwnedMaps(authUserId);
+
+    const missingReferencedPaths: string[] = [];
+    for (const path of referenced) {
+      const absPath = this.getAbsoluteMediaPath(path);
+      try {
+        await fs.access(absPath);
+      } catch {
+        missingReferencedPaths.push(path);
+      }
+    }
+
+    const diskFiles: string[] = [];
+    for (const mapInfo of ownedMaps) {
+      const candidateFolders = new Set<string>([mapInfo.id]);
+      if (mapInfo.mediaFolder) candidateFolders.add(mapInfo.mediaFolder);
+      for (const folderName of candidateFolders) {
+        const dir = this.getMapMediaDir(folderName);
+        const files = await this.listFilesRecursive(dir);
+        for (const absolute of files) {
+          const relative = this.normalizeToRelativeMediaPath(absolute);
+          if (relative) diskFiles.push(relative);
+        }
+      }
+    }
+
+    const diskSet = new Set(diskFiles);
+    const unreferencedDiskFiles = Array.from(diskSet).filter((p) => !referenced.has(p));
+
+    return {
+      referencedPathCount: referenced.size,
+      existingReferencedPathCount: referenced.size - missingReferencedPaths.length,
+      missingReferencedPathCount: missingReferencedPaths.length,
+      unreferencedDiskFileCount: unreferencedDiskFiles.length,
+      sampleMissingReferencedPaths: missingReferencedPaths.slice(0, 25),
+      sampleUnreferencedDiskFiles: unreferencedDiskFiles.slice(0, 25),
+    };
+  }
+
+  private getAbsoluteMediaPath(relativePath: string): string {
+    const mediaRoot = this.getMediaRootDir();
+    const normalizedRelative = relativePath.replace(/\\/g, '/');
+    const safeSegments = normalizedRelative.split('/').filter(Boolean);
+    return join(mediaRoot, ...safeSegments);
+  }
+
+  private async countRelativePathReferences(relativePath: string): Promise<number> {
+    const [mapRefs, skylineRefs] = await Promise.all([
+      this.imagesRepo.count({ where: { relativePath } as any }),
+      this.skylinesRepo.count({ where: { relativePath } as any }),
+    ]);
+    return mapRefs + skylineRefs;
+  }
+
+  private async getOwnersForRelativePath(relativePath: string): Promise<Set<string>> {
+    const [mapRows, skylineRows] = await Promise.all([
+      this.imagesRepo.createQueryBuilder('img')
+        .innerJoin('img.map', 'map')
+        .select('DISTINCT map.ownerId', 'ownerId')
+        .where('img.relativePath = :relativePath', { relativePath })
+        .getRawMany<{ ownerId: string | null }>(),
+      this.skylinesRepo.createQueryBuilder('img')
+        .innerJoin('img.map', 'map')
+        .select('DISTINCT map.ownerId', 'ownerId')
+        .where('img.relativePath = :relativePath', { relativePath })
+        .getRawMany<{ ownerId: string | null }>(),
+    ]);
+
+    return new Set([
+      ...mapRows.map((r) => r.ownerId).filter((v): v is string => !!v),
+      ...skylineRows.map((r) => r.ownerId).filter((v): v is string => !!v),
+    ]);
+  }
+
+  private async deleteMediaFileIfUnreferenced(relativePath: string): Promise<void> {
+    if (!relativePath) return;
+    const refs = await this.countRelativePathReferences(relativePath);
+    if (refs > 0) return;
+    const absPath = this.getAbsoluteMediaPath(relativePath);
+    try {
+      await fs.unlink(absPath);
+    } catch {
+      // Best-effort cleanup only.
+    }
+  }
+
+  private async cleanupUnreferencedPaths(paths: Array<string | null | undefined>): Promise<void> {
+    const uniquePaths = Array.from(new Set((paths || []).filter((p): p is string => !!p)));
+    for (const path of uniquePaths) {
+      await this.deleteMediaFileIfUnreferenced(path);
+    }
+  }
+
+  private async runWithThumbGenerationLock(lockKey: string, action: () => Promise<void>): Promise<void> {
+    const pending = this.thumbGenerationLocks.get(lockKey);
+    if (pending) {
+      await pending;
+      return;
+    }
+    const running = (async () => {
+      await action();
+    })().finally(() => {
+      this.thumbGenerationLocks.delete(lockKey);
+    });
+    this.thumbGenerationLocks.set(lockKey, running);
+    await running;
+  }
+
+  private async findMapImageVariant(
+    mapId: string,
+    variant: 'thumb' | 'preview' | 'full',
+    timeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null,
+    strict?: boolean,
+  ): Promise<MapImage | null> {
+    let img: MapImage | null = null;
+    if (timeOfDay !== undefined && timeOfDay !== null) {
+      img = await this.imagesRepo.findOne({ where: { map: { id: mapId } as any, variant, timeOfDay: timeOfDay as any } });
+      if (!strict) {
+        if (!img) img = await this.imagesRepo.findOne({ where: { map: { id: mapId } as any, variant, timeOfDay: null as any } });
+        if (!img) img = await this.imagesRepo.findOne({ where: { map: { id: mapId } as any, variant } });
+      }
+      return img;
+    }
+
+    if (!strict) {
+      img = await this.imagesRepo.findOne({ where: { map: { id: mapId } as any, variant, timeOfDay: null as any } });
+      if (!img) img = await this.imagesRepo.findOne({ where: { map: { id: mapId } as any, variant } });
+    }
+    return img;
+  }
+
+  private async resolveThumbGenerationSource(
+    map: MapEntity,
+    requestedTimeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null,
+  ): Promise<{ buffer: Buffer; mimeType: string; targetTimeOfDay: 'dawn' | 'morning' | 'afternoon' | 'night' | null } | null> {
+    const candidateTods: Array<'dawn' | 'morning' | 'afternoon' | 'night' | null> = [];
+    if (requestedTimeOfDay !== undefined && requestedTimeOfDay !== null) candidateTods.push(requestedTimeOfDay);
+    candidateTods.push(null);
+
+    const seen = new Set<string>();
+    for (const tod of candidateTods) {
+      const key = tod ?? 'base';
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const fullCandidate = await this.imagesRepo.findOne({ where: { map: { id: map.id } as any, variant: 'full', timeOfDay: tod as any } });
+      if (fullCandidate) {
+        const buffer = await this.getMapImageBuffer(fullCandidate, map.id);
+        if (buffer) return { buffer, mimeType: fullCandidate.mimeType, targetTimeOfDay: tod };
+      }
+
+      const anyCandidate = await this.imagesRepo.findOne({ where: { map: { id: map.id } as any, timeOfDay: tod as any } });
+      if (anyCandidate) {
+        const buffer = await this.getMapImageBuffer(anyCandidate, map.id);
+        if (buffer) return { buffer, mimeType: anyCandidate.mimeType, targetTimeOfDay: tod };
+      }
+    }
+
+    if (map.imageData && map.imageMimeType) {
+      return { buffer: map.imageData, mimeType: map.imageMimeType, targetTimeOfDay: null };
+    }
+    return null;
+  }
+
+  private async createThumbVariantFromBuffer(
+    map: MapEntity,
+    buffer: Buffer,
+    mimeType: string,
+    targetTimeOfDay: 'dawn' | 'morning' | 'afternoon' | 'night' | null,
+  ): Promise<boolean> {
+    try {
+      const sharpFn = this.getSharpInstance();
+      const thumbBuffer = await sharpFn(buffer).resize({ width: 256, withoutEnlargement: true }).toBuffer();
+      await this.imagesRepo.createQueryBuilder()
+        .delete()
+        .from(MapImage)
+        .where('mapId = :id', { id: map.id })
+        .andWhere(targetTimeOfDay === null ? 'timeOfDay IS NULL' : 'timeOfDay = :tod', { tod: targetTimeOfDay as any })
+        .andWhere('variant = :variant', { variant: 'thumb' })
+        .execute();
+
+      const thumb = new MapImage();
+      thumb.map = map as any;
+      thumb.variant = 'thumb';
+      thumb.timeOfDay = targetTimeOfDay;
+      thumb.mimeType = mimeType;
+      thumb.size = thumbBuffer.length;
+      thumb.data = thumbBuffer;
+
+      const saved = await this.imagesRepo.save(thumb);
+      await this.persistMapVariantsToFs(map.id, [saved]);
+      return true;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('[maps] thumb generation failed', e);
+      return false;
+    }
+  }
+
+  private async ensureThumbVariant(
+    map: MapEntity,
+    requestedTimeOfDay?: 'dawn' | 'morning' | 'afternoon' | 'night' | null,
+  ): Promise<boolean> {
+    const lockKey = `${map.id}:${requestedTimeOfDay ?? 'base'}:thumb`;
+    let created = false;
+    await this.runWithThumbGenerationLock(lockKey, async () => {
+      const existingExact = await this.findMapImageVariant(map.id, 'thumb', requestedTimeOfDay ?? null, false);
+      if (existingExact) return;
+
+      const source = await this.resolveThumbGenerationSource(map, requestedTimeOfDay ?? null);
+      if (!source) return;
+      created = await this.createThumbVariantFromBuffer(map, source.buffer, source.mimeType, source.targetTimeOfDay);
+    });
+    return created;
+  }
+
+  /**
+   * Backfills missing map thumbnail variants (256px) for legacy maps.
+   * It can run as dry-run and optionally scoped by campaign.
+   */
+  async backfillMissingThumbs(
+    user: User | any,
+    options?: { campaignId?: string | null; dryRun?: boolean; limit?: number },
+  ): Promise<{
+    dryRun: boolean;
+    mapsScanned: number;
+    candidateVariants: number;
+    thumbsCreated: number;
+    skippedNoSource: number;
+    errors: number;
+    sampleCreated: Array<{ mapId: string; timeOfDay: 'dawn' | 'morning' | 'afternoon' | 'night' | null }>;
+  }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const dryRun = options?.dryRun !== false;
+    const limit = options?.limit && options.limit > 0 ? options.limit : undefined;
+
+    const mapsQb = this.repo.createQueryBuilder('map')
+      .where('map.ownerId = :ownerId', { ownerId: authUserId });
+    if (options?.campaignId) mapsQb.andWhere('map.campaignId = :campaignId', { campaignId: options.campaignId });
+    mapsQb.orderBy('map.updatedAt', 'DESC');
+    if (limit) mapsQb.limit(limit);
+    const maps = await mapsQb.getMany();
+
+    let candidateVariants = 0;
+    let thumbsCreated = 0;
+    let skippedNoSource = 0;
+    let errors = 0;
+    const sampleCreated: Array<{ mapId: string; timeOfDay: 'dawn' | 'morning' | 'afternoon' | 'night' | null }> = [];
+
+    for (const map of maps) {
+      const todRows = await this.imagesRepo.createQueryBuilder('img')
+        .select('DISTINCT img.timeOfDay', 'timeOfDay')
+        .where('img.mapId = :mapId', { mapId: map.id })
+        .getRawMany<{ timeOfDay: 'dawn' | 'morning' | 'afternoon' | 'night' | null }>();
+
+      const tods = new Set<'dawn' | 'morning' | 'afternoon' | 'night' | null>([null]);
+      for (const row of todRows) {
+        if (row.timeOfDay) tods.add(row.timeOfDay);
+      }
+
+      for (const tod of tods) {
+        const existingThumb = await this.imagesRepo.findOne({ where: { map: { id: map.id } as any, variant: 'thumb', timeOfDay: tod as any } });
+        if (existingThumb) continue;
+
+        candidateVariants += 1;
+        const source = await this.resolveThumbGenerationSource(map, tod);
+        if (!source) {
+          skippedNoSource += 1;
+          continue;
+        }
+
+        if (dryRun) {
+          if (sampleCreated.length < 25) sampleCreated.push({ mapId: map.id, timeOfDay: source.targetTimeOfDay });
+          continue;
+        }
+
+        try {
+          const created = await this.createThumbVariantFromBuffer(map, source.buffer, source.mimeType, source.targetTimeOfDay);
+          if (created) {
+            thumbsCreated += 1;
+            if (sampleCreated.length < 25) sampleCreated.push({ mapId: map.id, timeOfDay: source.targetTimeOfDay });
+          } else {
+            errors += 1;
+          }
+        } catch {
+          errors += 1;
+        }
+      }
+    }
+
+    return {
+      dryRun,
+      mapsScanned: maps.length,
+      candidateVariants,
+      thumbsCreated,
+      skippedNoSource,
+      errors,
+      sampleCreated,
+    };
+  }
+
+  private async pathExists(path: string): Promise<boolean> {
+    try {
+      await fs.access(path);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Migrates legacy media paths from maps/{mapId}/... to maps/{slug-mapId}/...
+   * for all maps owned by the authenticated user.
+   */
+  async migrateLegacyMediaFolders(
+    user: User | any,
+    dryRun = true,
+  ): Promise<{
+    dryRun: boolean;
+    mapsProcessed: number;
+    pathsExamined: number;
+    pathsMigrated: number;
+    missingSourceFiles: number;
+    conflicts: number;
+    sampleChanges: Array<{ from: string; to: string }>;
+  }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const maps = await this.repo.find({ where: { owner: { id: authUserId } as any } });
+    const sampleChanges: Array<{ from: string; to: string }> = [];
+
+    let pathsExamined = 0;
+    let pathsMigrated = 0;
+    let missingSourceFiles = 0;
+    let conflicts = 0;
+
+    for (const map of maps) {
+      const targetFolder = map.mediaFolder || this.buildMediaFolderName(map.id, map.name || 'map');
+      const legacyPrefix = `maps/${map.id}/`;
+      const newPrefix = `maps/${targetFolder}/`;
+      if (legacyPrefix === newPrefix) continue;
+
+      const [imgRows, skylineRows] = await Promise.all([
+        this.imagesRepo.createQueryBuilder('img')
+          .innerJoin('img.map', 'map')
+          .where('map.ownerId = :ownerId', { ownerId: authUserId })
+          .andWhere('img.relativePath LIKE :legacyPrefix', { legacyPrefix: `${legacyPrefix}%` })
+          .select('DISTINCT img.relativePath', 'relativePath')
+          .getRawMany<{ relativePath: string | null }>(),
+        this.skylinesRepo.createQueryBuilder('img')
+          .innerJoin('img.map', 'map')
+          .where('map.ownerId = :ownerId', { ownerId: authUserId })
+          .andWhere('img.relativePath LIKE :legacyPrefix', { legacyPrefix: `${legacyPrefix}%` })
+          .select('DISTINCT img.relativePath', 'relativePath')
+          .getRawMany<{ relativePath: string | null }>(),
+      ]);
+
+      const oldPaths = Array.from(new Set([
+        ...imgRows.map((r) => r.relativePath).filter((p): p is string => !!p),
+        ...skylineRows.map((r) => r.relativePath).filter((p): p is string => !!p),
+      ]));
+
+      const validMappings: Array<{ oldPath: string; newPath: string }> = [];
+      for (const oldPath of oldPaths) {
+        pathsExamined += 1;
+        const suffix = oldPath.slice(legacyPrefix.length);
+        const newPath = `${newPrefix}${suffix}`;
+        const oldAbs = this.getAbsoluteMediaPath(oldPath);
+        const newAbs = this.getAbsoluteMediaPath(newPath);
+
+        const oldExists = await this.pathExists(oldAbs);
+        if (!oldExists) {
+          missingSourceFiles += 1;
+          continue;
+        }
+
+        const newExists = await this.pathExists(newAbs);
+        if (newExists) {
+          conflicts += 1;
+          continue;
+        }
+
+        validMappings.push({ oldPath, newPath });
+        if (sampleChanges.length < 25) sampleChanges.push({ from: oldPath, to: newPath });
+      }
+
+      if (!dryRun) {
+        for (const mapping of validMappings) {
+          const oldAbs = this.getAbsoluteMediaPath(mapping.oldPath);
+          const newAbs = this.getAbsoluteMediaPath(mapping.newPath);
+          await this.ensureDir(dirname(newAbs));
+          await fs.rename(oldAbs, newAbs);
+
+          await this.imagesRepo.createQueryBuilder()
+            .update(MapImage)
+            .set({ relativePath: mapping.newPath, storageKind: 'fs', migratedAt: new Date() } as any)
+            .where('relativePath = :oldPath', { oldPath: mapping.oldPath })
+            .execute();
+          await this.skylinesRepo.createQueryBuilder()
+            .update(MapSkylineImage)
+            .set({ relativePath: mapping.newPath, storageKind: 'fs', migratedAt: new Date() } as any)
+            .where('relativePath = :oldPath', { oldPath: mapping.oldPath })
+            .execute();
+          pathsMigrated += 1;
+        }
+
+        if (!map.mediaFolder) {
+          map.mediaFolder = targetFolder;
+          await this.repo.save(map);
+        }
+
+        await this.deleteMapMediaDirectory(map.id, null);
+      }
+    }
+
+    return {
+      dryRun,
+      mapsProcessed: maps.length,
+      pathsExamined,
+      pathsMigrated,
+      missingSourceFiles,
+      conflicts,
+      sampleChanges,
+    };
+  }
+
+  /**
+   * Reconciles mixed media folders per map so map images and skylines share one folder.
+   * Safety rule: only moves paths that are not externally shared with other maps.
+   */
+  async reconcileMapMediaFolders(
+    user: User | any,
+    dryRun = true,
+    includeSharedSameOwner = false,
+  ): Promise<{
+    dryRun: boolean;
+    includeSharedSameOwner: boolean;
+    mapsProcessed: number;
+    pathsExamined: number;
+    pathsMoved: number;
+    skippedShared: number;
+    movedSharedSameOwner: number;
+    missingSourceFiles: number;
+    conflicts: number;
+    sampleChanges: Array<{ from: string; to: string }>;
+  }> {
+    const authUserId = this.extractAuthUserId(user);
+    if (!authUserId) throw new ForbiddenException('Invalid auth context');
+
+    const maps = await this.repo.find({ where: { owner: { id: authUserId } as any } });
+    const sampleChanges: Array<{ from: string; to: string }> = [];
+
+    let pathsExamined = 0;
+    let pathsMoved = 0;
+    let skippedShared = 0;
+    let movedSharedSameOwner = 0;
+    let missingSourceFiles = 0;
+    let conflicts = 0;
+
+    for (const map of maps) {
+      const canonicalFolder = map.mediaFolder
+        || (await this.resolveExistingFolderFromMapAssets(map.id))
+        || this.buildMediaFolderName(map.id, map.name || 'map');
+
+      if (!map.mediaFolder && !dryRun) {
+        map.mediaFolder = canonicalFolder;
+        await this.repo.save(map);
+      }
+
+      const [imgRows, skylineRows] = await Promise.all([
+        this.imagesRepo.createQueryBuilder('img')
+          .where('img.mapId = :mapId', { mapId: map.id })
+          .andWhere('img.relativePath IS NOT NULL')
+          .select('img.relativePath', 'relativePath')
+          .getRawMany<{ relativePath: string | null }>(),
+        this.skylinesRepo.createQueryBuilder('img')
+          .where('img.mapId = :mapId', { mapId: map.id })
+          .andWhere('img.relativePath IS NOT NULL')
+          .select('img.relativePath', 'relativePath')
+          .getRawMany<{ relativePath: string | null }>(),
+      ]);
+
+      const localCounts = new Map<string, number>();
+      for (const p of [...imgRows, ...skylineRows].map((r) => r.relativePath).filter((v): v is string => !!v)) {
+        localCounts.set(p, (localCounts.get(p) || 0) + 1);
+      }
+
+      for (const [oldPath, localRefCount] of localCounts.entries()) {
+        pathsExamined += 1;
+
+        const currentFolder = this.extractMediaFolderFromRelativePath(oldPath);
+        if (!currentFolder || currentFolder === canonicalFolder) continue;
+
+        const suffix = oldPath.split('/').slice(2).join('/');
+        if (!suffix) continue;
+        const newPath = `maps/${canonicalFolder}/${suffix}`;
+
+        const totalRefs = await this.countRelativePathReferences(oldPath);
+        let isSharedExternal = totalRefs > localRefCount;
+        if (isSharedExternal) {
+          if (!includeSharedSameOwner) {
+            skippedShared += 1;
+            continue;
+          }
+          const owners = await this.getOwnersForRelativePath(oldPath);
+          if (owners.size !== 1 || !owners.has(String(authUserId))) {
+            skippedShared += 1;
+            continue;
+          }
+        }
+
+        const oldAbs = this.getAbsoluteMediaPath(oldPath);
+        const newAbs = this.getAbsoluteMediaPath(newPath);
+        const oldExists = await this.pathExists(oldAbs);
+        if (!oldExists) {
+          missingSourceFiles += 1;
+          continue;
+        }
+        const newExists = await this.pathExists(newAbs);
+        if (newExists) {
+          conflicts += 1;
+          continue;
+        }
+
+        if (sampleChanges.length < 25) sampleChanges.push({ from: oldPath, to: newPath });
+
+        if (!dryRun) {
+          await this.ensureDir(dirname(newAbs));
+          await fs.rename(oldAbs, newAbs);
+
+          await this.imagesRepo.createQueryBuilder()
+            .update(MapImage)
+            .set({ relativePath: newPath, storageKind: 'fs', migratedAt: new Date() } as any)
+            .where('mapId = :mapId', { mapId: map.id })
+            .andWhere('relativePath = :oldPath', { oldPath })
+            .execute();
+
+          await this.skylinesRepo.createQueryBuilder()
+            .update(MapSkylineImage)
+            .set({ relativePath: newPath, storageKind: 'fs', migratedAt: new Date() } as any)
+            .where('mapId = :mapId', { mapId: map.id })
+            .andWhere('relativePath = :oldPath', { oldPath })
+            .execute();
+
+          pathsMoved += 1;
+          if (isSharedExternal) movedSharedSameOwner += 1;
+        }
+      }
+
+      if (!dryRun) {
+        await this.deleteMapMediaDirectory(map.id, null);
+      }
+    }
+
+    return {
+      dryRun,
+      includeSharedSameOwner,
+      mapsProcessed: maps.length,
+      pathsExamined,
+      pathsMoved,
+      skippedShared,
+      movedSharedSameOwner,
+      missingSourceFiles,
+      conflicts,
+      sampleChanges,
+    };
+  }
+
+  private async ensureMapImageHasSharedPath(img: MapImage, mapId: string): Promise<MapImage> {
+    if (!img.relativePath && img.data) {
+      await this.migrateMapImageToFs(img, mapId);
+    }
+    return img;
+  }
+
+  private async ensureSkylineImageHasSharedPath(img: MapSkylineImage, mapId: string): Promise<MapSkylineImage> {
+    if (!img.relativePath && img.data) {
+      await this.migrateSkylineImageToFs(img, mapId);
+    }
+    return img;
+  }
 
   /**
    * Validates auth context and ownership for a map and campaign pair.
@@ -203,7 +1158,8 @@ export class MapsService {
     full.data = file.buffer;
     variants.push(full);
     try {
-      const previewBuf = await sharp(file.buffer).resize({ width: 1280, withoutEnlargement: true }).toBuffer();
+      const sharpFn = this.getSharpInstance();
+      const previewBuf = await sharpFn(file.buffer).resize({ width: 1280, withoutEnlargement: true }).toBuffer();
       const preview = new MapImage();
       preview.variant = 'preview';
       preview.timeOfDay = timeOfDay ?? null;
@@ -211,7 +1167,7 @@ export class MapsService {
       preview.size = previewBuf.length;
       preview.data = previewBuf;
       variants.push(preview);
-      const thumbBuf = await sharp(file.buffer).resize({ width: 256, withoutEnlargement: true }).toBuffer();
+      const thumbBuf = await sharpFn(file.buffer).resize({ width: 256, withoutEnlargement: true }).toBuffer();
       const thumb = new MapImage();
       thumb.variant = 'thumb';
       thumb.timeOfDay = timeOfDay ?? null;
@@ -237,7 +1193,8 @@ export class MapsService {
     full.data = file.buffer;
     variants.push(full);
     try {
-      const previewBuf = await sharp(file.buffer).resize({ width: 1280, withoutEnlargement: true }).toBuffer();
+      const sharpFn = this.getSharpInstance();
+      const previewBuf = await sharpFn(file.buffer).resize({ width: 1280, withoutEnlargement: true }).toBuffer();
       const preview = new MapSkylineImage();
       preview.variant = 'preview';
       preview.timeOfDay = timeOfDay ?? null;
@@ -245,7 +1202,7 @@ export class MapsService {
       preview.size = previewBuf.length;
       preview.data = previewBuf;
       variants.push(preview);
-      const thumbBuf = await sharp(file.buffer).resize({ width: 256, withoutEnlargement: true }).toBuffer();
+      const thumbBuf = await sharpFn(file.buffer).resize({ width: 256, withoutEnlargement: true }).toBuffer();
       const thumb = new MapSkylineImage();
       thumb.variant = 'thumb';
       thumb.timeOfDay = timeOfDay ?? null;
@@ -383,16 +1340,18 @@ export class MapsService {
       entity.campaign = c;
     }
     if (file) {
-      const variants = await this.buildVariants(file);
-      // Attach relation
-      for (const v of variants) v.map = entity as any;
       // legacy fields mirror
       entity.imageMimeType = file.mimetype;
       entity.imageSize = file.size;
       entity.imageData = file.buffer;
-      entity.images = variants;
     }
     const saved = await this.repo.save(entity);
+    if (file) {
+      const variants = await this.buildVariants(file);
+      for (const v of variants) v.map = saved as any;
+      const savedVariants = await this.imagesRepo.save(variants);
+      await this.persistMapVariantsToFs(saved.id, savedVariants);
+    }
     return { id: saved.id };
   }
 
@@ -463,29 +1422,35 @@ export class MapsService {
       // If a specific TOD is requested for the new image, only replace that TOD's variants
       if (imageTimeOfDay) {
         // Do NOT touch legacy fields to avoid changing the base image unintentionally
+        const oldTodVariants = await this.imagesRepo.find({ where: { map: { id } as any, timeOfDay: imageTimeOfDay as any } });
         await this.imagesRepo.createQueryBuilder()
           .delete()
           .from(MapImage)
           .where('mapId = :id', { id })
           .andWhere('timeOfDay = :tod', { tod: imageTimeOfDay })
           .execute();
+        await this.cleanupUnreferencedPaths(oldTodVariants.map((v) => v.relativePath));
         const variants = await this.buildVariants(file, imageTimeOfDay);
         for (const v of variants) v.map = entity as any;
-        await this.imagesRepo.save(variants);
+        const savedVariants = await this.imagesRepo.save(variants);
+        await this.persistMapVariantsToFs(entity.id, savedVariants);
       } else {
         // Replace the base (no TOD) image only, preserving existing TOD-specific variants
         entity.imageMimeType = file.mimetype;
         entity.imageSize = file.size;
         entity.imageData = file.buffer;
+        const oldBaseVariants = await this.imagesRepo.find({ where: { map: { id } as any, timeOfDay: null as any } });
         await this.imagesRepo.createQueryBuilder()
           .delete()
           .from(MapImage)
           .where('mapId = :id', { id })
           .andWhere('timeOfDay IS NULL')
           .execute();
+        await this.cleanupUnreferencedPaths(oldBaseVariants.map((v) => v.relativePath));
         const variants = await this.buildVariants(file, null);
         for (const v of variants) v.map = entity as any;
-        await this.imagesRepo.save(variants);
+        const savedVariants = await this.imagesRepo.save(variants);
+        await this.persistMapVariantsToFs(entity.id, savedVariants);
       }
     } else if (file === null) {
       // Explicit remove image when null is passed
@@ -493,11 +1458,13 @@ export class MapsService {
       entity.imageSize = null;
       entity.imageData = null;
       // Remove all variants
+      const oldVariants = await this.imagesRepo.find({ where: { map: { id } as any } });
       await this.imagesRepo.createQueryBuilder()
         .delete()
         .from(MapImage)
         .where('mapId = :id', { id })
         .execute();
+      await this.cleanupUnreferencedPaths(oldVariants.map((v) => v.relativePath));
     }
     await this.repo.save(entity);
     return { ok: true };
@@ -638,13 +1605,18 @@ export class MapsService {
     // Clone MapImage variants
     const sourceImages = await this.imagesRepo.find({ where: { map: { id: sourceMapId } as any } });
     if (sourceImages.length > 0) {
-      const clonedImages = sourceImages.map(img => {
+      const preparedImages = await Promise.all(sourceImages.map((img) => this.ensureMapImageHasSharedPath(img, sourceMapId)));
+      const clonedImages = preparedImages.map(img => {
         const clone = new MapImage();
         clone.variant = img.variant;
         clone.timeOfDay = img.timeOfDay;
         clone.mimeType = img.mimeType;
         clone.size = img.size;
         clone.data = img.data;
+        clone.storageKind = img.relativePath ? 'fs' : (img.storageKind ?? null);
+        clone.relativePath = img.relativePath ?? null;
+        clone.originalFileName = img.originalFileName ?? null;
+        clone.migratedAt = img.migratedAt ?? null;
         clone.map = saved as any;
         return clone;
       });
@@ -654,13 +1626,18 @@ export class MapsService {
     // Clone MapSkylineImage variants
     const sourceSkylines = await this.skylinesRepo.find({ where: { map: { id: sourceMapId } as any } });
     if (sourceSkylines.length > 0) {
-      const clonedSkylines = sourceSkylines.map(img => {
+      const preparedSkylines = await Promise.all(sourceSkylines.map((img) => this.ensureSkylineImageHasSharedPath(img, sourceMapId)));
+      const clonedSkylines = preparedSkylines.map(img => {
         const clone = new MapSkylineImage();
         clone.variant = img.variant;
         clone.timeOfDay = img.timeOfDay;
         clone.mimeType = img.mimeType;
         clone.size = img.size;
         clone.data = img.data;
+        clone.storageKind = img.relativePath ? 'fs' : (img.storageKind ?? null);
+        clone.relativePath = img.relativePath ?? null;
+        clone.originalFileName = img.originalFileName ?? null;
+        clone.migratedAt = img.migratedAt ?? null;
         clone.map = saved as any;
         return clone;
       });
@@ -686,7 +1663,19 @@ export class MapsService {
       .where('activeMapId = :id', { id })
       .execute();
 
+    const [mapVariants, skylineVariants] = await Promise.all([
+      this.imagesRepo.find({ where: { map: { id } as any } }),
+      this.skylinesRepo.find({ where: { map: { id } as any } }),
+    ]);
+
     await this.repo.remove(entity);
+
+    await this.cleanupUnreferencedPaths([
+      ...mapVariants.map((v) => v.relativePath),
+      ...skylineVariants.map((v) => v.relativePath),
+    ]);
+
+    await this.deleteMapMediaDirectory(id, entity.mediaFolder ?? null);
     return { ok: true };
   }
 
@@ -703,27 +1692,30 @@ export class MapsService {
     const authUserId = this.extractAuthUserId(user);
     if (!authUserId) throw new ForbiddenException('Invalid auth context');
     if (entity.owner.id !== authUserId) throw new ForbiddenException('Not allowed');
-    // Try variant first
+
     const variant = size || 'full';
-    // Try to fetch variant matching timeOfDay first (if provided)
-    let img: MapImage | null = null as any;
-    if (timeOfDay !== undefined && timeOfDay !== null) {
-      img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: timeOfDay as any } });
-      if (!strict) {
-        // If not found, try base (null TOD)
-        if (!img) img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: null as any } });
-        // Finally, any TOD
-        if (!img) img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant } });
-      }
-    } else {
-      if (!strict) {
-        // No specific TOD requested: prefer base (null TOD), then any
-        img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant, timeOfDay: null as any } });
-        if (!img) img = await this.imagesRepo.findOne({ where: { map: { id } as any, variant } });
+
+    let img = await this.findMapImageVariant(id, variant, timeOfDay ?? null, strict);
+    if (!img && variant === 'thumb' && !strict) {
+      await this.ensureThumbVariant(entity, timeOfDay ?? null);
+      img = await this.findMapImageVariant(id, variant, timeOfDay ?? null, false);
+    }
+
+    if (img) {
+      const imageBuffer = await this.getMapImageBuffer(img, id);
+      if (imageBuffer) return { buffer: imageBuffer, mimeType: img.mimeType };
+    }
+
+    if (variant === 'thumb') {
+      const previewImg = await this.findMapImageVariant(id, 'preview', timeOfDay ?? null, strict);
+      if (previewImg) {
+        const previewBuffer = await this.getMapImageBuffer(previewImg, id);
+        if (previewBuffer) return { buffer: previewBuffer, mimeType: previewImg.mimeType };
       }
     }
-    if (img) return { buffer: img.data, mimeType: img.mimeType };
+
     // Fallback to legacy
+    if (variant === 'thumb') throw new NotFoundException('No thumbnail image');
     if (entity.imageData && entity.imageMimeType) return { buffer: entity.imageData, mimeType: entity.imageMimeType };
     throw new NotFoundException('No image');
   }
@@ -754,7 +1746,10 @@ export class MapsService {
         if (!img) img = await this.skylinesRepo.findOne({ where: { map: { id } as any, variant } });
       }
     }
-    if (img) return { buffer: img.data, mimeType: img.mimeType };
+    if (img) {
+      const imageBuffer = await this.getSkylineImageBuffer(img, id);
+      if (imageBuffer) return { buffer: imageBuffer, mimeType: img.mimeType };
+    }
     throw new NotFoundException('No skyline image');
   }
 
@@ -765,15 +1760,18 @@ export class MapsService {
     const authUserId = this.extractAuthUserId(user);
     if (!authUserId) throw new ForbiddenException('Invalid auth context');
     if (entity.owner.id !== authUserId) throw new ForbiddenException('Not owner');
+    const oldVariants = await this.skylinesRepo.find({ where: { map: { id } as any, timeOfDay: tod as any } });
     await this.skylinesRepo.createQueryBuilder()
       .delete()
       .from(MapSkylineImage)
       .where('mapId = :id', { id })
       .andWhere('timeOfDay = :tod', { tod })
       .execute();
+    await this.cleanupUnreferencedPaths(oldVariants.map((v) => v.relativePath));
     const variants = await this.buildSkylineVariants(file, tod);
     for (const v of variants) v.map = entity as any;
-    await this.skylinesRepo.save(variants);
+    const savedVariants = await this.skylinesRepo.save(variants);
+    await this.persistSkylineVariantsToFs(entity.id, savedVariants);
     return { ok: true };
   }
 
@@ -785,15 +1783,18 @@ export class MapsService {
     if (!authUserId) throw new ForbiddenException('Invalid auth context');
     if (entity.owner.id !== authUserId) throw new ForbiddenException('Not owner');
     // Remove existing images for this TOD (all variants)
+    const oldVariants = await this.imagesRepo.find({ where: { map: { id } as any, timeOfDay: tod as any } });
     await this.imagesRepo.createQueryBuilder()
       .delete()
       .from(MapImage)
       .where('mapId = :id', { id })
       .andWhere('timeOfDay = :tod', { tod })
       .execute();
+    await this.cleanupUnreferencedPaths(oldVariants.map((v) => v.relativePath));
     const variants = await this.buildVariants(file, tod);
     for (const v of variants) v.map = entity as any;
-    await this.imagesRepo.save(variants);
+    const savedVariants = await this.imagesRepo.save(variants);
+    await this.persistMapVariantsToFs(entity.id, savedVariants);
     return { ok: true };
   }
 
@@ -802,7 +1803,10 @@ export class MapsService {
    * - totalSize includes: MapImage variants, MapSkylineImage variants, and legacy MapEntity.imageSize when present.
    * - Always scoped to the authenticated owner; optionally filtered by campaignId.
    */
-  async getUsage(user: User | any, campaignId?: string | null): Promise<{ totalSize: number; count: number }> {
+  async getUsage(
+    user: User | any,
+    campaignId?: string | null,
+  ): Promise<{ totalSize: number; count: number; physicalTotalSize: number; sharedSavings: number }> {
     const authUserId = this.extractAuthUserId(user);
     if (!authUserId) throw new ForbiddenException('Invalid auth context');
 
@@ -840,7 +1844,10 @@ export class MapsService {
     const totalLegacy = legacyRaw?.total ? parseInt(legacyRaw.total, 10) : 0;
 
     const totalSize = (totalImages || 0) + (totalSkylines || 0) + (totalLegacy || 0);
-    return { totalSize, count };
+    const referencedPaths = await this.getReferencedRelativePathsForOwner(authUserId, campaignId);
+    const physicalTotalSize = await this.computePhysicalSize(referencedPaths);
+    const sharedSavings = Math.max(0, totalSize - physicalTotalSize);
+    return { totalSize, count, physicalTotalSize, sharedSavings };
   }
 
   // ─── World-Map Markers ──────────────────────────────────────────────────────

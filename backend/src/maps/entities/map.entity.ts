@@ -105,6 +105,9 @@ export class MapEntity {
   @Column({ type: 'boolean', default: false })
   fogEnabledByDefault: boolean;
 
+  @Column({ type: 'varchar', length: 260, nullable: true })
+  mediaFolder?: string | null;
+
   // Legacy single-image fields (kept for backward compatibility; prefer MapImage variants)
   @Column({ nullable: true })
   imageMimeType?: string | null;

@@ -82,7 +82,7 @@ function openSkylineWindow(campaignId: string) {
   if ((window as any).electronAPI?.openSkylineProjection) {
     (window as any).electronAPI.openSkylineProjection(campaignId).catch(() => {});
   } else {
-    const url = `${window.location.origin}/projection/skyline?campaignId=${encodeURIComponent(campaignId)}`;
+    const url = `${window.location.origin}/#/projection/skyline?campaignId=${encodeURIComponent(campaignId)}`;
     window.open(url, 'projection_skyline', 'noopener,noreferrer');
   }
 }
@@ -91,7 +91,7 @@ function openMapsWindow(campaignId: string) {
   if ((window as any).electronAPI?.openMapsProjection) {
     (window as any).electronAPI.openMapsProjection(campaignId).catch(() => {});
   } else {
-    const url = `${window.location.origin}/projection/maps?campaignId=${encodeURIComponent(campaignId)}`;
+    const url = `${window.location.origin}/#/projection/maps?campaignId=${encodeURIComponent(campaignId)}`;
     window.open(url, 'projection_maps', 'noopener,noreferrer');
   }
 }

@@ -3,7 +3,11 @@ import {
   Box,
   Button,
   CircularProgress,
+  Chip,
   IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
   Paper,
   Popover,
   Stack,
@@ -12,6 +16,10 @@ import {
 } from '@mui/material';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import CloseIcon from '@mui/icons-material/Close';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import ImageIcon from '@mui/icons-material/Image';
+import SendIcon from '@mui/icons-material/Send';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import FitScreenIcon from '@mui/icons-material/FitScreen';
@@ -21,6 +29,7 @@ import {
   MapItemDto,
   MapMarkerDto,
   getMapImageUrl,
+  getMapImageUrlSized,
   listMapMarkers,
   listMaps,
 } from '../../api/maps';
@@ -34,6 +43,7 @@ import MapElementsEditorLayer from './MapElementsEditorLayer';
 import MapElementsPanel from './MapElementsPanel';
 import ElementsPreviewLayer from './ElementsPreviewLayer';
 import { useMapElements } from '../../hooks/useMapElements';
+import { useActiveMap } from './ActiveMapContext';
 import { TITLEBAR_HEIGHT } from '../TitleBar';
 import type { ElementEditorTool } from './MapElementsEditorLayer';
 import type { MapElement, MapLightElement, MapDoorElement, MapWindowElement, MapSoundSourceElement } from '../../api/mapElements';
@@ -61,6 +71,7 @@ interface Props {
   map: MapItemDto;
   campaignId: string;
   onClose: () => void;
+  onSelectMap: (map: MapItemDto) => void;
 }
 
 // ─── Pin component ────────────────────────────────────────────────────────────
@@ -137,7 +148,8 @@ function MarkerPin({ marker, zoom, onClick }: PinProps) {
  * Markers: click the "Add marker" button then click on the map to place.
  * Inspect: click an existing marker to open its detail drawer.
  */
-export default function WorldMapView({ map, campaignId, onClose }: Props) {
+export default function WorldMapView({ map, campaignId, onClose, onSelectMap }: Props) {
+  const { activeMapId, setActiveMapId } = useActiveMap();
   // ─── Transform state (pan + zoom, independent from the projected window) ──
   const [transform, setTransform] = useState<Transform>({ panX: 0, panY: 0, zoom: 1 });
   const [imageDims, setImageDims] = useState<{ w: number; h: number } | null>(null);
@@ -171,6 +183,7 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
   const [soundPickerOpen, setSoundPickerOpen] = useState(false);
   const [soundPickerElementId, setSoundPickerElementId] = useState<string | null>(null);
   const [elementsAnchor, setElementsAnchor] = useState<HTMLElement | null>(null);
+  const [mapPickerAnchor, setMapPickerAnchor] = useState<HTMLElement | null>(null);
 
   const previewLights = useMemo(
     () => elements.filter((el): el is MapLightElement => el.type === 'light' && !!el.showInPreview),
@@ -198,11 +211,30 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
     setSoundPickerOpen(true);
   }, []);
 
+  const handleMapSelect = useCallback((nextMap: MapItemDto) => {
+    setMapPickerAnchor(null);
+    if (nextMap.id !== map.id) onSelectMap(nextMap);
+  }, [map.id, onSelectMap]);
+
+  const isActiveMap = activeMapId === map.id;
+
+  const handleSetActiveMap = useCallback(() => {
+    setActiveMapId(map.id);
+  }, [map.id, setActiveMapId]);
+
   // ─── Association lists (fetched once, passed to dialogs/detail) ──────────
   const [allMaps, setAllMaps] = useState<MapItemDto[]>([]);
   const [allCharacters, setAllCharacters] = useState<CharacterPayload[]>([]);
   const [allEnemies, setAllEnemies] = useState<CampaignMonsterListItem[]>([]);
   const [allEncounters, setAllEncounters] = useState<EncounterSummary[]>([]);
+
+  const campaignMaps = useMemo(() => {
+    const otherMaps = allMaps
+      .filter((it) => it.id !== map.id)
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    return [map, ...otherMaps];
+  }, [allMaps, map]);
 
   // ─── Load markers + association lists ────────────────────────────────────
 
@@ -523,6 +555,8 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
             gap: 0.5,
             zIndex: 10,
             pointerEvents: 'all',
+            minWidth: 0,
+            maxWidth: 'min(54vw, 620px)',
           }}
           onPointerDown={(e) => e.stopPropagation()}
         >
@@ -530,11 +564,115 @@ export default function WorldMapView({ map, campaignId, onClose }: Props) {
             <IconButton size="small" onClick={onClose}><CloseIcon /></IconButton>
           </Tooltip>
 
-          <Box sx={{ width: 1, height: 28, bgcolor: 'divider', mx: 0.5 }} />
+          <Box
+            role="button"
+            tabIndex={0}
+            onClick={(e) => setMapPickerAnchor(e.currentTarget)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setMapPickerAnchor(e.currentTarget as HTMLElement);
+              }
+            }}
+            sx={{
+              minWidth: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              cursor: 'pointer',
+              px: 0.5,
+              py: 0.25,
+              borderRadius: 1,
+              '&:hover': { bgcolor: 'action.hover' },
+              '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 },
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <Typography
+              variant="body2"
+              noWrap
+              title={map.name}
+              sx={{
+                fontWeight: 600,
+                minWidth: 0,
+                maxWidth: 'min(42vw, 420px)',
+              }}
+            >
+              {map.name}
+            </Typography>
+            <KeyboardArrowDownIcon fontSize="small" sx={{ opacity: 0.7, flexShrink: 0 }} />
+          </Box>
 
-          <Typography variant="body2" noWrap sx={{ maxWidth: 180, fontWeight: 600 }}>
-            {map.name}
-          </Typography>
+          <Tooltip title={isActiveMap ? 'Este mapa ya está activo' : 'Marcar como mapa activo'}>
+            <span>
+              <IconButton
+                size="small"
+                onClick={handleSetActiveMap}
+                color={isActiveMap ? 'success' : 'default'}
+                aria-label={isActiveMap ? 'Mapa activo' : 'Marcar como mapa activo'}
+                aria-pressed={isActiveMap}
+              >
+                {isActiveMap ? <CheckCircleIcon fontSize="small" /> : <SendIcon fontSize="small" />}
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Popover
+            open={!!mapPickerAnchor}
+            anchorEl={mapPickerAnchor}
+            onClose={() => setMapPickerAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            PaperProps={{ sx: { mt: 0.75, width: 320, maxWidth: 'calc(100vw - 24px)', maxHeight: 420, overflow: 'hidden' } }}
+          >
+            <Box sx={{ px: 1.25, py: 1, borderBottom: 1, borderColor: 'divider' }}>
+              <Typography variant="subtitle2">Mapas de la campaña</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Pulsa un mapa para abrir su vista en detalle
+              </Typography>
+            </Box>
+            <List dense disablePadding sx={{ maxHeight: 360, overflow: 'auto' }}>
+              {campaignMaps.map((candidate) => {
+                const active = candidate.id === map.id;
+                return (
+                  <ListItemButton
+                    key={candidate.id}
+                    selected={active}
+                    onClick={() => handleMapSelect(candidate)}
+                    sx={{ gap: 1, alignItems: 'center' }}
+                  >
+                    <Box sx={{ width: 40, height: 40, borderRadius: 1, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {candidate.imageAvailable ? (
+                        <AuthImage
+                          src={getMapImageUrlSized(candidate.id, 'thumb', { cacheBust: candidate.updatedAt })}
+                          alt={candidate.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onErrorIcon={<ImageIcon fontSize="small" />}
+                        />
+                      ) : (
+                        <ImageIcon fontSize="small" />
+                      )}
+                    </Box>
+                    <ListItemText
+                      primary={candidate.name}
+                      secondary={active ? 'Mapa actual' : undefined}
+                      primaryTypographyProps={{ noWrap: true, fontWeight: active ? 700 : 500 }}
+                      secondaryTypographyProps={{ variant: 'caption' }}
+                    />
+                    {active && (
+                      <Chip
+                        label="Actual"
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ flexShrink: 0 }}
+                      />
+                    )}
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          </Popover>
         </Paper>
 
         {/* Right toolbar */}

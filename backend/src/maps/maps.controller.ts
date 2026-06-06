@@ -35,6 +35,60 @@ export class MapsController {
   }
 
   /**
+   * Owner-scoped consistency diagnostics between media files on disk and DB references.
+   * Useful during blob->filesystem migration and shared-reference imports.
+   */
+  @Get('media/diagnostics')
+  async getMediaDiagnostics(@Req() req, @Query('campaignId') campaignId?: string) {
+    return this.service.getMediaDiagnostics(req.user, campaignId);
+  }
+
+  /**
+   * Migrates legacy map media folder paths (maps/{mapId}) to readable folder names.
+   * By default runs in dryRun mode unless dryRun is explicitly false/0.
+   */
+  @Post('media/migrate-folders')
+  async migrateMediaFolders(@Req() req, @Query('dryRun') dryRun?: string) {
+    const normalizedDryRun = !(dryRun === '0' || dryRun === 'false');
+    return this.service.migrateLegacyMediaFolders(req.user, normalizedDryRun);
+  }
+
+  /**
+   * Reconciles map media so map image and skyline variants end up under the same folder.
+   * By default runs in dryRun mode unless dryRun is explicitly false/0.
+   */
+  @Post('media/reconcile-folders')
+  async reconcileMediaFolders(
+    @Req() req,
+    @Query('dryRun') dryRun?: string,
+    @Query('includeSharedSameOwner') includeSharedSameOwner?: string,
+  ) {
+    const normalizedDryRun = !(dryRun === '0' || dryRun === 'false');
+    const normalizedIncludeSharedSameOwner = includeSharedSameOwner === '1' || includeSharedSameOwner === 'true';
+    return this.service.reconcileMapMediaFolders(req.user, normalizedDryRun, normalizedIncludeSharedSameOwner);
+  }
+
+  /**
+   * Backfills missing thumbnail variants for legacy maps.
+   * Defaults to dryRun=true unless explicitly set to false/0.
+   */
+  @Post('media/backfill-thumbs')
+  async backfillThumbs(
+    @Req() req,
+    @Query('dryRun') dryRun?: string,
+    @Query('campaignId') campaignId?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const normalizedDryRun = !(dryRun === '0' || dryRun === 'false');
+    const normalizedLimit = limit ? Number(limit) : undefined;
+    return this.service.backfillMissingThumbs(req.user, {
+      campaignId: campaignId || undefined,
+      dryRun: normalizedDryRun,
+      limit: Number.isFinite(normalizedLimit as number) ? normalizedLimit : undefined,
+    });
+  }
+
+  /**
    * Lists maps belonging to the user's other campaigns (excluding the given campaignId).
    * Each item includes campaignName so the UI can show which campaign it came from.
    * @param campaignId - The active campaign to exclude.

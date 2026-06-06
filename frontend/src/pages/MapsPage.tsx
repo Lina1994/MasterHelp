@@ -582,8 +582,8 @@ export default function MapsPage() {
             } else {
               // Web: abrir nueva ventana/nueva pestaña con la ruta de proyección
               const url = campaignId
-                ? `${window.location.origin}/projection/maps?campaignId=${encodeURIComponent(campaignId)}`
-                : `${window.location.origin}/projection/maps`;
+                ? `${window.location.origin}/#/projection/maps?campaignId=${encodeURIComponent(campaignId)}`
+                : `${window.location.origin}/#/projection/maps`;
               window.open(url, 'projection_maps', 'noopener,noreferrer');
             }
           }}
@@ -598,8 +598,8 @@ export default function MapsPage() {
               try { await (window as any).electronAPI.openSkylineProjection(campaignId); } catch {}
             } else {
               const url = campaignId
-                ? `${window.location.origin}/projection/skyline?campaignId=${encodeURIComponent(campaignId)}`
-                : `${window.location.origin}/projection/skyline`;
+                ? `${window.location.origin}/#/projection/skyline?campaignId=${encodeURIComponent(campaignId)}`
+                : `${window.location.origin}/#/projection/skyline`;
               window.open(url, 'projection_skyline', 'noopener,noreferrer');
             }
           }}
@@ -966,6 +966,7 @@ export default function MapsPage() {
         <WorldMapView
           map={worldMapItem}
           campaignId={campaignId}
+          onSelectMap={setWorldMapItem}
           onClose={() => setWorldMapItem(null)}
         />
       )}

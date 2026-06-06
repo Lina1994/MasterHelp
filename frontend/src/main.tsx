@@ -13,6 +13,14 @@ import { fetchUserFromApi } from './utils/fetchUserFromApi';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+if (typeof window !== 'undefined' && !window.electronAPI) {
+  const { origin, pathname, search, hash } = window.location;
+  if (pathname.startsWith('/projection/')) {
+    const target = `${origin}/#${pathname}${search}${hash || ''}`;
+    window.location.replace(target);
+  }
+}
+
 function Main() {
   const { i18n } = useTranslation();
   const [mode, setMode] = useState<ThemeMode>('light');
