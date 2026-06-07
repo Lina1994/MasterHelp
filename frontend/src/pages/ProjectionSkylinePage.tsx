@@ -9,7 +9,7 @@ import { useActiveMap } from '../components/Map/ActiveMapContext';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useTimeOfDay } from '../components/player/TimeOfDayContext';
 import { getCharacter, CharacterPayload } from '../api/characters';
-import { getActiveSkylineCharacterId } from '../api/campaigns/activeSkylineCharacter';
+import { getActiveSkylineCharacterInfo } from '../api/campaigns/activeSkylineCharacter';
 import { getCampaignMonster } from '../api/bestiary/bestiaryApi';
 import { getActiveEncounterId } from '../api/campaigns/activeEncounter';
 import { getCampaignBattleStatePublic } from '../api/campaigns/battleState';
@@ -438,6 +438,7 @@ const ProjectionSkylinePage: React.FC = () => {
     return cid;
   });
   const [skylineCharacter, setSkylineCharacter] = useState<CharacterPayload | null>(null);
+  const [skylineCharacterImageUrlOverride, setSkylineCharacterImageUrlOverride] = useState<string | null>(null);
   const [showSongTitle, setShowSongTitle] = useState<boolean>(false);
   const [showInitiativeStrip, setShowInitiativeStrip] = useState<boolean>(false);
   const [showQr, setShowQr] = useState<boolean>(false);
@@ -1543,14 +1544,17 @@ const ProjectionSkylinePage: React.FC = () => {
   }, [refreshFromServer, refreshSkylineMapVisualConfig]);
 
   const loadSkylineCharacter = useCallback(async () => {
+    const effectiveCampaignId = campaignIdFromQuery || rawCampaignId || activeCampaign?.id;
     let charId: string | null | undefined = activeCampaign?.activeSkylineCharacter?.id;
-    if (!charId && (campaignIdFromQuery || rawCampaignId || activeCampaign?.id)) {
+    let activeImageUrl: string | null = activeCampaign?.activeSkylineImageUrl ?? null;
+
+    if (effectiveCampaignId) {
       try {
-        const fetched = await getActiveSkylineCharacterId(campaignIdFromQuery || rawCampaignId || activeCampaign?.id || '');
-        charId = fetched ?? undefined;
+        const fetched = await getActiveSkylineCharacterInfo(effectiveCampaignId);
+        charId = fetched.characterId;
+        activeImageUrl = fetched.activeSkylineImageUrl ?? null;
         setConnectionError(false); // Clear error on successful request
       } catch (err: any) {
-        charId = undefined;
         // Check if it's a network/connection error
         if (!err?.response) {
           setConnectionError(true);
@@ -1558,20 +1562,28 @@ const ProjectionSkylinePage: React.FC = () => {
         }
       }
     }
-    if (!charId) { setSkylineCharacter(null); return; }
+
+    if (!charId) {
+      setSkylineCharacter(null);
+      setSkylineCharacterImageUrlOverride(null);
+      return;
+    }
+
     try {
       const ch = await getCharacter(charId);
       setSkylineCharacter(ch);
+      setSkylineCharacterImageUrlOverride(activeImageUrl);
       setConnectionError(false); // Clear error on successful request
     } catch (err: any) {
       setSkylineCharacter(null);
+      setSkylineCharacterImageUrlOverride(null);
       // Check if it's a network/connection error
       if (!err?.response) {
         setConnectionError(true);
         setLastConnectionAttempt(Date.now());
       }
     }
-  }, [activeCampaign?.activeSkylineCharacter?.id, activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
+  }, [activeCampaign?.activeSkylineCharacter?.id, activeCampaign?.activeSkylineImageUrl, activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
 
   const loadSkylineSettings = useCallback(async () => {
     const cid = campaignIdFromQuery || rawCampaignId || activeCampaign?.id;
@@ -2209,11 +2221,11 @@ const ProjectionSkylinePage: React.FC = () => {
     if (!skylineCharacter) return null;
     const initials = (skylineCharacter.name || '?').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
     const avatarBg = skylineCharacter.tokenColor || '#263238';
-    const src = skylineCharacter.characterImageUrl || skylineCharacter.tokenImageUrl || undefined;
+    const src = skylineCharacterImageUrlOverride || skylineCharacter.characterImageUrl || skylineCharacter.tokenImageUrl || undefined;
     return (
       <StackedCharacterOverlay src={src} initials={initials} bg={avatarBg} />
     );
-  }, [skylineCharacter]);
+  }, [skylineCharacter, skylineCharacterImageUrlOverride]);
 
   // Calculate current turn participant for image display
   const currentTurnParticipant = React.useMemo(() => {

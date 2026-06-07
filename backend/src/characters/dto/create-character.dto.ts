@@ -60,6 +60,7 @@ export class CreateCharacterDto {
   @IsOptional() @IsString() tokenColor?: string;
   @IsOptional() @IsString() tokenImageUrl?: string;
   @IsOptional() @IsString() characterImageUrl?: string;
+  @IsOptional() @IsArray() characterImages?: { url: string; name?: string; isDefault: boolean }[];
 
   @IsOptional() @IsIn(['int','wis','cha']) spellcastingAbility?: 'int'|'wis'|'cha';
   @IsOptional() @IsInt() spellSaveDC?: number;

@@ -54,6 +54,9 @@ export class Campaign {
   @ManyToOne(() => Character, { nullable: true, eager: true })
   activeSkylineCharacter?: Character | null;
 
+  @Column({ type: 'text', nullable: true })
+  activeSkylineImageUrl?: string | null;
+
   /**
    * Encounter currently active for this campaign.
    * Used to sync combat state across devices/windows.

@@ -129,6 +129,9 @@ export class Character {
   @Column({ type: 'text', nullable: true })
   characterImageUrl?: string | null;
 
+  @Column({ type: 'simple-json', nullable: true })
+  characterImages?: { url: string; name?: string; isDefault: boolean }[] | null;
+
   // --- Spellcasting ---
   @Column({ type: 'text', nullable: true })
   spellcastingAbility?: 'int' | 'wis' | 'cha' | null; // Aptitud Mágica

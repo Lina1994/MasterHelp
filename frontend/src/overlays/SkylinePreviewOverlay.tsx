@@ -81,11 +81,19 @@ silentApi.interceptors.request.use((config) => {
  * @param campaignId - Campaign identifier.
  * @returns Character ID string, or null if none is set.
  */
-async function silentGetActiveCharId(campaignId: string): Promise<string | null> {
-  const res = await silentApi.get<{ characterId: string | null }>(
+type ActiveSkylineCharInfo = {
+  characterId: string | null;
+  activeSkylineImageUrl: string | null;
+};
+
+async function silentGetActiveCharInfo(campaignId: string): Promise<ActiveSkylineCharInfo> {
+  const res = await silentApi.get<ActiveSkylineCharInfo>(
     `/campaigns/${campaignId}/active-skyline-character`,
   );
-  return res.data?.characterId ?? null;
+  return {
+    characterId: res.data?.characterId ?? null,
+    activeSkylineImageUrl: res.data?.activeSkylineImageUrl ?? null,
+  };
 }
 
 /** Shape of a skyline item as returned by the API. */
@@ -310,6 +318,8 @@ const SkylinePreviewOverlay: React.FC = () => {
 
   // ── data state ────────────────────────────────────────────────────────
   const [character, setCharacter] = useState<CharThumb | null>(null);
+  /** Per-campaign override image selected as Skyline emote. */
+  const [activeSkylineImageUrl, setActiveSkylineImageUrl] = useState<string | null>(null);
   /** ID of the currently active skyline character (kept in sync with poll). */
   const [activeCharId, setActiveCharId] = useState<string | null>(null);
   const [items, setItems] = useState<SkylineItem[]>([]);
@@ -343,6 +353,7 @@ const SkylinePreviewOverlay: React.FC = () => {
     try {
       await silentApi.patch(`/campaigns/${campaignId}/active-skyline-character`, { characterId: null });
       setCharacter(null);
+      setActiveSkylineImageUrl(null);
       setActiveCharId(null);
       // Refresh the shared campaign context so CharacterList / CharacterSheetModal
       // see activeSkylineCharacter as null without requiring a manual re-fetch.
@@ -597,8 +608,8 @@ const SkylinePreviewOverlay: React.FC = () => {
     isFetching.current = true;
     try {
       // Run all four calls in parallel; each is independently protected
-      const [charId, skyItems, battleState, monsterMap] = await Promise.allSettled([
-        silentGetActiveCharId(campaignId),
+      const [activeCharInfo, skyItems, battleState, monsterMap] = await Promise.allSettled([
+        silentGetActiveCharInfo(campaignId),
         silentGetSkylineItems(campaignId),
         silentGetBattleState(campaignId),
         silentGetParticipantMonsterMap(campaignId),
@@ -615,16 +626,19 @@ const SkylinePreviewOverlay: React.FC = () => {
       }
 
       // Update character only on success
-      if (charId.status === 'fulfilled' && charId.value) {
-        setActiveCharId(charId.value);
+      if (activeCharInfo.status === 'fulfilled' && activeCharInfo.value.characterId) {
+        const nextCharId = activeCharInfo.value.characterId;
+        setActiveCharId(nextCharId);
+        setActiveSkylineImageUrl(activeCharInfo.value.activeSkylineImageUrl ?? null);
         try {
-          const ch = await silentGetCharacter(charId.value);
+          const ch = await silentGetCharacter(nextCharId);
           setCharacter(ch);
         } catch {
           setCharacter(null);
         }
-      } else if (charId.status === 'fulfilled' && !charId.value) {
+      } else if (activeCharInfo.status === 'fulfilled' && !activeCharInfo.value.characterId) {
         setActiveCharId(null);
+        setActiveSkylineImageUrl(null);
         setCharacter(null);
       }
 
@@ -708,6 +722,7 @@ const SkylinePreviewOverlay: React.FC = () => {
   useEffect(() => {
     if (!enabled || !campaignId) {
       setCharacter(null);
+      setActiveSkylineImageUrl(null);
       setItems([]);
       setCurrentTurnParticipant(null);
       return;
@@ -846,7 +861,7 @@ const SkylinePreviewOverlay: React.FC = () => {
   if (!enabled || !campaignId) return null;
 
   const charImageSrc =
-    character?.characterImageUrl || character?.tokenImageUrl || null;
+    activeSkylineImageUrl || character?.characterImageUrl || character?.tokenImageUrl || null;
   const charInitials = character
     ? (character.name || '?').split(' ').map((s: string) => s[0]).slice(0, 2).join('').toUpperCase()
     : '?';

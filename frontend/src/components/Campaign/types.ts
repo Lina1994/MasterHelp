@@ -26,6 +26,7 @@ export interface Campaign {
     tokenImageUrl?: string | null;
     characterImageUrl?: string | null;
   } | null;
+  activeSkylineImageUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }

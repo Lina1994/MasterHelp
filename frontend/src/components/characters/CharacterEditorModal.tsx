@@ -31,6 +31,7 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -40,6 +41,8 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { ImageUploader } from '../Campaign/ImageUploader';
 import { TokenImageCropDialog } from './TokenImageCropDialog';
 import { SpellAutocomplete } from './SpellAutocomplete';
@@ -302,7 +305,19 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   const { getManualName } = useManualNames();
 
   React.useEffect(() => {
-    setDraft(initialDraft);
+    if (initialDraft) {
+      const normalized = { ...initialDraft };
+      if (!normalized.characterImages || normalized.characterImages.length === 0) {
+        if (normalized.characterImageUrl) {
+          normalized.characterImages = [{ url: normalized.characterImageUrl, name: 'Por defecto', isDefault: true }];
+        } else {
+          normalized.characterImages = [];
+        }
+      }
+      setDraft(normalized);
+    } else {
+      setDraft(null);
+    }
     setTab(0);
     setErrorText(null);
     // Load maps + class/race/background options when opening the editor
@@ -965,9 +980,121 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
               {/* ─── COL 4: Image + Traits + Money + Equipment + Proficiencies ─── */}
               <Grid size={{ xs: 12, md: 4 }}>
 
-                {/* Character illustration upload */}
-                <SheetSection title={t('character_image', 'Imagen del Personaje')}>
-                  <ImageUploader initialValue={draft.characterImageUrl} onChange={(v) => setDraft({ ...draft, characterImageUrl: v })} />
+                {/* Character illustration upload & emotes */}
+                <SheetSection title={t('character_image_and_emotes', 'Imágenes del Personaje (Emotes)')}>
+                  {draft && (
+                    <Stack spacing={2}>
+                      {/* Emote List */}
+                      {draft.characterImages && draft.characterImages.length > 0 && (
+                        <Box sx={{ maxHeight: 280, overflowY: 'auto', pr: 0.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                          {draft.characterImages.map((img, idx) => (
+                            <Paper
+                              key={idx}
+                              variant="outlined"
+                              sx={{
+                                p: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                borderColor: img.isDefault ? 'primary.main' : 'divider',
+                                bgcolor: img.isDefault ? 'action.selected' : 'background.paper',
+                                borderRadius: 2
+                              }}
+                            >
+                              <Avatar
+                                src={img.url}
+                                variant="rounded"
+                                sx={{ width: 44, height: 44, bgcolor: 'action.disabledBackground' }}
+                              />
+                              <TextField
+                                size="small"
+                                label={t('emote_name', 'Nombre')}
+                                value={img.name || ''}
+                                onChange={(e) => {
+                                  const nextList = [...(draft.characterImages || [])];
+                                  nextList[idx] = { ...nextList[idx], name: e.target.value };
+                                  setDraft({ ...draft, characterImages: nextList });
+                                }}
+                                sx={{ flex: 1 }}
+                              />
+                              <Tooltip title={img.isDefault ? t('default', 'Predeterminado') : t('set_default', 'Hacer predeterminado')}>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    const nextList = (draft.characterImages || []).map((item, i) => ({
+                                      ...item,
+                                      isDefault: i === idx
+                                    }));
+                                    setDraft({
+                                      ...draft,
+                                      characterImages: nextList,
+                                      characterImageUrl: img.url
+                                    });
+                                  }}
+                                  color={img.isDefault ? 'warning' : 'default'}
+                                >
+                                  {img.isDefault ? <StarIcon fontSize="small" /> : <StarBorderIcon fontSize="small" />}
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title={t('delete', 'Eliminar')}>
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => {
+                                    const nextList = (draft.characterImages || []).filter((_, i) => i !== idx);
+                                    let defaultUrl = draft.characterImageUrl;
+                                    if (img.isDefault) {
+                                      if (nextList.length > 0) {
+                                        nextList[0].isDefault = true;
+                                        defaultUrl = nextList[0].url;
+                                      } else {
+                                        defaultUrl = '';
+                                      }
+                                    }
+                                    setDraft({
+                                      ...draft,
+                                      characterImages: nextList,
+                                      characterImageUrl: defaultUrl
+                                    });
+                                  }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Paper>
+                          ))}
+                        </Box>
+                      )}
+
+                      {/* Add new emote */}
+                      <Box sx={{ borderTop: '1px dashed', borderColor: 'divider', pt: 2 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 1, textTransform: 'uppercase', color: 'text.secondary' }}>
+                          {t('add_new_emote', 'Añadir nueva imagen (emote)')}
+                        </Typography>
+                        <ImageUploader
+                          initialValue=""
+                          onChange={(v) => {
+                            if (!v) return;
+                            const current = draft.characterImages || [];
+                            const isFirst = current.length === 0;
+                            const nextList = [
+                              ...current,
+                              {
+                                url: v,
+                                name: `${t('emote', 'Emote')} ${current.length + 1}`,
+                                isDefault: isFirst
+                              }
+                            ];
+                            setDraft({
+                              ...draft,
+                              characterImages: nextList,
+                              ...(isFirst ? { characterImageUrl: v } : {})
+                            });
+                          }}
+                        />
+                      </Box>
+                    </Stack>
+                  )}
                 </SheetSection>
 
                 {/* Traits & Features */}

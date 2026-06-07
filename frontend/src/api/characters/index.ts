@@ -23,6 +23,7 @@ export interface CharacterPayload {
   selectedFeats?: string[];
   age?: string; height?: string; weight?: string; eyes?: string; skin?: string; hair?: string;
   tokenKind?: 'color'|'image'; tokenColor?: string; tokenImageUrl?: string; characterImageUrl?: string;
+  characterImages?: { url: string; name?: string; isDefault: boolean }[];
   spellcastingAbility?: 'int'|'wis'|'cha' | null; spellSaveDC?: number | null; spellAttackBonus?: number | null; cantrips?: string[]; spellsByLevel?: Record<string,string[]>;
   experiencePoints?: number;
   cp?: number; sp?: number; ep?: number; gp?: number; pp?: number;

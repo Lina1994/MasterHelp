@@ -256,10 +256,13 @@ export class CampaignsService {
     const campaign = await this.getCampaignForMember(campaignId, requestingUserId, [
       'activeSkylineCharacter',
     ]);
-    return { characterId: campaign.activeSkylineCharacter?.id ?? null };
+    return {
+      characterId: campaign.activeSkylineCharacter?.id ?? null,
+      activeSkylineImageUrl: campaign.activeSkylineImageUrl ?? null,
+    };
   }
 
-  async setActiveSkylineCharacter(campaignId: string, characterId: string | null) {
+  async setActiveSkylineCharacter(campaignId: string, characterId: string | null, activeSkylineImageUrl: string | null = null) {
     const campaign = await this.campaignsRepository.findOne({
       where: { id: campaignId },
       relations: ['owner', 'activeSkylineCharacter'],
@@ -268,6 +271,7 @@ export class CampaignsService {
 
     if (!characterId) {
       campaign.activeSkylineCharacter = null;
+      campaign.activeSkylineImageUrl = null;
       await this.campaignsRepository.save(campaign);
       return { ok: true };
     }
@@ -287,6 +291,7 @@ export class CampaignsService {
     }
 
     campaign.activeSkylineCharacter = character;
+    campaign.activeSkylineImageUrl = activeSkylineImageUrl;
     await this.campaignsRepository.save(campaign);
     return { ok: true };
   }

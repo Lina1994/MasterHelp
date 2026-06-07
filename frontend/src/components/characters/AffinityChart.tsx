@@ -30,6 +30,8 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import ArticleIcon from '@mui/icons-material/Article';
 import AddLinkIcon from '@mui/icons-material/AddLink';
 import CastIcon from '@mui/icons-material/Cast';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import { EmoteRadialMenu } from './EmoteRadialMenu';
 import { useTranslation } from 'react-i18next';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
 import { useCampaignsContext } from '../Campaign/CampaignContext';
@@ -328,6 +330,8 @@ export default function AffinityChart() {
 
   /* ── radial menu + sheet ── */
   const [radialMenuCharId, setRadialMenuCharId] = useState<string | null>(null);
+  const [emoteMenuAnchor, setEmoteMenuAnchor] = useState<null | HTMLElement>(null);
+  const [emoteMenuCharId, setEmoteMenuCharId] = useState<string | null>(null);
   const [sheetCharId, setSheetCharId] = useState<string | null>(null);
   const [skylineLoading, setSkylineLoading] = useState(false);
 

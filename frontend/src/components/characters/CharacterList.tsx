@@ -40,7 +40,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SearchIcon from '@mui/icons-material/Search';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
+import { EmoteRadialMenu } from './EmoteRadialMenu';
 import { useCampaignsContext } from '../Campaign/CampaignContext';
 import { getCurrentUser } from '../../utils/getCurrentUser';
 import { CharacterEditorModal } from './CharacterEditorModal';
@@ -89,6 +91,8 @@ export const CharacterList: React.FC = () => {
   const [draft, setDraft] = useState<CharacterPayload | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuCharacter, setMenuCharacter] = useState<CharacterPayload | null>(null);
+  const [emoteMenuAnchor, setEmoteMenuAnchor] = useState<null | HTMLElement>(null);
+  const [emoteMenuCharacter, setEmoteMenuCharacter] = useState<null | CharacterPayload>(null);
   const [deleteTarget, setDeleteTarget] = useState<CharacterPayload | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [settingSkylineId, setSettingSkylineId] = useState<string | null>(null);
@@ -278,6 +282,28 @@ export const CharacterList: React.FC = () => {
     }
   };
 
+  const handleSendEmoteToSkyline = async (character: CharacterPayload, emoteUrl: string) => {
+    if (!activeCampaign?.id || !character.id || !isMaster) return;
+    setSettingSkylineId(character.id);
+    try {
+      await setActiveSkylineCharacterId(activeCampaign.id, character.id, emoteUrl);
+      await fetchCampaigns();
+      try {
+        localStorage.setItem('app.skyline.activeCharacterUpdated', JSON.stringify({ campaignId: activeCampaign.id, at: Date.now() }));
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('campaign-sync');
+          bc.postMessage({ type: 'activeSkylineChanged', campaignId: activeCampaign.id });
+          bc.close();
+        }
+        try { (window as any).electronAPI?.projectionPoke?.({ kind: 'activeSkylineChanged', campaignId: activeCampaign.id }); } catch {}
+      } catch {}
+    } catch (err) {
+      console.error('[CharacterList] send emote failed', err);
+    } finally {
+      setSettingSkylineId(null);
+    }
+  };
+
   return (
     <Box>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
@@ -374,17 +400,43 @@ export const CharacterList: React.FC = () => {
                     </CardContent>
                   </CardActionArea>
                   <CardActions sx={{ justifyContent: 'space-between' }}>
-                    {isMaster && activeCampaign?.id && (
-                      <Button
-                        size="small"
-                        variant={activeCampaign.activeSkylineCharacter?.id === c.id ? 'outlined' : 'contained'}
-                        color={activeCampaign.activeSkylineCharacter?.id === c.id ? 'warning' : 'primary'}
-                        disabled={settingSkylineId === c.id}
-                        onClick={() => handleSkylineToggle(c)}
-                      >
-                        {activeCampaign.activeSkylineCharacter?.id === c.id ? 'Quitar de Skyline' : 'Enviar a Skyline'}
-                      </Button>
-                    )}
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      {isMaster && activeCampaign?.id && (
+                        <Button
+                          size="small"
+                          variant={activeCampaign.activeSkylineCharacter?.id === c.id ? 'outlined' : 'contained'}
+                          color={activeCampaign.activeSkylineCharacter?.id === c.id ? 'warning' : 'primary'}
+                          disabled={settingSkylineId === c.id}
+                          onClick={() => handleSkylineToggle(c)}
+                        >
+                          {activeCampaign.activeSkylineCharacter?.id === c.id ? 'Quitar de Skyline' : 'Enviar a Skyline'}
+                        </Button>
+                      )}
+                      {isMaster && activeCampaign?.id && (() => {
+                        const emotesCount = (c.characterImages || []).filter(img => img.url).length;
+                        const hasMultiple = emotesCount > 1;
+                        return (
+                          <Tooltip title={hasMultiple ? t('emotes', 'Emotes') : t('emotes_disabled', 'Sin emotes adicionales')}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                disabled={!hasMultiple || settingSkylineId === c.id}
+                                onClick={(e) => {
+                                  setEmoteMenuAnchor(e.currentTarget);
+                                  setEmoteMenuCharacter(c);
+                                }}
+                                color={activeCampaign.activeSkylineCharacter?.id === c.id ? 'warning' : 'default'}
+                                sx={{
+                                  opacity: hasMultiple ? 1 : 0.4,
+                                }}
+                              >
+                                <EmojiEmotionsIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        );
+                      })()}
+                    </Stack>
                     <IconButton aria-label={t('more_options','Más opciones')} onClick={(e) => openMenu(e, c)}>
                       <MoreVertIcon />
                     </IconButton>
@@ -432,6 +484,19 @@ export const CharacterList: React.FC = () => {
         campaignPlayers={campaignPlayers}
         isMaster={isMaster}
       />
+
+      {emoteMenuCharacter && (
+        <EmoteRadialMenu
+          open={Boolean(emoteMenuAnchor)}
+          anchorEl={emoteMenuAnchor}
+          onClose={() => {
+            setEmoteMenuAnchor(null);
+            setEmoteMenuCharacter(null);
+          }}
+          emotes={emoteMenuCharacter.characterImages || []}
+          onSelectEmote={(url) => handleSendEmoteToSkyline(emoteMenuCharacter, url)}
+        />
+      )}
     </Box>
   );
 };
