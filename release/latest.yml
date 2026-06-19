@@ -1,8 +1,8 @@
-version: 0.26.400
+version: 0.26.401
 files:
-  - url: MasterHelp-Setup-0.26.400.exe
-    sha512: CR8M+9PQ2+pumlwqnhOkxV4B8sU0Yrvcy1dT7Cj1ijgNH83kP2vgBZb2ZKl7D6i/ml2PkyAjJbgtkFMLnLR1KA==
-    size: 366143742
-path: MasterHelp-Setup-0.26.400.exe
-sha512: CR8M+9PQ2+pumlwqnhOkxV4B8sU0Yrvcy1dT7Cj1ijgNH83kP2vgBZb2ZKl7D6i/ml2PkyAjJbgtkFMLnLR1KA==
-releaseDate: '2026-06-19T17:02:10.752Z'
+  - url: MasterHelp-Setup-0.26.401.exe
+    sha512: YahQIozZDp+9pTPJ2qJsTVGNJvz92zhvLulYCgA61T+gn+Olh6UJ4dn0nKSPmb4LGkWoAMQeRt45ZlfWf6b4Ew==
+    size: 366144395
+path: MasterHelp-Setup-0.26.401.exe
+sha512: YahQIozZDp+9pTPJ2qJsTVGNJvz92zhvLulYCgA61T+gn+Olh6UJ4dn0nKSPmb4LGkWoAMQeRt45ZlfWf6b4Ew==
+releaseDate: '2026-06-19T17:31:17.902Z'

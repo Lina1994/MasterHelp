@@ -391,7 +391,7 @@ function startStaticServer() {
  * @param {number} delayMs  Milisegundos entre reintentos (por defecto 500).
  * @returns {Promise<boolean>}
  */
-function waitForBackendReady(retries = 10, delayMs = 500) {
+function waitForBackendReady(retries = 30, delayMs = 1000) {
   return new Promise((resolve) => {
     let attempt = 0;
     const check = () => {
@@ -522,13 +522,17 @@ function startBackend() {
       if (!started) finish(new Error(`Backend exited with code ${code}`));
     });
 
-    // Timeout de seguridad: si en 30 s no arranca, reportar error de inicio.
+    // Timeout de seguridad: si en 90 s no arranca, continuar igualmente.
+    // El cold-start en Windows (creación de BD, antivirus, caché frío) puede
+    // superar los 30 s fácilmente en la primera ejecución.
     setTimeout(() => {
       if (!started && !settled) {
-        log('[backend] Timeout esperando arranque');
-        finish(new Error('Timeout esperando arranque del backend (30s)'));
+        log('[backend] Timeout esperando arranque (90s) — se continúa de todas formas');
+        // Resolver en vez de rechazar: el backend puede terminar de arrancar
+        // un poco después y la app funcionará igualmente.
+        finish();
       }
-    }, 30_000);
+    }, 90_000);
   });
 }
 
@@ -648,11 +652,19 @@ app.whenReady().then(async () => {
     log('[startup] Backend ready at', `${Date.now() - startupStartedAt}ms`);
   } catch (err) {
     log('[startup] No se pudo arrancar el backend:', err?.message ?? err);
-    // Informar al usuario con un diálogo nativo
-    dialog.showErrorBox(
-      'MasterHelp – Error al iniciar',
-      `No se pudo arrancar el servidor interno.\n\n${err?.message ?? err}\n\nRevisa el log en:\n${path.join(app.getPath('userData'), 'backend.log')}`,
-    );
+    // Continuar sin bloquear: intentar un último health-check antes de
+    // mostrar el diálogo de error. El backend puede haber terminado de
+    // arrancar justo después del timeout.
+    const lastChance = await waitForBackendReady(10, 1000);
+    if (lastChance) {
+      log('[startup] Backend respondió tras timeout inicial — continuando');
+    } else {
+      log('[startup] Backend sigue sin responder — mostrando error');
+      dialog.showErrorBox(
+        'MasterHelp – Error al iniciar',
+        `No se pudo arrancar el servidor interno.\n\n${err?.message ?? err}\n\nRevisa el log en:\n${path.join(app.getPath('userData'), 'backend.log')}`,
+      );
+    }
   }
 
   // Registrar el manejador para el diálogo de confirmación
