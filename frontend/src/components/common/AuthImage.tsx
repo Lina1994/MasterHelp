@@ -8,6 +8,15 @@ type Props = {
   className?: string;
   onErrorIcon?: React.ReactNode; // optional fallback icon
   onLoad?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
+  /**
+   * When true, the image is only fetched once it scrolls near the viewport
+   * (via IntersectionObserver). Useful in long lists to avoid firing many
+   * concurrent requests at once, which would saturate the browser's
+   * per-host connection limit and delay other critical requests.
+   */
+  lazy?: boolean;
+  /** Margin around the viewport used to start loading early (default '300px'). */
+  rootMargin?: string;
 };
 
 /** Maximum number of automatic retries before giving up. */
@@ -20,11 +29,16 @@ const BASE_RETRY_DELAY = 2000;
  * and converts them to object URLs.
  *
  * Automatically retries failed requests and recovers when the page
- * becomes visible again after being backgrounded.
+ * becomes visible again after being backgrounded. Supports optional
+ * lazy loading to defer off-screen requests.
  */
-export default function AuthImage({ src, alt, style, className, onErrorIcon, onLoad }: Props) {
+export default function AuthImage({ src, alt, style, className, onErrorIcon, onLoad, lazy = false, rootMargin = '300px' }: Props) {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Whether the element is near/in the viewport. Always true when not lazy. */
+  const [inView, setInView] = useState(!lazy);
+  /** Placeholder element observed while the image hasn't loaded yet. */
+  const placeholderRef = useRef<HTMLSpanElement | null>(null);
   const lastSrc = useRef<string | null>(null);
   const retryCount = useRef(0);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -79,7 +93,8 @@ export default function AuthImage({ src, alt, style, className, onErrorIcon, onL
     retryCount.current = 0;
     if (retryTimer.current) clearTimeout(retryTimer.current);
 
-    if (src) loadImage(src, cancelled);
+    // Defer loading until the element is near the viewport when lazy.
+    if (src && inView) loadImage(src, cancelled);
     return () => {
       cancelled.current = true;
       if (retryTimer.current) clearTimeout(retryTimer.current);
@@ -89,7 +104,26 @@ export default function AuthImage({ src, alt, style, className, onErrorIcon, onL
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, loadImage]);
+  }, [src, loadImage, inView]);
+
+  // Observe the placeholder to trigger loading when it approaches the viewport.
+  useEffect(() => {
+    if (!lazy || inView) return;
+    const el = placeholderRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      // Fallback: if observer unavailable, load immediately.
+      setInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        setInView(true);
+        observer.disconnect();
+      }
+    }, { rootMargin });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [lazy, inView, rootMargin]);
 
   // Re-load when the page becomes visible again (handles sleep/hibernate recovery)
   useEffect(() => {
@@ -106,7 +140,21 @@ export default function AuthImage({ src, alt, style, className, onErrorIcon, onL
   if (error) {
     return onErrorIcon ? <>{onErrorIcon}</> : null;
   }
-  if (!objectUrl) return null;
+  if (!objectUrl) {
+    // In lazy mode, render an observable placeholder that fills the container
+    // so the IntersectionObserver can detect when it approaches the viewport.
+    if (lazy) {
+      return (
+        <span
+          ref={placeholderRef}
+          className={className}
+          style={{ display: 'block', width: '100%', height: '100%', ...style }}
+          aria-hidden
+        />
+      );
+    }
+    return null;
+  }
   // eslint-disable-next-line jsx-a11y/alt-text
   return <img src={objectUrl} alt={alt} style={style} className={className} onLoad={onLoad} />;
 }

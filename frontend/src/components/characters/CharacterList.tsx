@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { listCharacters, deleteCharacter, CharacterPayload } from '../../api/characters';
 import { listMaps, MapItemDto } from '../../api/maps';
 import { setActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
@@ -13,7 +13,6 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
-  CardHeader,
   Chip,
   Dialog,
   DialogActions,
@@ -39,10 +38,11 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import CastIcon from '@mui/icons-material/Cast';
 import SearchIcon from '@mui/icons-material/Search';
-import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import { useActiveCampaign } from '../Campaign/ActiveCampaignContext';
-import { EmoteRadialMenu } from './EmoteRadialMenu';
+import { EmoteMenuButton } from './EmoteMenuButton';
+import { notifySkylineCharacterChanged } from '../../utils/skylineSync';
 import { useCampaignsContext } from '../Campaign/CampaignContext';
 import { getCurrentUser } from '../../utils/getCurrentUser';
 import { CharacterEditorModal } from './CharacterEditorModal';
@@ -91,12 +91,15 @@ export const CharacterList: React.FC = () => {
   const [draft, setDraft] = useState<CharacterPayload | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuCharacter, setMenuCharacter] = useState<CharacterPayload | null>(null);
-  const [emoteMenuAnchor, setEmoteMenuAnchor] = useState<null | HTMLElement>(null);
-  const [emoteMenuCharacter, setEmoteMenuCharacter] = useState<null | CharacterPayload>(null);
   const [deleteTarget, setDeleteTarget] = useState<CharacterPayload | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [settingSkylineId, setSettingSkylineId] = useState<string | null>(null);
   const { fetchCampaigns } = useCampaignsContext();
+
+  /** Root element used to measure the available height for the scrollable list. */
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  /** Height (px) of the component so only the inner list scrolls. */
+  const [listViewportHeight, setListViewportHeight] = useState<number>(420);
   
   // Load filters from localStorage on mount
   const [search, setSearch] = useState(() => {
@@ -198,6 +201,19 @@ export const CharacterList: React.FC = () => {
   useEffect(() => { load(); }, [campaignId, mapFilter, activeMapId]);
   useEffect(() => { loadMaps(); }, [campaignId]);
 
+  // Measure the height from the component's top to near the viewport bottom so
+  // the header/filters stay fixed and only the character list scrolls.
+  useEffect(() => {
+    const updateListViewportHeight = () => {
+      const top = rootRef.current?.getBoundingClientRect().top ?? 0;
+      const available = Math.floor(window.innerHeight - top - 24);
+      setListViewportHeight(Math.max(280, available));
+    };
+    updateListViewportHeight();
+    window.addEventListener('resize', updateListViewportHeight);
+    return () => window.removeEventListener('resize', updateListViewportHeight);
+  }, [loading, items.length]);
+
   // Reset filter to __ALL__ if active map is cleared while filter is __ACTIVE__
   useEffect(() => {
     if (mapFilter === '__ACTIVE__' && !activeMapId) {
@@ -266,15 +282,7 @@ export const CharacterList: React.FC = () => {
       const nextValue = isActive ? null : character.id;
       await setActiveSkylineCharacterId(activeCampaign.id, nextValue);
       await fetchCampaigns();
-      try {
-        localStorage.setItem('app.skyline.activeCharacterUpdated', JSON.stringify({ campaignId: activeCampaign.id, at: Date.now() }));
-        if ('BroadcastChannel' in window) {
-          const bc = new BroadcastChannel('campaign-sync');
-          bc.postMessage({ type: 'activeSkylineChanged', campaignId: activeCampaign.id });
-          bc.close();
-        }
-        try { (window as any).electronAPI?.projectionPoke?.({ kind: 'activeSkylineChanged', campaignId: activeCampaign.id }); } catch {}
-      } catch {}
+      notifySkylineCharacterChanged(activeCampaign.id);
     } catch (err) {
       console.error('[CharacterList] skyline toggle failed', err);
     } finally {
@@ -288,15 +296,7 @@ export const CharacterList: React.FC = () => {
     try {
       await setActiveSkylineCharacterId(activeCampaign.id, character.id, emoteUrl);
       await fetchCampaigns();
-      try {
-        localStorage.setItem('app.skyline.activeCharacterUpdated', JSON.stringify({ campaignId: activeCampaign.id, at: Date.now() }));
-        if ('BroadcastChannel' in window) {
-          const bc = new BroadcastChannel('campaign-sync');
-          bc.postMessage({ type: 'activeSkylineChanged', campaignId: activeCampaign.id });
-          bc.close();
-        }
-        try { (window as any).electronAPI?.projectionPoke?.({ kind: 'activeSkylineChanged', campaignId: activeCampaign.id }); } catch {}
-      } catch {}
+      notifySkylineCharacterChanged(activeCampaign.id);
     } catch (err) {
       console.error('[CharacterList] send emote failed', err);
     } finally {
@@ -305,7 +305,21 @@ export const CharacterList: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box
+      ref={rootRef}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: `${listViewportHeight}px`,
+        minHeight: 280,
+        overflow: 'hidden',
+        // Cancel the global bottom padding MainLayout reserves for floating
+        // bars, so the list-only scroll doesn't create an extra outer scrollbar.
+        mb: { xs: -20, sm: -22 },
+      }}
+    >
+      {/* Fixed header: title, action and filters stay pinned while the list scrolls */}
+      <Box sx={{ flexShrink: 0 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
         <Typography variant="h5">{t('characters', 'Personajes')}</Typography>
         <Button startIcon={<AddIcon />} variant="contained" onClick={onCreate}>{t('new', 'Nuevo')}</Button>
@@ -359,85 +373,123 @@ export const CharacterList: React.FC = () => {
           </Select>
         </FormControl>
       </Stack>
+      </Box>
 
+      {/* Scrollable list: the only part that scrolls */}
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pr: 0.5 }}>
       {filtered.length === 0 ? (
         <Typography color="text.secondary">{loading ? t('loading', 'Cargando...') : t('no_characters', 'No hay personajes')}</Typography>
       ) : (
         <Grid container spacing={2}>
           {filtered.map((c) => {
             const initials = (c.name || '?').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
-            const title = `${c.name}`;
             const subheader = [c.kind?.toUpperCase(), c.className, c.race].filter(Boolean).join(' • ');
             const avatarBg = c.tokenColor || '#607d8b';
+            const isActiveSkyline = activeCampaign?.activeSkylineCharacter?.id === c.id;
             return (
               <Grid key={c.id} size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2 }}>
-                <Card variant="outlined">
-                  <CardActionArea onClick={() => navigate(`/characters/${c.id}`)}>
-                    <CardHeader
-                      avatar={
-                        c.tokenKind === 'image' && c.tokenImageUrl ? (
-                          <Avatar src={c.tokenImageUrl} alt={c.name} />
-                        ) : (
-                          <Avatar sx={{ bgcolor: avatarBg }}>{initials}</Avatar>
-                        )
-                      }
-                      title={title}
-                      subheader={subheader}
-                    />
-                    <CardContent>
-                      <Stack direction="row" spacing={1} flexWrap="wrap">
+                <Card
+                  variant="outlined"
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 2,
+                    borderColor: isActiveSkyline ? 'warning.main' : 'divider',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                    '&:hover': { boxShadow: 4 },
+                  }}
+                >
+                  <CardActionArea
+                    onClick={() => navigate(`/characters/${c.id}`)}
+                    sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', flexGrow: 1 }}
+                  >
+                    {/* Prominent token thumbnail */}
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        height: 150,
+                        bgcolor: 'action.hover',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {c.tokenKind === 'image' && c.tokenImageUrl ? (
+                        <Box
+                          component="img"
+                          src={c.tokenImageUrl}
+                          alt={c.name}
+                          sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        />
+                      ) : (
+                        <Avatar sx={{ width: 88, height: 88, bgcolor: avatarBg, fontSize: 32 }}>{initials}</Avatar>
+                      )}
+                      <Chip
+                        size="small"
+                        label={c.kind === 'pc' ? t('pc', 'PC') : t('npc', 'NPC')}
+                        sx={{ position: 'absolute', top: 8, left: 8, bgcolor: 'rgba(0,0,0,0.65)', color: 'common.white' }}
+                      />
+                      <Chip
+                        size="small"
+                        label={c.visibleToPlayers ? t('visible', 'Visible') : t('hidden', 'Oculto')}
+                        color={c.visibleToPlayers ? 'success' : 'default'}
+                        sx={{ position: 'absolute', top: 8, right: 8 }}
+                      />
+                    </Box>
+
+                    <CardContent sx={{ width: '100%', flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 1, pb: 1 }}>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="subtitle1" fontWeight={700} noWrap title={c.name}>{c.name}</Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap title={subheader}>{subheader}</Typography>
+                      </Box>
+                      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mt: 'auto' }}>
                         {typeof c.level === 'number' && <Chip size="small" label={`Nv ${c.level}`} />}
                         {typeof c.armorClass === 'number' && <Chip size="small" label={`AC ${c.armorClass}`} />}
                         {typeof c.currentHp === 'number' && typeof c.maxHp === 'number' && (
                           <Chip size="small" label={`PG ${c.currentHp}/${c.maxHp}`} />
                         )}
-                        <Chip size="small" label={c.visibleToPlayers ? t('visible','Visible') : t('hidden','Oculto')} color={c.visibleToPlayers ? 'success' : 'default'} />
-                        <Chip size="small" label={c.kind === 'pc' ? t('pc','PC') : t('npc','NPC')} variant="outlined" />
                         {c.ownerPlayerId && (
-                          <Tooltip title={t('owner','Propietario') as string}><Chip size="small" label={c.ownerPlayer?.username || `UID ${c.ownerPlayerId}`} /></Tooltip>
+                          <Tooltip title={t('owner', 'Propietario') as string}>
+                            <Chip size="small" variant="outlined" label={c.ownerPlayer?.username || `UID ${c.ownerPlayerId}`} />
+                          </Tooltip>
                         )}
                       </Stack>
                     </CardContent>
                   </CardActionArea>
-                  <CardActions sx={{ justifyContent: 'space-between' }}>
-                    <Stack direction="row" spacing={1} alignItems="center">
+
+                  <CardActions sx={{ justifyContent: 'space-between', px: 1, pt: 0 }}>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
                       {isMaster && activeCampaign?.id && (
-                        <Button
-                          size="small"
-                          variant={activeCampaign.activeSkylineCharacter?.id === c.id ? 'outlined' : 'contained'}
-                          color={activeCampaign.activeSkylineCharacter?.id === c.id ? 'warning' : 'primary'}
-                          disabled={settingSkylineId === c.id}
-                          onClick={() => handleSkylineToggle(c)}
-                        >
-                          {activeCampaign.activeSkylineCharacter?.id === c.id ? 'Quitar de Skyline' : 'Enviar a Skyline'}
-                        </Button>
+                        <Tooltip title={isActiveSkyline ? t('remove_from_skyline', 'Quitar de Skyline') : t('send_to_skyline', 'Enviar a Skyline')}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color={isActiveSkyline ? 'warning' : 'primary'}
+                              disabled={settingSkylineId === c.id}
+                              onClick={() => handleSkylineToggle(c)}
+                            >
+                              <CastIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
                       )}
-                      {isMaster && activeCampaign?.id && (() => {
-                        const emotesCount = (c.characterImages || []).filter(img => img.url).length;
-                        const hasMultiple = emotesCount > 1;
-                        return (
-                          <Tooltip title={hasMultiple ? t('emotes', 'Emotes') : t('emotes_disabled', 'Sin emotes adicionales')}>
-                            <span>
-                              <IconButton
-                                size="small"
-                                disabled={!hasMultiple || settingSkylineId === c.id}
-                                onClick={(e) => {
-                                  setEmoteMenuAnchor(e.currentTarget);
-                                  setEmoteMenuCharacter(c);
-                                }}
-                                color={activeCampaign.activeSkylineCharacter?.id === c.id ? 'warning' : 'default'}
-                                sx={{
-                                  opacity: hasMultiple ? 1 : 0.4,
-                                }}
-                              >
-                                <EmojiEmotionsIcon fontSize="small" />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
-                        );
-                      })()}
+                      {isMaster && activeCampaign?.id && (
+                        <EmoteMenuButton
+                          emotes={c.characterImages || []}
+                          activeUrl={
+                            isActiveSkyline
+                              ? (activeCampaign.activeSkylineImageUrl ?? null)
+                              : null
+                          }
+                          disabled={settingSkylineId === c.id}
+                          color={isActiveSkyline ? 'warning' : 'default'}
+                          onSelectEmote={(url) => handleSendEmoteToSkyline(c, url)}
+                        />
+                      )}
                     </Stack>
-                    <IconButton aria-label={t('more_options','Más opciones')} onClick={(e) => openMenu(e, c)}>
+                    <IconButton aria-label={t('more_options', 'Más opciones')} onClick={(e) => openMenu(e, c)}>
                       <MoreVertIcon />
                     </IconButton>
                   </CardActions>
@@ -447,6 +499,7 @@ export const CharacterList: React.FC = () => {
           })}
         </Grid>
       )}
+      </Box>
 
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
         <MenuItem onClick={handleEditFromMenu}>
@@ -484,19 +537,6 @@ export const CharacterList: React.FC = () => {
         campaignPlayers={campaignPlayers}
         isMaster={isMaster}
       />
-
-      {emoteMenuCharacter && (
-        <EmoteRadialMenu
-          open={Boolean(emoteMenuAnchor)}
-          anchorEl={emoteMenuAnchor}
-          onClose={() => {
-            setEmoteMenuAnchor(null);
-            setEmoteMenuCharacter(null);
-          }}
-          emotes={emoteMenuCharacter.characterImages || []}
-          onSelectEmote={(url) => handleSendEmoteToSkyline(emoteMenuCharacter, url)}
-        />
-      )}
     </Box>
   );
 };

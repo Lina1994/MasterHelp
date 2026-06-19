@@ -1,5 +1,5 @@
 /** Representa a un integrante del encuentro (PJ o enemigo). */
-import { IsIn, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class EncounterParticipantDto {
@@ -62,4 +62,9 @@ export class EncounterParticipantDto {
   @IsOptional()
   @IsString()
   monsterCampaignId?: string;
+
+  /** Indica una invocación añadida en combate; no cuenta para la dificultad. */
+  @IsOptional()
+  @IsBoolean()
+  isSummon?: boolean;
 }

@@ -40,6 +40,14 @@ export class DiarySession {
   @Column({ type: 'simple-json', default: '[]' })
   days: DiaryDayRef[];
 
+  /** Character ids that appeared during the session (deduped, projection order). */
+  @Column({ type: 'simple-json', default: '[]' })
+  characterRefs: string[];
+
+  /** Map ids that appeared during the session (deduped, visit order). */
+  @Column({ type: 'simple-json', default: '[]' })
+  mapRefs: string[];
+
   @Column({ type: 'datetime' })
   startedAt: Date;
 

@@ -19,6 +19,8 @@ export interface EncounterParticipant {
   monsterSlug?: string;
   /** Referencia al monstruo del bestiario de campaña (alternativa a monsterManualId+monsterSlug). */
   monsterCampaignId?: string;
+  /** Indica una invocación añadida en combate; no cuenta para la dificultad. */
+  isSummon?: boolean;
 }
 
 @Entity()

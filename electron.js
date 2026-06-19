@@ -1,5 +1,5 @@
 
-const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, session, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
@@ -119,8 +119,19 @@ function getFrontendSourceAssetPath(filename) {
 }
 
 /**
+ * Maximum width (px) used when embedding the splash image as a data URI.
+ * Large source images (several MB) must be downscaled, otherwise the base64
+ * data URL exceeds Chromium's navigation size limit and the splash renders
+ * blank.
+ */
+const SPLASH_IMAGE_MAX_WIDTH = 960;
+
+/**
  * Resuelve el data URI del splash leyendo StartApp.png desde rutas candidatas.
- * Si no se encuentra, devuelve null para renderizar un fallback textual.
+ * La imagen se decodifica y reescala con `nativeImage` para mantener el data
+ * URI ligero sin importar el tamaño del archivo original.
+ * Si no se encuentra (o no se puede decodificar), devuelve null para renderizar
+ * un fallback textual.
  * @returns {string | null}
  */
 function getSplashImageDataUri() {
@@ -132,10 +143,20 @@ function getSplashImageDataUri() {
   for (const candidate of candidates) {
     try {
       if (!fs.existsSync(candidate)) continue;
-      const imageBuffer = fs.readFileSync(candidate);
-      const base64 = imageBuffer.toString('base64');
+
+      let image = nativeImage.createFromPath(candidate);
+      if (image.isEmpty()) {
+        log('[splash] nativeImage could not decode image:', candidate);
+        continue;
+      }
+
+      const { width } = image.getSize();
+      if (width > SPLASH_IMAGE_MAX_WIDTH) {
+        image = image.resize({ width: SPLASH_IMAGE_MAX_WIDTH });
+      }
+
       log('[splash] Using splash image:', candidate);
-      return `data:image/png;base64,${base64}`;
+      return image.toDataURL();
     } catch (err) {
       log('[splash] Failed reading splash image:', candidate, err?.message ?? err);
     }
@@ -511,6 +532,62 @@ function startBackend() {
   });
 }
 
+/* ---------- Content Security Policy ---------- */
+
+/** Orígenes locales del backend NestJS a los que el renderer hace fetch/stream. */
+const BACKEND_ORIGINS = 'http://localhost:3000 http://127.0.0.1:3000';
+
+/**
+ * Construye la cadena de Content-Security-Policy para el renderer.
+ *
+ * En producción se aplica una política estricta (sin `unsafe-eval`).
+ * En desarrollo se relaja `script-src` y `connect-src` porque Vite necesita
+ * `unsafe-eval`/`unsafe-inline` para el HMR y un WebSocket para recargar módulos.
+ *
+ * @param {boolean} dev - `true` cuando la app corre en modo desarrollo.
+ * @returns {string} Valor para la cabecera `Content-Security-Policy`.
+ */
+function buildContentSecurityPolicy(dev) {
+  const scriptSrc = dev
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    : "script-src 'self'";
+
+  const connectSrc = dev
+    ? `connect-src 'self' ${BACKEND_ORIGINS} ws://localhost:5173 http://localhost:5173`
+    : `connect-src 'self' ${BACKEND_ORIGINS}`;
+
+  return [
+    "default-src 'self'",
+    scriptSrc,
+    // MUI/Emotion inyecta estilos inline; Google Fonts sirve hojas de estilo remotas.
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    `img-src 'self' data: blob: ${BACKEND_ORIGINS}`,
+    `media-src 'self' blob: ${BACKEND_ORIGINS}`,
+    connectSrc,
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'self'",
+  ].join('; ');
+}
+
+/**
+ * Registra un interceptor que añade la cabecera `Content-Security-Policy`
+ * a todas las respuestas del renderer, eliminando la advertencia de seguridad
+ * de Electron y reduciendo la superficie de ataque (XSS, inyección de scripts).
+ */
+function setupContentSecurityPolicy() {
+  const csp = buildContentSecurityPolicy(isDev);
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [csp],
+      },
+    });
+  });
+}
+
 function createWindow() {
   // Ocultar el menú por defecto (File, Edit, View, etc.)
   Menu.setApplicationMenu(null);
@@ -555,6 +632,9 @@ function createWindow() {
 app.whenReady().then(async () => {
   const startupStartedAt = Date.now();
   initLogFile();
+
+  // Aplicar la política de seguridad de contenido antes de cargar contenido.
+  setupContentSecurityPolicy();
 
   splashWindow = createSplashWindow();
   log('[startup] Splash shown at', `${Date.now() - startupStartedAt}ms`);

@@ -39,6 +39,7 @@ import { getCurrentUser } from '../../utils/getCurrentUser';
 import { listCharacters, type CharacterPayload } from '../../api/characters';
 import { listMaps, type MapItemDto } from '../../api/maps';
 import { setActiveSkylineCharacterId } from '../../api/campaigns/activeSkylineCharacter';
+import { useSendEmoteToSkyline } from '../../hooks/useSendEmoteToSkyline';
 import CharacterSheetModal from './CharacterSheetModal';
 import WorldpediaEntityViewer from '../Worldpedia/WorldpediaEntityViewer';
 import {
@@ -684,6 +685,26 @@ export default function AffinityChart() {
   };
 
   /* ── skyline toggle ── */
+  const { sendEmote } = useSendEmoteToSkyline();
+
+  /**
+   * Sends a specific emote of the given character to the Skyline overlay and
+   * closes the radial/emote menus.
+   *
+   * @param charId - UUID of the character whose emote is selected.
+   * @param emoteUrl - Image URL of the chosen emote.
+   */
+  const handleSendEmote = async (charId: string, emoteUrl: string) => {
+    setEmoteMenuAnchor(null);
+    setEmoteMenuCharId(null);
+    setRadialMenuCharId(null);
+    try {
+      await sendEmote(charId, emoteUrl);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Error al actualizar Skyline');
+    }
+  };
+
   /**
    * Sends or removes the given character from the Skyline overlay.
    * Only the campaign owner/master should invoke this.
@@ -1175,7 +1196,17 @@ export default function AffinityChart() {
           const cx = pos.x * zoom + pan.x;
           const cy = pos.y * zoom + pan.y;
           const isInSkyline = (activeCampaign as any)?.activeSkylineCharacter?.id === radialMenuCharId;
-          const actions = [
+          const radialChar = characters.find((c) => c.id === radialMenuCharId);
+          const radialEmoteCount = (radialChar?.characterImages || []).filter((img) => img.url).length;
+          type RadialAction = {
+            angle: number;
+            label: string;
+            icon: React.ReactNode;
+            color: string;
+            disabled: boolean;
+            onClick: (e: React.MouseEvent<HTMLElement>) => void;
+          };
+          const actions: RadialAction[] = [
             {
               angle: -90,
               label: t('view_sheet', 'Ver ficha'),
@@ -1203,7 +1234,20 @@ export default function AffinityChart() {
                 disabled: skylineLoading,
                 onClick: () => handleSkylineToggle(radialMenuCharId),
               },
-            ] : []),
+            ] as RadialAction[] : []),
+            ...(isMaster && radialEmoteCount > 1 ? [
+              {
+                angle: 30,
+                label: t('change_emote', 'Cambiar emote'),
+                icon: <EmojiEmotionsIcon fontSize="small" />,
+                color: '#6a1b9a',
+                disabled: skylineLoading,
+                onClick: (e: React.MouseEvent<HTMLElement>) => {
+                  setEmoteMenuCharId(radialMenuCharId);
+                  setEmoteMenuAnchor(e.currentTarget);
+                },
+              },
+            ] as RadialAction[] : []),
           ];
           return (
             <>
@@ -1220,7 +1264,7 @@ export default function AffinityChart() {
                       <IconButton
                         size="small"
                         disabled={disabled}
-                        onClick={(e) => { e.stopPropagation(); onClick(); }}
+                        onClick={(e) => { e.stopPropagation(); onClick(e); }}
                         sx={{
                           width: 40,
                           height: 40,
@@ -1312,6 +1356,30 @@ export default function AffinityChart() {
           onClose={() => setSheetCharId(null)}
         />
       )}
+
+      {/* ── Emote selection menu (opened from radial menu) ── */}
+      {emoteMenuCharId && (() => {
+        const emoteChar = characters.find((c) => c.id === emoteMenuCharId);
+        if (!emoteChar) return null;
+        const isInSkyline = (activeCampaign as any)?.activeSkylineCharacter?.id === emoteMenuCharId;
+        const activeEmoteUrl = isInSkyline
+          ? ((activeCampaign as any)?.activeSkylineImageUrl ?? null)
+          : null;
+        return (
+          <EmoteRadialMenu
+            open={Boolean(emoteMenuAnchor)}
+            anchorEl={emoteMenuAnchor}
+            onClose={() => {
+              setEmoteMenuAnchor(null);
+              setEmoteMenuCharId(null);
+              setRadialMenuCharId(null);
+            }}
+            emotes={emoteChar.characterImages || []}
+            activeUrl={activeEmoteUrl}
+            onSelectEmote={(url) => handleSendEmote(emoteMenuCharId, url)}
+          />
+        );
+      })()}
 
       {/* ── Add Link Dialog ── */}
       <Dialog open={addDialogOpen} onClose={() => { setAddDialogOpen(false); setLinkSourceId(null); }} maxWidth="xs" fullWidth>

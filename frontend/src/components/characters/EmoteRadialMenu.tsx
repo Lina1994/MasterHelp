@@ -1,5 +1,5 @@
 import React from 'react';
-import { Popover, Box, IconButton, Avatar, Tooltip } from '@mui/material';
+import { Popover, Box, IconButton, Avatar, Tooltip, PopoverOrigin } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface Emote {
@@ -14,7 +14,29 @@ interface EmoteRadialMenuProps {
   onClose: () => void;
   emotes: Emote[];
   onSelectEmote: (url: string) => void;
+  /**
+   * URL of the emote currently active in the Skyline for this character.
+   * When provided, the matching emote is highlighted; otherwise the default
+   * emote is highlighted as a fallback.
+   */
+  activeUrl?: string | null;
+  /**
+   * Where the popover attaches to the anchor element. Defaults to centering
+   * the radial menu on the anchor. Override it when the anchor sits near a
+   * screen edge (e.g. the Skyline preview overlay) to open the menu away from
+   * sibling controls.
+   */
+  anchorOrigin?: PopoverOrigin;
+  /** Origin point of the popover content. Pair with {@link anchorOrigin}. */
+  transformOrigin?: PopoverOrigin;
+  /**
+   * Stacking order for the popover. Override it when rendering above other
+   * high z-index layers (the Skyline preview overlay uses zIndex 1400).
+   */
+  zIndex?: number;
 }
+
+const CENTERED_ORIGIN: PopoverOrigin = { vertical: 'center', horizontal: 'center' };
 
 export const EmoteRadialMenu: React.FC<EmoteRadialMenuProps> = ({
   open,
@@ -22,6 +44,10 @@ export const EmoteRadialMenu: React.FC<EmoteRadialMenuProps> = ({
   onClose,
   emotes,
   onSelectEmote,
+  activeUrl = null,
+  anchorOrigin = CENTERED_ORIGIN,
+  transformOrigin = CENTERED_ORIGIN,
+  zIndex,
 }) => {
   const R = 80; // Radio del círculo en px
   const size = 200; // Tamaño del contenedor en px
@@ -36,14 +62,9 @@ export const EmoteRadialMenu: React.FC<EmoteRadialMenuProps> = ({
       open={open}
       anchorEl={anchorEl}
       onClose={onClose}
-      anchorOrigin={{
-        vertical: 'center',
-        horizontal: 'center',
-      }}
-      transformOrigin={{
-        vertical: 'center',
-        horizontal: 'center',
-      }}
+      sx={zIndex !== undefined ? { zIndex } : undefined}
+      anchorOrigin={anchorOrigin}
+      transformOrigin={transformOrigin}
       slotProps={{
         paper: {
           sx: {
@@ -129,11 +150,14 @@ export const EmoteRadialMenu: React.FC<EmoteRadialMenuProps> = ({
           const y = center + R * Math.sin(rad) - 24;
 
           const label = emote.name || `Emote ${idx + 1}`;
+          // The active emote is the one currently shown in the Skyline. When no
+          // active override is known, fall back to highlighting the default.
+          const isActive = activeUrl ? emote.url === activeUrl : emote.isDefault;
 
           return (
             <Tooltip
               key={idx}
-              title={`${label}${emote.isDefault ? ' (Default)' : ''}`}
+              title={`${label}${isActive ? ' (Activo)' : ''}`}
               arrow
               placement="top"
             >
@@ -157,7 +181,7 @@ export const EmoteRadialMenu: React.FC<EmoteRadialMenuProps> = ({
                   justifyContent: 'center',
                   transition: 'all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                   boxShadow: 4,
-                  border: emote.isDefault ? '2.5px solid #ffb300' : '2px solid rgba(255, 255, 255, 0.5)',
+                  border: isActive ? '2.5px solid #ffb300' : '2px solid rgba(255, 255, 255, 0.5)',
                   '&:hover': {
                     transform: 'scale(1.22)',
                     zIndex: 8,

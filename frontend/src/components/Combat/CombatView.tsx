@@ -27,6 +27,7 @@ import OutboundIcon from '@mui/icons-material/Outbound';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AuthImage from '../../components/common/AuthImage';
 import ProjectedMapMirror from '../../components/Map/ProjectedMapMirror';
+import { readRuntimeFogEnabled, writeRuntimeFogEnabled } from '../../utils/fogRuntime';
 import type { TokenCandidate } from '../../components/Map/ProjectedMapMirrorTools';
 import { useSecondaryWindowSizes } from '../../hooks/useSecondaryWindowSizes';
 import { useMapTokens } from '../../hooks/useMapTokens';
@@ -56,22 +57,18 @@ import InitiativePanel from './InitiativePanel';
 import ParticipantsPanel from './ParticipantsPanel';
 import DetailCard from './DetailCard';
 import { useCombatNotes } from '../../hooks/useCombatNotes';
-import { computeEnemyDisplayNameById, prettySkill, prettySense, stripGroupSuffix } from './utils';
+import {
+  startCombatLog,
+  appendCombatSnapshot,
+  endCombatLog,
+  type CombatParticipantSnapshot,
+} from '../../api/campaigns/combatLog';
+import CombatHistoryPanel from './CombatHistoryPanel';
+import EncounterDifficultyMeter from './EncounterDifficultyMeter';
+import { resolveDifficultyInputs } from '../../utils/encounterDifficulty';
+import { computeEnemyDisplayNameById, indexToLetters, prettySkill, prettySense, stripGroupSuffix } from './utils';
 import type { GridSettings } from '../../components/Map/MapGridOverlay';
 import { allocateTokenCells } from '../../utils/tokenPlacement';
-
-function readRuntimeFogEnabled(campaignId: string | undefined, mapId: string | null | undefined): boolean | null {
-  if (!campaignId || !mapId) return null;
-  try {
-    const raw = localStorage.getItem('app.map.fog.enabled');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    const value = parsed?.[`${campaignId}:${mapId}`];
-    return typeof value === 'boolean' ? value : null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * CombatView: vista de combate con selección de mapa/encuentro,
@@ -147,7 +144,12 @@ export default function CombatView({
 
   const orderedParticipants = useMemo(() => {
     const base = participantsDraft.length ? participantsDraft : (selectedEncounter?.participants || []);
-    const list = base.filter((p) => typeof p.initiative === 'number' && !Number.isNaN(p.initiative as any));
+    const list = base.filter((p) => {
+      const ini = p.initiative;
+      // Exclude participants without a real initiative (0 counts as "not in order").
+      if (typeof ini !== 'number' || Number.isNaN(ini as any) || ini === 0) return false;
+      return true;
+    });
     return list.sort((a, b) => (b.initiative! - a.initiative!));
   }, [selectedEncounter, participantsDraft]);
 
@@ -155,7 +157,29 @@ export default function CombatView({
     const cid = campaign?.id;
     return cid && activeEncounterId ? `${cid}:${activeEncounterId}` : null;
   }, [campaign?.id, activeEncounterId]);
-  const { round, index: turnIndex, currentId: currentTurnId, hydrated: turnHydrated, nextTurn: nextTurnHook, previousTurn: previousTurnHook, resetToStart, setIndex: setTurnIndex, setRound: setTurnRound } = useTurnOrder(sessionKey, orderedParticipants);
+
+  /**
+   * Ids of participants currently downed (HP <= 0). They stay in the initiative
+   * list (they could be revived) but appear dimmed and have their turn skipped.
+   * Characters read their HP from charMap so live edits are reflected.
+   */
+  const downedIds = useMemo(() => {
+    const s = new Set<string>();
+    orderedParticipants.forEach((p) => {
+      const isChar = p.kind === 'character' || charMap.has(p.id);
+      const hp = isChar ? (charMap.get(p.id)?.currentHp ?? p.currentHp) : p.currentHp;
+      if (typeof hp === 'number' && hp <= 0) s.add(p.id);
+    });
+    return s;
+  }, [orderedParticipants, charMap]);
+
+  /** Predicate used by useTurnOrder to skip downed participants on turn navigation. */
+  const isTurnSkippable = useCallback(
+    (id: string | null | undefined) => !!id && downedIds.has(id),
+    [downedIds],
+  );
+
+  const { round, index: turnIndex, currentId: currentTurnId, hydrated: turnHydrated, nextTurn: nextTurnHook, previousTurn: previousTurnHook, resetToStart, setIndex: setTurnIndex, setRound: setTurnRound } = useTurnOrder(sessionKey, orderedParticipants, isTurnSkippable);
 
   // Notas de combate por participante
   const { getNote, upsertNoteForParticipant, updateNoteForParticipant, removeNoteForParticipant, clearAllNotes, incrementForParticipant, advanceTurnForParticipant } = useCombatNotes(campaign?.id, activeEncounterId);
@@ -262,6 +286,58 @@ export default function CombatView({
   // indexToLetters moved to utils.ts
 
   const enemyDisplayNameById = useMemo(() => computeEnemyDisplayNameById(foes), [foes]);
+
+  /**
+   * Determines whether a participant is currently "alive" (HP > 0 or HP unknown).
+   * Characters read their HP from charMap so live edits are reflected.
+   */
+  const isParticipantAlive = useCallback((p: EncounterSummary['participants'][number]): boolean => {
+    const isChar = p.kind === 'character' || charMap.has(p.id);
+    const hp = isChar ? (charMap.get(p.id)?.currentHp ?? p.currentHp) : p.currentHp;
+    return !(typeof hp === 'number' && hp <= 0);
+  }, [charMap]);
+
+  /** Levels of the alive player-character allies and CRs of the alive enemies,
+   * computed with the same shared helper used by the encounters difficulty meter
+   * (resolving live character levels) so both views match for the same encounter. */
+  const { partyLevels, enemyCrs } = useMemo(() => {
+    const alive = baseParticipants.filter(isParticipantAlive);
+    return resolveDifficultyInputs(alive, { characterLevel: (id) => charMap.get(id)?.level });
+  }, [baseParticipants, charMap, isParticipantAlive]);
+
+  // ── Combat history / timeline ──────────────────────────────────────────────
+  const [combatLogId, setCombatLogId] = useState<string | null>(null);
+  const [historyRefresh, setHistoryRefresh] = useState(0);
+  /** Tracks the previous turn so we can snapshot it when the turn advances. */
+  const snapPrevRef = React.useRef<{ turnId: string | null; round: number; turnIndex: number } | null>(null);
+  const combatLogKey = useMemo(
+    () => (campaign?.id && activeEncounterId ? `combat.logId:${campaign.id}:${activeEncounterId}` : null),
+    [campaign?.id, activeEncounterId],
+  );
+
+  /**
+   * Builds the per-participant snapshot from the CURRENT combat state.
+   * Kept in a ref so the snapshot effect always reads fresh HP/notes without
+   * re-subscribing on every change.
+   */
+  const buildSnapshotParticipantsRef = React.useRef<() => CombatParticipantSnapshot[]>(() => []);
+  buildSnapshotParticipantsRef.current = () => orderedParticipants.map((p) => {
+    const isChar = p.kind === 'character' || charMap.has(p.id);
+    const ch = isChar ? charMap.get(p.id) : undefined;
+    const currentHp = isChar ? (ch?.currentHp ?? p.currentHp ?? null) : (p.currentHp ?? null);
+    const maxHp = isChar ? (ch?.maxHp ?? p.maxHp ?? null) : (p.maxHp ?? null);
+    const name = p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name;
+    return {
+      id: p.id,
+      name,
+      role: p.role,
+      kind: p.kind,
+      currentHp: typeof currentHp === 'number' ? currentHp : null,
+      maxHp: typeof maxHp === 'number' ? maxHp : null,
+      note: getNote(p.id)?.text || null,
+    } as CombatParticipantSnapshot;
+  });
+
   
   // Convert monster size string to TokenSize
   const normalizeSize = useCallback((sizeStr: string | undefined): import('../../api/maps').TokenSize => {
@@ -277,7 +353,7 @@ export default function CombatView({
   }, []);
   
   // Tokens: allow preparing tokens for current encounter participants
-  const { tokens, addToken } = useMapTokens(campaign?.id, activeMapId || undefined);
+  const { tokens, addToken, removeToken } = useMapTokens(campaign?.id, activeMapId || undefined);
   const [activeMapNaturalSize, setActiveMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
 
   const gridSettingsForPlacement = useMemo<GridSettings>(() => {
@@ -467,7 +543,7 @@ export default function CombatView({
     });
   }, [baseParticipants, allies, foes, addToken, tokens, gridSettingsForPlacement, activeMapNaturalSize, maps, activeMapId, enemyDisplayNameById, calculateRotationToNearestRival, monsterDetailByPid, normalizeSize, charMap]);
 
-  const createTokenForParticipant = useCallback((p: EncounterSummary['participants'][number]) => {
+  const createTokenForParticipant = useCallback((p: EncounterSummary['participants'][number], anchorCellKey: string = '0:0') => {
     if (!p) return;
     const type = p.role === 'foe' ? 'enemy' as const : 'ally' as const;
     const label = (p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name) as string;
@@ -516,7 +592,7 @@ export default function CombatView({
       occupiedCellKeys: occupied,
       widthPx: activeMapNaturalSize?.w,
       heightPx: activeMapNaturalSize?.h,
-      anchorCellKey: '0:0',
+      anchorCellKey,
       visibleRectPx,
     })[0] || '0:0';
     
@@ -734,12 +810,10 @@ export default function CombatView({
   }, [activeMapId, maps]);
 
   const handleFogEnabledChange = useCallback((next: boolean) => {
-    if (forceFogByDefault && !next) {
-      setFogEnabled(true);
-      return;
-    }
-    setFogEnabled(next);
-  }, [forceFogByDefault]);
+    const effective = (forceFogByDefault && !next) ? true : next;
+    setFogEnabled(effective);
+    writeRuntimeFogEnabled(campaign?.id, activeMapId, effective);
+  }, [forceFogByDefault, campaign?.id, activeMapId]);
 
   useEffect(() => {
     participantsRef.current = participantsDraft;
@@ -801,6 +875,71 @@ export default function CombatView({
       schedulePersistInitiative(p.id);
     }
   }, [setHpLocal, schedulePersistInitiative, updateCharacterHp, charMap]);
+
+  /**
+   * Adds a quick "summon" participant (ally or enemy) to the initiative order.
+   * Summons represent creatures/weapons/entities conjured by abilities. They:
+   * - default to HP 1 and the initiative of the current-turn participant,
+   * - are named "Invocación Aliada/Enemiga" + a letter (A, B, C...),
+   * - do NOT count toward encounter difficulty (isSummon flag),
+   * - get their own map token placed in a free cell adjacent to the
+   *   current-turn participant's token (or default placement otherwise).
+   *
+   * @param role - 'ally' for a friendly summon, 'foe' for a hostile one.
+   */
+  const addSummon = useCallback((role: 'ally' | 'foe') => {
+    const current = participantsRef.current || [];
+
+    // Initiative: same as the current-turn participant, else the highest in
+    // order, else a sensible positive default so the summon is listed.
+    const currentP = current.find((p) => p.id === currentTurnId);
+    let baseIni = typeof currentP?.initiative === 'number' && currentP.initiative > 0 ? currentP.initiative : undefined;
+    if (baseIni === undefined) {
+      const maxIni = current.reduce((m, p) => Math.max(m, typeof p.initiative === 'number' ? p.initiative : 0), 0);
+      baseIni = maxIni > 0 ? maxIni : 10;
+    }
+
+    // Name with a letter suffix based on how many summons of this role exist.
+    const existingCount = current.filter((p) => p.isSummon && p.role === role).length;
+    const baseName = role === 'ally' ? 'Invocación Aliada' : 'Invocación Enemiga';
+    const name = `${baseName} ${indexToLetters(existingCount)}`;
+
+    const id = (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
+      ? (crypto as any).randomUUID()
+      : `summon-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    const summon: EncounterSummary['participants'][number] = {
+      id,
+      name,
+      kind: 'enemy',
+      role,
+      isSummon: true,
+      maxHp: 1,
+      currentHp: 1,
+      initiative: baseIni,
+    };
+
+    setParticipantsDraft((prev) => [...prev, summon]);
+
+    // Token next to the current-turn participant's token (if any).
+    const currentToken = (tokens || []).find((t) => t.id === currentTurnId);
+    createTokenForParticipant(summon, currentToken?.cellKey || '0:0');
+
+    // Persist the new participant to the encounter.
+    schedulePersistInitiative(id);
+  }, [currentTurnId, tokens, createTokenForParticipant, schedulePersistInitiative]);
+
+  /**
+   * Removes a summon from the encounter (initiative + participants lists) and
+   * deletes its map token. Only summons (isSummon) are meant to be removed here.
+   *
+   * @param id - Participant id of the summon to remove.
+   */
+  const removeSummon = useCallback((id: string) => {
+    setParticipantsDraft((prev) => prev.filter((p) => p.id !== id));
+    removeToken(id);
+    schedulePersistInitiative(id);
+  }, [removeToken, schedulePersistInitiative]);
 
   const { startEncounterMusic, restorePreviousMusic } = useEncounterMusic({ campaignId: campaign?.id, selectedEncounter, songs, prioritizeEncounterMusic });
   const { mode: soundtrackMode } = useSoundtrackMode(campaign?.id || null);
@@ -895,20 +1034,57 @@ export default function CombatView({
   const handleStartBattle = useCallback(async () => {
     resetToStart();
     setBattleStarted(true);
+    // Start a new combat-log run (records the campaign day + snapshots).
+    if (campaign?.id) {
+      try {
+        const log = await startCombatLog(campaign.id, {
+          encounterId: activeEncounterId || null,
+          encounterName: selectedEncounter?.name || null,
+          mapId: activeMapId || null,
+          mapName: selectedMapName || null,
+        });
+        setCombatLogId(log.id);
+        if (combatLogKey) { try { localStorage.setItem(combatLogKey, log.id); } catch { /* ignore */ } }
+        setHistoryRefresh((x) => x + 1);
+      } catch { /* combat log is best-effort */ }
+    }
     if (soundtrackMode === 'automatic') {
       await startEncounterMusic();
     }
-  }, [resetToStart, setBattleStarted, startEncounterMusic, soundtrackMode]);
+  }, [resetToStart, setBattleStarted, startEncounterMusic, soundtrackMode, campaign?.id, activeEncounterId, selectedEncounter?.name, activeMapId, selectedMapName, combatLogKey]);
 
   const endBattle = useCallback(async () => {
     setBattleStarted(false);
+    // Record the final turn snapshot and close the combat-log run.
+    const logId = combatLogId;
+    if (campaign?.id && logId) {
+      const prev = snapPrevRef.current;
+      const participants = buildSnapshotParticipantsRef.current();
+      const finalRound = prev?.round ?? round;
+      const finalTurnIndex = prev?.turnIndex ?? turnIndex;
+      const finalTurnId = prev?.turnId ?? currentTurnId ?? null;
+      const finalTurnName = participants.find((p) => p.id === finalTurnId)?.name || null;
+      try {
+        await appendCombatSnapshot(campaign.id, logId, {
+          round: finalRound,
+          turnIndex: finalTurnIndex,
+          turnParticipantId: finalTurnId,
+          turnParticipantName: finalTurnName,
+          participants,
+        });
+        await endCombatLog(campaign.id, logId);
+      } catch { /* best-effort */ }
+      setCombatLogId(null);
+      if (combatLogKey) { try { localStorage.removeItem(combatLogKey); } catch { /* ignore */ } }
+      setHistoryRefresh((x) => x + 1);
+    }
     resetToStart();
     // Al finalizar (escapar o ganar), limpiar notas del combate
     try { clearAllNotes(); } catch {}
     if (soundtrackMode === 'automatic') {
       await restorePreviousMusic();
     }
-  }, [resetToStart, setBattleStarted, clearAllNotes, restorePreviousMusic, soundtrackMode]);
+  }, [resetToStart, setBattleStarted, clearAllNotes, restorePreviousMusic, soundtrackMode, campaign?.id, combatLogId, combatLogKey, round, turnIndex, currentTurnId]);
 
   const nextTurn = useCallback(() => {
     nextTurnHook();
@@ -929,6 +1105,38 @@ export default function CombatView({
       prevTurnIdRef.current = curr;
     }
   }, [battleStarted, currentTurnId, advanceTurnForParticipant]);
+
+  // ── Combat timeline snapshots ──────────────────────────────────────────────
+  // When the turn advances, record a snapshot of the PREVIOUS turn (the state
+  // of every participant as the new turn begins). Only fires on real turn
+  // changes; HP/note edits within a turn don't create snapshots.
+  useEffect(() => {
+    if (!battleStarted || !combatLogId || !campaign?.id) { snapPrevRef.current = null; return; }
+    const cur = { turnId: currentTurnId || null, round, turnIndex };
+    const prev = snapPrevRef.current;
+    snapPrevRef.current = cur;
+    if (!prev || prev.turnId === cur.turnId) return;
+    const participants = buildSnapshotParticipantsRef.current();
+    const prevName = participants.find((p) => p.id === prev.turnId)?.name || null;
+    appendCombatSnapshot(campaign.id, combatLogId, {
+      round: prev.round,
+      turnIndex: prev.turnIndex,
+      turnParticipantId: prev.turnId,
+      turnParticipantName: prevName,
+      participants,
+    }).catch(() => {});
+  }, [battleStarted, combatLogId, campaign?.id, currentTurnId, round, turnIndex]);
+
+  // Restore the active combat-log id after a reload while a battle is ongoing.
+  useEffect(() => {
+    if (!combatLogKey) return;
+    if (battleStarted && !combatLogId) {
+      try {
+        const stored = localStorage.getItem(combatLogKey);
+        if (stored) setCombatLogId(stored);
+      } catch { /* ignore */ }
+    }
+  }, [battleStarted, combatLogId, combatLogKey]);
 
   
 
@@ -1059,11 +1267,12 @@ export default function CombatView({
 
       {/* Sección unificada con pestañas para alternar Participantes y Orden por iniciativa */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
           <Tabs value={viewMode} onChange={(_, val) => setViewMode(val)}>
             <Tab value="participants" label="Participantes" />
             <Tab value="initiative" label="Orden por iniciativa" />
           </Tabs>
+          <EncounterDifficultyMeter partyLevels={partyLevels} enemyCrs={enemyCrs} />
         </Box>
         {viewMode === 'participants' && (
           <ParticipantsPanel
@@ -1082,6 +1291,7 @@ export default function CombatView({
             rollAllEnemiesInitiative={rollAllEnemiesInitiative}
             rollAllEnemiesHp={rollAllEnemiesHp}
             onCreateTokenForParticipant={createTokenForParticipant}
+            onRemoveSummon={removeSummon}
           />
         )}
         {viewMode === 'initiative' && (
@@ -1091,6 +1301,7 @@ export default function CombatView({
               turnIndex={turnIndex}
               orderedParticipants={orderedParticipants}
               currentTurnId={currentTurnId || null}
+              downedIds={downedIds}
               selectedParticipantId={selectedParticipantId}
               setSelectedParticipantId={(id) => setSelectedParticipantId(id)}
               battleStarted={!!battleStarted}
@@ -1098,6 +1309,7 @@ export default function CombatView({
               onEndBattle={endBattle}
               onPreviousTurn={previousTurn}
               onNextTurn={nextTurn}
+              onSummon={addSummon}
               isMaster={isMaster}
               charMap={charMap}
               enemyDisplayNameById={enemyDisplayNameById}
@@ -1108,6 +1320,7 @@ export default function CombatView({
               setHpLocal={setHpLocal}
               setInitiativeLocal={setInitiativeLocal}
               schedulePersistInitiative={schedulePersistInitiative}
+              onRemoveSummon={removeSummon}
             />
           {/* Fichas de detalle: mostrar abajo de la lista de iniciativa */}
           <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
@@ -1152,6 +1365,15 @@ export default function CombatView({
           </>
         )}
       </Paper>
+
+      {campaign?.id ? (
+        <CombatHistoryPanel
+          campaignId={campaign.id}
+          encounterId={activeEncounterId || null}
+          refreshKey={historyRefresh}
+          isMaster={isMaster}
+        />
+      ) : null}
     </Stack>
   );
 }

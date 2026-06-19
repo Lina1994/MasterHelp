@@ -5,7 +5,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShieldIcon from '@mui/icons-material/Shield';
 import GroupsIcon from '@mui/icons-material/Groups';
-import { EncounterSummary, EncounterDifficulty } from '../../api/encounters';
+import { EncounterSummary } from '../../api/encounters';
+import type { CharacterPayload } from '../../api/characters';
+import EncounterDifficultyMeter from './EncounterDifficultyMeter';
+import { resolveDifficultyInputs, formatCr } from '../../utils/encounterDifficulty';
 
 /**
  * EncounterList: lista de encuentros con acciones de creación/edición/eliminación.
@@ -14,20 +17,22 @@ import { EncounterSummary, EncounterDifficulty } from '../../api/encounters';
  */
 export interface EncounterListProps {
   encounters: EncounterSummary[];
+  /** Live characters, to resolve party levels for the difficulty meter. */
+  characters?: CharacterPayload[];
   isMaster: boolean;
   onCreate: () => void;
   onEdit: (enc: EncounterSummary) => void;
   onDelete: (enc: EncounterSummary) => void;
 }
 
-const difficultyColor: Record<EncounterDifficulty, 'default' | 'success' | 'warning' | 'error'> = {
-  'Fácil': 'success',
-  'Medio': 'default',
-  'Difícil': 'warning',
-  'Mortal': 'error',
-};
+function EncounterList({ encounters, characters, isMaster, onCreate, onEdit, onDelete }: EncounterListProps) {
+  /** Live character levels by id, so the difficulty meter uses current levels. */
+  const characterLevelById = React.useMemo(() => {
+    const map = new Map<string, number | undefined>();
+    (characters || []).forEach((c) => { if (c.id) map.set(c.id, c.level); });
+    return map;
+  }, [characters]);
 
-function EncounterList({ encounters, isMaster, onCreate, onEdit, onDelete }: EncounterListProps) {
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
@@ -46,9 +51,12 @@ function EncounterList({ encounters, isMaster, onCreate, onEdit, onDelete }: Enc
             <ListItem key={enc.id} alignItems="flex-start" sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 1 }}>
               <ListItemText
                 primary={
-                  <Stack direction="row" spacing={1} alignItems="center">
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                     <Typography variant="subtitle1">{enc.name}</Typography>
-                    <Chip size="small" label={enc.difficulty} color={difficultyColor[enc.difficulty]} />
+                    {(() => {
+                      const { partyLevels, enemyCrs } = resolveDifficultyInputs(enc.participants, { characterLevel: (id) => characterLevelById.get(id) });
+                      return <EncounterDifficultyMeter compact partyLevels={partyLevels} enemyCrs={enemyCrs} />;
+                    })()}
                     {enc.musicLabel && <Chip size="small" icon={<LibraryMusicIcon fontSize="small" />} label={enc.musicLabel} />}
                   </Stack>
                 }
@@ -62,7 +70,7 @@ function EncounterList({ encounters, isMaster, onCreate, onEdit, onDelete }: Enc
                         <Chip
                           key={p.id}
                           size="small"
-                          label={`${p.name}${p.level ? ` · Nivel ${p.level}` : ''}${p.cr ? ` · CR ${p.cr}` : ''}`}
+                          label={`${p.name}${p.level ? ` · Nivel ${p.level}` : ''}${typeof p.cr === 'number' && p.cr > 0 ? ` · CR ${formatCr(p.cr)}` : ''}`}
                           icon={p.kind === 'enemy' ? <ShieldIcon fontSize="small" /> : <GroupsIcon fontSize="small" />}
                         />
                       ))}

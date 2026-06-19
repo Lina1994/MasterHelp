@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { CharacterPayload, updateCharacter, createCharacter } from '../../api/characters';
 import { listMaps, MapItemDto } from '../../api/maps';
 import { listCampaignClasses } from '../../api/classes/classesApi';
@@ -303,6 +303,32 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
   const [raceItems, setRaceItems] = useState<OptionItem[]>([]);
   const [backgroundOptions, setBackgroundOptions] = useState<LabeledOption[]>([]);
   const { getManualName } = useManualNames();
+
+  /**
+   * Appends one or more images to the character's emote list in a single update.
+   * If the list was empty, the first added image becomes the default portrait.
+   *
+   * @param urls - Image sources (data URLs or remote URLs) to append.
+   */
+  const appendEmotes = useCallback((urls: string[]) => {
+    const cleaned = urls.filter(Boolean);
+    if (cleaned.length === 0) return;
+    setDraft((prev) => {
+      if (!prev) return prev;
+      const current = prev.characterImages || [];
+      const wasEmpty = current.length === 0;
+      const additions = cleaned.map((url, i) => ({
+        url,
+        name: `${t('emote', 'Emote')} ${current.length + i + 1}`,
+        isDefault: wasEmpty && i === 0,
+      }));
+      return {
+        ...prev,
+        characterImages: [...current, ...additions],
+        ...(wasEmpty ? { characterImageUrl: cleaned[0] } : {}),
+      };
+    });
+  }, [t]);
 
   React.useEffect(() => {
     if (initialDraft) {
@@ -1073,24 +1099,9 @@ export const CharacterEditorModal: React.FC<CharacterEditorModalProps> = ({
                         </Typography>
                         <ImageUploader
                           initialValue=""
-                          onChange={(v) => {
-                            if (!v) return;
-                            const current = draft.characterImages || [];
-                            const isFirst = current.length === 0;
-                            const nextList = [
-                              ...current,
-                              {
-                                url: v,
-                                name: `${t('emote', 'Emote')} ${current.length + 1}`,
-                                isDefault: isFirst
-                              }
-                            ];
-                            setDraft({
-                              ...draft,
-                              characterImages: nextList,
-                              ...(isFirst ? { characterImageUrl: v } : {})
-                            });
-                          }}
+                          multiple
+                          onChange={(v) => appendEmotes([v])}
+                          onAddMultiple={(values) => appendEmotes(values)}
                         />
                       </Box>
                     </Stack>

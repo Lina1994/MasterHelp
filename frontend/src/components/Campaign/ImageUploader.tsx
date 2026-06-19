@@ -5,9 +5,39 @@ import { Box, Typography, Button, TextField, Paper } from '@mui/material';
 interface ImageUploaderProps {
   initialValue?: string;
   onChange: (value: string) => void;
+  /**
+   * When `true`, lets the user select or drop several images at once.
+   * The selected images are reported through {@link onAddMultiple}.
+   */
+  multiple?: boolean;
+  /**
+   * Called with every selected image (as data URLs) when {@link multiple} is `true`.
+   * @param values - Array of data URLs, one per chosen image file.
+   */
+  onAddMultiple?: (values: string[]) => void;
 }
 
-export const ImageUploader: React.FC<ImageUploaderProps> = ({ initialValue, onChange }) => {
+/**
+ * Reads an image file and resolves its content as a data URL.
+ * Non-image files resolve to `null` so they can be filtered out.
+ *
+ * @param file - File picked from the input or drag-and-drop.
+ * @returns Promise resolving to the data URL, or `null` if not an image.
+ */
+function readImageAsDataUrl(file: File): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (!file || !file.type.startsWith('image/')) {
+      resolve(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => resolve((e.target?.result as string) ?? null);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
+export const ImageUploader: React.FC<ImageUploaderProps> = ({ initialValue, onChange, multiple = false, onAddMultiple }) => {
   const { t } = useTranslation();
   const [imageSrc, setImageSrc] = useState(initialValue || '');
   const [isDragging, setIsDragging] = useState(false);
@@ -30,14 +60,34 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ initialValue, onCh
     }
   };
 
+  /**
+   * Reads several image files in parallel and reports the valid ones.
+   * In multiple mode the internal preview is cleared so the control is
+   * immediately ready to accept another batch.
+   *
+   * @param files - Files chosen from the picker or dropped on the area.
+   */
+  const handleMultipleFiles = useCallback(async (files: File[]) => {
+    const results = await Promise.all(files.map(readImageAsDataUrl));
+    const validUrls = results.filter((url): url is string => Boolean(url));
+    if (validUrls.length === 0) return;
+    onAddMultiple?.(validUrls);
+    setImageSrc('');
+  }, [onAddMultiple]);
+
   const onDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
-    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-      handleFile(event.dataTransfer.files[0]);
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+      if (multiple) {
+        void handleMultipleFiles(Array.from(files));
+      } else {
+        handleFile(files[0]);
+      }
       event.dataTransfer.clearData();
     }
-  }, []);
+  }, [multiple, handleMultipleFiles]);
 
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -51,7 +101,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ initialValue, onCh
 
   const onFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      handleFile(event.target.files[0]);
+      if (multiple) {
+        void handleMultipleFiles(Array.from(event.target.files));
+      } else {
+        handleFile(event.target.files[0]);
+      }
+      // Reset the native input so selecting the same file(s) again re-triggers onChange.
+      event.target.value = '';
     }
   };
 
@@ -86,13 +142,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ initialValue, onCh
         <input
           type="file"
           accept="image/*"
+          multiple={multiple}
           onChange={onFileSelect}
           style={{ display: 'none' }}
           id={fileInputId}
         />
         <label htmlFor={fileInputId} style={{ cursor: 'pointer', width: '100%', height: '100%' }}>
           <Typography>
-            {t('drag_and_drop_image', 'Arrastra una imagen aquí o haz clic para seleccionarla')}
+            {multiple
+              ? t('drag_and_drop_images', 'Arrastra varias imágenes aquí o haz clic para seleccionarlas')
+              : t('drag_and_drop_image', 'Arrastra una imagen aquí o haz clic para seleccionarla')}
           </Typography>
         </label>
       </Paper>

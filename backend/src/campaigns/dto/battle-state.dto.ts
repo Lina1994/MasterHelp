@@ -37,6 +37,14 @@ export class BattleStateDto {
   @Type(() => BattleStripItemDto)
   @IsOptional()
   items?: BattleStripItemDto[];
+
+  /**
+   * Optional combat outcome, used only for the automatic adventure log when the
+   * battle ends (`started` transitions to false). Not persisted to battleState.
+   */
+  @IsString()
+  @IsOptional()
+  outcome?: 'victory' | 'escape';
 }
 
 export class BattleStripItemDto {

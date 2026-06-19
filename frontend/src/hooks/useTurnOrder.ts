@@ -28,8 +28,15 @@ export interface UseTurnOrderResult {
 /**
  * @param sessionKey - Unique key (e.g., `${campaignId}:${encounterId}`) to scope persistence
  * @param participants - Current ordered participant array
+ * @param isSkippable - Optional predicate; participants for which it returns true
+ *   keep their position in the list but are skipped when advancing/retreating turns
+ *   (e.g. downed combatants at 0 HP that could still be revived).
  */
-export function useTurnOrder(sessionKey: string | null, participants: TurnParticipant[]): UseTurnOrderResult {
+export function useTurnOrder(
+  sessionKey: string | null,
+  participants: TurnParticipant[],
+  isSkippable?: (id: string | null | undefined) => boolean,
+): UseTurnOrderResult {
   const [round, setRound] = useState<number>(1);
   const [index, setIndex] = useState<number>(0);
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -95,35 +102,42 @@ export function useTurnOrder(sessionKey: string | null, participants: TurnPartic
   const nextTurn = () => {
     const len = participants.length;
     if (len === 0) return;
-    let newIndex: number;
-    if (index + 1 >= len) {
-      newIndex = 0;
-      setIndex(0);
-      setRound(r => r + 1);
-    } else {
-      newIndex = index + 1;
-      setIndex(newIndex);
+    let newIndex = index;
+    let wrapped = false;
+    let found = false;
+    // Walk forward up to `len` steps looking for the next non-skippable turn.
+    for (let step = 0; step < len; step++) {
+      if (newIndex + 1 >= len) { newIndex = 0; wrapped = true; } else { newIndex += 1; }
+      if (!isSkippable || !isSkippable(participants[newIndex]?.id)) { found = true; break; }
     }
-    // Update currentId immediately
-    const id = participants[newIndex]?.id ?? null;
-    setCurrentId(id);
+    if (!found) {
+      // Everyone else is skippable: fall back to a plain single-step advance.
+      newIndex = index + 1 >= len ? 0 : index + 1;
+      wrapped = index + 1 >= len;
+    }
+    setIndex(newIndex);
+    if (wrapped) setRound(r => r + 1);
+    setCurrentId(participants[newIndex]?.id ?? null);
   };
 
   const previousTurn = () => {
     const len = participants.length;
     if (len === 0) return;
-    let newIndex: number;
-    if (index - 1 < 0) {
-      newIndex = len - 1;
-      setIndex(newIndex);
-      setRound(r => Math.max(1, r - 1));
-    } else {
-      newIndex = index - 1;
-      setIndex(newIndex);
+    let newIndex = index;
+    let wrapped = false;
+    let found = false;
+    // Walk backward up to `len` steps looking for the previous non-skippable turn.
+    for (let step = 0; step < len; step++) {
+      if (newIndex - 1 < 0) { newIndex = len - 1; wrapped = true; } else { newIndex -= 1; }
+      if (!isSkippable || !isSkippable(participants[newIndex]?.id)) { found = true; break; }
     }
-    // Update currentId immediately
-    const id = participants[newIndex]?.id ?? null;
-    setCurrentId(id);
+    if (!found) {
+      newIndex = index - 1 < 0 ? len - 1 : index - 1;
+      wrapped = index - 1 < 0;
+    }
+    setIndex(newIndex);
+    if (wrapped) setRound(r => Math.max(1, r - 1));
+    setCurrentId(participants[newIndex]?.id ?? null);
   };
 
   const resetToStart = () => {

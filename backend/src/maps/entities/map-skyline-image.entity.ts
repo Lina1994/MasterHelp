@@ -39,6 +39,7 @@ export class MapSkylineImage {
   @Column({ type: 'datetime', nullable: true })
   migratedAt?: Date | null;
 
+  @Index()
   @ManyToOne(() => MapEntity, (map) => map.skylines, { onDelete: 'CASCADE' })
   map: MapEntity;
 }

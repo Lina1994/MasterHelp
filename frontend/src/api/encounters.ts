@@ -19,6 +19,9 @@ export interface EncounterParticipant {
   monsterManualId?: string;
   monsterSlug?: string;
   monsterCampaignId?: string;
+  /** Marks a participant added on the fly during combat (summons): does not
+   * count toward encounter difficulty. */
+  isSummon?: boolean;
 }
 
 export interface EncounterSummary {

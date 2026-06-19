@@ -31,10 +31,13 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useCampaignsContext } from '../components/Campaign/CampaignContext';
+import { EmoteRadialMenu } from '../components/characters/EmoteRadialMenu';
+import { notifySkylineCharacterChanged } from '../utils/skylineSync';
 import WorldpediaEntityViewer from '../components/Worldpedia/WorldpediaEntityViewer';
 import API_BASE_URL from '../apiBase';
 
@@ -145,6 +148,7 @@ interface CharThumb {
   characterImageUrl: string | null;
   tokenImageUrl: string | null;
   tokenColor: string | null;
+  characterImages?: { url: string; name?: string; isDefault: boolean }[] | null;
 }
 
 /**
@@ -326,6 +330,8 @@ const SkylinePreviewOverlay: React.FC = () => {
 
   // ── menu / entity-viewer state ────────────────────────────────────────
   const [charMenuAnchor, setCharMenuAnchor] = useState<HTMLElement | null>(null);
+  /** Anchor for the emote-selection radial menu opened from the character menu. */
+  const [emoteAnchor, setEmoteAnchor] = useState<HTMLElement | null>(null);
   const [itemMenuAnchor, setItemMenuAnchor] = useState<HTMLElement | null>(null);
   const [selectedMenuItem, setSelectedMenuItem] = useState<SkylineItem | null>(null);
   const [turnMenuAnchor, setTurnMenuAnchor] = useState<HTMLElement | null>(null);
@@ -361,6 +367,27 @@ const SkylinePreviewOverlay: React.FC = () => {
       try { localStorage.setItem('app.skyline.activeCharacterUpdated', JSON.stringify({ campaignId, at: Date.now() })); } catch {}
       try { new BroadcastChannel('campaign-sync').postMessage({ type: 'activeSkylineChanged', campaignId }); } catch {}
     } catch {}
+  };
+
+  /**
+   * Sets a specific emote for the active Skyline character via silentApi and
+   * updates the local override + notifies every window. Uses silentApi so a
+   * transient auth/network error never logs the user out from this overlay.
+   *
+   * @param emoteUrl - Image URL of the chosen emote.
+   */
+  const handleSelectEmoteFromOverlay = async (emoteUrl: string) => {
+    setEmoteAnchor(null);
+    if (!campaignId || !activeCharId) return;
+    try {
+      await silentApi.patch(`/campaigns/${campaignId}/active-skyline-character`, {
+        characterId: activeCharId,
+        activeSkylineImageUrl: emoteUrl,
+      });
+      setActiveSkylineImageUrl(emoteUrl);
+      fetchCampaigns().catch(() => {});
+      notifySkylineCharacterChanged(campaignId);
+    } catch { /* silent: keep session alive */ }
   };
 
   /** Removes a skyline shop item by ID via silentApi. */
@@ -1064,11 +1091,37 @@ const SkylinePreviewOverlay: React.FC = () => {
           </MenuItem>
         )}
         <Divider />
+        {(character?.characterImages || []).filter((img) => img.url).length > 1 && (
+          <MenuItem
+            onClick={() => {
+              // Reuse the thumbnail element as the popover anchor, then close
+              // this context menu so only the radial emote menu stays open.
+              setEmoteAnchor(charMenuAnchor);
+              setCharMenuAnchor(null);
+            }}
+          >
+            <ListItemIcon><EmojiEmotionsIcon fontSize="small" color="secondary" /></ListItemIcon>
+            <ListItemText>Cambiar emote</ListItemText>
+          </MenuItem>
+        )}
         <MenuItem onClick={handleRemoveCharFromSkyline} sx={{ color: 'warning.main' }}>
           <ListItemIcon><LayersClearIcon fontSize="small" color="warning" /></ListItemIcon>
           <ListItemText>Quitar de Skyline</ListItemText>
         </MenuItem>
       </Menu>
+
+      {/* ── Emote selection menu (opened from character menu) ──────────── */}
+      <EmoteRadialMenu
+        open={Boolean(emoteAnchor)}
+        anchorEl={emoteAnchor}
+        onClose={() => setEmoteAnchor(null)}
+        emotes={character?.characterImages || []}
+        activeUrl={activeSkylineImageUrl}
+        onSelectEmote={handleSelectEmoteFromOverlay}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        zIndex={1600}
+      />
 
       {/* ── Shop-item context menu ─────────────────────────────────────── */}
       <Menu

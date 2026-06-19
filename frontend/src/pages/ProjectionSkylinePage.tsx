@@ -1533,16 +1533,6 @@ const ProjectionSkylinePage: React.FC = () => {
     setActiveSkylineFilters((m as any)?.skylineFilters || null);
   }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId, activeMapId]);
 
-  useEffect(() => {
-    try {
-      const d = (window as any).electronAPI?.onProjectionPoke?.(async () => {
-        await refreshFromServer();
-        try { await refreshSkylineMapVisualConfig(); } catch {}
-      });
-      return () => { if (typeof d === 'function') d(); };
-    } catch {}
-  }, [refreshFromServer, refreshSkylineMapVisualConfig]);
-
   const loadSkylineCharacter = useCallback(async () => {
     const effectiveCampaignId = campaignIdFromQuery || rawCampaignId || activeCampaign?.id;
     let charId: string | null | undefined = activeCampaign?.activeSkylineCharacter?.id;
@@ -1569,10 +1559,14 @@ const ProjectionSkylinePage: React.FC = () => {
       return;
     }
 
+    // Update the emote override immediately: it's a self-contained image URL,
+    // so swapping emotes is instant and no longer waits for the full character
+    // payload, which can be heavy when it carries several base64 images.
+    setSkylineCharacterImageUrlOverride(activeImageUrl);
+
     try {
       const ch = await getCharacter(charId);
       setSkylineCharacter(ch);
-      setSkylineCharacterImageUrlOverride(activeImageUrl);
       setConnectionError(false); // Clear error on successful request
     } catch (err: any) {
       setSkylineCharacter(null);
@@ -1617,6 +1611,24 @@ const ProjectionSkylinePage: React.FC = () => {
       }
     }
   }, [activeCampaign?.id, campaignIdFromQuery, rawCampaignId]);
+
+  // Refresh skyline data immediately when the controller pokes projection
+  // windows (e.g. active character / emote change). BroadcastChannel does not
+  // cross Electron BrowserWindows, so this IPC poke is the fast path that
+  // avoids waiting for the periodic poll. Runs the refreshes in parallel.
+  useEffect(() => {
+    try {
+      const dispose = (window as any).electronAPI?.onProjectionPoke?.(async () => {
+        await Promise.allSettled([
+          loadSkylineCharacter(),
+          loadSkylineItems(),
+          refreshFromServer(),
+          refreshSkylineMapVisualConfig(),
+        ]);
+      });
+      return () => { if (typeof dispose === 'function') dispose(); };
+    } catch {}
+  }, [loadSkylineCharacter, loadSkylineItems, refreshFromServer, refreshSkylineMapVisualConfig]);
 
   // Auto-retry connection when there's a connection error
   useEffect(() => {

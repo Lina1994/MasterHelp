@@ -135,6 +135,28 @@ export class Campaign {
   } | null;
 
   /**
+   * Automatic adventure-log settings.
+   *
+   * When `enabled` is true (and a diary session is active), the backend will
+   * automatically append entries to a "Registro de aventuras" diary item on the
+   * campaign's current calendar day for each enabled category.
+   * Stored as simple JSON in SQLite. Nullable implies all features disabled.
+   */
+  @Column({ type: 'simple-json', nullable: true })
+  autoLogSettings?: {
+    /** Master switch: when false, nothing is auto-logged. */
+    enabled: boolean;
+    /** Log visited places (active map changes). */
+    logPlaces: boolean;
+    /** Log encountered NPCs (non-player character projected to the skyline). */
+    logCharacters: boolean;
+    /** Log quest acceptance/completion. */
+    logQuests: boolean;
+    /** Log combat start/end. */
+    logCombat: boolean;
+  } | null;
+
+  /**
    * Selected manuals to apply/scope content for this campaign.
    * Stored as simple JSON array of manual IDs from manuals registry.
    */

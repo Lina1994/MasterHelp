@@ -1,7 +1,9 @@
 import React from 'react';
-import { Box, Button, Chip, LinearProgress, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, IconButton, LinearProgress, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import CasinoIcon from '@mui/icons-material/Casino';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import HealingIcon from '@mui/icons-material/Healing';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { EncounterSummary } from '../../api/encounters';
 import { CharacterPayload } from '../../api/characters';
 import { Paper } from '@mui/material';
@@ -24,6 +26,8 @@ export interface ParticipantsPanelProps {
   rollAllEnemiesInitiative: () => void | Promise<void>;
   rollAllEnemiesHp: (mode: 'avg' | 'dice') => void | Promise<void>;
   onCreateTokenForParticipant?: (p: EncounterSummary['participants'][number]) => void;
+  /** Removes a summon participant by id. */
+  onRemoveSummon?: (id: string) => void;
 }
 
 const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
@@ -42,7 +46,22 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
   rollAllEnemiesInitiative,
   rollAllEnemiesHp,
   onCreateTokenForParticipant,
+  onRemoveSummon,
 }) => {
+  /**
+   * Heals every ally to their maximum HP. Characters read their max HP from the
+   * live character data; other allies fall back to the participant's maxHp.
+   */
+  const healAllAllies = () => {
+    allies.forEach((p) => {
+      const char = p.kind === 'character' ? charMap.get(p.id) : undefined;
+      const mx = char?.maxHp ?? p.maxHp;
+      if (typeof mx === 'number' && mx > 0) {
+        setHp(p, 'currentHp', mx);
+      }
+    });
+  };
+
   return (
     <Stack spacing={2}>
       <Stack direction="row" spacing={1} alignItems={'center'}>
@@ -52,7 +71,14 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
 
       {/* Aliados */}
       <Box>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>Aliados</Typography>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+          <Typography variant="subtitle2">Aliados</Typography>
+          {isMaster && allies.length > 0 && (
+            <Button size="small" variant="outlined" color="success" startIcon={<HealingIcon />} onClick={healAllAllies}>
+              Curar a todos los aliados
+            </Button>
+          )}
+        </Stack>
         <Stack direction="row" spacing={1} flexWrap="wrap">
           {allies.map((p) => {
             const char = p.kind === 'character' ? charMap.get(p.id) : undefined;
@@ -66,7 +92,16 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
               <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
                 <Paper variant="outlined" sx={{ p: 1, borderRadius: 1 }}>
                   <Stack spacing={0.75}>
-                    <Typography variant="body1">{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="body1">{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
+                      {isMaster && onRemoveSummon && p.isSummon && (
+                        <Tooltip title="Eliminar invocación">
+                          <IconButton size="small" color="error" sx={{ ml: 'auto' }} onClick={() => onRemoveSummon(p.id)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Stack>
                     {percent !== undefined ? (
                       <Stack spacing={0.5}>
                         <LinearProgress variant="determinate" value={percent} />
@@ -190,6 +225,13 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({
                         </Box>
                       )}
                       <Typography variant="body1" sx={{ flex: 1 }}>{p.role === 'foe' ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
+                      {isMaster && onRemoveSummon && p.isSummon && (
+                        <Tooltip title="Eliminar invocación">
+                          <IconButton size="small" color="error" onClick={() => onRemoveSummon(p.id)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Stack>
                     {percent !== undefined ? (
                       <Stack spacing={0.5}>

@@ -23,6 +23,7 @@ import AuthImage from '../components/common/AuthImage';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { createMap, createMapsBulk, deleteMap, getMapImageUrl, getMapImageUrlSized, listMaps, MapItemDto, updateMap, getMapsUsage, toggleMapPrepared } from '../api/maps';
+import { readRuntimeFogEnabled, writeRuntimeFogEnabled } from '../utils/fogRuntime';
 import AudioConfigEditor, { MusicConfig as MusicCfg, SfxConfig as SfxCfg } from '../components/soundtrack/AudioConfigEditor';
 import MapTodImagesEditor from '../components/Map/MapTodImagesEditor';
 import MapSkylineTodImagesEditor from '../components/Map/MapSkylineTodImagesEditor';
@@ -91,19 +92,6 @@ function hasConfiguredAudio(map: Pick<MapItemDto, 'musicConfig' | 'sfxConfig'>):
     });
   };
   return hasConfigEntries(map.musicConfig) || hasConfigEntries(map.sfxConfig);
-}
-
-function readRuntimeFogEnabled(campaignId: string | undefined, mapId: string | null | undefined): boolean | null {
-  if (!campaignId || !mapId) return null;
-  try {
-    const raw = localStorage.getItem('app.map.fog.enabled');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    const value = parsed?.[`${campaignId}:${mapId}`];
-    return typeof value === 'boolean' ? value : null;
-  } catch {
-    return null;
-  }
 }
 
 export default function MapsPage() {
@@ -340,12 +328,10 @@ export default function MapsPage() {
   }, [activeMapId, items]);
 
   const handleFogEnabledChange = useCallback((next: boolean) => {
-    if (forceFogByDefault && !next) {
-      setFogEnabled(true);
-      return;
-    }
-    setFogEnabled(next);
-  }, [forceFogByDefault]);
+    const effective = (forceFogByDefault && !next) ? true : next;
+    setFogEnabled(effective);
+    writeRuntimeFogEnabled(campaignId, activeMapId, effective);
+  }, [forceFogByDefault, campaignId, activeMapId]);
 
   // Detectar disponibilidad de API Electron
   useEffect(() => {
@@ -1103,7 +1089,7 @@ function MapCard({ it, activeMapId, setActiveMapId, onOpenEdit, setWorldMapItem,
     <Paper variant="outlined" sx={{ p: 1.25, display: 'flex', gap: 1.5, minWidth: 0, borderLeft: it.isPrepared ? '3px solid' : undefined, borderLeftColor: it.isPrepared ? 'warning.main' : undefined }}>
       <Box sx={{ width: 56, height: 56, borderRadius: 1, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {it.imageAvailable ? (
-          <AuthImage src={getMapImageUrlSized(it.id, 'thumb')} alt={it.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onErrorIcon={<ImageIcon fontSize="medium" />} />
+          <AuthImage src={getMapImageUrlSized(it.id, 'thumb')} alt={it.name} lazy style={{ width: '100%', height: '100%', objectFit: 'cover' }} onErrorIcon={<ImageIcon fontSize="medium" />} />
         ) : (
           <ImageIcon fontSize="medium" />
         )}

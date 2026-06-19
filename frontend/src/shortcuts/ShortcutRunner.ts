@@ -114,7 +114,10 @@ const runCombatAction = async (action: ShortcutActionDefinition, deps: RunnerDep
   }
 
   if (action.kind === 'combat.end' || action.kind === 'combat.escape') {
-    await setCampaignBattleState(deps.campaignId, { started: false });
+    await setCampaignBattleState(deps.campaignId, {
+      started: false,
+      outcome: action.kind === 'combat.escape' ? 'escape' : 'victory',
+    });
     return;
   }
 

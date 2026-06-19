@@ -31,6 +31,8 @@ import { CharacterEditorModal } from '../components/characters/CharacterEditorMo
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { useTranslation } from 'react-i18next';
 import { setActiveSkylineCharacterId } from '../api/campaigns/activeSkylineCharacter';
+import { useSendEmoteToSkyline } from '../hooks/useSendEmoteToSkyline';
+import { EmoteMenuButton } from '../components/characters/EmoteMenuButton';
 import { useCampaignsContext } from '../components/Campaign/CampaignContext';
 import { listCampaignSpells, getCampaignSpell, CampaignSpellDetail } from '../api/spells/spellsApi';
 import { listCampaignTraits, getCampaignTrait, CampaignTraitDetail } from '../api/traits/traitsApi';
@@ -54,6 +56,7 @@ const CharacterDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { activeCampaign } = useActiveCampaign();
   const { fetchCampaigns } = useCampaignsContext();
+  const { sendEmote } = useSendEmoteToSkyline();
   const [data, setData] = useState<CharacterPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -324,6 +327,16 @@ const initials = (data.name || '?').split(' ').map(s => s[0]).slice(0, 2).join('
             >
               {isActiveInSkyline ? 'Quitar de Skyline' : 'Enviar a Skyline'}
             </Button>
+          )}
+          {activeCampaign?.id && isMaster && (
+            <EmoteMenuButton
+              emotes={data.characterImages || []}
+              activeUrl={isActiveInSkyline ? (activeCampaign.activeSkylineImageUrl ?? null) : null}
+              disabled={settingSkyline}
+              color={isActiveInSkyline ? 'warning' : 'default'}
+              size="medium"
+              onSelectEmote={(url) => { void sendEmote(data.id!, url); }}
+            />
           )}
         </Stack>
       </Stack>

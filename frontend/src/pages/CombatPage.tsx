@@ -244,12 +244,7 @@ const CombatPage: React.FC = () => {
           {!isMaster && <Alert severity="info">Como jugador puedes consultar encuentros, pero solo el máster puede crearlos o editarlos.</Alert>}
           {loading && <Alert severity="info">Cargando encuentros...</Alert>}
           {error && <Alert severity="warning">{error}</Alert>}
-          <EncounterList encounters={encounters} isMaster={isMaster} onCreate={handleOpenCreate} onEdit={handleOpenEdit} onDelete={(enc) => setDeleteTarget(enc)} />
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Próximo paso: conectar CRUD de encuentros (bestiario + personajes), calculadora de dificultad y selección de música por dificultad y momento del día.
-            </Typography>
-          </Paper>
+          <EncounterList encounters={encounters} characters={characters} isMaster={isMaster} onCreate={handleOpenCreate} onEdit={handleOpenEdit} onDelete={(enc) => setDeleteTarget(enc)} />
         </Stack>
       )}
       {tab === 'combat' && (

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Box, Button, Chip, LinearProgress, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, IconButton, LinearProgress, Paper, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import OutboundIcon from '@mui/icons-material/Outbound';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { EncounterSummary } from '../../api/encounters';
 import { CharacterPayload } from '../../api/characters';
 import type { CampaignMonsterDetail } from '../../api/bestiary/bestiaryApi';
@@ -13,6 +15,8 @@ export interface InitiativePanelProps {
   turnIndex: number;
   orderedParticipants: EncounterSummary['participants'];
   currentTurnId: string | null;
+  /** Ids of downed participants (HP <= 0): shown dimmed and skipped on turn nav. */
+  downedIds: Set<string>;
   selectedParticipantId: string | null;
   setSelectedParticipantId: (id: string) => void;
   battleStarted: boolean;
@@ -20,6 +24,10 @@ export interface InitiativePanelProps {
   onEndBattle: () => void | Promise<void>;
   onPreviousTurn: () => void;
   onNextTurn: () => void;
+  /** Adds a summon (ally/enemy) to the initiative order. */
+  onSummon: (role: 'ally' | 'foe') => void;
+  /** Removes a summon participant by id. */
+  onRemoveSummon: (id: string) => void;
   isMaster: boolean;
   charMap: Map<string, CharacterPayload>;
   enemyDisplayNameById: Record<string, string>;
@@ -37,6 +45,7 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
   turnIndex,
   orderedParticipants,
   currentTurnId,
+  downedIds,
   selectedParticipantId,
   setSelectedParticipantId,
   battleStarted,
@@ -44,6 +53,8 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
   onEndBattle,
   onPreviousTurn,
   onNextTurn,
+  onSummon,
+  onRemoveSummon,
   isMaster,
   charMap,
   enemyDisplayNameById,
@@ -77,6 +88,16 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
         )}
         <Button variant="outlined" onClick={onPreviousTurn}>Turno anterior</Button>
         <Button variant="outlined" onClick={onNextTurn}>Turno siguiente</Button>
+        {isMaster && (
+          <Stack direction="row" spacing={1} sx={{ ml: 3 }}>
+            <Button variant="outlined" color="info" startIcon={<AutoAwesomeIcon />} onClick={() => onSummon('ally')}>
+              Invocación aliada
+            </Button>
+            <Button variant="outlined" color="error" startIcon={<AutoAwesomeIcon />} onClick={() => onSummon('foe')}>
+              Invocación enemiga
+            </Button>
+          </Stack>
+        )}
       </Stack>
 
       <Stack direction="row" spacing={1} flexWrap="wrap">
@@ -92,13 +113,29 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
           const percent = hasCh && hasMx ? Math.max(0, Math.min(100, (Number(ch) / Number(mx)) * 100)) : undefined;
           const isCurrentTurn = p.id === currentTurnId;
           const isSelected = p.id === selectedParticipantId;
+          const isDowned = downedIds.has(p.id);
           const borderColor = isCurrentTurn ? 'primary.main' : (isSelected ? 'secondary.main' : 'divider');
+          // Acento lateral por bando: rojo enemigo, azul aliado.
+          const roleColor = isEnemy ? 'error.main' : 'info.main';
 
           return (
             <Box key={p.id} sx={{ flex: '1 1 280px', minWidth: 240, maxWidth: 360 }}>
               <Paper
                 variant="outlined"
-                sx={{ p: 1, borderRadius: 1, borderColor, borderWidth: 1, borderStyle: 'solid', cursor: 'pointer' }}
+                sx={{
+                  p: 1,
+                  pl: 1.5,
+                  borderRadius: 1,
+                  borderColor,
+                  borderWidth: 1,
+                  borderStyle: 'solid',
+                  borderLeft: '6px solid',
+                  borderLeftColor: roleColor,
+                  cursor: 'pointer',
+                  opacity: isDowned ? 0.55 : 1,
+                  filter: isDowned ? 'grayscale(0.7)' : 'none',
+                  transition: 'opacity 0.2s ease, filter 0.2s ease',
+                }}
                 onClick={() => {
                   setSelectedParticipantId(p.id);
                   try {
@@ -152,8 +189,21 @@ const InitiativePanel: React.FC<InitiativePanelProps> = ({
                     <Typography variant="body1">{isEnemy ? (enemyDisplayNameById[p.id] || p.name) : p.name}</Typography>
                     {isCurrentTurn && <Chip size="small" label="Turno actual" color="primary" />}
                     {isSelected && !isCurrentTurn && <Chip size="small" label="Seleccionado" color="secondary" />}
+                    {isDowned && <Chip size="small" label="Sin conocimiento · turno saltado" color="default" variant="outlined" />}
+                    {isMaster && p.isSummon && (
+                      <Tooltip title="Eliminar invocación">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          sx={{ ml: 'auto' }}
+                          onClick={(e) => { e.stopPropagation(); onRemoveSummon(p.id); }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Stack>
-                  <Typography variant="caption" color="text.secondary">{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {p.initiative ?? '—'}</Typography>
+                  <Typography variant="caption" sx={{ color: roleColor, fontWeight: 600 }}>{(isEnemy ? 'Enemigo' : 'Aliado')} · Ini {p.initiative ?? '—'}</Typography>
                   {percent !== undefined ? (
                     <Stack spacing={0.5}>
                       <LinearProgress variant="determinate" value={percent} />

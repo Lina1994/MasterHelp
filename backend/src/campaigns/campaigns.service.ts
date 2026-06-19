@@ -20,7 +20,9 @@ import * as path from 'path';
 import { BattleStateDto } from './dto/battle-state.dto';
 import { FogOfWarSettingsDto } from './dto/fog-of-war-settings.dto';
 import { SoundtrackSettingsDto } from './dto/soundtrack-settings.dto';
+import { AutoLogSettingsDto } from './dto/auto-log-settings.dto';
 import { CustomManualsService } from '../manuals/custom-manuals.service';
+import { AdventureLogService } from '../adventure-log/adventure-log.service';
 
 @Injectable()
 export class CampaignsService {
@@ -31,6 +33,7 @@ export class CampaignsService {
     private campaignPlayersRepository: Repository<CampaignPlayer>,
     private readonly usersService: UsersService,
     private readonly customManualsService: CustomManualsService,
+    private readonly adventureLog: AdventureLogService,
   ) {}
 
   /** Normalizes manual id arrays by trimming and removing empty values. */
@@ -268,6 +271,7 @@ export class CampaignsService {
       relations: ['owner', 'activeSkylineCharacter'],
     });
     if (!campaign) throw new NotFoundException('Campaign not found');
+    const prevSkylineCharacterId = campaign.activeSkylineCharacter?.id ?? null;
 
     if (!characterId) {
       campaign.activeSkylineCharacter = null;
@@ -293,6 +297,18 @@ export class CampaignsService {
     campaign.activeSkylineCharacter = character;
     campaign.activeSkylineImageUrl = activeSkylineImageUrl;
     await this.campaignsRepository.save(campaign);
+
+    if (characterId !== prevSkylineCharacterId) {
+      // Record the character as "appeared" in the active diary session (deduped).
+      await this.adventureLog.recordSessionAppearance(campaignId, { characterIds: [characterId] });
+      // Auto-log: a non-player character newly encountered (projected to Skyline).
+      if (character.kind === 'npc') {
+        await this.adventureLog.logEvent(campaignId, 'character', {
+          title: 'Encuentro',
+          bodyHtml: `<p>${AdventureLogService.escapeHtml(character.name)}.</p>`,
+        });
+      }
+    }
     return { ok: true };
   }
 
@@ -305,6 +321,7 @@ export class CampaignsService {
   async setActiveMap(campaignId: string, mapId: string | null) {
     const campaign = await this.campaignsRepository.findOne({ where: { id: campaignId }, relations: ['owner', 'activeMap'] });
     if (!campaign) throw new NotFoundException('Campaign not found');
+    const prevMapId = campaign.activeMap?.id ?? null;
     if (!mapId) {
       campaign.activeMap = null;
       await this.campaignsRepository.save(campaign);
@@ -318,6 +335,18 @@ export class CampaignsService {
     if (!sameOwner && !sameCampaign) throw new ForbiddenException('Map not allowed for this campaign');
     campaign.activeMap = map;
     await this.campaignsRepository.save(campaign);
+
+    // Record the place as "appeared" in the active diary session (deduped).
+    if (mapId !== prevMapId) {
+      await this.adventureLog.recordSessionAppearance(campaignId, { mapIds: [mapId] });
+    }
+    // Auto-log: a new place visited when the active map actually changes.
+    if (mapId !== prevMapId) {
+      await this.adventureLog.logEvent(campaignId, 'place', {
+        title: 'Lugar visitado',
+        bodyHtml: `<p>${AdventureLogService.escapeHtml(map.name)}.</p>`,
+      });
+    }
     return { ok: true };
   }
 
@@ -415,6 +444,52 @@ export class CampaignsService {
     campaign.soundtrackSettings = { mode } as any;
     await this.campaignsRepository.save(campaign);
     return { ok: true };
+  }
+
+  // --- AUTOMATIC ADVENTURE-LOG SETTINGS ---
+
+  /** Default (all-disabled) auto-log settings. */
+  private readonly defaultAutoLogSettings = {
+    enabled: false,
+    logPlaces: false,
+    logCharacters: false,
+    logQuests: false,
+    logCombat: false,
+  };
+
+  /**
+   * Returns the campaign's automatic adventure-log settings (with defaults).
+   */
+  async getAutoLogSettings(requestingUserId: number, campaignId: string) {
+    const campaign = await this.getCampaignForMember(campaignId, requestingUserId);
+    const s: any = campaign.autoLogSettings ?? {};
+    return {
+      settings: {
+        enabled: !!s.enabled,
+        logPlaces: !!s.logPlaces,
+        logCharacters: !!s.logCharacters,
+        logQuests: !!s.logQuests,
+        logCombat: !!s.logCombat,
+      },
+    };
+  }
+
+  /**
+   * Updates the campaign's automatic adventure-log settings. Only provided
+   * fields are changed; the rest keep their current value.
+   */
+  async setAutoLogSettings(campaignId: string, dto: AutoLogSettingsDto) {
+    const campaign = await this.getCampaignByIdOrThrow(campaignId);
+    const current = { ...this.defaultAutoLogSettings, ...(campaign.autoLogSettings || {}) };
+    campaign.autoLogSettings = {
+      enabled: dto.enabled ?? current.enabled,
+      logPlaces: dto.logPlaces ?? current.logPlaces,
+      logCharacters: dto.logCharacters ?? current.logCharacters,
+      logQuests: dto.logQuests ?? current.logQuests,
+      logCombat: dto.logCombat ?? current.logCombat,
+    };
+    await this.campaignsRepository.save(campaign);
+    return { ok: true, settings: campaign.autoLogSettings };
   }
 
   // --- SKYLINE OVERLAY SETTINGS ---
@@ -522,7 +597,91 @@ export class CampaignsService {
     } as any;
     campaign.battleState = next;
     await this.campaignsRepository.save(campaign);
+
+    // Auto-log combat start/end on `started` transitions.
+    const wasStarted = !!prev.started;
+    const nowStarted = !!next.started;
+    if (wasStarted !== nowStarted) {
+      if (nowStarted) {
+        const encounterName = campaign.activeEncounter?.name;
+        const place = campaign.activeMap?.name;
+        const enemyNames = this.collectEnemyNames(next.items, campaign);
+
+        // Record character participants as "appeared" in the active session.
+        const characterIds = this.collectCharacterIds(next.items, campaign);
+        if (characterIds.length) {
+          await this.adventureLog.recordSessionAppearance(campaignId, { characterIds });
+        }
+
+        const against = encounterName
+          ? ` contra <strong>${AdventureLogService.escapeHtml(encounterName)}</strong>`
+          : '';
+        const at = place
+          ? ` en <strong>${AdventureLogService.escapeHtml(place)}</strong>`
+          : '';
+        const lines = [`<p>¡Comienza un combate${against}${at}!</p>`];
+        if (enemyNames.length) {
+          lines.push(`<p>Participan ${AdventureLogService.escapeHtml(enemyNames.join(', '))}.</p>`);
+        }
+        await this.adventureLog.logEvent(campaignId, 'combat', {
+          title: 'Combate',
+          bodyHtml: lines.join(''),
+        });
+      } else {
+        let msg: string;
+        if (dto.outcome === 'victory') msg = 'El grupo gana el combate.';
+        else if (dto.outcome === 'escape') msg = 'El grupo escapa del combate.';
+        else msg = 'El combate ha terminado.';
+        await this.adventureLog.logEvent(campaignId, 'combat', {
+          title: 'Combate',
+          bodyHtml: `<p>${msg}</p>`,
+        });
+      }
+    }
     return { ok: true };
+  }
+
+  /**
+   * Collects enemy/foe names from battle-strip items, falling back to the
+   * active encounter's enemy participants.
+   */
+  private collectEnemyNames(
+    items: Array<{ name?: string; role?: string; kind?: string }> | undefined,
+    campaign: Campaign,
+  ): string[] {
+    const fromItems = (items || [])
+      .filter((it) => it?.role === 'foe' || it?.kind === 'enemy')
+      .map((it) => it?.name)
+      .filter((n): n is string => !!n);
+    if (fromItems.length > 0) return fromItems;
+    const participants = (campaign.activeEncounter?.participants || []) as Array<{ name?: string; kind?: string }>;
+    return participants
+      .filter((p) => p?.kind === 'enemy')
+      .map((p) => p?.name)
+      .filter((n): n is string => !!n);
+  }
+
+  /**
+   * Collects character participant ids from battle-strip items, falling back to
+   * the active encounter's character participants. For characters, the
+   * participant id equals the character id.
+   */
+  private collectCharacterIds(
+    items: Array<{ id?: string; kind?: string }> | undefined,
+    campaign: Campaign,
+  ): string[] {
+    const fromItems = (items || [])
+      .filter((it) => it?.kind === 'character')
+      .map((it) => it?.id)
+      .filter((id): id is string => !!id);
+    if (fromItems.length > 0) return Array.from(new Set(fromItems));
+    const participants = (campaign.activeEncounter?.participants || []) as Array<{ id?: string; kind?: string }>;
+    return Array.from(new Set(
+      participants
+        .filter((p) => p?.kind === 'character')
+        .map((p) => p?.id)
+        .filter((id): id is string => !!id),
+    ));
   }
 
   // --- SELECTED MANUALS ---

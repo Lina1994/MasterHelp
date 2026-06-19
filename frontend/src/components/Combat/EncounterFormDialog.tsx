@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -21,6 +21,9 @@ import AddIcon from '@mui/icons-material/Add';
 import type { EncounterSummary, EncounterDifficulty } from '../../api/encounters';
 import { createEncounter as apiCreateEncounter, updateEncounter as apiUpdateEncounter } from '../../api/encounters';
 import { computeEncounterMetrics } from '../../utils/encounterMetrics';
+import { resolveDifficultyInputs, parseChallengeRating } from '../../utils/encounterDifficulty';
+import EncounterDifficultyMeter from './EncounterDifficultyMeter';
+import EncounterDifficultyBreakdown from './EncounterDifficultyBreakdown';
 import type { CharacterPayload } from '../../api/characters';
 import type { SongLite } from '../../api/soundtrack';
 import { getCampaignMonster } from '../../api/bestiary/bestiaryApi';
@@ -60,6 +63,47 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
 
   const metrics = useMemo(() => computeEncounterMetrics(participants), [participants]);
 
+  /** Live character levels by id, so difficulty uses current levels (not stale stored ones). */
+  const characterLevelById = useMemo(() => {
+    const map = new Map<string, number | undefined>();
+    (characters || []).forEach((c) => { if (c.id) map.set(c.id, c.level); });
+    return map;
+  }, [characters]);
+
+  /** Difficulty inputs resolved from live data, shared formula with the combat view. */
+  const difficultyInputs = useMemo(
+    () => resolveDifficultyInputs(participants, { characterLevel: (id) => characterLevelById.get(id) }),
+    [participants, characterLevelById],
+  );
+
+  /** Lookup of campaign monsters by id, to backfill CR on existing encounters. */
+  const monsterById = useMemo(() => {
+    const map = new Map<string, CampaignMonsterListItem & { compositeId: string }>();
+    (monsters || []).forEach((m) => { if (m.id) map.set(m.id, m); });
+    return map;
+  }, [monsters]);
+
+  /**
+   * Backfills the challenge rating of monster foes whose CR is missing or 0
+   * (e.g. encounters saved before fractional CRs were parsed correctly),
+   * looking it up from the campaign bestiary by monsterCampaignId.
+   *
+   * @param list - Participants to normalize.
+   * @returns A new list with CRs filled in where possible.
+   */
+  const backfillParticipantCrs = useCallback(
+    (list: EncounterSummary['participants']): EncounterSummary['participants'] =>
+      list.map((p) => {
+        if (p.role === 'foe' && p.kind === 'enemy' && (!p.cr || p.cr <= 0) && p.monsterCampaignId) {
+          const monster = monsterById.get(p.monsterCampaignId);
+          const cr = parseChallengeRating(monster?.challengeRating);
+          if (cr > 0) return { ...p, cr };
+        }
+        return p;
+      }),
+    [monsterById],
+  );
+
   useEffect(() => {
     if (open && encounter) {
       setName(encounter.name);
@@ -67,7 +111,7 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
       setAutoDifficulty(false);
       setMusicLabel(encounter.musicLabel || '');
       setMusicSongId(encounter.musicSongId || '');
-      setParticipants(encounter.participants || []);
+      setParticipants(backfillParticipantCrs(encounter.participants || []));
     } else if (open) {
       setName('');
       setDifficulty('Medio');
@@ -118,7 +162,7 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
       name: monster?.name || 'Enemigo',
       kind: 'enemy',
       role: 'foe',
-      cr: monster?.challengeRating ? Number(monster.challengeRating) : 0,
+      cr: parseChallengeRating(monster?.challengeRating),
       monsterCampaignId: monster?.id, // usar el id del monstruo de campaña
       monsterManualId: monster?.sourceManual || undefined,
       monsterSlug: undefined, // ya no se usa el slug cuando viene del bestiario de campaña
@@ -198,11 +242,15 @@ export default function EncounterFormDialog({ open, mode, encounter, onClose, on
               ))}
             </Select>
           </FormControl>
-          <Typography variant="caption" color="text.secondary">
-            XP base {metrics.totalXp || 0} · x{metrics.multiplier} ({metrics.monsterCount} enemigos) = {metrics.adjustedXp || 0} ajustados.{' '}
-            Umbrales {metrics.pcCount || 0} PJ: Fácil {metrics.thresholds.easy || 0} / Medio {metrics.thresholds.medium || 0} / Difícil {metrics.thresholds.hard || 0} / Mortal {metrics.thresholds.deadly || 0}.{' '}
-            Sugerido: {metrics.suggested}{autoDifficulty ? ' (auto)' : ''}.
-          </Typography>
+          {(() => {
+            const { partyLevels, enemyCrs } = difficultyInputs;
+            return (
+              <>
+                <EncounterDifficultyMeter partyLevels={partyLevels} enemyCrs={enemyCrs} />
+                <EncounterDifficultyBreakdown partyLevels={partyLevels} enemyCrs={enemyCrs} />
+              </>
+            );
+          })()}
           <FormControl size="small" fullWidth>
             <InputLabel id="music-label" shrink>Música asociada</InputLabel>
             <Select

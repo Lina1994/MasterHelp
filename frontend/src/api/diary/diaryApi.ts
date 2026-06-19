@@ -53,6 +53,10 @@ export type DiarySessionResponse = {
   isPublic: boolean;
   items: DiaryEntryItemResponse[];
   days: DiaryDayRef[];
+  /** Character ids that appeared during the session (deduped). */
+  characterRefs?: string[];
+  /** Map ids that appeared during the session (deduped). */
+  mapRefs?: string[];
   startedAt: string;
   endedAt: string | null;
   createdByUserId: number;

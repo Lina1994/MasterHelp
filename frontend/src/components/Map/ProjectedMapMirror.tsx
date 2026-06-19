@@ -92,25 +92,6 @@ const ProjectedMapMirror: React.FC<{
   const { activeCampaign } = useActiveCampaign();
   const mapId = overrideMapId || activeMapId;
 
-  // Persist per-map runtime fog toggle so the players projection window can mirror it.
-  useEffect(() => {
-    if (!activeCampaign?.id || !mapId) return;
-    const storageKey = 'app.map.fog.enabled';
-    const scopedKey = `${activeCampaign.id}:${mapId}`;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      const parsed = raw ? JSON.parse(raw) : {};
-      const next = { ...(parsed || {}), [scopedKey]: fogEnabled };
-      localStorage.setItem(storageKey, JSON.stringify(next));
-    } catch {}
-    try {
-      const bc = new BroadcastChannel('campaign-sync');
-      bc.postMessage({ type: 'fog-enabled-updated', campaignId: activeCampaign.id, mapId, fogEnabled, at: Date.now() });
-      bc.close();
-    } catch {}
-    try { (window as any).electronAPI?.projectionPoke?.({ reason: 'fog-enabled-updated', campaignId: activeCampaign.id, mapId, fogEnabled }); } catch {}
-  }, [activeCampaign?.id, mapId, fogEnabled]);
-
   const { cells, addCell, removeCell, clearAll, setAll } = useFogOfWar(activeCampaign?.id, mapId || undefined, gridSettings);
   const { strokes: organicStrokes, addStroke: addOrganicStroke, setAllStrokes: setAllOrganicStrokes, clearAll: clearAllOrganicStrokes } = useOrganicFog(activeCampaign?.id, mapId || undefined);
   const { style: fogPreviewStyle, setColor: setFogPreviewColor, setOpacity: setFogPreviewOpacity } = useMapFogPreviewStyle(mapId || undefined);
@@ -550,6 +531,7 @@ const ProjectedMapMirror: React.FC<{
 
           fogEnabled={fogEnabled}
           onFogEnabledChange={onFogEnabledChange}
+          hasFog={cells.size > 0 || organicStrokes.length > 0}
           fogEditEnabled={fogEditEnabled}
           onSetFogEditEnabled={setFogEditEnabled}
           fogMode={fogMode}

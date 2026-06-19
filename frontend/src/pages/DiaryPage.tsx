@@ -24,6 +24,7 @@ import {
   type DiarySessionResponse,
 } from '../api/diary/diaryApi';
 import { DiaryCalendarSettings } from '../components/diary/DiaryCalendarSettings';
+import { DiaryAutoLogSettings } from '../components/diary/DiaryAutoLogSettings';
 import { DiaryCalendarView } from '../components/diary/DiaryCalendarView';
 import { DiaryEntryPanel } from '../components/diary/DiaryEntryPanel';
 import { DiarySessionsPanel } from '../components/diary/DiarySessionsPanel';
@@ -124,9 +125,16 @@ export default function DiaryPage() {
         setSelectedMonthIndex(contextSelectedDay.day.monthIndex);
         setSelectedDayState(contextSelectedDay.day);
       } else {
-        // Si no, establecer valores por defecto
-        setSelectedMonthIndex(0);
-        const defaultDay: DiaryDayRef = { year: cal.config.currentYear, monthIndex: 0, dayIndex: 1 };
+        // Por defecto, mostrar el día ACTUAL de la campaña (donde se escribe el
+        // registro automático), no el día 1.
+        const currentMonthIndex = cal.config.currentMonthIndex ?? 0;
+        const currentDayIndex = cal.config.currentDayIndex ?? 1;
+        setSelectedMonthIndex(currentMonthIndex);
+        const defaultDay: DiaryDayRef = {
+          year: cal.config.currentYear,
+          monthIndex: currentMonthIndex,
+          dayIndex: currentDayIndex,
+        };
         setSelectedDayState(defaultDay);
       }
     } catch (e: any) {
@@ -458,6 +466,7 @@ export default function DiaryPage() {
       {tab === 'sessions' ? (
         <DiarySessionsPanel
           isMaster={isMaster}
+          campaignId={campaignId || ''}
           calendarConfig={calendar}
           sessions={sessions}
           activeSession={activeSession}
@@ -530,6 +539,8 @@ export default function DiaryPage() {
               </Stack>
             </CardContent>
           </Card>
+
+          {campaignId ? <DiaryAutoLogSettings campaignId={campaignId} /> : null}
 
           {calendarDraft ? (
             <Accordion 

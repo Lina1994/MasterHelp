@@ -12,9 +12,7 @@ import { CreateQuestDto } from './dto/create-quest.dto';
 import { UpdateQuestDto } from './dto/update-quest.dto';
 import { Campaign } from '../campaigns/entities/campaign.entity';
 import { User } from '../users/entities/user.entity';
-import { CampaignCalendar } from '../diary/entities/campaign-calendar.entity';
-import { DiaryEntry } from '../diary/entities/diary-entry.entity';
-import { DiaryEntryItem } from '../diary/entities/diary-entry-item.entity';
+import { AdventureLogService } from '../adventure-log/adventure-log.service';
 
 @Injectable()
 export class QuestsService {
@@ -25,12 +23,7 @@ export class QuestsService {
     private readonly questsRepo: Repository<Quest>,
     @InjectRepository(Campaign)
     private readonly campaignsRepo: Repository<Campaign>,
-    @InjectRepository(CampaignCalendar)
-    private readonly calendarRepo: Repository<CampaignCalendar>,
-    @InjectRepository(DiaryEntry)
-    private readonly diaryEntryRepo: Repository<DiaryEntry>,
-    @InjectRepository(DiaryEntryItem)
-    private readonly diaryEntryItemRepo: Repository<DiaryEntryItem>,
+    private readonly adventureLog: AdventureLogService,
   ) {}
 
   /**
@@ -69,66 +62,19 @@ export class QuestsService {
   }
 
   /**
-   * Create a public diary entry for quest status change.
-   * Uses the current day from the campaign calendar.
+   * Appends a quest status change to the campaign's automatic adventure log.
+   * Gated by the campaign's auto-log settings and active diary session
+   * (handled inside {@link AdventureLogService}).
    */
-  private async createDiaryEntry(
+  private async logQuestStatusChange(
     campaignId: string,
     questTitle: string,
     status: 'accepted' | 'completed',
     userId: number,
   ): Promise<void> {
-    try {
-      // Get campaign calendar to find current day
-      const calendar = await this.calendarRepo.findOne({ where: { campaignId } });
-      
-      // Default to year 1, month 0, day 1 if no calendar configured
-      const year = calendar?.config?.currentYear ?? 1;
-      const monthIndex = calendar?.config?.currentMonthIndex ?? 0;
-      const dayIndex = calendar?.config?.currentDayIndex ?? 1;
-
-      // Find or create diary entry for current day
-      let entry = await this.diaryEntryRepo.findOne({
-        where: { campaignId, year, monthIndex, dayIndex },
-      });
-
-      if (!entry) {
-        entry = this.diaryEntryRepo.create({
-          campaignId,
-          year,
-          monthIndex,
-          dayIndex,
-          publicHtml: null,
-          privateHtml: null,
-          lastEditedByUserId: userId,
-        });
-        entry = await this.diaryEntryRepo.save(entry);
-      }
-
-      // Count existing items to determine order
-      const itemCount = await this.diaryEntryItemRepo.count({ where: { entryId: entry.id } });
-
-      // Create the diary entry item
-      const html = status === 'accepted' 
-        ? `<p>Misión aceptada: <strong>${questTitle}</strong></p>`
-        : `<p>Misión completada: <strong>${questTitle}</strong></p>`;
-
-      const item = this.diaryEntryItemRepo.create({
-        entryId: entry.id,
-        entry,
-        title: status === 'accepted' ? `Misión aceptada` : `Misión completada`,
-        html,
-        isPublic: true,
-        order: itemCount,
-        lastEditedByUserId: userId,
-      });
-
-      await this.diaryEntryItemRepo.save(item);
-      this.logger.log(`Created diary entry for quest "${questTitle}" status: ${status} on day ${year}-${monthIndex}-${dayIndex}`);
-    } catch (error) {
-      this.logger.error(`Failed to create diary entry for quest: ${error.message}`, error.stack);
-      // Don't throw - diary creation is optional/best-effort
-    }
+    const title = status === 'accepted' ? 'Misión aceptada' : 'Misión completada';
+    const bodyHtml = `<p>${AdventureLogService.escapeHtml(questTitle)}.</p>`;
+    await this.adventureLog.logEvent(campaignId, 'quest', { title, bodyHtml }, userId);
   }
 
   /**
@@ -299,7 +245,7 @@ export class QuestsService {
 
       // Create diary entry for accepted or completed status
       if (newStatus === 'accepted' || newStatus === 'completed') {
-        await this.createDiaryEntry(quest.campaignId, quest.title, newStatus, userId);
+        await this.logQuestStatusChange(quest.campaignId, quest.title, newStatus, userId);
       }
     }
 

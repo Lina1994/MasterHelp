@@ -26,6 +26,7 @@ import { GridOverlaySettingsDto } from './dto/grid-overlay-settings.dto';
 import { SkylineOverlaySettingsDto } from './dto/skyline-overlay-settings.dto';
 import { FogOfWarSettingsDto } from './dto/fog-of-war-settings.dto';
 import { SoundtrackSettingsDto } from './dto/soundtrack-settings.dto';
+import { AutoLogSettingsDto } from './dto/auto-log-settings.dto';
 import { UpdateCampaignManualsDto } from './dto/update-campaign-manuals.dto';
 import { BattleStateDto } from './dto/battle-state.dto';
 
@@ -205,6 +206,22 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
   async setSoundtrackSettings(@Param('id') id: string, @Body() body: SoundtrackSettingsDto) {
     return this.campaignsService.setSoundtrackSettings(id, body);
+  }
+
+  // --- AUTOMATIC ADVENTURE-LOG SETTINGS ---
+
+  /** Returns the automatic adventure-log settings for a campaign. */
+  @Get(':id/auto-log-settings')
+  @UseGuards(JwtAuthGuard)
+  async getAutoLogSettings(@Request() req, @Param('id') id: string) {
+    return this.campaignsService.getAutoLogSettings(req.user.userId, id);
+  }
+
+  /** Updates the automatic adventure-log settings. Only owner can update. */
+  @Patch(':id/auto-log-settings')
+  @UseGuards(JwtAuthGuard, CampaignOwnerGuard)
+  async setAutoLogSettings(@Param('id') id: string, @Body() body: AutoLogSettingsDto) {
+    return this.campaignsService.setAutoLogSettings(id, body);
   }
 
   // --- SKYLINE OVERLAY SETTINGS ---

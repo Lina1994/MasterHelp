@@ -7,6 +7,11 @@ export type CampaignBattleState = {
   turnIndex: number;
   currentTurnId: string | null;
   items: Array<{ id: string; name: string; imageUrl: string | null }>;
+  /**
+   * Optional combat outcome sent when ending a battle. Used only by the backend
+   * automatic adventure log; it is not part of the persisted battle state.
+   */
+  outcome?: 'victory' | 'escape';
 };
 
 export async function getCampaignBattleState(campaignId: string): Promise<CampaignBattleState> {

@@ -60,6 +60,8 @@ import { ScenesModule } from './scenes/scenes.module';
 import { Scene } from './scenes/entities/scene.entity';
 import { SceneExecution } from './scenes/entities/scene-execution.entity';
 import { SceneVideo } from './scenes/entities/scene-video.entity';
+import { CombatLogModule } from './combat-log/combat-log.module';
+import { CombatLog } from './combat-log/entities/combat-log.entity';
 
 @Module({
   imports: [
@@ -112,6 +114,7 @@ import { SceneVideo } from './scenes/entities/scene-video.entity';
           Scene,
           SceneExecution,
           SceneVideo,
+          CombatLog,
         ],
         // Además, habilitar autoLoadEntities para cargar entidades registradas vía forFeature
         autoLoadEntities: true,
@@ -143,6 +146,7 @@ import { SceneVideo } from './scenes/entities/scene-video.entity';
     BackgroundsModule,
     ShortcutsModule,
     ScenesModule,
+    CombatLogModule,
   ],
   controllers: [],
   providers: [],

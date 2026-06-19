@@ -48,6 +48,12 @@ export type ProjectedMapMirrorToolsProps = {
   fogEnabled: boolean;
   /** Callback to toggle fog on/off from the tools panel. */
   onFogEnabledChange?: (v: boolean) => void;
+  /**
+   * Whether the current map actually has fog-of-war content (grid cells or
+   * organic strokes). Used to highlight the "Niebla" button so the DM can
+   * tell at a glance that the map has active fog.
+   */
+  hasFog: boolean;
   fogEditEnabled: boolean;
   onSetFogEditEnabled: (v: boolean) => void;
   /** Which fog system is active: grid (classic) or organic (brush-based). */
@@ -175,7 +181,9 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
 
   /** Whether each tool group is considered "active" (has persistent effect beyond the popover). */
   const gridActive = props.gridSettings.enabled;
-  const fogActive = props.fogEditEnabled;
+  // The fog button is highlighted when fog-of-war is enabled for the map, when
+  // there is fog content (grid or organic), or while actively editing the fog.
+  const fogActive = props.fogEnabled || props.hasFog || props.fogEditEnabled;
   const tokensActive = props.tokenMode !== 'none';
   const markersActive = props.showMarkers;
   const elementsActive = props.elementsEditEnabled;
@@ -194,9 +202,11 @@ const ProjectedMapMirrorTools: React.FC<ProjectedMapMirrorToolsProps> = (props) 
           variant={fogActive ? 'contained' : 'outlined'}
           onClick={onOpen('fog')}
         >
-          Niebla{fogActive ? ` · ${props.fogMode === 'organic'
-            ? (props.organicFogTool === 'reveal' ? 'Revelar' : 'Cubrir')
-            : (props.fogTool === 'paint' ? 'Pintar' : 'Borrar')}` : ''}
+          Niebla{props.fogEditEnabled
+            ? ` · ${props.fogMode === 'organic'
+                ? (props.organicFogTool === 'reveal' ? 'Revelar' : 'Cubrir')
+                : (props.fogTool === 'paint' ? 'Pintar' : 'Borrar')}`
+            : ((props.fogEnabled || props.hasFog) ? ' ✓' : '')}
         </Button>
         <Button
           size="small"

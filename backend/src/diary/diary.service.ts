@@ -49,7 +49,7 @@ function sanitizeDiaryHtml(input: string | null | undefined): string | null {
   if (!trimmed) return null;
 
   return sanitizeHtml(trimmed, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'h3', 'span']),
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'h3', 'span', 'u', 'hr']),
     allowedAttributes: {
       a: ['href', 'name', 'target', 'rel'],
       img: ['src', 'alt', 'title', 'width', 'height'],
@@ -573,6 +573,16 @@ export class DiaryService {
       startedAt: new Date(),
     });
 
+    // Seed the map active at the moment the session starts, so it counts as a
+    // place that appeared even if it never changes afterwards.
+    try {
+      const { mapId } = await this.campaignsService.getActiveMap(userId, campaignId);
+      if (mapId) {
+        created.mapRefs = [mapId];
+        await this.sessionRepo.save(created);
+      }
+    } catch { /* best-effort: never block session start */ }
+
     const createdWithItems = await this.sessionRepo.findByIdWithItems(created.id);
     return this.toSessionDto(createdWithItems || created, true);
   }
@@ -658,6 +668,8 @@ export class DiaryService {
       isPublic: session.isPublic,
       items: itemsFromDb.length ? itemsFromDb : legacyItems,
       days: session.days,
+      characterRefs: session.characterRefs || [],
+      mapRefs: session.mapRefs || [],
       startedAt: session.startedAt,
       endedAt: session.endedAt,
       createdByUserId: session.createdByUserId,

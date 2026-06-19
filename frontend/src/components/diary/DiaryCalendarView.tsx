@@ -1,4 +1,4 @@
-import { Box, Button, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Grid, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import type { DiaryCalendarConfig, DiaryDayRef } from '../../api/diary/diaryApi';
 import { getDayOfYearIndex, getWeekdayIndex } from './diaryUtils';
 
@@ -75,21 +75,57 @@ export function DiaryCalendarView({
             selectedDay?.monthIndex === day.monthIndex &&
             selectedDay?.dayIndex === day.dayIndex;
 
+          // The campaign's "current day" (where the automatic adventure log is
+          // written). It may differ from the day currently being viewed.
+          const isCurrentDay =
+            config.currentMonthIndex === selectedMonthIndex && config.currentDayIndex === dayIndex;
+
           const weekdayIndex = getWeekdayIndex(config, day);
           const isWeekend = weekdayIndex === weekLen - 1;
 
+          const button = (
+            <Button
+              fullWidth
+              size="small"
+              variant={isSelected ? 'contained' : 'outlined'}
+              color={isWeekend ? 'secondary' : 'primary'}
+              onClick={() => onSelectDay(day)}
+              sx={{
+                minHeight: 36,
+                px: 0.5,
+                position: 'relative',
+                ...(isCurrentDay && !isSelected
+                  ? { borderColor: 'warning.main', borderWidth: 2, fontWeight: 700 }
+                  : {}),
+                ...(isCurrentDay
+                  ? {
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 3,
+                        right: 3,
+                        width: 7,
+                        height: 7,
+                        borderRadius: '50%',
+                        bgcolor: 'warning.main',
+                      },
+                    }
+                  : {}),
+              }}
+            >
+              {dayIndex}
+            </Button>
+          );
+
           return (
             <Grid key={`day-${dayIndex}`} size={{ xs: 1 }}>
-              <Button
-                fullWidth
-                size="small"
-                variant={isSelected ? 'contained' : 'outlined'}
-                color={isWeekend ? 'secondary' : 'primary'}
-                onClick={() => onSelectDay(day)}
-                sx={{ minHeight: 36, px: 0.5 }}
-              >
-                {dayIndex}
-              </Button>
+              {isCurrentDay ? (
+                <Tooltip title="Día actual de la campaña (registro automático)" arrow>
+                  {button}
+                </Tooltip>
+              ) : (
+                button
+              )}
             </Grid>
           );
         })}

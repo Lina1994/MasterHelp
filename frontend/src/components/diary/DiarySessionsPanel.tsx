@@ -7,6 +7,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { formatDayRefCompact } from './diaryUtils';
+import SessionDetails from './SessionDetails';
 
 type SessionItemDraft = {
   id?: string;
@@ -28,6 +29,7 @@ function mapApiItemToDraft(it: { id: string; title: string | null; html: string 
 
 export interface DiarySessionsPanelProps {
   isMaster: boolean;
+  campaignId: string;
   calendarConfig?: DiaryCalendarConfig | null;
   sessions: DiarySessionResponse[];
   activeSession: DiarySessionResponse | null;
@@ -52,6 +54,7 @@ export interface DiarySessionsPanelProps {
  */
 export function DiarySessionsPanel({
   isMaster,
+  campaignId,
   calendarConfig,
   sessions,
   activeSession,
@@ -357,6 +360,13 @@ export function DiarySessionsPanel({
                 <Typography variant="caption" color="text.secondary">
                   Días registrados: {formatDayRefs[s.id]}
                 </Typography>
+
+                <SessionDetails
+                  campaignId={campaignId}
+                  session={s}
+                  calendarConfig={calendarConfig ?? null}
+                  isMaster={isMaster}
+                />
               </Stack>
             </CardContent>
           </Card>
