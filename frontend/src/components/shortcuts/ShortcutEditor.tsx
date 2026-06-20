@@ -72,7 +72,7 @@ type ShortcutEditorProps = {
 };
 
 const EMPTY_ACTION: ShortcutActionDefinition = {
-  kind: 'toggleState',
+  kind: 'playSoundEffect',
   payload: {},
 };
 

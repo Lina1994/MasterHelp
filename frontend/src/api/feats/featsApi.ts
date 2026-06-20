@@ -4,6 +4,12 @@ export interface CampaignFeatListItem {
   id: string;
   name: string;
   prerequisite?: string | null;
+  /**
+   * Backend list endpoint includes the feat description; the bulk card
+   * generator and any other renderer can read it directly without an extra
+   * request.
+   */
+  description: string;
   origin: 'manual' | 'manual-edited' | 'homebrew';
   sourceManual?: string | null;
   customOriginName?: string | null;

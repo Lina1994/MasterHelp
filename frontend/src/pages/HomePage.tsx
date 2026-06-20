@@ -18,6 +18,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import CampaignIcon from '@mui/icons-material/FolderSpecial';
 import BoltIcon from '@mui/icons-material/Bolt';
 import TheaterComedyIcon from '@mui/icons-material/TheaterComedy';
+import StyleIcon from '@mui/icons-material/Style';
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -66,6 +67,7 @@ const ALL_TOOLS: ToolItem[] = [
   { labelKey: 'diary',       fallback: 'Diario',       icon: <EventNoteIcon />,     route: '/diary',             requiresCampaign: true },
   { labelKey: 'bestiary',    fallback: 'Bestiario',    icon: <PetsIcon />,          route: '/campaign-bestiary', requiresCampaign: true },
   { labelKey: 'spells',      fallback: 'Conjuros',     icon: <AutoFixHighIcon />,   route: '/campaign-spells',   requiresCampaign: true },
+  { labelKey: 'cards',       fallback: 'Cartas',       icon: <StyleIcon />,         route: '/cards' },
 ];
 
 const HomePage = () => {

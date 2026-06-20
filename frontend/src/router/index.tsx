@@ -32,6 +32,7 @@ import WorldpediaPage from '../pages/WorldpediaPage';
 import ManualEditorPage from '../pages/ManualEditorPage';
 import ShortcutsPage from '../pages/ShortcutsPage';
 import ScenesPage from '../pages/ScenesPage';
+import CardsPage from '../pages/CardsPage';
 
 const router = createHashRouter([
   // Ventana de proyección: ruta al margen del layout principal
@@ -70,6 +71,7 @@ const router = createHashRouter([
           { path: 'worldpedia', element: <WorldpediaPage /> },
           { path: 'campaign-bestiary', element: <CampaignBestiaryPage /> },
           { path: 'campaign-spells', element: <CampaignSpellsPage /> },
+          { path: 'cards', element: <CardsPage /> },
           { path: 'manuals/:manualId/edit', element: <ManualEditorPage /> },
           // ...other protected routes
         ],

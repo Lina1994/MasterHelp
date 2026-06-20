@@ -31,7 +31,6 @@ export interface ShortcutActionBase {
 }
 
 export type ShortcutActionKind =
-  | 'toggleState'
   | 'playSoundEffect'
   | 'audio.playSong'
   | 'audio.pause'
@@ -62,7 +61,6 @@ export type ShortcutActionKind =
   | 'config.setLanguage'
   | 'config.setTheme'
   | 'config.setFontScale'
-  | 'config.updateSettings'
   | 'delay.wait'
   | 'runScene';
 
@@ -74,12 +72,6 @@ export interface ActionKindGroup {
 }
 
 export const SHORTCUT_ACTION_KIND_OPTIONS_GROUPED: ActionKindGroup[] = [
-  {
-    category: 'Visual & General',
-    options: [
-      { value: 'toggleState', label: 'Toggle visual' },
-    ],
-  },
   {
     category: 'Audio & Sound',
     options: [
@@ -133,7 +125,6 @@ export const SHORTCUT_ACTION_KIND_OPTIONS_GROUPED: ActionKindGroup[] = [
       { value: 'config.setLanguage', label: 'Set language' },
       { value: 'config.setTheme', label: 'Set theme' },
       { value: 'config.setFontScale', label: 'Set font scale' },
-      { value: 'config.updateSettings', label: 'Update app setting' },
     ],
   },
   {

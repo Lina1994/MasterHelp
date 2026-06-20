@@ -40,6 +40,7 @@ export const DEFAULT_SIDEBAR_ITEMS: SidebarItemDef[] = [
   { key: 'diary',            labelKey: 'diary',       fallback: 'Diario',      iconName: 'EventNote',        route: '/diary',             requiresCampaign: true },
   { key: 'campaign-bestiary', labelKey: 'bestiary',   fallback: 'Bestiario',   iconName: 'Pets',             route: '/campaign-bestiary', requiresCampaign: true },
   { key: 'campaign-spells',  labelKey: 'spells',      fallback: 'Conjuros',    iconName: 'AutoFixHigh',      route: '/campaign-spells',   requiresCampaign: true },
+  { key: 'cards',            labelKey: 'cards',       fallback: 'Cartas',      iconName: 'Style',            route: '/cards' },
 ];
 
 /** Persisted sidebar configuration shape. */

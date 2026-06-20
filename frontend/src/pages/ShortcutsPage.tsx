@@ -23,7 +23,7 @@ import ShortcutButton from '../components/shortcuts/ShortcutButton';
 import ShortcutSettings from '../components/shortcuts/ShortcutSettings';
 import { DEFAULT_SHORTCUT_PANEL_ID, DEFAULT_SHORTCUT_SCHEMA_VERSION, type ShortcutActionDefinition, type ShortcutItem, type ShortcutPayload } from '../types/shortcuts';
 
-const EMPTY_ACTION: ShortcutActionDefinition = { kind: 'toggleState', payload: {} };
+const EMPTY_ACTION: ShortcutActionDefinition = { kind: 'playSoundEffect', payload: {} };
 
 function isUserMaster(activeCampaign: any, userId: number | undefined): boolean {
   if (!activeCampaign?.id || !userId) return false;

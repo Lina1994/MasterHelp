@@ -9,6 +9,12 @@ export interface CampaignSpellListItem {
   range: string;
   duration: string;
   components: string;
+  /**
+   * Optional body text. The list endpoint does not always include it for
+   * performance reasons; the bulk card generator and similar consumers must
+   * fall back to `getCampaignSpell` to receive the full description.
+   */
+  description?: string;
   isConcentration?: boolean;
   isRitual?: boolean;
   origin: 'manual' | 'manual-edited' | 'homebrew';
