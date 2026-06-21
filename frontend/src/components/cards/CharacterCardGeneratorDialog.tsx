@@ -8,9 +8,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   FormControlLabel,
   IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   Switch,
   TextField,
@@ -41,6 +45,13 @@ import type { CardEntityPayload, CardTemplate } from '../../types/cardTemplates'
 import CardRenderer from './CardRenderer';
 import { entityNormalisers } from './cardsFieldCatalog';
 import { exportCardsAsPdf, printCardsViaBrowser } from '../../utils/cardExport';
+import {
+  PAPER_FORMATS,
+  getPaperFormat,
+  planCardLayoutForTemplate,
+  type PageFormatPreset,
+} from '../../utils/paperFormats';
+import { resolveCardDimensions } from '../../utils/cardSizes';
 
 /**
  * Builds the entity list for the chosen character: every selected trait, feat
@@ -192,6 +203,11 @@ export default function CharacterCardGeneratorDialog({
   const [selectedFeats, setSelectedFeats] = useState<Set<string>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Sheet preset for the PDF / print export. Defaults to A4 so the
+  // generator immediately benefits from the multi-card-per-page layout
+  // the user expects; users can fall back to 'CARD' (one card fills its
+  // own page) if their template is larger than the chosen sheet.
+  const [pageFormat, setPageFormat] = useState<PageFormatPreset>('A4');
   // Full character detail (used to filter lists by what the character owns).
   const [fullCharacter, setFullCharacter] = useState<CharacterPayload | null>(null);
 
@@ -373,6 +389,53 @@ export default function CharacterCardGeneratorDialog({
     [entities, enrichedTick],
   );
 
+  // Live preview of how the chosen template will be packed onto the chosen
+  // sheet format. Cheap: pure math on mm values. Recomputed on template or
+  // pageFormat change or when the entity count (and therefore total pages)
+  // changes.
+  const layoutPreview = useMemo(() => {
+    if (!selectedTemplate) return null;
+    if (pageFormat === 'CARD') {
+      return {
+        perPage: 1,
+        pages: entities.length,
+        summary: t('cards_page_format_summary_card', {
+          count: entities.length,
+          defaultValue: `1 carta por página · ${entities.length} página(s) en total`,
+        }),
+      };
+    }
+    const paper = getPaperFormat(pageFormat);
+    if (!paper) return null;
+    const plan = planCardLayoutForTemplate(selectedTemplate, paper);
+    if (!plan || plan.perPage <= 0) {
+      return {
+        perPage: 1,
+        pages: entities.length,
+        summary: t('cards_page_format_summary_too_big', {
+          count: entities.length,
+          defaultValue: `La carta es más grande que el papel — 1 por página · ${entities.length} en total`,
+        }),
+      };
+    }
+    const totalPages = Math.max(1, Math.ceil(entities.length / plan.perPage));
+    return {
+      perPage: plan.perPage,
+      pages: totalPages,
+      summary: t('cards_page_format_summary_grid', {
+        perPage: plan.perPage,
+        pages: totalPages,
+        cols: plan.cols,
+        rows: plan.rows,
+        rotated: Boolean(plan.pageRotated),
+        defaultValue:
+          `${plan.cols}×${plan.rows} = ${plan.perPage} cartas/página` +
+          ` · ${totalPages} página(s) en total` +
+          (plan.pageRotated ? ' (orientación horizontal)' : ''),
+      }),
+    };
+  }, [selectedTemplate, pageFormat, entities.length, t]);
+
   // Cross-language mismatch detection. Fires after the auto-mapping effect
   // ran for the current character: if the character stores n spell names but
   // none of them line up with the campaign spell list (the names are
@@ -418,7 +481,7 @@ export default function CharacterCardGeneratorDialog({
       const built = await ensureAllEnriched();
       if (built.length === 0) { setError(t('cards_generator_no_entities', 'Selecciona al menos un elemento para generar cartas.')); return; }
       const filename = `cartas-${character?.name?.replace(/\s+/g, '_') ?? 'personaje'}-${Date.now()}.pdf`;
-      await exportCardsAsPdf(selectedTemplate, built, { filename });
+      await exportCardsAsPdf(selectedTemplate, built, { filename, pageFormat });
     } catch (e: any) {
       setError(e?.message ?? t('cards_export_error', 'Error al exportar el PDF.'));
     } finally {
@@ -432,7 +495,7 @@ export default function CharacterCardGeneratorDialog({
     try {
       const built = await ensureAllEnriched();
       if (built.length === 0) { setError(t('cards_generator_no_entities', 'Selecciona al menos un elemento para generar cartas.')); return; }
-      printCardsViaBrowser(selectedTemplate, built);
+      printCardsViaBrowser(selectedTemplate, built, { pageFormat });
     } catch (e: any) {
       setError(e?.message ?? t('cards_export_error', 'Error al exportar el PDF.'));
     }
@@ -498,6 +561,25 @@ export default function CharacterCardGeneratorDialog({
                 <FormControlLabel control={<Switch size="small" checked={enableSpells} onChange={(_, v) => setEnableSpells(v)} />} label={t('cards_generator_spells', 'Incluir conjuros')} />
                 <FormControlLabel control={<Switch size="small" checked={includeCharacterCard} onChange={(_, v) => setIncludeCharacterCard(v)} />} label={t('cards_generator_include_character', 'Incluir carta de personaje')} />
               </Stack>
+              <FormControl size="small" fullWidth>
+                <InputLabel id="cards-page-format-label">{t('cards_page_format_label', 'Formato de página')}</InputLabel>
+                <Select
+                  labelId="cards-page-format-label"
+                  label={t('cards_page_format_label', 'Formato de página')}
+                  value={pageFormat}
+                  onChange={(e) => setPageFormat(e.target.value as PageFormatPreset)}
+                >
+                  <MenuItem value="CARD">{t('cards_page_format_card_option', 'Una carta por página')}</MenuItem>
+                  {PAPER_FORMATS.map((p) => (
+                    <MenuItem key={p.key} value={p.key}>{p.label}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {layoutPreview && entities.length > 0 && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: -1 }}>
+                  {layoutPreview.summary}
+                </Typography>
+              )}
               {enableTraits && (
                 <CharFilteredList
                   title={t('cards_generator_traits', 'Rasgos')}
@@ -649,6 +731,18 @@ function CharFilteredList<T extends { id: string }>({
   renderItem: (item: T) => string;
 }) {
   const { t } = useTranslation();
+  const [query, setQuery] = useState('');
+  // Filter the rendered label (so spell entries with the level/trufo
+  // prefix are also matchable by name) and intentionally exclude
+  // `renderItem` from the deps — the parent recreates the function on
+  // every render but the filtered output is identical for identical
+  // inputs, so including it would just churn the memo.
+  const filteredItems = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return items;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return items.filter((it) => renderItem(it).toLowerCase().includes(q));
+  }, [items, query]);
   const allSelected = items.length > 0 && selected.size >= items.length;
   return (
     <Paper variant="outlined" sx={{ p: 1.5 }}>
@@ -681,11 +775,21 @@ function CharFilteredList<T extends { id: string }>({
           {hint}
         </Typography>
       )}
+      <TextField
+        size="small"
+        fullWidth
+        placeholder={t('cards_generator_search', 'Buscar…')}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        sx={{ mb: 0.5 }}
+      />
       <Box sx={{ maxHeight: 160, overflow: 'auto' }}>
-        {items.length === 0 ? (
-          <Typography variant="caption" color="text.secondary">{emptyMessage}</Typography>
+        {filteredItems.length === 0 ? (
+          <Typography variant="caption" color="text.secondary">
+            {query ? t('cards_generator_search_empty', 'Sin coincidencias.') : emptyMessage}
+          </Typography>
         ) : (
-          items.map((item) => (
+          filteredItems.map((item) => (
             <FormControlLabel
               key={item.id}
               control={<Checkbox size="small" checked={selected.has(item.id)} onChange={() => onToggle(item.id)} />}

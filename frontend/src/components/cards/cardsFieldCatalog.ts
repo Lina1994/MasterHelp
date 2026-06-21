@@ -43,8 +43,13 @@ export const CARD_FIELD_GROUPS: CardFieldGroup[] = [
       { path: 'castingTime', label: 'Tiempo de lanzamiento' },
       { path: 'range', label: 'Alcance' },
       { path: 'duration', label: 'Duración' },
-      { path: 'components', label: 'Componentes' },
-      { path: 'materials', label: 'Materiales' },
+      // The two card slots below used to share a single field labelled
+      // "Componentes", which mixed abbreviations (V, S, M) with the
+      // parenthetical material text (Alambre de cobre, etc.). The user
+      // explicitly asked to split them — the hint column surfaces what
+      // each binding resolves to so the picker UX stops being ambiguous.
+      { path: 'components', label: 'Componentes', hint: 'V, S, M (abrebiaturas)' },
+      { path: 'materials', label: 'Materiales', hint: 'Alambre de cobre y otros materiales' },
       { path: 'classes', label: 'Clases' },
       { path: 'savingThrow', label: 'Tirada de salvación' },
       { path: 'areaOfEffect', label: 'Área de efecto' },
@@ -181,25 +186,42 @@ import type { CharacterPayload } from '../../api/characters';
  * {@link CARD_FIELD_GROUPS} and a normaliser below.
  */
 export const entityNormalisers: Record<CardEntityKind, (raw: any) => CardEntityPayload> = {
-  spell: (raw: CampaignSpellListItem | CampaignSpellDetail): CardEntityPayload => ({
-    kind: 'spell',
-    sourceId: raw.id,
-    data: {
-      name: raw.name,
-      school: 'school' in raw ? raw.school : '',
-      level: 'level' in raw ? raw.level : '',
-      castingTime: 'castingTime' in raw ? raw.castingTime : '',
-      range: 'range' in raw ? raw.range : '',
-      duration: 'duration' in raw ? raw.duration : '',
-      components: 'components' in raw ? raw.components : '',
-      materials: 'materials' in raw ? raw.materials ?? '' : '',
-      classes: 'classes' in raw && raw.classes ? raw.classes.join(', ') : '',
-      savingThrow: 'savingThrow' in raw ? raw.savingThrow ?? '' : '',
-      areaOfEffect: 'areaOfEffect' in raw ? raw.areaOfEffect ?? '' : '',
-      description: 'description' in raw ? raw.description ?? '' : '',
-      source: 'origin' in raw ? raw.origin : 'manual',
-    },
-  }),
+  spell: (raw: CampaignSpellListItem | CampaignSpellDetail): CardEntityPayload => {
+    // The D&D data set bundles the parenthesised material text into the
+    // `components` string (`"V, S, M (alambre de cobre)"`). The catalogue
+    // exposes two distinct slots — `components` (V/S/M only) and `materials`
+    // (the parenthetical text) — so we split them here rather than forcing
+    // the renderer or the template author to do string surgery. When the
+    // backend already exposes a separate `materials` field (DB-backed
+    // custom manuals) we prefer it over what we extract from `components`.
+    const rawComponents = 'components' in raw && typeof raw.components === 'string' ? raw.components : '';
+    const explicitMaterials = 'materials' in raw && typeof raw.materials === 'string' ? raw.materials.trim() : '';
+    // Match only a trailing `(...)` so abbreviations remain untouched.
+    const PAREN_TAIL = /\s*\(([^()]*)\)\s*$/;
+    const tailMatch = rawComponents.match(PAREN_TAIL);
+    const extracted = tailMatch ? tailMatch[1].trim() : '';
+    const components = tailMatch ? rawComponents.slice(0, tailMatch.index).trim() : rawComponents;
+    const materials = explicitMaterials || extracted;
+    return {
+      kind: 'spell',
+      sourceId: raw.id,
+      data: {
+        name: raw.name,
+        school: 'school' in raw ? raw.school : '',
+        level: 'level' in raw ? raw.level : '',
+        castingTime: 'castingTime' in raw ? raw.castingTime : '',
+        range: 'range' in raw ? raw.range : '',
+        duration: 'duration' in raw ? raw.duration : '',
+        components,
+        materials,
+        classes: 'classes' in raw && raw.classes ? raw.classes.join(', ') : '',
+        savingThrow: 'savingThrow' in raw ? raw.savingThrow ?? '' : '',
+        areaOfEffect: 'areaOfEffect' in raw ? raw.areaOfEffect ?? '' : '',
+        description: 'description' in raw ? raw.description ?? '' : '',
+        source: 'origin' in raw ? raw.origin : 'manual',
+      },
+    };
+  },
   trait: (raw: CampaignTraitListItem | CampaignTraitDetail): CardEntityPayload => ({
     kind: 'trait',
     sourceId: raw.id,

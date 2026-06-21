@@ -35,6 +35,10 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import FlipIcon from '@mui/icons-material/Flip';
 import FlipCameraAndroidIcon from '@mui/icons-material/FlipCameraAndroid';
 import Rotate90DegreesCcwIcon from '@mui/icons-material/Rotate90DegreesCcw';
@@ -52,7 +56,7 @@ import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatStrikethroughIcon from '@mui/icons-material/FormatStrikethrough';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 import type {
@@ -65,9 +69,9 @@ import type {
 import type { CardGraphicElement } from '../../data/cardGraphicElements';
 import CardSizeSelector from './CardSizeSelector';
 import CardFieldPicker from './CardFieldPicker';
-import CardPreview from './CardPreview';
-import CardSamplePicker from './CardSamplePicker';
+import CardPreview, { type CardPreviewHandle } from './CardPreview';
 import GraphicElementsPicker from './GraphicElementsPicker';
+import CardSamplePicker from './CardSamplePicker';
 import { entityNormalisers } from './cardsFieldCatalog';
 import { BASE_SLOT_ID } from './LiveSlotOverlay';
 
@@ -121,6 +125,41 @@ function computeTextDecoration(underline: boolean, strike: boolean): NonNullable
 }
 
 /**
+ * Read-form for the rotation `TextField`. Centralised so both rotation
+ * strips (the new DIVIDER block and the legacy IMAGE-with-SVG-fallback
+ * block) render the same rounded value in the picker — important
+ * because `slot.rotation` is a float and a user typing `37.6°` would
+ * otherwise see `38` in one strip and `37.6` in another when the
+ * rounding strategy changes.
+ */
+function rotationInputValue(slot: CardSlot): number {
+  return Math.round(slot.rotation ?? 0);
+}
+
+/**
+ * Shared `onChange` for the rotation `TextField` in both the new
+ * DIVIDER strip and the existing IMAGE-with-SVG-fallback strip. Pulled
+ * out so the two strips cannot drift apart when one of them bumps its
+ * wrap-around range or step.
+ *
+ * Empty input from clearing the field resolves to `Number('') → 0` in
+ * a `<input type="number">` picker, which matches the "upright" render
+ * state because `slotTransform` only rotates when `|rot| > 0.01`. This
+ * relies on the browser filtering non-numeric keys out of the picker —
+ * every modern browser does that for `type="number"`. If `type` ever
+ * changes to `"text"` the guard above would also need to reject `NaN`
+ * from `"abc"` and similar inputs; consider it before refactoring.
+ */
+function handleRotationChange(
+  e: ChangeEvent<HTMLInputElement>,
+  updateSelected: (next: Partial<CardSlot> | ((slot: CardSlot) => Partial<CardSlot>)) => void,
+): void {
+  const raw = Number(e.target.value);
+  if (!Number.isFinite(raw)) return;
+  updateSelected({ rotation: ((raw % 360) + 360) % 360 });
+}
+
+/**
  * Detects whether the slot's `fontWeight` represents bold. We treat
  * anything numeric ≥ 600 as bold plus the legacy string keywords,
  * matching the CSS spec's "bolder than normal" threshold.
@@ -160,7 +199,14 @@ function makeDefaultSlot(index: number, total: number, type: SlotType): CardSlot
     position: { x: 4, y: baseY, w: isDecorative ? 55 : 51, h: type === 'TEXT_MULTI' ? 18 : type === 'IMAGE' ? 24 : type === 'BADGE' ? 6 : type === 'FRAME' ? 14 : 10 },
     style: {
       fontSize: type === 'TEXT_SINGLE' ? 11 : type === 'TEXT_MULTI' ? 8 : type === 'BADGE' ? 7 : type === 'FRAME' ? 6 : 8,
-      color: '#111111',
+      // `style.color` is intentionally left undefined for new slots so
+      // they inherit `globalStyle.textColor` from the template. The
+      // per-slot text-colour picker introduced next to the typography
+      // block mirrors the inherited value, and the "Usar global" reset
+      // is meaningful only when the slot has its own override. A hard-
+      // coded #111111 default previously trapped users into a slot-level
+      // override they had to dig out before the picker reflected the
+      // template's global text colour.
       textAlign: type === 'TEXT_SINGLE' ? 'left' : 'left',
       paddingMm: type === 'TEXT_MULTI' ? 1 : 0,
       borderRadius: (type === 'BADGE' || type === 'FRAME') ? 1.5 : 0,
@@ -173,7 +219,7 @@ function makeDefaultSlot(index: number, total: number, type: SlotType): CardSlot
     },
     binding: defaultBinding(type),
     keyValueConfig: type === 'KEY_VALUE_LIST' ? { showLabel: true, isTupleArray: false } : undefined,
-    dividerConfig: type === 'DIVIDER' ? { orientation: 'horizontal', thickness: 0.4 } : undefined,
+    dividerConfig: type === 'DIVIDER' ? { orientation: 'horizontal', thickness: 0.4, color: '#888888' } : undefined,
   };
 }
 
@@ -217,7 +263,7 @@ function fallbackEntityFromSlots(
   slots: CardSlot[],
   sampleName: string,
   sampleDescription: string,
-): CardEntityPayload {
+): CardEntityPayload | null {
   const firstField = slots.map((s) => s.binding?.fieldPath).find((p) => !!p);
   const kind: CardEntityPayload['kind'] = firstField?.startsWith('prerequisite')
     ? 'feat'
@@ -271,7 +317,6 @@ export default function CardTemplateEditorDialog({
   // a slot is clicked.
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(initial?.slots?.[0]?.id ?? BASE_SLOT_ID);
   const [saving, setSaving] = useState(false);
-  const [sampleEntity, setSampleEntity] = useState<CardEntityPayload | null>(null);
   const [graphicPickerOpen, setGraphicPickerOpen] = useState(false);
   // User-controlled zoom on the preview canvas. 1 = fit-to-window, >1
   // enlarges the card so fine alignment becomes easier, <1 squeezes more
@@ -281,8 +326,48 @@ export default function CardTemplateEditorDialog({
   // layer badge. Off by default so the preview mirrors the real printed
   // card; toggled on when the author needs explicit slot identification.
   const [showLabels, setShowLabels] = useState(false);
+  // Sample entity the live preview should render against. `null` means
+  // "use the synthetic fallback computed from the slot bindings"; any
+  // non-null value overrides the fallback and feeds the preview with a
+  // real backend record that {@link CardSamplePicker} surfaced. Reset
+  // to `null` on every dialog (re)open so a previously-picked sample
+  // doesn't leak into the next session.
+  const [previewSampleEntity, setPreviewSampleEntity] = useState<CardEntityPayload | null>(null);
+  // Handle into the CardPreview instance so the zoom toolbar's pan
+  // arrows can drive `scrollBy(dx, dy)` without forcing the user to
+  // scroll the column vertically to reach the inner Paper's scrollbars
+  // first. Cleared automatically by React when the preview unmounts.
+  const cardPreviewRef = useRef<CardPreviewHandle | null>(null);
+  /**
+   * Mirror of the preview Paper's scroll bounds, owned locally so the
+   * pan-arrow `disabled` flags below re-render whenever the Paper
+   * scrolls. Driven by {@link CardPreview}'s `onScrollBoundsChange`
+   * callback, which fires synchronously inside a `useLayoutEffect` so
+   * the freshly-updated value is in place before the first browser
+   * paint of the next frame. Defaults every direction to `false`
+   * because any boundary we haven't yet measured is conservatively
+   * "no further scroll possible" — matches what the rendered Paper
+   * will report on its first measurement anyway.
+   */
+  const [cardPreviewScrollBounds, setCardPreviewScrollBounds] = useState<{ left: boolean; right: boolean; up: boolean; down: boolean }>({
+    left: false,
+    right: false,
+    up: false,
+    down: false,
+  });
   /** Discrete zoom levels exposed in the toolbar; Ctrl+wheel walks between them. */
   const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3] as const;
+  /**
+   * Pan-arrows step size. 40 css px is small enough that a single click
+   * feels like a precise nudge rather than a jump (good for users
+   * centring on a specific landmark of a zoomed card), and big enough
+   * to traverse the typical previsualización (300–500 px wide column)
+   * in 8–12 clicks. Browser boundary clamping in `scrollBy` keeps the
+   * last step from overshooting; each button also queries
+   * `cardPreviewRef.current?.canScroll(axis, direction)` to disable
+   * itself when no further scroll is possible in that direction.
+   */
+  const PAN_STEP_PX = 40;
   const clampZoom = (value: number) => Math.max(0.25, Math.min(4, value));
   const zoomIn = () => {
     // Snap to the next preset level so the indicator is predictable.
@@ -320,7 +405,11 @@ export default function CardTemplateEditorDialog({
     setGlobalStyle(initial?.globalStyle ?? { backgroundColor: '#fdfaf3', borderColor: '#3b2a1a', borderWidthMm: 0.5, textColor: '#1b1b1b', accentColor: '#7a3a17' });
     setSlots(initial?.slots ?? []);
     setSelectedSlotId(initial?.slots?.[0]?.id ?? BASE_SLOT_ID);
-    setSampleEntity(null);
+    // Reset the preview sample so a pick from a previous open doesn't
+    // bleed into the freshly-hydrated template — the new slots may
+    // bind to different fields whose value the old sample cannot
+    // provide.
+    setPreviewSampleEntity(null);
   }, [open, initial?.id]);
 
   const previewTemplate: CardTemplate = useMemo(() => ({
@@ -334,7 +423,7 @@ export default function CardTemplateEditorDialog({
     updatedAt: initial?.updatedAt ?? new Date().toISOString(),
   }), [name, description, widthMm, heightMm, orientation, sizePreset, globalStyle, slots, initial]);
 
-  const fallbackEntity = useMemo<CardEntityPayload>(() => fallbackEntityFromSlots(
+  const fallbackEntity = useMemo<CardEntityPayload | null>(() => fallbackEntityFromSlots(
     slots,
     t('cards_sample_name', 'Bola de fuego'),
     t('cards_sample_description', 'Una bola de fuego abrasadora estalla desde un punto a elección dentro del alcance, expandiéndose para llenar una esfera de 6 metros de radio...'),
@@ -612,11 +701,60 @@ export default function CardTemplateEditorDialog({
   const isEditing = !!initial;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth={false}
+      fullWidth
+      sx={{
+        // MUI's `maxWidth="xl"` preset caps at ~1536px which is too
+        // tight for the 3-column grid on ≥1080p monitors — the preview
+        // column shrinks past the point where slot dragging and pan
+        // arrows feel comfortable. We bypass the preset and apply an
+        // explicit paper size so the dialog feels "large but bounded":
+        //   • `min(1680px, 96vw)` keeps the paper under 96 % of the
+        //     viewport width so the dialog can never escape the window;
+        //   • `92vh` tall leaves room for the chrome (DialogTitle +
+        //     DialogActions) and the inner grid scales accordingly.
+        '& .MuiDialog-paper': {
+          width: 'min(1680px, 96vw)',
+          maxWidth: '96vw',
+          height: '92vh',
+          maxHeight: '96vh',
+          // Flex column so DialogTitle sits at the top with its natural
+          // height, DialogActions sits at the bottom with its natural
+          // height, and the middle DialogContent (with `flex: 1` and
+          // `minHeight: 0` below) absorbs whatever remains. Without
+          // this layout the paper would auto-size to the SUM of its
+          // children's intrinsic heights — meaning a viewport-relative
+          // `height: 92vh` set inside the inner grid would silently
+          // overflow and the bottom row of the slot list would clip.
+          // minHeight: 0 is essential: flex items default to minHeight:
+          // auto, which respects the content's intrinsic minimum and
+          // re-introduces the overflow we are trying to avoid.
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+        },
+      }}
+    >
       <DialogTitle>
         {isEditing ? t('cards_edit_template_title', 'Editar plantilla') : t('cards_new_template_title', 'Nueva plantilla')}
       </DialogTitle>
-      <DialogContent dividers sx={{ p: 0 }}>
+      {/*
+        DialogContent sits between DialogTitle and DialogActions, both
+        of which have intrinsic heights (the title is a single line;
+        the actions row the "Save / Cancel" buttons). With the paper
+        in `flexDirection: column`, declaring `flex: 1` here lets this
+        content area absorb the leftover vertical space while
+        `minHeight: 0` keeps the flex item from refusing to shrink
+        below its content's intrinsic minimum. `overflow: hidden` is
+        conservative: any future descendant that overflows vertically
+        (e.g. a long slot list with very narrow columns) will scroll
+        inside its own scroll container instead of bubbling out and
+        clipping the paper edge.
+      */}
+      <DialogContent dividers sx={{ p: 0, flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {/*
           3-column grid on lg+ screens. The preview gets the unused 1fr so it
           dominates the editor; the two sidebars are fixed at 320px and 360px
@@ -627,8 +765,44 @@ export default function CardTemplateEditorDialog({
         <Box sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '260px 280px 1fr', lg: '320px 360px 1fr' },
-          height: '72vh',
-          minHeight: 600,
+          // `gridAutoRows: 'minmax(0, 1fr)'` is the load-bearing line
+          // that makes this layout actually work at runtime. Without
+          // it, CSS Grid defaults `grid-auto-rows` to `auto`, sizing the
+          // (single) row to the MAX intrinsic height of its three
+          // children — the slot list, the properties column and the
+          // preview column. The properties column is the long one
+          // (multiple accordions + typography + colour pickers) and
+          // routinely exceeds the flex-laid-out DialogContent height.
+          // The `minmax(0, 1fr)` trick forces the row to honour the
+          // container's height (the `0` lower bound is what makes it
+          // possible for the row to shrink below its children — the
+          // default `1fr` resolves to `minmax(auto, 1fr)` which still
+          // pins the row to its content's intrinsic minimum and
+          // reintroduces the very overflow we want to avoid). With
+          // this in place, the properties column's own `overflowY:
+          // 'auto'` finally triggers and its bottom controls stay
+          // reachable instead of being silently clipped by the paper's
+          // outer `overflow: 'hidden'`. Applied at every breakpoint
+          // (no responsive object wrapping) so xs/sm — where the grid
+          // template collapses to a single column and the three
+          // children stack as three rows — get the same protection:
+          // each panel takes a 1fr slice of the paper height and
+          // scrolls internally, instead of the grid-default behaviour
+          // of growing the rows to their intrinsic content height and
+          // silently clipping via `overflow: 'hidden'`.
+          gridAutoRows: 'minmax(0, 1fr)',
+          // `height: '100%'` fills the DialogContent above, which itself
+          // takes whatever space the flex layout has left after the
+          // chrome (DialogTitle + DialogActions). This is robust against
+          // chip / chip-row width changes and against future additions
+          // to the chrome row that would otherwise force the inner grid
+          // to re-tune a vh constant by hand. The `minHeight` is scoped
+          // to md+ so the grid still scrolls comfortably on a small
+          // single-column layout (xs/sm) where the dialog collapses to
+          // one stacked column — overriding the flex from below 720 px
+          // there would clip the dialog paper itself.
+          height: '100%',
+          minHeight: { md: 720 },
         }}>
           {/* Column 1 – Slot list + add-slot controls */}
           <Box sx={{ borderRight: { md: '1px solid' }, borderColor: 'divider', overflowY: 'auto' }}>
@@ -1119,6 +1293,14 @@ export default function CardTemplateEditorDialog({
                       border: '1px dashed',
                       borderColor: 'divider',
                       borderRadius: 1.25,
+                      // DIVIDER has no boxing — the generic "Color borde"/
+                      // "Grosor" controls write to `style.borderColor`/
+                      // `style.borderWidth`, which the divider renderer
+                      // never reads (it picks up `dividerConfig.color`).
+                      // Hide them for DIVIDER so the user lands on the
+                      // dedicated divider block instead of two colour
+                      // sections that look unrelated.
+                      display: selectedSlot.type === 'DIVIDER' ? 'none' : 'flex',
                     }}
                   >
                     <TextField
@@ -1158,6 +1340,235 @@ export default function CardTemplateEditorDialog({
                     )}
                   </Typography>
                   {/*
+                    Divider visual controls. The slot-level border colour
+                    picker above writes to `style.borderColor` but the
+                    divider renderer reads `dividerConfig`, so users without
+                    this block could never recolour or shape the line.
+                    Shown only when slot.type === 'DIVIDER'.
+
+                    This block supersedes the previous three-control
+                    "color / thickness / orientation" cluster. It now
+                    exposes:
+                      • End taper (mm)  — asymmetric thickness: positive
+                        widens the right (horizontal) or bottom (vertical)
+                        end; negative widens the opposite end; 0 keeps
+                        the parallel legacy look.
+                      • Curve depth (mm) — perpendicular quadratic Bézier
+                        bulge. Positive bows one way, negative the other;
+                        0 keeps a straight line.
+                      • Effect — `plain` (default, byte-equal to the
+                        legacy rect), `chain` (heavy inner dash), `rope`
+                        (woven wiggle), `fire` (warm gradient + inner
+                        highlight), `thread` (two offset strands).
+
+                    Rotation / flip are not duplicated here because the
+                    slot's existing rotation controls up top already
+                    drive `slot.rotation` and that prop rotates the
+                    whole DIVIDER wrapper regardless of which effect
+                    is active.
+                  */}
+                  {selectedSlot.type === 'DIVIDER' && (
+                    <Stack
+                      spacing={1.25}
+                      sx={{
+                        p: 1,
+                        border: '1px dashed',
+                        borderColor: 'divider',
+                        borderRadius: 1.25,
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                        {t('cards_section_divider', 'Divisor')}
+                      </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <TextField
+                          size="small"
+                          type="color"
+                          label={t('cards_divider_color', 'Color del divisor')}
+                          value={selectedSlot.dividerConfig?.color ?? '#888888'}
+                          onChange={(e) => updateSelected({
+                            dividerConfig: {
+                              ...selectedSlot.dividerConfig,
+                              color: e.target.value,
+                            },
+                          })}
+                          sx={{ width: 140 }}
+                        />
+                        <TextField
+                          size="small"
+                          type="number"
+                          label={t('cards_divider_thickness', 'Grosor (mm)')}
+                          value={selectedSlot.dividerConfig?.thickness ?? 0.4}
+                          onChange={(e) => updateSelected({
+                            dividerConfig: {
+                              ...selectedSlot.dividerConfig,
+                              thickness: Number(e.target.value) || 0.4,
+                            },
+                          })}
+                          sx={{ width: 130 }}
+                          inputProps={{ min: 0, max: 5, step: 0.1 }}
+                        />
+                        <FormControl size="small" sx={{ minWidth: 130 }}>
+                          <InputLabel>{t('cards_divider_orientation', 'Orientación')}</InputLabel>
+                          <Select
+                            label={t('cards_divider_orientation', 'Orientación')}
+                            value={selectedSlot.dividerConfig?.orientation ?? 'horizontal'}
+                            onChange={(e) => updateSelected({
+                              dividerConfig: {
+                                ...selectedSlot.dividerConfig,
+                                orientation: e.target.value as 'horizontal' | 'vertical',
+                              },
+                            })}
+                          >
+                            <MenuItem value="horizontal">{t('cards_divider_orientation_h', 'Horizontal')}</MenuItem>
+                            <MenuItem value="vertical">{t('cards_divider_orientation_v', 'Vertical')}</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Stack>
+                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Tooltip title={t('cards_divider_taper_hint', 'Positivo ensancha el extremo derecho (o inferior); negativo el izquierdo. 0 = línea paralela, igual que antes.')}>
+                          <TextField
+                            size="small"
+                            type="number"
+                            label={t('cards_divider_taper', 'Extremo cónico (mm)')}
+                            value={selectedSlot.dividerConfig?.endTaperMm ?? 0}
+                            onChange={(e) => updateSelected({
+                              dividerConfig: {
+                                ...selectedSlot.dividerConfig,
+                                endTaperMm: Number(e.target.value) || 0,
+                              },
+                            })}
+                            sx={{ width: 160 }}
+                            inputProps={{ min: -5, max: 5, step: 0.1 }}
+                          />
+                        </Tooltip>
+                        <Tooltip title={t('cards_divider_curve_hint', 'Profundidad perpendicular del arco. 0 = línea recta.')}>
+                          <TextField
+                            size="small"
+                            type="number"
+                            label={t('cards_divider_curve', 'Curvatura (mm)')}
+                            value={selectedSlot.dividerConfig?.curveMm ?? 0}
+                            onChange={(e) => updateSelected({
+                              dividerConfig: {
+                                ...selectedSlot.dividerConfig,
+                                curveMm: Number(e.target.value) || 0,
+                              },
+                            })}
+                            sx={{ width: 130 }}
+                            inputProps={{ min: -10, max: 10, step: 0.5 }}
+                          />
+                        </Tooltip>
+                        <FormControl size="small" sx={{ minWidth: 150 }}>
+                          <InputLabel>{t('cards_divider_effect', 'Efecto')}</InputLabel>
+                          <Select
+                            label={t('cards_divider_effect', 'Efecto')}
+                            value={selectedSlot.dividerConfig?.effect ?? 'plain'}
+                            onChange={(e) => updateSelected({
+                              dividerConfig: {
+                                ...selectedSlot.dividerConfig,
+                                effect: e.target.value as 'plain' | 'chain' | 'rope' | 'fire' | 'thread',
+                              },
+                            })}
+                          >
+                            <MenuItem value="plain">{t('cards_divider_effect_plain', 'Plano')}</MenuItem>
+                            <MenuItem value="chain">{t('cards_divider_effect_chain', 'Cadena')}</MenuItem>
+                            <MenuItem value="rope">{t('cards_divider_effect_rope', 'Cuerda')}</MenuItem>
+                            <MenuItem value="fire">{t('cards_divider_effect_fire', 'Fuego')}</MenuItem>
+                            <MenuItem value="thread">{t('cards_divider_effect_thread', 'Hilos')}</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Stack>
+                      {/* Per-slot rotation / flip for the DIVIDER. The slot
+                          header only exposes label / lock / duplicate, so
+                          before this strip the user had no in-block
+                          affordance to spin or mirror a divider. We
+                          mirror a slim version of the IMAGE rotation
+                          strip here so the divider block is self-contained. */}
+                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Tooltip title={t('cards_slot_rotate_left', 'Rotar -15°')}>
+                          <IconButton size="small" onClick={() => updateSelected({ rotation: ((selectedSlot.rotation ?? 0) - 15 + 360) % 360 })}>
+                            <Rotate90DegreesCcwIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <TextField
+                          size="small"
+                          type="number"
+                          label={t('cards_slot_rotation', 'Rotación (°)')}
+                          value={rotationInputValue(selectedSlot)}
+                          onChange={(e) => handleRotationChange(e, updateSelected)}
+                          sx={{ width: 110 }}
+                          inputProps={{ min: 0, max: 359, step: 5 }}
+                        />
+                        <Tooltip title={t('cards_slot_rotate_right', 'Rotar +15°')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => updateSelected({ rotation: ((selectedSlot.rotation ?? 0) + 15) % 360 })}
+                            sx={{ transform: 'scaleX(-1)' }}
+                          >
+                            <Rotate90DegreesCcwIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('cards_slot_flip_h', 'Voltear horizontalmente')}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color={selectedSlot.flipH ? 'primary' : 'default'}
+                              onClick={() => updateSelected({ flipH: !selectedSlot.flipH })}
+                            >
+                              <FlipIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title={t('cards_slot_flip_v', 'Voltear verticalmente')}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color={selectedSlot.flipV ? 'primary' : 'default'}
+                              onClick={() => updateSelected({ flipV: !selectedSlot.flipV })}
+                            >
+                              <FlipCameraAndroidIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Box sx={{ flex: 1 }} />
+                        <Button
+                          size="small"
+                          variant="text"
+                          onClick={() => updateSelected({ rotation: 0, flipH: false, flipV: false })}
+                          disabled={(selectedSlot.rotation ?? 0) === 0 && !selectedSlot.flipH && !selectedSlot.flipV}
+                        >
+                          {/* Distinguish from the divider-config "Restablecer
+                              divisor" button two rows below — both would
+                              otherwise share the same label and mislead
+                              the user about which fields the reset
+                              actually clears. */}
+                          {t('cards_slot_reset_rotation', 'Restablecer giro')}
+                        </Button>
+                      </Stack>
+                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Button
+                          size="small"
+                          variant="text"
+                          onClick={() => updateSelected({
+                            dividerConfig: {
+                              orientation: 'horizontal',
+                              thickness: 0.4,
+                              color: '#888888',
+                              endTaperMm: 0,
+                              curveMm: 0,
+                              effect: 'plain',
+                            },
+                          })}
+                        >
+                          {t('cards_divider_reset', 'Restablecer divisor')}
+                        </Button>
+                        <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                          {t('cards_divider_reset_hint', 'Restablece color, grosor, orientación, taper, curva y efecto del divisor. La rotación y el volteo se controlan en la fila superior.')}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  )}
+                  {/*
                     Per-slot typography. Same dashed-bordered Stack treatment
                     as the border / alignment blocks so the user can
                     decode it as a styled cluster of controls. Gated on
@@ -1174,11 +1585,50 @@ export default function CardTemplateEditorDialog({
                         borderRadius: 1.25,
                       }}
                     >
-                      <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                        {t('cards_section_typography', 'Tipografía')}
-                      </Typography>
-                      <FormControl size="small" fullWidth>
-                        <InputLabel>{t('cards_slot_font_family', 'Tipografía')}</InputLabel>
+                        <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                          {t('cards_section_typography', 'Tipografía')}
+                        </Typography>
+                        {/*
+                          Per-slot text colour picker. The previous UX only
+                          exposed two colour pickers at this level — "Color
+                          borde" (which writes to `style.borderColor` and
+                          had no effect on the glyphs) and the global
+                          "Texto" picker — so users couldn't recolour a
+                          single slot's text without repainting the whole
+                          card. We read `style.color` when set, fall back
+                          to the global `textColor` so the picker matches
+                          what the user is actually looking at, and offer
+                          a "Usar global" reset to drop back to the
+                          inherited colour without losing the picker UI.
+                        */}
+                        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                          <TextField
+                            size="small"
+                            type="color"
+                            label={t('cards_slot_text_color', 'Color de texto')}
+                            value={selectedSlot.style.color ?? globalStyle.textColor ?? '#000000'}
+                            onChange={(e) => updateSelected({
+                              style: { ...selectedSlot.style, color: e.target.value },
+                            })}
+                            sx={{ width: 140 }}
+                          />
+                          <Tooltip title={t('cards_slot_text_color_global_hint', 'Usar el color de texto definido en el estilo global de la plantilla')}>
+                            <span>
+                              <Button
+                                size="small"
+                                variant="text"
+                                onClick={() => updateSelected({
+                                  style: { ...selectedSlot.style, color: undefined },
+                                })}
+                                disabled={!selectedSlot.style.color}
+                              >
+                                {t('cards_slot_text_color_global', 'Usar global')}
+                              </Button>
+                            </span>
+                          </Tooltip>
+                        </Stack>
+                        <FormControl size="small" fullWidth>
+                          <InputLabel>{t('cards_slot_font_family', 'Tipografía')}</InputLabel>
                         <Select
                           label={t('cards_slot_font_family', 'Tipografía')}
                           value={selectedSlot.style.fontFamily ?? ''}
@@ -1295,25 +1745,48 @@ export default function CardTemplateEditorDialog({
                       })()}
                     </Stack>
                   )}
-                  <Stack direction="row" spacing={1}>
-                    <TextField size="small" type="number" label={t('cards_slot_font_size', 'Tamaño fuente (pt)')} value={selectedSlot.style.fontSize ?? 10} onChange={(e) => updateSelected({ style: { ...selectedSlot.style, fontSize: Number(e.target.value) || 10 } })} sx={{ width: 130 }} />
-                    <FormControl size="small" sx={{ minWidth: 130 }}>
-                      <InputLabel>{t('cards_slot_align', 'Alineación')}</InputLabel>
-                      <Select label={t('cards_slot_align', 'Alineación')} value={selectedSlot.style.textAlign ?? 'left'} onChange={(e) => updateSelected({ style: { ...selectedSlot.style, textAlign: e.target.value as any } })}>
-                        <MenuItem value="left">Izquierda</MenuItem>
-                        <MenuItem value="center">Centro</MenuItem>
-                        <MenuItem value="right">Derecha</MenuItem>
-                        <MenuItem value="justify">Justificado</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <TextField size="small" type="number" label={t('cards_slot_padding', 'Padding (mm)')} value={selectedSlot.style.paddingMm ?? 0} onChange={(e) => updateSelected({ style: { ...selectedSlot.style, paddingMm: Number(e.target.value) || 0 } })} sx={{ width: 110 }} />
-                  </Stack>
-                  <CardFieldPicker
-                    binding={selectedSlot.binding}
-                    kind="all"
-                    slotType={selectedSlot.type}
-                    onChange={(next) => updateSelected({ binding: next })}
-                  />
+                  {/*
+                    Text-sizing / alignment / padding only makes sense for
+                    slots that actually render glyphs (TEXT_SINGLE / TEXT_MULTI
+                    / KEY_VALUE_LIST / FRAME / BADGE). DIVIDER doesn't read
+                    any of those style fields, so showing them here would be
+                    misleading — the user could change a value expecting to
+                    see a difference and see nothing. We hide the row
+                    outright when slot.type === 'DIVIDER' so the props
+                    panel only advertises controls that affect paint.
+                  */}
+                  {selectedSlot.type !== 'DIVIDER' && (
+                    <Stack direction="row" spacing={1}>
+                      <TextField size="small" type="number" label={t('cards_slot_font_size', 'Tamaño fuente (pt)')} value={selectedSlot.style.fontSize ?? 10} onChange={(e) => updateSelected({ style: { ...selectedSlot.style, fontSize: Number(e.target.value) || 10 } })} sx={{ width: 130 }} />
+                      <FormControl size="small" sx={{ minWidth: 130 }}>
+                        <InputLabel>{t('cards_slot_align', 'Alineación')}</InputLabel>
+                        <Select label={t('cards_slot_align', 'Alineación')} value={selectedSlot.style.textAlign ?? 'left'} onChange={(e) => updateSelected({ style: { ...selectedSlot.style, textAlign: e.target.value as any } })}>
+                          <MenuItem value="left">Izquierda</MenuItem>
+                          <MenuItem value="center">Centro</MenuItem>
+                          <MenuItem value="right">Derecha</MenuItem>
+                          <MenuItem value="justify">Justificado</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <TextField size="small" type="number" label={t('cards_slot_padding', 'Padding (mm)')} value={selectedSlot.style.paddingMm ?? 0} onChange={(e) => updateSelected({ style: { ...selectedSlot.style, paddingMm: Number(e.target.value) || 0 } })} sx={{ width: 110 }} />
+                    </Stack>
+                  )}
+                  {/*
+                    CardFieldPicker exposes the entity-attribute binding
+                    pipeline (campo, prefijo, sufijo, texto estático,
+                    texto por defecto). The DIVIDER slot doesn't take any
+                    text, so we hide the picker entirely here too —
+                    otherwise the user could set the divider's "name" field,
+                    wonder why nothing changes, and then complain. Only
+                    rendered for slots that actually consume the binding.
+                  */}
+                  {selectedSlot.type !== 'DIVIDER' && (
+                    <CardFieldPicker
+                      binding={selectedSlot.binding}
+                      kind="all"
+                      slotType={selectedSlot.type}
+                      onChange={(next) => updateSelected({ binding: next })}
+                    />
+                  )}
                   {selectedSlot.type === 'IMAGE' && (selectedSlot.binding?.fallbackText ?? '').startsWith('data:image/svg') && (
                     <Stack
                       spacing={1}
@@ -1337,12 +1810,8 @@ export default function CardTemplateEditorDialog({
                           size="small"
                           type="number"
                           label={t('cards_slot_rotation', 'Rotación (°)')}
-                          value={Math.round(selectedSlot.rotation ?? 0)}
-                          onChange={(e) => {
-                            const raw = Number(e.target.value);
-                            if (!Number.isFinite(raw)) return;
-                            updateSelected({ rotation: ((raw % 360) + 360) % 360 });
-                          }}
+                          value={rotationInputValue(selectedSlot)}
+                          onChange={(e) => handleRotationChange(e, updateSelected)}
                           sx={{ width: 110 }}
                           inputProps={{ min: 0, max: 359, step: 5 }}
                         />
@@ -1453,6 +1922,44 @@ export default function CardTemplateEditorDialog({
               minWidth: 0, // allow children to shrink inside grid track
             }}
           >
+            {/*
+              Live-preview sample picker. Sits at the top of the column
+              so the user immediately sees what entity is driving the
+              canvas below; the kind + entity controls fetch REAL
+              records from the manuals API ({@link CardSamplePicker}
+              already hits /manuals/{manualId}/{kind}) so picking
+              "Bola de fuego" or "Visión en la oscuridad" renders
+              the template against authentic data the user can compare
+              against other slots. Placement here keeps it inside the
+              scroll container (overflowY: auto above) so a tall
+              dialog still scrolls as one unit rather than splitting
+              the picker and the canvas across separate scroll
+              regions. The Divider below visually separates the picker
+              from the existing "Previsualización en vivo" header
+              so the two clusters (sample selection vs. canvas
+              controls) read as distinct logical regions at a glance.
+            */}
+            <Box
+              sx={{
+                p: 1,
+                mb: 1,
+                // flexShrink: 0 keeps the picker at its natural height so
+                // when Column 3 has to absorb shrinking (small viewport,
+                // zoom out from the editor) it shrinks the canvas Paper
+                // below instead of compressing the picker UI.
+                flexShrink: 0,
+                borderRadius: 1.25,
+                border: '1px dashed',
+                borderColor: 'divider',
+                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.paper' : 'background.default',
+              }}
+            >
+              <CardSamplePicker
+                value={previewSampleEntity}
+                onChange={setPreviewSampleEntity}
+              />
+            </Box>
+            <Divider sx={{ mb: 1 }} />
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                 {t('cards_live_preview', 'Previsualización en vivo')}
@@ -1478,6 +1985,65 @@ export default function CardTemplateEditorDialog({
               alignItems="center"
               sx={{ mb: 0.5, ml: 1 }}
             >
+              {/*
+                Pan arrows. The inner Preview Paper's horizontal scrollbar
+                sits at the bottom of the column and drops below the fold
+                whenever the user is inspecting the top of a zoomed card;
+                these buttons call `scrollBy(dx, dy)` through the
+                CardPreview handle so the user never has to scroll
+                vertically to reach the lateral scroll first. We share
+                a single `PAN_STEP_PX` constant so left/right and up/down
+                steps stay in lockstep with the Paper's pixel size.
+              */}
+              <Tooltip title={t('cards_preview_pan_left', 'Desplazar previsualización a la izquierda')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => cardPreviewRef.current?.scrollBy(-PAN_STEP_PX, 0)}
+                    disabled={!cardPreviewScrollBounds.left}
+                    aria-label={t('cards_preview_pan_left', 'Desplazar previsualización a la izquierda')}
+                  >
+                    <KeyboardArrowLeftIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t('cards_preview_pan_right', 'Desplazar previsualización a la derecha')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => cardPreviewRef.current?.scrollBy(PAN_STEP_PX, 0)}
+                    disabled={!cardPreviewScrollBounds.right}
+                    aria-label={t('cards_preview_pan_right', 'Desplazar previsualización a la derecha')}
+                  >
+                    <KeyboardArrowRightIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t('cards_preview_pan_up', 'Desplazar previsualización arriba')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => cardPreviewRef.current?.scrollBy(0, -PAN_STEP_PX)}
+                    disabled={!cardPreviewScrollBounds.up}
+                    aria-label={t('cards_preview_pan_up', 'Desplazar previsualización arriba')}
+                  >
+                    <KeyboardArrowUpIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t('cards_preview_pan_down', 'Desplazar previsualización abajo')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => cardPreviewRef.current?.scrollBy(0, PAN_STEP_PX)}
+                    disabled={!cardPreviewScrollBounds.down}
+                    aria-label={t('cards_preview_pan_down', 'Desplazar previsualización abajo')}
+                  >
+                    <KeyboardArrowDownIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.5 }} />
               <Tooltip title={t('cards_zoom_out', 'Reducir zoom')}>
                 <span>
                   <IconButton
@@ -1531,9 +2097,6 @@ export default function CardTemplateEditorDialog({
                 label={t('cards_show_labels', 'Mostrar etiquetas')}
               />
             </Stack>
-            <Box sx={{ mb: 2 }}>
-              <CardSamplePicker value={sampleEntity} onChange={setSampleEntity} />
-            </Box>
             <Paper
               elevation={3}
               sx={{
@@ -1563,13 +2126,20 @@ export default function CardTemplateEditorDialog({
             >
               <Box sx={{ display: 'flex', justifyContent: 'safe center', alignItems: 'safe center', width: '100%', minHeight: '100%' }}>
                 <CardPreview
+                  ref={cardPreviewRef}
                   template={previewTemplate}
-                  sampleEntity={sampleEntity ?? fallbackEntity}
+                  // Prefer the user's pick from <CardSamplePicker>
+                  // (real backend data) over the synthetic fallback
+                  // derived from slot bindings — see previewSampleEntity
+                  // above. The fallback only paints when the picker is
+                  // empty or right after the dialog mounts.
+                  sampleEntity={previewSampleEntity ?? fallbackEntity}
                   interactive
                   zoom={zoom}
                   showLabels={showLabels}
                   selectedSlotId={selectedSlotId}
                   onSelectSlot={setSelectedSlotId}
+                  onScrollBoundsChange={setCardPreviewScrollBounds}
                   onSlotsChange={(next) => {
                     setSlots(next);
                     // If the deleted slot was the selected one, fall back to

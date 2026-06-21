@@ -93,8 +93,27 @@ export default function CardFieldPicker({
                 <em>{group.label}</em>
               </MenuItem>,
               ...group.fields.map((field) => (
-                <MenuItem key={`${group.kind}-${field.path}`} value={field.path} sx={{ pl: 4 }}>
-                  {field.label} <span style={{ opacity: 0.6, marginLeft: 6 }}>({group.kind}.{field.path})</span>
+                // Two-line layout: the field label sits next to its dot-path
+                // (so power users can copy the exact binding) and the
+                // optional `hint` surfaces below so users know what each
+                // binding actually resolves to — e.g. `components`
+                // resolves to "V, S, M" while `materials` resolves to the
+                // parenthetical material text. Wrapped to avoid breaking
+                // the long MUI MenuItem row on small viewports.
+                <MenuItem
+                  key={`${group.kind}-${field.path}`}
+                  value={field.path}
+                  sx={{ pl: 4, alignItems: 'flex-start' }}
+                >
+                  <Stack spacing={0.15} sx={{ width: '100%' }}>
+                    <span>
+                      {field.label}{' '}
+                      <span style={{ opacity: 0.55, marginLeft: 6 }}>({group.kind}.{field.path})</span>
+                    </span>
+                    {field.hint && (
+                      <span style={{ opacity: 0.65, fontSize: 11 }}>{field.hint}</span>
+                    )}
+                  </Stack>
                 </MenuItem>
               )),
             ])}

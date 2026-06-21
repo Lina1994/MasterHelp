@@ -23,8 +23,13 @@ function kindToPath(kind: CardEntityKind): string {
  * Default manual a fresh install will always have. If a deployment hasn't
  * shipped the manuals registry, any call would 404, so we hardcode the
  * most common slug and let the user override via the picker in the editor.
+ *
+ * Exported (rather than module-private) so companion files like
+ * `CardSamplePicker.tsx` can reuse the exact same constant without
+ * drifting. Diverging defaults here would silently make the editor
+ * preview a different manual than the list view on the same install.
  */
-const DEFAULT_MANUAL = 'dnd5e-2014';
+export const DEFAULT_MANUAL = 'dnd5e-2014';
 
 /**
  * Module-level promise cache. One real sample per (kind, lang) tuple is

@@ -77,10 +77,56 @@ export interface CardSlotKeyValueConfig {
   isTupleArray?: boolean;
 }
 
+/**
+ * Visual treatments available for the DIVIDER slot. `plain` keeps the
+ * historical single-rectangle look (rendered identically to the previous
+ * implementation). The other four are SVG-only and compose with
+ * `endTaperMm` and `curveMm` so the user can produce brushed metal, ropes
+ * of any gauge, fire-like gradients, or double-thread weaves by mixing
+ * flags rather than learning a new pipeline for each.
+ */
+export type CardSlotDividerEffect =
+  | 'plain'
+  | 'chain'
+  | 'rope'
+  | 'fire'
+  | 'thread';
+
 /** Extra options for DIVIDER slots. */
 export interface CardSlotDividerConfig {
   thickness?: number;
   orientation?: 'horizontal' | 'vertical';
+  /**
+   * Optional colour override for the divider line. Falls back to
+   * `style.color` (so dividers that already styled their colour through
+   * the editor's legacy colour field keep working) and finally to a
+   * neutral grey as a last resort. Keeping it in `dividerConfig` rather
+   * than `style.color` means future text-style changes won't accidentally
+   * recolour the divider line.
+   */
+  color?: string;
+  /**
+   * Asymmetric taper in millimetres. Positive values thicken the
+   * second end (right for horizontal, bottom for vertical); negative
+   * values thicken the first end (left / top). `0` (default) keeps the
+   * dividier perfectly parallel — the legacy look. Composites with
+   * `curveMm` and `effect`.
+   */
+  endTaperMm?: number;
+  /**
+   * Perpendicular curve depth, in millimetres, applied as a quadratic
+   * Bézier arc. `0` keeps the divider on a straight line. The sign picks
+   * which side of the slot the bulge draws to: positive bulges down/right
+   * of the centre line. Composites with `endTaperMm` and `effect`.
+   */
+  curveMm?: number;
+  /**
+   * Visual treatment. Defaults to `'plain'` to preserve bit-for-bit the
+   * previous render when the editor hasn't been touched. Setting this to
+   * anything else swaps the renderer to an SVG path / polygon so the new
+   * styling can apply. Composites with `endTaperMm` and `curveMm`.
+   */
+  effect?: CardSlotDividerEffect;
 }
 
 /** A single slot inside a card template. */

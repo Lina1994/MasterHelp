@@ -281,6 +281,11 @@ export default function LiveSlotOverlay({
   // the canvas goes quiet once the user releases; also cleared on
   // unmount so a mid-drag dialog close doesn't leave stale lines behind.
   const [dragGuides, setDragGuides] = useState<{ vertical: number[]; horizontal: number[] }>({ vertical: [], horizontal: [] });
+  // Tracks which slot is currently under the pointer. Used to surface the
+  // dashed border only when the user hovers a slot (or has it selected)
+  // — by default every slot lives on a clean preview canvas free of
+  // dashed lines, matching the user's stated preference.
+  const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
 
   // Mirror the latest slot array into the ref so effect closures see it.
   localSlotsRef.current = localSlots;
@@ -538,10 +543,14 @@ export default function LiveSlotOverlay({
         // a slot hits the slot first — bubbling up here would have
         // `e.target !== e.currentTarget` and the inline guard skips.
         pointerEvents: 'auto',
-        // Subtler when the base isn't selected so the dashed ring
-        // reads as a hint instead of a constant frame of seizure
-        // strobing. When selected it's solid + tint like any slot.
-        cursor: isBaseSelected ? 'crosshair' : 'default',
+        // Show `grab` over empty canvas so the pannable affordance is
+        // discoverable: {@link CardPreview}'s Paper-level drag-to-pan
+        // listens for clicks on this layer (it does NOT stop
+        // propagation, so Paper handlers fire after the base-slot
+        // selection). When the base is selected the existing `crosshair`
+        // cursor wins to keep the "edit the card itself" gesture
+        // distinctive.
+        cursor: isBaseSelected ? 'crosshair' : 'grab',
       }}
       onPointerDown={(e) => {
         // Clicks that landed directly on the root (i.e. nothing inside
@@ -596,6 +605,11 @@ export default function LiveSlotOverlay({
       </div>
       {localSlots.map((slot) => {
         const isSelected = slot.id === selectedSlotId;
+        const isHovered = hoveredSlotId === slot.id;
+        // Borders should appear only on hover or when the slot is selected
+        // — the user explicitly asked to drop the default dashed outline
+        // noise so the preview mirrors the actual printed card.
+        const isHighlighted = isSelected || isHovered;
         const layerIdx = localSlots.findIndex((s) => s.id === slot.id);
         const layerLabel = layerIdx >= 0 ? `L${layerIdx + 1}/${localSlots.length}` : '';
         const isLocked = !!slot.locked;
@@ -634,16 +648,35 @@ export default function LiveSlotOverlay({
                 // meaningful landing state instead of an empty one.
                 if (selectedSlotId === slot.id) onSelectSlot(BASE_SLOT_ID);
               }}
+              onPointerEnter={() => {
+                // Only set on real slot ids — the base card has its own hover
+                // affordance and shouldn't collide with this list.
+                setHoveredSlotId(slot.id);
+              }}
+              onPointerLeave={() => {
+                // Defensive: only clear when the leaving element was the
+                // active hover, so dragging the mouse across another slot
+                // in one frame doesn't accidentally blank the highlight.
+                setHoveredSlotId((cur) => (cur === slot.id ? null : cur));
+              }}
               style={{
                 position: 'absolute',
                 left: `${(slot.position.x / template.widthMm) * 100}%`,
                 top: `${(slot.position.y / template.heightMm) * 100}%`,
                 width: `${(slot.position.w / template.widthMm) * 100}%`,
                 height: `${(slot.position.h / template.heightMm) * 100}%`,
-                border: `1.5px ${isSelected ? 'solid' : 'dashed'} ${isLocked ? '#94a3b8' : accent}`,
-                backgroundColor: isSelected ? `${accent}20` : 'transparent',
+                // Border only reflects hover + selection by design; the rest
+                // state stays clean so the preview looks like a real card.
+                border: isHighlighted
+                  ? `1.5px ${isSelected ? 'solid' : 'dashed'} ${isLocked ? '#94a3b8' : accent}`
+                  : 'none',
+                backgroundColor: isSelected
+                  ? `${accent}20`
+                  : isHovered
+                    ? `${accent}08`
+                    : 'transparent',
                 color: isLocked ? '#475569' : accent,
-                cursor: isLocked ? 'not-allowed' : isSelected ? 'grab' : 'pointer',
+                cursor: isLocked ? 'not-allowed' : isSelected ? 'grab' : (isHovered ? 'pointer' : 'default'),
                 pointerEvents: 'auto',
                 boxSizing: 'border-box',
                 fontSize: 10,

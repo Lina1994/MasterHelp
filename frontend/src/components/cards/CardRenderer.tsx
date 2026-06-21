@@ -4,6 +4,21 @@ import type { CardEntityPayload, CardSlot, CardTemplate } from '../../types/card
 import { renderSlotValue, resolveCardPath } from '../../utils/cardSlotResolver';
 
 /**
+ * 96 DPI is the CSS spec's reference resolution for converting physical
+ * units (mm, in, pt) into CSS pixels. We expose it as a module constant
+ * because the DIVIDER renderer needs to guarantee that the divider line
+ * is at least one CSS pixel tall regardless of the user's chosen mm
+ * thickness: a 0.3 mm stroke is ≈1.13 px, which is right on the edge of
+ * what some browser print rasterizers (and their bundled drivers) will
+ * collapse to nothing. Floored at 1 px the line is visible everywhere:
+ *  • live preview: ~1 px (visible),
+ *  • html2canvas (PDF export): same DOM, identical ~1 px capture,
+ *  • browser print (300 DPI typical): 1 CSS px → ~3.13 device pixels,
+ *    always above the rasteriser's minimum paint threshold.
+ */
+const MM_TO_PX = 96 / 25.4;
+
+/**
  * Builds the CSS transform string for a slot's rotational+flip authoring
  * state. Kept axis-aligned on the slot's bounding box (the transform sits
  * INSIDE the box, around its centre) so the LiveSlotOverlay's drag clamps
@@ -242,7 +257,13 @@ function SlotBody({
 
   if (slot.type === 'DIVIDER') {
     const orientation = slot.dividerConfig?.orientation ?? 'horizontal';
-    const thickness = slot.dividerConfig?.thickness ?? 0.3;
+    // Convert the slot's mm thickness into CSS pixels before applying it,
+    // and clamp to a minimum of 1 px so the line stays one device pixel
+    // tall — the print rasterizer otherwise collapses sub-pixel strokes
+    // to nothing, leaving the divider invisible in `printCardsViaBrowser`
+    // even though `exportCardsAsPdf` (html2canvas) captures it just fine.
+    const rawThicknessMm = slot.dividerConfig?.thickness ?? 0.3;
+    const thicknessPx = Math.max(1, rawThicknessMm * MM_TO_PX);
     return (
       <div
         style={{
@@ -251,10 +272,19 @@ function SlotBody({
         }}
       >
         <div
+          // Width spans the slot for horizontal dividers; the perpendicular
+          // axis uses the floored pixel value so a thin stroke like 0.3 mm
+          // still draws. Likewise for vertical dividers (axes swapped).
           style={{
-            width: orientation === 'horizontal' ? '100%' : `${thickness}mm`,
-            height: orientation === 'horizontal' ? `${thickness}mm` : '100%',
-            background: slot.style.color ?? '#888',
+            width: orientation === 'horizontal' ? '100%' : `${thicknessPx}px`,
+            height: orientation === 'horizontal' ? `${thicknessPx}px` : '100%',
+            // Source of truth: the editor's "Color del divisor" picker in
+            // {CardTemplateEditorDialog} writes the chosen hex into
+            // `slot.dividerConfig.color`. Falling back to `slot.style.color`
+            // keeps any hand-edited / legacy template unaffected, and the
+            // final `#888888` matches the default set by `makeDefaultSlot`
+            // when a divider is first dragged into the template.
+            background: slot.dividerConfig?.color ?? slot.style.color ?? '#888888',
           }}
         />
       </div>
