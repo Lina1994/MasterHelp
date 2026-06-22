@@ -18,7 +18,9 @@ import CodeIcon from '@mui/icons-material/Code';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import InfoIcon from '@mui/icons-material/Info';
 import ThemeContext from '../ThemeContext';
+import { openAboutDialog } from './common/AboutDialog';
 
 /**
  * Altura en píxeles de la barra de título custom.
@@ -65,6 +67,7 @@ const TitleBar: React.FC = () => {
   const handleZoomIn = useCallback(() => { window.electronAPI?.appZoomIn?.(); setMenuAnchor(null); }, []);
   const handleZoomOut = useCallback(() => { window.electronAPI?.appZoomOut?.(); setMenuAnchor(null); }, []);
   const handleZoomReset = useCallback(() => { window.electronAPI?.appZoomReset?.(); setMenuAnchor(null); }, []);
+  const handleOpenAbout = useCallback(() => { setMenuAnchor(null); openAboutDialog(); }, []);
 
   /* ── Keyboard shortcuts ────────────────────────────────────────── */
   useEffect(() => {
@@ -189,6 +192,11 @@ const TitleBar: React.FC = () => {
             <ListItemIcon><RestartAltIcon fontSize="small" /></ListItemIcon>
             <ListItemText>Zoom 100%</ListItemText>
             <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>Ctrl+0</Typography>
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleOpenAbout} dense>
+            <ListItemIcon><InfoIcon fontSize="small" /></ListItemIcon>
+            <ListItemText>Acerca de MasterHelp…</ListItemText>
           </MenuItem>
         </Menu>
 

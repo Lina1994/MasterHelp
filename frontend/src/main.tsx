@@ -7,6 +7,7 @@ import CssBaseline from '@mui/material/CssBaseline'; // CssBaseline resetea esti
 
 import App from './App';
 import TitleBar from './components/TitleBar';
+import AboutDialog from './components/common/AboutDialog';
 import './i18n';
 import { getCurrentUser } from './utils/getCurrentUser';
 import { fetchUserFromApi } from './utils/fetchUserFromApi';
@@ -111,6 +112,8 @@ function Main() {
           <CssBaseline />
           <TitleBar />
           <App />
+          {/* Singleton About dialog — opened from HomePage and TitleBar via openAboutDialog(). */}
+          <AboutDialog />
         </ThemeProvider>
       </ThemeContext.Provider>
   );

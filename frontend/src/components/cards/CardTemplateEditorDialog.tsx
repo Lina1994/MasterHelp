@@ -151,7 +151,7 @@ function rotationInputValue(slot: CardSlot): number {
  * from `"abc"` and similar inputs; consider it before refactoring.
  */
 function handleRotationChange(
-  e: ChangeEvent<HTMLInputElement>,
+  e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   updateSelected: (next: Partial<CardSlot> | ((slot: CardSlot) => Partial<CardSlot>)) => void,
 ): void {
   const raw = Number(e.target.value);

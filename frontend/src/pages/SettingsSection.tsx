@@ -1,6 +1,6 @@
 import {
   Button, Paper, Typography, Box, Stack, FormControl, InputLabel, Select, MenuItem,
-  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Divider,
   Accordion, AccordionSummary, AccordionDetails,
   InputAdornment, OutlinedInput, Tooltip, Snackbar, Alert,
   Switch, FormControlLabel, IconButton,
@@ -10,6 +10,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TvIcon from '@mui/icons-material/Tv';
 import TvOffIcon from '@mui/icons-material/TvOff';
+import InfoIcon from '@mui/icons-material/Info';
 import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import ThemeContext from '../ThemeContext';
@@ -26,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { SKYLINE_PREVIEW_KEY } from '../overlays/SkylinePreviewOverlay';
 import { useActiveCampaign } from '../components/Campaign/ActiveCampaignContext';
 import { getSkylineOverlaySettings, setSkylineOverlaySettings } from '../api/campaigns/skylineOverlay';
+import { openAboutDialog } from '../components/common/AboutDialog';
 
 /** Response shape from GET /network-info */
 interface NetworkInfo {
@@ -393,6 +395,49 @@ const SettingsSection = () => {
             <UpdateChecker />
           </AccordionDetails>
         </Accordion>
+
+        {/* ── Sobre MasterHelp ────────────────────────────────── */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Box
+            sx={{
+              color: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              bgcolor: (t) => `${t.palette.primary.main}1A`,
+              flexShrink: 0,
+            }}
+          >
+            <InfoIcon sx={{ fontSize: 20 }} />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+              Sobre MasterHelp
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Origen, filosofía y historia del proyecto.
+            </Typography>
+          </Box>
+          <Button
+            onClick={() => openAboutDialog()}
+            variant="outlined"
+            size="small"
+            startIcon={<InfoIcon />}
+            aria-label="Ver información sobre MasterHelp"
+          >
+            Ver
+          </Button>
+        </Box>
 
         {/* ── Database location ───────────────────────────────── */}
         {networkInfo?.dbFolder && (
