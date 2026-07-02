@@ -1,0 +1,61 @@
+{
+  "id": "giant_octopus",
+  "slug": "giant_octopus",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Pulpo gigante",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 45,
+    "roll": "7d10 + 7"
+  },
+  "speed": {
+    "walk": 10,
+    "swim": 60
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 13,
+    "con": 13,
+    "int": 5,
+    "wis": 10,
+    "cha": 4
+  },
+  "skills": [
+    "Percepción +4",
+    "Sigilo +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción pasiva 14",
+  "languages": "ninguno",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Respirar en el agua",
+      "text": "El pulpo solo puede respirar bajo el agua. Puede aguantar la respiración durante 1 hora fuera del agua."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Tentáculos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 3 m. Acierto: 10 (2d6 + 3) de daño contundente. Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de agarrada (CD 13 para escapar) por los ocho tentáculos. Mientras esté agarrada, tendrá el estado de apresada."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "",
+      "text": "Nube de tinta (1/día). Detonante: el pulpo recibe daño mientras está bajo el agua. Respuesta: el pulpo suelta tinta que llena un cubo de 3 m de lado centrado en él y se mueve hasta su velocidad nadando. El cubo está muy oscuro durante 1 minuto o hasta que una corriente fuerte o un efecto similar disperse la tinta."
+    }
+  ],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Pulpo gigante",
+  "srd_es_page": 392
+}

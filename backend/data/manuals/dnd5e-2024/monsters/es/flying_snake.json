@@ -1,0 +1,53 @@
+{
+  "id": "flying_snake",
+  "slug": "flying_snake",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Serpiente voladora",
+  "type": "Monstruosidad",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 5,
+    "roll": "2d4"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 4,
+    "dex": 15,
+    "con": 11,
+    "int": 2,
+    "wis": 12,
+    "cha": 5
+  },
+  "senses": "visión ciega 3 m; Percepción pasiva 11",
+  "languages": "ninguno",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pasar volando",
+      "text": "La serpiente no provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 1 de daño perforante más 5 (2d4) de daño de veneno."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Serpiente voladora",
+  "srd_es_page": 395
+}

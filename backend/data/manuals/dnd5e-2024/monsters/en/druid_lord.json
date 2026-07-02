@@ -1,0 +1,57 @@
+{
+  "id": "druid_lord",
+  "name": "Archdruid",
+  "slug": "druid_lord",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "any alignment",
+  "armorClass": 16,
+  "hitPoints": {
+    "average": 84,
+    "roll": "13d8 + 26"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 14,
+    "con": 14,
+    "int": 16,
+    "wis": 19,
+    "cha": 13
+  },
+  "saves": [
+    " INT +6 ",
+    " WIS +7 "
+  ],
+  "skills": [
+    " Arcana +6 ",
+    " Medicine +7 ",
+    " Nature +6 ",
+    " Religion +6 "
+  ],
+  "senses": "passive Perception 14",
+  "languages": "Druidic, Common, plus two others",
+  "challengeRating": "9",
+  "traits": [
+    {
+      "name": "Spellcasting (Archdruid)",
+      "text": "WIS save DC 15. Spells: Cantrips + 1st–5th (druid)."
+    },
+    {
+      "name": "Wild Shape (Archdruid)",
+      "text": "Bonus action: assume form up to CR 3."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Staff",
+      "text": "+6 to hit. Hit: 7 (1d8 + 3) bludgeoning or 8 (1d10 + 3) two-handed."
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 5000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

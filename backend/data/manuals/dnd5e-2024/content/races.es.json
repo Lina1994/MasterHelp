@@ -1,0 +1,6 @@
+{
+  "id": "races",
+  "title": "Razas",
+  "format": "markdown",
+  "markdown": "# Razas\n\nLa **raza** de un personaje determina su especie, herencia y los rasgos básicos que comparte con otros de su misma clase.\n\nEl SRD 5.2 unifica los rasgos de cada raza en una especie base única y separa la ascendencia (p. ej. *Elfo*) del linaje (p. ej. *Elfo Noble* / *Elfo del Bosque*). Esto hace que el flujo de creación de personaje sea más limpio: eliges una ascendencia, eliges un linaje por las bonificaciones o rasgos que concede y luego construyes el resto de tu personaje.\n\n## Razas del SRD 5.2\n\nEl SRD 5.2 incluye las siguientes razas jugables:\n\n- Aasimar, Draconiano, Enano, Elfo, Goliat, Mediano, Humano, Orco, Tiefling y otras.\n\nCada raza concede uno o más aumentos de Puntuación de Característica, una velocidad base, idiomas, sentidos (a menudo Visión en la Oscuridad) y uno o más **rasgos**. Consulta la lista completa en la página **Razas** de esta aplicación."
+}

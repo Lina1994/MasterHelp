@@ -1,0 +1,50 @@
+{
+  "id": "goat",
+  "slug": "goat",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Cabra",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 4,
+    "roll": "1d8"
+  },
+  "speed": {
+    "walk": 40,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 10,
+    "con": 11,
+    "int": 2,
+    "wis": 10,
+    "cha": 5
+  },
+  "skills": [
+    "Percepción +2"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Embestir",
+      "text": "Tirada de ataque cuerpo a cuerpo: +2, alcance 1,5 m. Acierto: 1 de daño contundente o 2 (1d4) de daño contundente si la cabra recorre al menos 6 m en línea recta hacia el objetivo justo antes de acertarle."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Cabra",
+  "srd_es_page": 381
+}

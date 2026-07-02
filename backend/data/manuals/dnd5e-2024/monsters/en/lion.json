@@ -1,0 +1,61 @@
+{
+  "id": "lion",
+  "slug": "lion",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Lion",
+  "size": "Large",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 26,
+    "roll": "4d10 + 4"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 15,
+    "con": 13,
+    "int": 3,
+    "wis": 12,
+    "cha": 8
+  },
+  "skills": [
+    " Perception +3 ",
+    " Stealth +6 "
+  ],
+  "senses": "passive Perception 13",
+  "languages": "—",
+  "challengeRating": "2",
+  "traits": [
+    {
+      "name": "Water Breathing",
+      "text": "The shark can breathe only underwater."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +6 (with Advantage if the tar- get doesn’t have all its Hit Points), reach 5 ft. Hit: 14 (3d6 + 4) Piercing damage. Hyena"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 450,
+  "srd_en_match_name": "Lion",
+  "srd_en_page": 353,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 4,
+    "dex": 2,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

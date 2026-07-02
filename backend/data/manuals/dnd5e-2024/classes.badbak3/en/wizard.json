@@ -1,0 +1,862 @@
+{
+  "id": "wizard",
+  "name": "Wizard",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 6,
+  "hitPoints": {
+    "hitDice": "1d6 per wizard level",
+    "at1stLevel": "6 + your Constitution modifier",
+    "atHigherLevels": "1d6 (or 4) + your Constitution modifier per wizard level after 1st"
+  },
+  "primaryAbilities": [
+    "int"
+  ],
+  "savingThrows": [
+    "int",
+    "wis"
+  ],
+  "proficiencies": {
+    "armor": [],
+    "weapons": [
+      "Daggers",
+      "Darts",
+      "Slings",
+      "Quarterstaffs",
+      "Light Crossbows"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Arcana",
+      "History",
+      "Insight",
+      "Investigation",
+      "Medicine",
+      "Religion"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "quarterstaff",
+          "description": "A quarterstaff"
+        },
+        {
+          "id": "dagger",
+          "description": "A dagger"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "component_pouch",
+          "description": "Component pouch"
+        },
+        {
+          "id": "arcane_focus",
+          "description": "Arcane focus"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "scholar_pack",
+          "description": "Scholar's Pack"
+        },
+        {
+          "id": "explorers_pack",
+          "description": "Explorer's Pack"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "spellbook",
+          "description": "A spellbook"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "spellcasting",
+      "name": "Spellcasting",
+      "level": 1,
+      "description": "Intelligence is your spellcasting ability. Your spells are powered by intellect and arcane knowledge. You cast wizard spells from a spellbook as your primary source.",
+      "effects": [
+        {
+          "type": "ritual_casting",
+          "value": true
+        },
+        {
+          "type": "prepared_casting",
+          "ability": "int",
+          "list": "wizard",
+          "spellbook": true
+        }
+      ]
+    },
+    {
+      "id": "arcane_recovery",
+      "name": "Arcane Recovery",
+      "level": 1,
+      "description": "Once per day, during a short rest, you can recover a number of spell slots whose combined levels equal half your wizard level (rounded up), with no slot higher than 6th.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Arcane Recovery",
+          "per": "long_rest",
+          "restores": "spell_slots_combined_half_wizard_level",
+          "maxSlotLevel": 6
+        }
+      ]
+    },
+    {
+      "id": "cantrips",
+      "name": "Cantrips (Wizard)",
+      "level": 1,
+      "description": "You know 3 cantrips of your choice from the wizard list. You learn additional cantrips at levels 4 (1 more), 8 (1 more), 12 (1 more), 16 (1 more), 20 (1 more).",
+      "effects": [
+        {
+          "type": "cantrips_known",
+          "count": 3,
+          "scalesAt": [
+            4,
+            8,
+            12,
+            16,
+            20
+          ],
+          "perLevelStep": 1
+        }
+      ]
+    },
+    {
+      "id": "spellbook",
+      "name": "Spellbook",
+      "level": 1,
+      "description": "At 1st level you have a spellbook containing six 1st-level wizard spells of your choice. You can add new spells to your book via copying from scrolls or other spellbooks (cost: 50 gp + 2 hours per spell level). Each long rest you can change up to WIS mod (min 1) prepared spells.",
+      "effects": [
+        {
+          "type": "spellbook_required",
+          "starting": {
+            "1": 6
+          },
+          "spells_added_per_level": 2,
+          "prepared_per_long_rest": "WIS mod (min 1)"
+        }
+      ]
+    },
+    {
+      "id": "arcane_tradition",
+      "name": "Arcane Tradition",
+      "level": 2,
+      "description": "You choose Arcane Tradition: School of Evocation or School of Abjuration.",
+      "effects": [
+        {
+          "type": "choose_subclass",
+          "atLevel": 2
+        }
+      ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "Increase one score by 2, or two by 1. Max 20.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "spellcasting",
+        "arcane_recovery",
+        "cantrips",
+        "spellbook"
+      ],
+      "spellSlots": {
+        "1": 2
+      },
+      "prepared": 4,
+      "cantrips_known": 3
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "arcane_tradition"
+      ],
+      "spellSlots": {
+        "1": 3
+      },
+      "prepared": 5,
+      "cantrips_known": 3
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      },
+      "prepared": 6,
+      "cantrips_known": 3
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      },
+      "prepared": 7,
+      "cantrips_known": 4
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      },
+      "prepared": 9,
+      "cantrips_known": 4
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      },
+      "prepared": 10,
+      "cantrips_known": 4
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      },
+      "prepared": 11,
+      "cantrips_known": 4
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      },
+      "prepared": 12,
+      "cantrips_known": 5
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      },
+      "prepared": 14,
+      "cantrips_known": 5
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      },
+      "prepared": 15,
+      "cantrips_known": 5
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      },
+      "prepared": 16,
+      "cantrips_known": 5
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      },
+      "prepared": 16,
+      "cantrips_known": 6
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      },
+      "prepared": 17,
+      "cantrips_known": 6
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      },
+      "prepared": 18,
+      "cantrips_known": 6
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      },
+      "prepared": 19,
+      "cantrips_known": 6
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      },
+      "prepared": 19,
+      "cantrips_known": 7
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "prepared": 20,
+      "cantrips_known": 7
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "prepared": 22,
+      "cantrips_known": 7
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "prepared": 24,
+      "cantrips_known": 7
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "signature_spell"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 2,
+        "8": 1,
+        "9": 1
+      },
+      "prepared": 25,
+      "cantrips_known": 8
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "abjuration",
+      "name": "School of Abjuration",
+      "grantedAtLevel": 2,
+      "description": "Abjurers specialize in protective magic, undoing spells and defending their allies.",
+      "features": [
+        {
+          "id": "abjuration_savant",
+          "name": "Abjuration Savant",
+          "level": 2,
+          "description": "Halves gold and time to copy abjuration spells into your spellbook.",
+          "effects": [
+            {
+              "type": "coste_copiar_conjuros_escuela",
+              "school": "abjuration",
+              "factor": 0.5
+            }
+          ]
+        },
+        {
+          "id": "arcane_ward",
+          "name": "Arcane Ward",
+          "level": 2,
+          "description": "You can use magic to weave a protective barrier. When casting an abjuration spell of 1st level or higher, you can use a fragment of the spell's magic to interpose a barrier around yourself; the ward has hit points equal to twice your wizard level and absorbs damage. The ward's starting HP and replenishment equal twice the spell level (split as temp HP into the ward).",
+          "effects": [
+            {
+              "type": "establecer_barrera",
+              "capacidad": "2 * nivel",
+              "recarga": "nivel_conjuro * 2 al lanzar abjuracion 1+",
+              "restricciones": "solo conjuros de abjuración"
+            }
+          ]
+        },
+        {
+          "id": "improved_arcane_ward",
+          "name": "Improved Arcane Ward",
+          "level": 6,
+          "description": "Arcane Ward's HP restoration no longer requires action — when you take damage and your ward has HP, it absorbs damage up to its capacity.",
+          "effects": [
+            {
+              "type": "barrera_responde_danho_automatico"
+            }
+          ]
+        },
+        {
+          "id": "spell_resistance",
+          "name": "Spell Resistance",
+          "level": 14,
+          "description": "You have advantage on saving throws against spells, and you have resistance to the damage of spells.",
+          "effects": [
+            {
+              "type": "ventaja_salv_conjuros"
+            },
+            {
+              "type": "resistencia_danho_conjuros"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "conjuration",
+      "name": "School of Conjuration",
+      "grantedAtLevel": 2,
+      "description_en": "You specialize in instant summons, teleportation, and binding beings from other dimensions.",
+      "description_es": "Te especializas en invocaciones instantáneas, teletransporte y ataduras de seres de otras dimensiones.",
+      "features": [
+        {
+          "id": "conjuration_savant",
+          "name": "Conjuration Savant",
+          "level": 2,
+          "description": "Halves gold and time to copy conjuration spells."
+        },
+        {
+          "id": "minor_conjuration",
+          "name": "Minor Conjuration",
+          "level": 2,
+          "description": "Action: conjure a nonmagical item (≤3 ft cube, ≤10 lb) for 1 hour."
+        },
+        {
+          "id": "benign_transposition",
+          "name": "Benign Transposition",
+          "level": 6,
+          "description": "Reaction when cast conjuration spell of 1+: teleport 30 ft."
+        },
+        {
+          "id": "focused_conjuration",
+          "name": "Focused Conjuration",
+          "level": 10,
+          "description": "While concentrating on a conjuration spell, don't have disadvantage on concentration saves."
+        },
+        {
+          "id": "durable_summons",
+          "name": "Durable Summons",
+          "level": 14,
+          "description": "Summoned creatures have 30 temp HP and advantage on saves vs. being banished."
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "divination",
+      "name": "School of Divination",
+      "grantedAtLevel": 2,
+      "description_en": "You seek information, expertise, foresight, and the truth of magic.",
+      "description_es": "Buscas información, pericia, previsión y la verdad de la magia.",
+      "features": [
+        {
+          "id": "divination_savant",
+          "name": "Divination Savant",
+          "level": 2,
+          "description": "Halves gold and time to copy divination spells."
+        },
+        {
+          "id": "portent",
+          "name": "Portent",
+          "level": 2,
+          "description": "At long rest: roll 2 d20; replace any attack/save/check with prescience."
+        },
+        {
+          "id": "expert_divination",
+          "name": "Expert Divination",
+          "level": 6,
+          "description": "Casting divination spell of 2+ level recovers a 3rd level spell slot."
+        },
+        {
+          "id": "third_eye",
+          "name": "Third Eye",
+          "level": 10,
+          "description": "Action: gain darkvision 60 ft (or see invisible, or sense magic; SE range)."
+        },
+        {
+          "id": "capstone",
+          "name": "Greater Portent",
+          "level": 14,
+          "description": "Roll 4d20 for Portent at long rest."
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "enchantment",
+      "name": "School of Enchantment",
+      "grantedAtLevel": 2,
+      "description_en": "You wield arcane influence over minds and emotions.",
+      "description_es": "Empuñas influencia arcana sobre mentes y emociones.",
+      "features": [
+        {
+          "id": "enchantment_savant",
+          "name": "Enchantment Savant",
+          "level": 2,
+          "description": "Halves gold and time to copy enchantment spells."
+        },
+        {
+          "id": "hypnotic_gaze",
+          "name": "Hypnotic Gaze",
+          "level": 2,
+          "description": "Action: gain CHA mod charges/day; on Wis save, charmed 1 min.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "instinctive_enchantment",
+          "name": "Instinctive Enchantment",
+          "level": 6,
+          "description": "When casting an enchantment spell with Wis save, treat target's save as -1."
+        },
+        {
+          "id": "split_enchantment",
+          "name": "Split Enchantment",
+          "level": 10,
+          "description": "Cast a single-target enchantment on 2 creatures for slot increase."
+        },
+        {
+          "id": "modify_memory",
+          "name": "Alter Memories",
+          "level": 14,
+          "description": "Cast Modify Memory with Dispel Magic-like effect; overwriting memory."
+        }
+      ]
+    },
+    {
+      "id": "evocation",
+      "name": "School of Evocation",
+      "grantedAtLevel": 2,
+      "description": "Evokers are specialists in spells that create or modify elemental energy, such as fire, ice, lightning, or thunder.",
+      "features": [
+        {
+          "id": "evocation_savant",
+          "name": "Evocation Savant",
+          "level": 2,
+          "description": "Halves gold and time to copy evocation spells into your spellbook.",
+          "effects": [
+            {
+              "type": "coste_copiar_conjuros_escuela",
+              "school": "evocation",
+              "factor": 0.5
+            }
+          ]
+        },
+        {
+          "id": "sculpt_spells",
+          "name": "Sculpt Spells",
+          "level": 2,
+          "description": "When casting an evocation spell of 1st level or higher on your turn that affects other creatures, you can designate a number of them equal to 1 + spell level to automatically succeed on their save and take no damage (or half on fail).",
+          "effects": [
+            {
+              "type": "excluir_aliados_de_area",
+              "count_increment": "spell_level + 1"
+            }
+          ]
+        },
+        {
+          "id": "potent_cantrip",
+          "name": "Potent Cantrip",
+          "level": 10,
+          "description": "Your damaging cantrips affect even creatures that succeed on the saving throw (they take half damage on success).",
+          "effects": [
+            {
+              "type": "trucos_danho_medio_en_exito"
+            }
+          ]
+        },
+        {
+          "id": "overchannel",
+          "name": "Overchannel",
+          "level": 14,
+          "description": "Once per turn, you can maximize damage of a wizard cantrip or a wizard evocation spell of 5th level or lower. Your HP maximum is reduced by 12 (this damage can't be reduced in any way), until you finish a long rest. Using a higher-level spell doesn't reduce the additional reduction; cantrip usage doesn't reduce by 12.",
+          "effects": [
+            {
+              "type": "maximizar_danho_conjuro_nivel_5_o_menor_o_truco",
+              "coste_hp_max_por_uso": 12,
+              "descanso_largo": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "illusion",
+      "name": "School of Illusion",
+      "grantedAtLevel": 2,
+      "description_en": "You focus your studies on the magic of phantasms, deception, and make-believe.",
+      "description_es": "Enfocás tus estudios en la magia de fantasmas, engaños y la ilusión.",
+      "features": [
+        {
+          "id": "illusion_savant",
+          "name": "Illusion Savant",
+          "level": 2,
+          "description": "Halves gold and time to copy illusion spells."
+        },
+        {
+          "id": "improved_minor_illusion",
+          "name": "Improved Minor Illusion",
+          "level": 2,
+          "description": "Minor Illusion can be cast as a free action and has 5-foot cube."
+        },
+        {
+          "id": "malleable_illusions",
+          "name": "Malleable Illusions",
+          "level": 6,
+          "description": "Action: change illusion's appearance, terrain, or features."
+        },
+        {
+          "id": "illusory_self",
+          "name": "Illusory Self",
+          "level": 10,
+          "description": "Reaction when hit: create illusion duplicate and swap places."
+        },
+        {
+          "id": "illusory_reality",
+          "name": "Illusory Reality",
+          "level": 14,
+          "description": "Choose one illusory object to become real for 1 min."
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "necromancy",
+      "name": "School of Necromancy",
+      "grantedAtLevel": 2,
+      "description_en": "Your study focuses on animating the dead and corrupting life force.",
+      "description_es": "Tu estudio se enfoca en animar muertos y corromper fuerza vital.",
+      "features": [
+        {
+          "id": "necromancy_savant",
+          "name": "Necromancy Savant",
+          "level": 2,
+          "description": "Halves gold and time to copy necromancy spells."
+        },
+        {
+          "id": "grim_harvest",
+          "name": "Grim Harvest",
+          "level": 2,
+          "description": "Damage enemy: gain HP equal to 1/3 necrotic damage; spend 1 HP to restore 1 HP."
+        },
+        {
+          "id": "undead_thralls",
+          "name": "Undead Thralls",
+          "level": 6,
+          "description": "Animate Dead and spells create extra undead skeletons/zombies."
+        },
+        {
+          "id": "inured_to_undeath",
+          "name": "Inured to Undeath",
+          "level": 6,
+          "description": "Resistance to necrotic; immunity to fear."
+        },
+        {
+          "id": "capstone",
+          "name": "Command Undead",
+          "level": 14,
+          "description": "Cast Animate Dead at will (no slot); command undead for 24 h."
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "transmutation",
+      "name": "School of Transmutation",
+      "grantedAtLevel": 2,
+      "description_en": "You study the magic of changing forms, altering reality, and transforming creatures.",
+      "description_es": "Estudiás la magia de cambiar formas, alterar realidad y transformar criaturas.",
+      "features": [
+        {
+          "id": "transmutation_savant",
+          "name": "Transmutation Savant",
+          "level": 2,
+          "description": "Halves gold and time to copy transmutation spells."
+        },
+        {
+          "id": "minor_alchemy",
+          "name": "Minor Alchemy",
+          "level": 2,
+          "description": "Action: transmute a nonmagical item; lasts 1 hour."
+        },
+        {
+          "id": "shapechanger_aura",
+          "name": "Shapechanger Detection",
+          "level": 6,
+          "description": "Detect shapechangers within 60 ft (1 hour meditation)."
+        },
+        {
+          "id": "master_transmuter",
+          "name": "Master Transmuter",
+          "level": 10,
+          "description": "Action: gain resistance / immunity / power transformation; 1 hour."
+        },
+        {
+          "id": "capstone",
+          "name": "Shapechanger Lord",
+          "level": 14,
+          "description": "Once per long rest, cast True Polymorph greater."
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "int",
+    "list": "wizard",
+    "spellbook": true,
+    "preparedCasting": true,
+    "ritualCasting": true
+  }
+}

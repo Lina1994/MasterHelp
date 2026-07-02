@@ -1,0 +1,770 @@
+{
+  "id": "warlock",
+  "name": "Brujo",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 por nivel de brujo",
+    "at1stLevel": "8 + tu modificador de Constitución",
+    "atHigherLevels": "1d8 (o 5) + tu modificador de Constitución por cada nivel de brujo por encima del primero"
+  },
+  "primaryAbilities": [
+    "cha"
+  ],
+  "savingThrows": [
+    "wis",
+    "cha"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Armadura ligera"
+    ],
+    "weapons": [
+      "Armas simples"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Arcanos",
+      "Engaño",
+      "Historia",
+      "Intimidación",
+      "Investigación",
+      "Naturaleza",
+      "Religión"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "ballesta_ligera_20_virotes",
+          "description": "Ballesta ligera con 20 virotes"
+        },
+        {
+          "id": "arma_simple",
+          "description": "Cualquier arma simple"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "bolsa_componentes",
+          "description": "Bolsa de componentes"
+        },
+        {
+          "id": "foco_arcano",
+          "description": "Foco arcano"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "paquete_erudito",
+          "description": "Paquete de erudito"
+        },
+        {
+          "id": "paquete_explorador",
+          "description": "Paquete de explorador"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "patrono_otros_mundos",
+      "name": "Patrono de otro mundo",
+      "level": 1,
+      "description": "Has hecho un pacto: Archihada o Infernal.",
+      "effects": [
+        {
+          "type": "eleguir_subclase",
+          "atLevel": 1
+        }
+      ]
+    },
+    {
+      "id": "magia_pacto",
+      "name": "Magia de pacto",
+      "level": 1,
+      "description": "Lanzas conjuros de brujo con Car. Pocos espacios pero del mismo nivel; recarga con descanso corto o largo.",
+      "effects": [
+        {
+          "type": "magia_pacto",
+          "ability": "cha",
+          "list": "brujo",
+          "cantidad_y_nivel_por_nivel": {
+            "1": {
+              "nivel": 1,
+              "espacios": 1
+            },
+            "2": {
+              "nivel": 1,
+              "espacios": 2
+            },
+            "3-4": {
+              "nivel": 2,
+              "espacios": 2
+            },
+            "5-6": {
+              "nivel": 3,
+              "espacios": 2
+            },
+            "7-8": {
+              "nivel": 4,
+              "espacios": 2
+            },
+            "9-10": {
+              "nivel": 5,
+              "espacios": 2
+            },
+            "11-13": {
+              "nivel": 5,
+              "espacios": 3
+            },
+            "14-16": {
+              "nivel": 5,
+              "espacios": 3
+            },
+            "17-20": {
+              "nivel": 5,
+              "espacios": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "invocaciones_elddritch",
+      "name": "Invocaciones Eldritch",
+      "level": 2,
+      "description": "Obtienes invocaciones. 2 inv. nivel 2, 3 en 5, 4 en 7, 5 en 9, y otra en niveles 11, 13, 15, 17 y 19.",
+      "effects": [
+        {
+          "type": "invocaciones_limites",
+          "limites": {
+            "2": 2,
+            "5": 3,
+            "7": 4,
+            "9": 5,
+            "11": 6,
+            "13": 7,
+            "15": 8,
+            "17": 9,
+            "19": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "don_pacto",
+      "name": "Don del pacto",
+      "level": 3,
+      "description": "Pacto de la Espada, de la Cadena, o del Tomo.",
+      "effects": [
+        {
+          "type": "eleguir_don",
+          "options": [
+            "espada",
+            "cadena",
+            "tomo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mejora_puntuacion_caracteristica",
+      "name": "Mejora de puntuación de característica",
+      "level": 4,
+      "description": "Una en 2 o dos en 1.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "arcanum_mistico",
+      "name": "Arcanum místico",
+      "level": 11,
+      "description": "Un conjuro de nivel 6 por descanso largo; nivel 13 nivel 7; nivel 15 nivel 8; nivel 17 y 19 nivel 9.",
+      "effects": [
+        {
+          "type": "arcanum_mistico",
+          "nivel_por_nivel_clase": {
+            "11": 6,
+            "13": 7,
+            "15": 8,
+            "17": 9,
+            "19": 9
+          }
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "patrono_otros_mundos",
+        "magia_pacto"
+      ],
+      "spellSlots": {
+        "1": 1
+      },
+      "spells_known": 2,
+      "cantrips_known": 2
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "invocaciones_elddritch"
+      ],
+      "spellSlots": {
+        "1": 2
+      },
+      "spells_known": 3,
+      "cantrips_known": 2
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "don_pacto"
+      ],
+      "spellSlots": {
+        "2": 2
+      },
+      "spells_known": 4,
+      "cantrips_known": 2
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "2": 2
+      },
+      "spells_known": 5,
+      "cantrips_known": 3
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "3": 2
+      },
+      "spells_known": 6,
+      "cantrips_known": 3
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "3": 2
+      },
+      "spells_known": 7,
+      "cantrips_known": 3
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "4": 2
+      },
+      "spells_known": 8,
+      "cantrips_known": 3
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "4": 2
+      },
+      "spells_known": 9,
+      "cantrips_known": 3
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "5": 2
+      },
+      "spells_known": 10,
+      "cantrips_known": 3
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "5": 2
+      },
+      "spells_known": 10,
+      "cantrips_known": 4
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [
+        "arcanum_mistico_6"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 11,
+      "cantrips_known": 4
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 11,
+      "cantrips_known": 4
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "arcanum_mistico_7"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 12,
+      "cantrips_known": 4
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 12,
+      "cantrips_known": 4
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "arcanum_mistico_8"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 13,
+      "cantrips_known": 4
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 13,
+      "cantrips_known": 4
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "arcanum_mistico_9"
+      ],
+      "spellSlots": {
+        "5": 4
+      },
+      "spells_known": 14,
+      "cantrips_known": 4
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "5": 4
+      },
+      "spells_known": 14,
+      "cantrips_known": 4
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "arcanum_mistico_9b",
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "5": 4
+      },
+      "spells_known": 15,
+      "cantrips_known": 4
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "maestro_elddritch"
+      ],
+      "spellSlots": {
+        "5": 4
+      },
+      "spells_known": 15,
+      "cantrips_known": 4
+    }
+  ],
+  "subclasses": [
+    {
+      "class_id": "warlock",
+      "id": "archfey_patron",
+      "name": "El Patrón Archifeérico",
+      "grantedAtLevel": 1,
+      "description_en": "Your patron is a powerful fey lord, lady of the mists, or similar. Your magic is whimsical.",
+      "description_es": "Tu patrón es un poderoso señor feérico, dama de las nieblas o similar. Tu magia es caprichosa.",
+      "features": [
+        {
+          "id": "fey_presence",
+          "name": "Presencia Feérica",
+          "level": 1,
+          "description": "Acción: radio 3 m, Sabiduría o encantado o asustado 1 turno.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "dark_one",
+          "name": "Escape Brumoso",
+          "level": 6,
+          "description": "Reacción al recibir daño: teletransporte 18 m e invisible hasta tu turno."
+        },
+        {
+          "id": "beguiling_defenses",
+          "name": "Defensas Engañosas",
+          "level": 6,
+          "description": "Ventaja en salvaciones contra encantamiento; magia te afecta a ti al enemigo."
+        },
+        {
+          "id": "soul_of_the_storm_archfey",
+          "name": "Alma del Archifeo",
+          "level": 10,
+          "description": "Lanza Encantar persona e Invisibilidad mayor a voluntad."
+        },
+        {
+          "id": "capstone",
+          "name": "Delirio Oscuro",
+          "level": 14,
+          "description": "Acción: Sabiduría o ve nada real; ataca a aliados imaginarios."
+        }
+      ]
+    },
+    {
+      "id": "archihada",
+      "name": "La Archihada",
+      "grantedAtLevel": 1,
+      "description": "Tu patrono es un señor o señora de las hadas, un ser de enorme poder cuya corte es el mundo natural.",
+      "expandedSpells": {
+        "1": [
+          "fuego_hada",
+          "suenho"
+        ],
+        "3": [
+          "calmar_emociones",
+          "fuerza_fantasmal"
+        ],
+        "5": [
+          "parpadear",
+          "crecimiento_vegetal"
+        ],
+        "7": [
+          "dominar_bestia",
+          "invisibilidad_mejorada"
+        ],
+        "9": [
+          "dominar_persona",
+          "muro_de_espinas"
+        ]
+      },
+      "features": [
+        {
+          "id": "presencia_hada",
+          "name": "Presencia hada",
+          "level": 1,
+          "description": "Acción: encantas o asustas a una criatura a 3 m (salv SAB). Recarga con descanso corto.",
+          "effects": [
+            {
+              "type": "accion_emote_hada_hechizo_o_miedo",
+              "rango": 3,
+              "save": "sab",
+              "recarga": "descanso_corto"
+            }
+          ]
+        },
+        {
+          "id": "escape_brumoso",
+          "name": "Escape brumoso",
+          "level": 6,
+          "description": "Reacción al recibir daño: te teletransportas hasta 18 m a un espacio libre y te vuelves invisible hasta fin de tu siguiente turno.",
+          "effects": [
+            {
+              "type": "reaccion_teleport_e_invisibilidad",
+              "rango": 18,
+              "trigger": "danho"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "warlock",
+      "id": "celestial_patron",
+      "name": "El Patrón Celestial",
+      "grantedAtLevel": 1,
+      "description_en": "Your patron is a celestial: an angel, couatl, deva, solars, or similar. Your weapon is light.",
+      "description_es": "Tu patrón es celestial: ángel, couatl, deva, solar o similar. Tu arma es la luz.",
+      "features": [
+        {
+          "id": "expanded_spell_casting",
+          "name": "Lista de Conjuros Expandida",
+          "level": 1,
+          "description": "Añade Curar heridas, Revivificar, etc."
+        },
+        {
+          "id": "healing_light",
+          "name": "Luz Curativa",
+          "level": 1,
+          "description": "Acción adicional: gasta slot, cura nivel + Car mod a objetivo."
+        },
+        {
+          "id": "radiant_soul",
+          "name": "Alma Radiante",
+          "level": 6,
+          "description": "Resistencia radiante. Suma Car mod al daño radiante/fuego de trucos y conjuros de brujo."
+        },
+        {
+          "id": "celestial_revelation",
+          "name": "Revelación Celestial",
+          "level": 6,
+          "description": "Acción: ver invisibles, volar 3 m, luz tenue; uso 1/nivel hechicero por descanso prolongado."
+        },
+        {
+          "id": "searing_vengeance",
+          "name": "Venganza Abrasadora",
+          "level": 10,
+          "description": "Reacción al caer a 0 pg: gasta slot para pg temp y dañar a un objetivo."
+        },
+        {
+          "id": "summon_star",
+          "name": "Invocar una Estrella",
+          "level": 14,
+          "description": "Conjuro de nivel 7 (Restauración mayor / Muro de fuego, etc.) acción adicional."
+        }
+      ]
+    },
+    {
+      "class_id": "warlock",
+      "id": "fathomless_patron",
+      "name": "El Patrón Sin Fondo",
+      "grantedAtLevel": 1,
+      "description_en": "Your patron is Dagon, an aquatic horror, or other deep-sea entity. Your magic is the darkness of the sea.",
+      "description_es": "Tu patrón es Dagon, horror acuático u otra entidad abisal. Tu magia es la oscuridad del mar.",
+      "features": [
+        {
+          "id": "deep_sea_aristocracy",
+          "name": "Lista Expandida",
+          "level": 1,
+          "description": "Ola de trueno, Relámpago, etc."
+        },
+        {
+          "id": "tentacle_of_the_deep",
+          "name": "Tentáculo del Abismo",
+          "level": 1,
+          "description": "Acción adicional crea tentáculo: 1d8+Car contundente o 3 m atracción."
+        },
+        {
+          "id": "guardians_of_the_depths",
+          "name": "Guardianes de la Profundidad",
+          "level": 6,
+          "description": "Criaturas marinas te ignoran; ventaja en Sigilo cerca del agua."
+        },
+        {
+          "id": "abyssal_screams",
+          "name": "Cola Agarradora",
+          "level": 10,
+          "description": "Creas tentáculos que atacan (1d6+Car) con Carisma."
+        },
+        {
+          "id": "capstone",
+          "name": "Alma Sin Fondo",
+          "level": 14,
+          "description": "Lanza Cono de Frío (5/turno) o Relámpago 2×/turno (gratis)."
+        }
+      ]
+    },
+    {
+      "class_id": "warlock",
+      "id": "hexblade_patron",
+      "name": "El Patrón Hoja Maldita",
+      "grantedAtLevel": 1,
+      "description_en": "Your patron is a mysterious entity from the Shadowfell. Your bond is forged with a sentient weapon.",
+      "description_es": "Tu patrón es una entidad misteriosa del Páramo Sombrío. Tu vínculo se forja con un arma sensible.",
+      "features": [
+        {
+          "id": "hex_magic",
+          "name": "Magia de Hoja",
+          "level": 1,
+          "description": "Lista expandida: Escudo, Bendecir, Relámpago, etc."
+        },
+        {
+          "id": "hexblade_curse",
+          "name": "Maldición de Hoja",
+          "level": 1,
+          "description": "Acción adicional maldices: +1d6 + mod competencia; críticos en 19-20."
+        },
+        {
+          "id": "eldritch_invocation",
+          "name": "Espectro Maldito",
+          "level": 6,
+          "description": "Creas espectro de un cadáver (gastando slot); actúa en tu turno."
+        },
+        {
+          "id": "armor_of_hexes",
+          "name": "Armadura de Hoja",
+          "level": 10,
+          "description": "Reacción al ser atacada: tira d6: 4+ hechizo fracasa."
+        },
+        {
+          "id": "master_of_hexes",
+          "name": "Maestro de Hojas",
+          "level": 14,
+          "description": "Maldición sobre 2 criaturas; recupera en descanso corto."
+        }
+      ]
+    },
+    {
+      "id": "infernal",
+      "name": "El Infernal",
+      "grantedAtLevel": 1,
+      "description": "Has hecho un pacto con un ser Infernal — un poderoso señor de los Nueve Infiernos, duque o barón de Gehena o príncipe elemental del Abismo.",
+      "expandedSpells": {
+        "1": [
+          "llamas",
+          "orden"
+        ],
+        "3": [
+          "ceguera_sordera",
+          "rayo_moriente"
+        ],
+        "5": [
+          "bola_de_fuego",
+          "nube_maloliente"
+        ],
+        "7": [
+          "escudo_de_fuego",
+          "muro_de_fuego"
+        ],
+        "9": [
+          "cono_frio",
+          "dominar_persona"
+        ]
+      },
+      "features": [
+        {
+          "id": "bendicion_oscura",
+          "name": "Bendición del Oscuro",
+          "level": 1,
+          "description": "Cuando reduces a 0 PG un enemigo, obtienes PG temporales iguales a mod CAR + nivel de brujo.",
+          "effects": [
+            {
+              "type": "pg_temporales_al_matar",
+              "formula": "mod_CAR + nivel_brujo"
+            }
+          ]
+        },
+        {
+          "id": "suerte_oscura",
+          "name": "Suerte del Oscuro",
+          "level": 6,
+          "description": "Acción adicional: añade un d10 a una tirada. Recarga con descanso corto o largo.",
+          "effects": [
+            {
+              "type": "recurso_accion_adicional_modificador_d10",
+              "per": "descanso_corto",
+              "uso_unico": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "warlock",
+      "id": "undead_patron",
+      "name": "El Patrón No-Muerto",
+      "grantedAtLevel": 1,
+      "description_en": "Your patron is Vecna, a lich, or other powerful undead. Your magic is cold and fearsome.",
+      "description_es": "Tu patrón es Vecna, un liche u otro poderoso no-muerto. Tu magia es fría y terrible.",
+      "features": [
+        {
+          "id": "expanded_spell_casting_undead",
+          "name": "Lista Expandida",
+          "level": 1,
+          "description": "Falsa vida, Ceguera/Sordera, etc."
+        },
+        {
+          "id": "necrotic_husk",
+          "name": "Forma de los Muertos",
+          "level": 1,
+          "description": "Ventaja en salvaciones contra muerte; no duermes; immune a sueño/enfermedad; hablas con muertos."
+        },
+        {
+          "id": "grave_managed",
+          "name": "Tumba Manejada",
+          "level": 3,
+          "description": "Acción adicional: forma esqueleto y zona de protección."
+        },
+        {
+          "id": "spirit_projection",
+          "name": "Proyección Espiritual",
+          "level": 6,
+          "description": "Proyectas tu espíritu; inmune a físico; daño por proyección."
+        },
+        {
+          "id": "undying_servitude",
+          "name": "Servidumbre Inmortal",
+          "level": 10,
+          "description": "Lanza Animar muertos y Crear no-muerto a voluntad."
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "cha",
+    "list": "brujo",
+    "pacto": true
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "violet_fungus",
+  "slug": "violet_fungus",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Hongo violeta",
+  "type": "Planta",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 5
+  },
+  "initiative": -5,
+  "hitPoints": {
+    "average": 18,
+    "roll": "4d8"
+  },
+  "speed": {
+    "walk": 15
+  },
+  "abilities": {
+    "str": 3,
+    "dex": 1,
+    "con": 10,
+    "int": 1,
+    "wis": 3,
+    "cha": 1
+  },
+  "senses": "visión ciega 9 m; Percepción pasiva 6",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El hongo realiza dos ataques con su toque putrefacto."
+    },
+    {
+      "name": "Toque putrefacto",
+      "text": "Tirada de ataque cuerpo a cuerpo: +2, alcance 3 m. Acierto: 4 (1d8) de daño necrótico. Huargo"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Hongo violeta",
+  "srd_es_page": 341
+}

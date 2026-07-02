@@ -1,0 +1,65 @@
+{
+  "id": "troll_limb",
+  "slug": "troll_limb",
+  "lang": "en",
+  "name": "Troll Limb",
+  "speed": {
+    "walk": 20
+  },
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 9
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Regeneration",
+      "text": "The limb regains 5 Hit Points at the start of each of its turns. If the limb takes Acid or Fire dam- age, this trait doesn’t function on the limb’s next turn. The limb dies only if it starts its turn with 0 Hit Points and doesn’t regenerate."
+    },
+    {
+      "name": "Troll Spawn",
+      "text": "The limb uncannily has the same senses as a whole troll. If the limb isn’t destroyed within 24 hours, roll 1d12. On a 12, the limb turns into a Troll. Otherwise, the limb withers away."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 9 (2d4 + 4) Slashing damage."
+    }
+  ],
+  "skills": "Perception +5",
+  "srd_en_match_name": "Troll Limb",
+  "srd_en_page": 330,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "plant",
+  "alignment": "Chaotic Good",
+  "armorClass": {
+    "value": 16,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 138,
+    "roll": "12d12 + 60"
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 8,
+    "con": 21,
+    "int": 12,
+    "wis": 16,
+    "cha": 12
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 0,
+    "con": 5,
+    "int": 1,
+    "wis": 3,
+    "cha": 1
+  }
+}

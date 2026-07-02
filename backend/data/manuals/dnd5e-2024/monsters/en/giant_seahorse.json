@@ -1,0 +1,66 @@
+{
+  "id": "giant_seahorse",
+  "slug": "giant_seahorse",
+  "lang": "en",
+  "name": "Giant Seahorse",
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "skills": "Perception +3",
+  "senses": {
+    "blindsight": "60 ft",
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Water Breathing",
+      "text": "The seahorse can breathe only underwater."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ram",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 9 (2d6 + 2) Bludgeoning damage, or 11 (2d8 + 2) Bludgeoning damage if the seahorse moved 20+ feet straight toward the target immediately before the hit. Bonus Actions"
+    },
+    {
+      "name": "Bubble Dash",
+      "text": "While underwater, the seahorse moves up to half its Swim Speed without provoking Opportu- nity Attacks. Giant Shark"
+    }
+  ],
+  "srd_en_match_name": "Giant Seahorse",
+  "srd_en_page": 350,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 7,
+    "roll": "2d6"
+  },
+  "abilities": {
+    "str": 7,
+    "dex": 16,
+    "con": 11,
+    "int": 2,
+    "wis": 10,
+    "cha": 4
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 5,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

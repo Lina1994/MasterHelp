@@ -1,0 +1,74 @@
+{
+  "id": "drow",
+  "slug": "drow",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Drow",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 15,
+    "type": "leather armor"
+  },
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 14,
+    "con": 10,
+    "int": 11,
+    "wis": 11,
+    "cha": 12
+  },
+  "savingThrows": {
+    "dex": 4
+  },
+  "skills": {
+    "perception": 2,
+    "stealth": 4
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 120 ft., passive Perception 12",
+  "languages": "Elvish, Undercommon",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "traits": [
+    {
+      "name": "Fey Ancestry.",
+      "text": "The drow has advantage on saving throws against being charmed, and magic can't put it to sleep."
+    },
+    {
+      "name": "Innate Spellcasting.",
+      "text": "The drow's innate spellcasting ability is Charisma. It can innately cast faerie fire (at will) and darkness (1/day)."
+    },
+    {
+      "name": "Sunlight Sensitivity.",
+      "text": "While in sunlight, the drow has disadvantage on attack rolls, as well as on Wisdom (Perception) checks that rely on sight."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Shortsword.",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
+    },
+    {
+      "name": "Hand Crossbow.",
+      "text": "Ranged Weapon Attack: +4 to hit, range 30/120 ft., one target. Hit: 5 (1d6 + 2) piercing damage, and the target must succeed on a DC 13 CON save or be poisoned for 1 hour."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

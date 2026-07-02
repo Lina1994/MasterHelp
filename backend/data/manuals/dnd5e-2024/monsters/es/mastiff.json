@@ -1,0 +1,49 @@
+{
+  "id": "mastiff",
+  "slug": "mastiff",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Mastín",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 5,
+    "roll": "1d8 + 1"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 14,
+    "con": 12,
+    "int": 3,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +3, alcance 1,5 m. Acierto: 4 (1d6 + 1) de daño perforante. Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de derribada."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Mastín",
+  "srd_es_page": 389
+}

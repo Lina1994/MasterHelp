@@ -1,0 +1,65 @@
+{
+  "id": "giant_spider",
+  "slug": "giant_spider",
+  "lang": "en",
+  "name": "Giant Spider",
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "skills": "Perception +3",
+  "senses": {
+    "blindsight": "60 ft",
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The rat has Advantage on an attack roll against a creature if at least one of the rat’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 feet. Hit: 5 (1d4 + 3) Piercing damage. Giant Scorpion"
+    }
+  ],
+  "srd_en_match_name": "Giant Spider",
+  "srd_en_page": 350,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 7,
+    "roll": "2d6"
+  },
+  "abilities": {
+    "str": 7,
+    "dex": 16,
+    "con": 11,
+    "int": 2,
+    "wis": 10,
+    "cha": 4
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 5,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

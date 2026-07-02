@@ -1,0 +1,50 @@
+{
+  "id": "hawk",
+  "slug": "hawk",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Halcón",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 1,
+    "roll": "1d4 − 1"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 16,
+    "con": 8,
+    "int": 2,
+    "wis": 14,
+    "cha": 6
+  },
+  "skills": [
+    "Percepción +6"
+  ],
+  "senses": "Percepción pasiva 16",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Garras",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 1 de daño cortante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Halcón",
+  "srd_es_page": 386
+}

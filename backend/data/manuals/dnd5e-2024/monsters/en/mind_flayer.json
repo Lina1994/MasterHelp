@@ -1,0 +1,66 @@
+{
+  "id": "mind_flayer",
+  "name": "Mind Flayer",
+  "slug": "mind_flayer",
+  "size": "Medium",
+  "type": "aberration",
+  "alignment": "lawful evil",
+  "armorClass": 15,
+  "hitPoints": {
+    "average": 71,
+    "roll": "13d8 + 13"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 12,
+    "con": 12,
+    "int": 19,
+    "wis": 17,
+    "cha": 17
+  },
+  "saves": [
+    " INT +7 ",
+    " WIS +6 "
+  ],
+  "skills": [
+    " Arcana +7 ",
+    " Perception +6 ",
+    " Persuasion +6 ",
+    " Stealth +4 "
+  ],
+  "senses": "truesight 120 ft., passive Perception 16",
+  "languages": "Deep Speech, Undercommon, telepathy 120 ft.",
+  "challengeRating": "7",
+  "traits": [
+    {
+      "name": "Magic Resistance",
+      "text": "Advantage on saves vs. spells."
+    },
+    {
+      "name": "Innate Spellcasting (Psionics)",
+      "text": "INT save DC 15. At will: Detect Thoughts, Levitate. 1/day: Dominate Monster, Mind Blast."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Tentacles",
+      "text": "+5 to hit, reach 10 ft. Hit: 9 (1d12 + 3) psychic."
+    },
+    {
+      "name": "Extract Brain",
+      "text": "Auto-kill helpless grappled creature. INT 15 or stunning + 3d10 psychic/turn until escape."
+    },
+    {
+      "name": "Mind Blast (Recharge 4–6)",
+      "text": "60-ft cone; INT 15 or stunned and pushed 20 ft."
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 2900,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

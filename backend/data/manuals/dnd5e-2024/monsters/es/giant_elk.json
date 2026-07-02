@@ -1,0 +1,97 @@
+{
+  "id": "giant_elk",
+  "slug": "giant_elk",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Alce gigante",
+  "type": "Celestial",
+  "size": "Enorme",
+  "alignment": "neutral bueno",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 6,
+  "hitPoints": {
+    "average": 42,
+    "roll": "5d12 + 10"
+  },
+  "speed": {
+    "walk": 60
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 18,
+    "con": 14,
+    "int": 7,
+    "wis": 14,
+    "cha": 10
+  },
+  "skills": [
+    "Percepción +4"
+  ],
+  "senses": "visión en la oscuridad 27 m; Percepción",
+  "languages": "celestial; entiende común, elfo y silvano, pero no",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Embestir",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 3 m. Acierto: 11 (2d6 + 4) de daño contundente más 5 (2d4) de daño radiante. Si el objetivo es una criatura Enorme o más pequeña y el alce recorre al menos 6 m en línea recta hacia ella justo antes de acertarle, esta recibirá 5 (2d4) de daño contundente adicional y tendrá el estado de derribada. Alosaurio Bestia Grande (dinosaurio), sin alineamiento"
+    },
+    {
+      "name": "CA",
+      "text": "13 Iniciativa: +1 (11)"
+    },
+    {
+      "name": "PG",
+      "text": "51 (6d10 + 18)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "18 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 19 +4 +4 Des 13 +1 +1 Con 17 +3 +3 Int 2 −4 −4 sab 12 +1 +1 Car 5 −3 −3"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Percepción +5"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 15"
+    },
+    {
+      "name": "Idiomas",
+      "text": "ninguno"
+    },
+    {
+      "name": "VD",
+      "text": "2 (450 PX; BC +2) Acciones"
+    },
+    {
+      "name": "Garras",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 8 (1d8 + 4) de daño cortante. Si el objetivo es una criatura Grande o más pequeña y el alosaurio recorre al menos 9 m en línea recta hacia ella justo antes de acertarle, tendrá el estado de derribada y el alosaurio podrá realizar un ataque de mordisco contra ella."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 15 (2d10 + 4) de daño perforante. Anquilosaurio Bestia Enorme (dinosaurio), sin alineamiento Fue 19 +4 +6 Des 11 +0 +0 Con 15 +2 +2 Int 2 −4 −4 sab 12 +1 +1 Car 5 −3 −3 Acciones"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El anquilosaurio realiza dos ataques con su cola."
+    },
+    {
+      "name": "Cola",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 3 m. Acierto: 9 (1d10 + 4) de daño contundente. Si el objetivo es una criatura Enorme o más pequeña, tendrá el estado de derribada."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Alce gigante",
+  "srd_es_page": 377
+}

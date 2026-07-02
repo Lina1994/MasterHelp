@@ -1,0 +1,63 @@
+{
+  "id": "medusa",
+  "slug": "medusa",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Medusa",
+  "type": "Monstruosidad",
+  "size": "Mediana",
+  "alignment": "legal malvada",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 6,
+  "hitPoints": {
+    "average": 127,
+    "roll": "17d8 + 51"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 17,
+    "con": 16,
+    "int": 12,
+    "wis": 13,
+    "cha": 15
+  },
+  "skills": [
+    "Engaño +5",
+    "Percepción +4",
+    "Sigilo +6"
+  ],
+  "senses": "visión en la oscuridad 45 m; Percepción",
+  "languages": "común y otro cualquiera",
+  "challengeRating": "6",
+  "experiencePoints": 2300,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La medusa realiza dos ataques con sus garras y uno con su pelo de serpientes, o realiza tres con su rayo venenoso."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 10 (2d6 + 3) de daño cortante."
+    },
+    {
+      "name": "Pelo de serpientes",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 5 (1d4 + 3) de daño perforante más 14 (4d6) de daño de veneno."
+    },
+    {
+      "name": "Rayo venenoso",
+      "text": "Tirada de ataque a distancia: +5, alcance 45 m. Acierto: 11 (2d8 + 2) de daño de veneno. Acciones adicionales Mirada petrificadora (recarga 5–6). Tirada de salvación de Constitución: CD 13, todas las criaturas en un cono de 9 m. Si la medusa ve su reflejo en alguna parte del cono, deberá hacer esta tirada. Primer fallo: el objetivo tendrá el estado de apresado. Si al final de su siguiente turno sigue apresado, repetirá la tirada de salvación y se librará del efecto si la supera. Segundo fallo: el objetivo tendrá el estado de petrificado en vez del de apresado. Mephits"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Medusa",
+  "srd_es_page": 349
+}

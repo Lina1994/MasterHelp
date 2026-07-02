@@ -1,0 +1,63 @@
+{
+  "id": "cultist",
+  "slug": "cultist",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Cultist",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Any non-good alignment",
+  "armorClass": {
+    "value": 12,
+    "type": "leather armor"
+  },
+  "hitPoints": {
+    "average": 9,
+    "roll": "2d8"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 12,
+    "con": 10,
+    "int": 10,
+    "wis": 11,
+    "cha": 10
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 10",
+  "languages": "Common + 1 other",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "traits": [
+    {
+      "name": "Dark Devotion.",
+      "text": "The cultist has advantage on saving throws against being charmed or frightened."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Scimitar.",
+      "text": "Melee Weapon Attack: +3 to hit, reach 5 ft., one creature. Hit: 4 (1d6 + 1) slashing damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 3,
+  "srd_en_match_name": "Cultist",
+  "srd_en_page": 275,
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

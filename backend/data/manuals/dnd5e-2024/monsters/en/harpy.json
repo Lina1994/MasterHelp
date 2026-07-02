@@ -1,0 +1,77 @@
+{
+  "id": "harpy",
+  "slug": "harpy",
+  "lang": "en",
+  "name": "Harpy",
+  "speed": {
+    "walk": 50
+  },
+  "skills": "Perception +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 15
+  },
+  "languages": "Understands Infernal but can’t speak",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Draconic Origin",
+      "text": "The half-dragon is related to a type of dragon associated with one of the following damage types (GM’s choice): Acid, Cold, Fire, Lightning, or Poi- son. This choice affects other aspects of the stat block."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 6 (2d4 + 1) Slashing damage."
+    },
+    {
+      "name": "Luring Song",
+      "text": "The harpy sings a magical melody, which lasts until the harpy’s Concentration ends on it. Wisdom"
+    },
+    {
+      "name": "Saving Throw",
+      "text": "DC 11, each Humanoid and Giant in a 300-foot Emanation originating from the harpy when the song starts. Failure: The target has the Charmed condition until the song ends and repeats the save at the end of each of its turns. While Charmed, the target has the Incapacitated condition and ignores the Luring"
+    },
+    {
+      "name": "Song of other harpies",
+      "text": "If the target is more than 5 feet from the harpy, the target moves on its turn toward the harpy by the most direct route, trying to get within 5 feet of the harpy. It doesn’t avoid Opportunity Attacks; however, before moving into damaging terrain (such as lava or a pit) and whenever it takes damage from a source other than the harpy, the target repeats the save."
+    },
+    {
+      "name": "Success",
+      "text": "The target is immune to this harpy’s Luring Song for 24 hours. Hell Hound Hell Hound"
+    }
+  ],
+  "srd_en_match_name": "Harpy",
+  "srd_en_page": 294,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "dragon",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 18,
+    "type": "+5 (15)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 105,
+    "roll": "14d8 + 42"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 16,
+    "int": 10,
+    "wis": 15,
+    "cha": 14
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 5,
+    "con": 3,
+    "int": 0,
+    "wis": 5,
+    "cha": 2
+  }
+}

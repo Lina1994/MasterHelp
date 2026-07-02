@@ -1,0 +1,78 @@
+{
+  "id": "drider",
+  "slug": "drider",
+  "lang": "en",
+  "name": "Drider",
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "senses": {
+    "darkvision": "120 ft",
+    "passivePerception": 16
+  },
+  "languages": "Elvish, Undercommon",
+  "challengeRating": "6",
+  "experiencePoints": 2300,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The drider can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    },
+    {
+      "name": "Sunlight Sensitivity",
+      "text": "While in sunlight, the drider has Disadvantage on ability checks and attack rolls."
+    },
+    {
+      "name": "Web Walker",
+      "text": "The drider ignores movement restrictions caused by webs, and the drider knows the location of any other creature in contact with the same web."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The drider makes three attacks, using Foreleg or Poison Burst in any combination."
+    },
+    {
+      "name": "Foreleg",
+      "text": "Melee Attack Roll: +7, reach 10 ft. Hit: 13 (2d8 + 4) Piercing damage."
+    },
+    {
+      "name": "Poison Burst",
+      "text": "Ranged Attack Roll: +6, range 120 ft. Hit: 13 (3d6 + 3) Poison damage. Bonus Actions Magic of the Spider Queen (Recharge 5–6). The drider casts Darkness, Faerie Fire, or Web, requiring no Mate- rial components and using Wisdom as the spellcasting ability (spell save DC 14)."
+    }
+  ],
+  "skills": "Perception +6, Stealth +10",
+  "srd_en_match_name": "Drider",
+  "srd_en_page": 278,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "dragon",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 20,
+    "type": "+6 (16)"
+  },
+  "initiative": 6,
+  "hitPoints": {
+    "average": 356,
+    "roll": "23d20 + 115"
+  },
+  "abilities": {
+    "str": 25,
+    "dex": 10,
+    "con": 20,
+    "int": 10,
+    "wis": 12,
+    "cha": 12
+  },
+  "savingThrows": {
+    "str": 7,
+    "dex": 0,
+    "con": 11,
+    "int": 0,
+    "wis": 7,
+    "cha": 1
+  }
+}

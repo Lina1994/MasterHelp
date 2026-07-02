@@ -1,0 +1,69 @@
+{
+  "id": "giant_bat",
+  "slug": "giant_bat",
+  "lang": "en",
+  "name": "Giant Bat",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The frog can breathe air and water."
+    },
+    {
+      "name": "Standing Leap",
+      "text": "The frog’s Long Jump is up to 10 feet and its High Jump is up to 5 feet with or without a run- ning start."
+    },
+    {
+      "name": "Bloodied Fury",
+      "text": "The boar has Advantage on melee at- tack rolls while it is Bloodied."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3) Piercing damage. Giant Boar"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "skills": "Perception +3",
+  "senses": {
+    "passivePerception": 8
+  },
+  "languages": "None",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "srd_en_match_name": "Giant Bat",
+  "srd_en_page": 346,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+5 (15)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 168,
+    "roll": "16d12 + 64"
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 14,
+    "con": 18,
+    "int": 5,
+    "wis": 12,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 2,
+    "con": 4,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

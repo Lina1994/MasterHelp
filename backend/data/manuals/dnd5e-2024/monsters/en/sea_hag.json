@@ -1,0 +1,73 @@
+{
+  "id": "sea_hag",
+  "slug": "sea_hag",
+  "lang": "en",
+  "name": "Sea Hag",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The hag can breathe air and water."
+    },
+    {
+      "name": "Coven Magic",
+      "text": "While within 30 feet of at least two hag allies, the hag can cast one of the following spells, requiring no Material components, using the spell’s normal casting time, and using Intelligence as the spell- casting ability (spell save DC 11): Augury, Find Familiar, Identify, Locate Object, Scrying, or Unseen Servant. The hag must finish a Long Rest before using this trait to cast that spell again."
+    },
+    {
+      "name": "Vile Appearance",
+      "text": "Wisdom Saving Throw: DC 11, any Beast or Humanoid that starts its turn within 30 feet of the hag and can see the hag’s true form. Failure: The target has the Frightened condition until the start of its next turn. Success: The target is immune to this hag’s Vile Appearance for 24 hours."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 10 (2d6 + 3) Slashing damage. Death Glare (Recharge 5–6). Wisdom Saving Throw: DC 11, one Frightened creature the hag can see within 30 feet. Failure: If the target has 20 Hit Points or fewer, it drops to 0 Hit Points. Otherwise, the target takes 13 (3d8) Psychic damage."
+    },
+    {
+      "name": "Illusory Appearance",
+      "text": "The hag casts Disguise Self, using Constitution as the spellcasting ability (spell save DC 13). The spell’s duration is 24 hours. Shadow Shadow"
+    }
+  ],
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Stealth +6",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 10
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "srd_en_match_name": "Sea Hag",
+  "srd_en_page": 319,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fey",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 14,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 52,
+    "roll": "7d8 + 21"
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 13,
+    "con": 16,
+    "int": 12,
+    "wis": 12,
+    "cha": 13
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 1,
+    "con": 3,
+    "int": 1,
+    "wis": 1,
+    "cha": 1
+  }
+}

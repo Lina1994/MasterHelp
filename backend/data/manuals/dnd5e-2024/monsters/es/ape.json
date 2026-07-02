@@ -1,0 +1,55 @@
+{
+  "id": "ape",
+  "slug": "ape",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Simio",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d8 + 6"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 14,
+    "con": 14,
+    "int": 6,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    "Atletismo +5",
+    "Percepción +3"
+  ],
+  "senses": "Percepción pasiva 13",
+  "languages": "ninguno",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El simio realiza dos ataques de puñetazo."
+    },
+    {
+      "name": "Puñetazo",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 5 (1d4 + 3) de daño contundente. Piedra (recarga 6). Tirada de ataque a distancia: +5, alcance 7,5/15 m. Acierto: 10 (2d6 + 3) de daño contundente."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Simio",
+  "srd_es_page": 395
+}

@@ -1,0 +1,69 @@
+{
+  "id": "incubus",
+  "slug": "incubus",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Íncubo",
+  "type": "Infernal",
+  "size": "Mediano",
+  "alignment": "neutral malvado",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 66,
+    "roll": "12d8 + 12"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 17,
+    "con": 13,
+    "int": 15,
+    "wis": 12,
+    "cha": 20
+  },
+  "skills": [
+    "Engaño +9",
+    "Percepción +5",
+    "Perspicacia +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "abisal, común, infernal; telepatía 18 m",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Forma de súcubo",
+      "text": "Cuando el íncubo finaliza un descanso largo, puede adoptar la forma de un súcubo y pasar a utilizar ese perfil en lugar de este. Cualquier equipo que vista o lleve no se transformará."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El íncubo realiza dos ataques con su toque inquietante."
+    },
+    {
+      "name": "Toque inquietante",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 15 (3d6 + 5) de daño psíquico y el objetivo estará maldito durante 24 horas o hasta que el íncubo muera. Hasta que la maldición termine, el objetivo no obtendrá ningún beneficio al finalizar descansos cortos."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "El íncubo lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 15):"
+    },
+    {
+      "name": "A voluntad",
+      "text": "disfrazarse, excursión etérea 1/día cada uno: ensueño, patrón hipnótico"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Íncubo",
+  "srd_es_page": 342
+}

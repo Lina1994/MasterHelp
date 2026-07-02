@@ -1,0 +1,88 @@
+{
+  "id": "druid",
+  "slug": "druid",
+  "lang": "en",
+  "name": "Druid",
+  "speed": {
+    "walk": 30,
+    "burrow": 30
+  },
+  "skills": "Perception +4, Stealth +5",
+  "senses": {
+    "darkvision": "60 ft."
+  },
+  "languages": "Primordial (Terran)",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dryad makes one Vine Lash or Thorn Burst attack, and it can use Spellcasting to cast Charm Monster."
+    },
+    {
+      "name": "Vine Lash",
+      "text": "Melee Attack Roll: +6, reach 10 ft. Hit: 8 (1d8 + 4) Slashing damage."
+    },
+    {
+      "name": "Thorn Burst",
+      "text": "Ranged Attack Roll: +6, range 60 ft. Hit: 7 (1d6 + 4) Piercing damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The dryad casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 14):"
+    },
+    {
+      "name": "At Will",
+      "text": "Animal Friendship, Charm Monster (lasts 24 hours; ends early if the dryad casts the spell again), Druidcraft 1/Day Each: Entangle, Pass without Trace Bonus Actions"
+    },
+    {
+      "name": "Tree Stride",
+      "text": "If within 5 feet of a Large or bigger tree, the dryad teleports to an unoccupied space within 5 feet of a second Large or bigger tree that is within 60 feet of the previous tree. Earth Elemental Earth Elemental"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Magic Resistance",
+      "text": "The dryad has Advantage on saving throws against spells and other magical effects."
+    },
+    {
+      "name": "Speak with Beasts and Plants",
+      "text": "The dryad can com- municate with Beasts and Plants as if they shared a language."
+    }
+  ],
+  "srd_en_match_name": "Druid",
+  "srd_en_page": 279,
+  "source": "SRD 5.2 (pendiente)",
+  "size": "medium",
+  "type": "fey",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 16,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 22,
+    "roll": "5d8"
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 12,
+    "con": 11,
+    "int": 14,
+    "wis": 15,
+    "cha": 18
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 1,
+    "con": 0,
+    "int": 2,
+    "wis": 2,
+    "cha": 4
+  },
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Druid' did not match any of 2 chunk heads; using chunk[0] as best-effort"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "id": "clay_golem",
+  "slug": "clay_golem",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Clay Golem",
+  "size": "Large",
+  "type": "construct",
+  "alignment": "unaligned",
+  "armorClass": 14,
+  "hitPoints": {
+    "average": 133,
+    "roll": "14d10 + 56"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 20,
+    "dex": 9,
+    "con": 18,
+    "int": 3,
+    "wis": 8,
+    "cha": 1
+  },
+  "saves": [
+    " CON +9 "
+  ],
+  "damageImmunities": [
+    "poison",
+    "psychic",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks that aren't adamantine"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "petrified",
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 11",
+  "languages": "understands the language of its creator",
+  "challengeRating": "9",
+  "traits": [
+    {
+      "name": "Acid Absorption",
+      "text": "Whenever the golem is subjected to Acid damage, it takes no damage and instead regains a number of Hit Points equal to the Acid damage dealt."
+    },
+    {
+      "name": "Berserk",
+      "text": "Whenever the golem starts its turn Bloodied, roll 1d6. On a 6, the golem goes berserk. On each of its turns while berserk, the golem attacks the nearest creature it can see. If no creature is near enough to move to and attack, the golem attacks an object. Once the golem goes berserk, it continues to be berserk until it is destroyed or it is no longer Bloodied."
+    },
+    {
+      "name": "Immutable Form",
+      "text": "The golem can’t shape-shift."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The golem has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The golem makes two Slam attacks, or it makes three Slam attacks if it used Hasten this turn."
+    },
+    {
+      "name": "Slam",
+      "text": "Melee Attack Roll: +9, reach 5 ft. Hit: 10 (1d10 + 5) Bludgeoning damage plus 6 (1d12) Acid damage, and the target’s Hit Point maximum decreases by an amount equal to the Acid damage taken. Bonus Actions Hasten (Recharge 5–6). The golem takes the Dash and Disengage actions. Cloaker Cloaker"
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 1800,
+  "skills": "Stealth +5",
+  "srd_en_match_name": "Clay Golem",
+  "srd_en_page": 271,
+  "initiative": 3,
+  "savingThrows": {
+    "str": 5,
+    "dex": 0,
+    "con": 4,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

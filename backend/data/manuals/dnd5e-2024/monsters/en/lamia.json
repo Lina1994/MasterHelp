@@ -1,0 +1,96 @@
+{
+  "id": "lamia",
+  "slug": "lamia",
+  "lang": "en",
+  "name": "Lamia",
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Deception +7, Insight +4, Stealth +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 12
+  },
+  "languages": "Abyssal, Common",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The kraken can breathe air and water. Legendary Resistance (4/Day, or 5/Day in Lair). If the kraken fails a saving throw, it can choose to suc- ceed instead."
+    },
+    {
+      "name": "Siege Monster",
+      "text": "The kraken deals double damage to ob- jects and structures."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The lamia makes two Claw attacks. It can replace one attack with a use of Corrupting Touch."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 7 (1d8 + 3) Slashing damage plus 7 (2d6) Psychic damage."
+    },
+    {
+      "name": "Corrupting Touch",
+      "text": "Wisdom Saving Throw: DC 13, one creature the lamia can see within 5 feet. Failure: 13 (3d8) Psychic damage, and the target is cursed for 1 hour. Until the curse ends, the target has the Charmed and Poisoned conditions."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The lamia casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 13):"
+    },
+    {
+      "name": "At Will",
+      "text": "Disguise Self (can appear as a Large or Medium biped), Minor Illusion 1/Day Each: Geas, Major Image, Scrying"
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the kraken can expend a use to take one of the following actions. The kraken regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Storm Bolt",
+      "text": "The kraken uses Lightning Strike."
+    },
+    {
+      "name": "Toxic Ink",
+      "text": "Constitution Saving Throw: DC 23, each creature in a 15-foot Emanation originating from the kraken while it is underwater. Failure: The target has the Blinded and Poisoned conditions until the end of the kraken’s next turn. The kraken then moves up to its Speed. Failure or Success: The kraken can’t take this action again until the start of its next turn. Lamia Lamia"
+    }
+  ],
+  "srd_en_match_name": "Lamia",
+  "srd_en_page": 300,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "monstrosity",
+  "subtype": "Titan",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 18,
+    "type": "+14 (24)"
+  },
+  "initiative": 14,
+  "hitPoints": {
+    "average": 481,
+    "roll": "26d20 + 208"
+  },
+  "abilities": {
+    "str": 30,
+    "dex": 11,
+    "con": 26,
+    "int": 22,
+    "wis": 18,
+    "cha": 20
+  },
+  "savingThrows": {
+    "str": 17,
+    "dex": 7,
+    "con": 15,
+    "int": 6,
+    "wis": 11,
+    "cha": 5
+  }
+}

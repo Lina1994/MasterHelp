@@ -1,0 +1,92 @@
+{
+  "id": "deva",
+  "name": "Deva",
+  "slug": "deva",
+  "size": "Medium",
+  "type": "celestial",
+  "alignment": "lawful good",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 136,
+    "roll": "16d8 + 64"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 90
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 18,
+    "con": 18,
+    "int": 17,
+    "wis": 20,
+    "cha": 20
+  },
+  "saves": [
+    " INT +7 ",
+    " WIS +9 ",
+    " CHA +9 "
+  ],
+  "skills": [
+    " Insight +9 ",
+    " Perception +9 "
+  ],
+  "damageResistances": [
+    "radiant",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened"
+  ],
+  "senses": "truesight 120 ft., passive Perception 19",
+  "languages": "all languages, telepathy 120 ft.",
+  "challengeRating": "10",
+  "traits": [
+    {
+      "name": "Exalted Restoration",
+      "text": "If the deva dies outside Mount Celestia, its body disappears, and it gains a new body instantly, reviving with all its Hit Points somewhere in Mount Celestia."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The deva has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The deva makes two Holy Mace attacks."
+    },
+    {
+      "name": "Holy Mace",
+      "text": "Melee Attack Roll: +8, reach 5 ft. Hit: 7 (1d6 + 4) Bludgeoning damage plus 18 (4d8) Radi- ant damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The deva casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 17):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Evil and Good, Shapechange (Beast or Humanoid form only, no Temporary Hit Points gained from the spell, and no Concentration or Temporary Hit Points required to maintain the spell) 1/Day Each: Commune, Raise Dead Bonus Actions Divine Aid (2/Day). The deva casts Cure Wounds, Lesser Restoration, or Remove Curse, using the same spellcasting ability as Spellcasting."
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 5900,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "srd_en_match_name": "Deva",
+  "srd_en_page": 276,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 2,
+    "dex": 2,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  },
+  "subtype": "Angel"
+}

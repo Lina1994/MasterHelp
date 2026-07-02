@@ -1,0 +1,95 @@
+{
+  "id": "stone_golem",
+  "slug": "stone_golem",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Stone Golem",
+  "size": "Large",
+  "type": "construct",
+  "alignment": "unaligned",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 178,
+    "roll": "17d10 + 85"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 22,
+    "dex": 9,
+    "con": 20,
+    "int": 3,
+    "wis": 11,
+    "cha": 1
+  },
+  "saves": [
+    " CON +10 "
+  ],
+  "damageImmunities": [
+    "poison",
+    "psychic",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks that aren't adamantine"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "petrified",
+    "poisoned"
+  ],
+  "senses": "darkvision 120 ft., passive Perception 13",
+  "languages": "understands the language of its creator",
+  "challengeRating": "10",
+  "traits": [
+    {
+      "name": "Immutable Form",
+      "text": "The golem can’t shape-shift."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The golem has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The golem makes two attacks, using Slam or Force Bolt in any combination."
+    },
+    {
+      "name": "Slam",
+      "text": "Melee Attack Roll: +10, reach 5 ft. Hit: 15 (2d8 + 6) Bludgeoning damage plus 9 (2d8) Force damage."
+    },
+    {
+      "name": "Force Bolt",
+      "text": "Ranged Attack Roll: +9, range 120 ft. Hit: 22 (4d10) Force damage. Bonus Actions Slow (Recharge 5–6). The golem casts the Slow spell, requiring no spell components and using Constitution as the spellcasting ability (spell save DC 17). Storm Giant Storm Giant"
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 1800,
+  "skills": "Arcana +8, Athletics +14, History +8, Perception +10",
+  "reactions": [
+    {
+      "name": "",
+      "text": "Deflect Missile (Recharge 5–6). Trigger: The giant is hit by a ranged attack roll and takes Bludgeoning, Pierc- ing, or Slashing damage from it. Response: The giant reduces the damage it takes from the attack by 11 (1d10 + 6), and if that damage is reduced to 0, the giant can redirect some of the attack’s force. Dexterity Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 17, one creature the giant can see within 60 feet. Failure: 11 (1d10 + 6) Force damage. Stone Golem Stone Golem"
+    }
+  ],
+  "srd_en_match_name": "Stone Golem",
+  "srd_en_page": 327,
+  "initiative": 5,
+  "savingThrows": {
+    "str": 6,
+    "dex": 5,
+    "con": 8,
+    "int": 0,
+    "wis": 4,
+    "cha": 0
+  }
+}

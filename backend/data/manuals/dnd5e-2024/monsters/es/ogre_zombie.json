@@ -1,0 +1,51 @@
+{
+  "id": "ogre_zombie",
+  "slug": "ogre_zombie",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Ogro zombi",
+  "type": "Muerto viviente",
+  "size": "Grande",
+  "alignment": "neutral malvado",
+  "armorClass": {
+    "value": 8
+  },
+  "initiative": -2,
+  "hitPoints": {
+    "average": 85,
+    "roll": "9d10 + 36"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 6,
+    "con": 18,
+    "int": 3,
+    "wis": 6,
+    "cha": 5
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción pasiva 8",
+  "languages": "entiende común y gigante, pero no puede hablar",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Fortaleza de muerto viviente",
+      "text": "Si el daño reduce a 0 los puntos de golpe del zombi, hará una tirada de salvación de Constitución (CD 5 más el daño sufrido), siempre que el daño no sea radiante o proceda de un crítico. Si la supera, el zombi se queda con 1 punto de golpe."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Golpe",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 13 (2d8 + 4) de daño contundente. Animales"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Ogro zombi",
+  "srd_es_page": 376
+}

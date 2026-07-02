@@ -1,0 +1,60 @@
+{
+  "id": "dust_mephit",
+  "slug": "dust_mephit",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Mephit de polvo",
+  "type": "Elemental",
+  "size": "Pequeño",
+  "alignment": "neutral malvado",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 17,
+    "roll": "5d6"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 30
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 14,
+    "con": 10,
+    "int": 9,
+    "wis": 11,
+    "cha": 10
+  },
+  "skills": [
+    "Percepción +2",
+    "Sigilo +4"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "primordial (aurano, terrano)",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Explotar al morir",
+      "text": "El mephit explota cuando muere."
+    },
+    {
+      "name": "Tirada de salvación de Destreza",
+      "text": "CD 10, todas las criaturas en una emanación de 1,5 m que se origina en el mephit. Fallo: 5 (2d4) de daño contundente. Éxito: la mitad del daño."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 4 (1d4 + 2) de daño cortante. Aliento cegador (recarga 6). Tirada de salvación de Destreza: CD 10, todas las criaturas en un cono de 4,5 m. Fallo: el objetivo tendrá el estado de cegado hasta el final del siguiente turno del mephit. Dormir (1/día). El mephit lanza el conjuro dormir, que no requiere componentes y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 10)."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Mephit de polvo",
+  "srd_es_page": 350
+}

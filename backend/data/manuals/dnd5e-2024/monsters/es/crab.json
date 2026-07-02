@@ -1,0 +1,55 @@
+{
+  "id": "crab",
+  "slug": "crab",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Cangrejo",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 3,
+    "roll": "1d4 + 1"
+  },
+  "speed": {
+    "walk": 20,
+    "swim": 20
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 11,
+    "con": 12,
+    "int": 1,
+    "wis": 8,
+    "cha": 2
+  },
+  "skills": [
+    "Sigilo +2"
+  ],
+  "senses": "visión ciega 9 m; Percepción pasiva 9",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Anfibio",
+      "text": "El cangrejo puede respirar tanto dentro como fuera del agua."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pinza",
+      "text": "Tirada de ataque cuerpo a cuerpo: +2, alcance 1,5 m. Acierto: 1 de daño contundente."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Cangrejo",
+  "srd_es_page": 381
+}

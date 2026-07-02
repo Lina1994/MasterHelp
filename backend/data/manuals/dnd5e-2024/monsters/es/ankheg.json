@@ -1,0 +1,104 @@
+{
+  "id": "ankheg",
+  "slug": "ankheg",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Ankheg",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "speed": {
+    "walk": 30,
+    "burrow": 10
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 11,
+    "con": 14,
+    "int": 1,
+    "wis": 13,
+    "cha": 6
+  },
+  "senses": "sentir vibraciones 18 m, visión en la oscuridad",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Excavador",
+      "text": "El ankheg puede excavar a través de roca sólida a la mitad de su velocidad excavando y deja a su paso un túnel de 3 m de diámetro."
+    },
+    {
+      "name": "Movimiento incorpóreo",
+      "text": "La aparición puede moverse a través de otras criaturas y objetos como si fueran terreno difícil. Recibe 5 (1d10) de daño de fuerza si acaba su turno dentro de un objeto."
+    },
+    {
+      "name": "Sensibilidad a la luz solar",
+      "text": "Bajo la luz del sol, la aparición tiene desventaja en las pruebas de característica y las tiradas de ataque."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5 (con ventaja si el ankheg tiene agarrado al objetivo), alcance 1,5 m. Acierto: 10 (2d6 + 3) de daño cortante más 3 (1d6) de daño de ácido. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 13 para escapar). Chorro de ácido (recarga 6). Tirada de salvación de Destreza: CD 12, todas las criaturas en una línea de 9 m de largo y 1,5 m de ancho. Fallo: 14 (4d6) de daño de ácido. Éxito: la mitad del daño. Aparición Aparición Muerto viviente Mediano o Pequeño, neutral malvado"
+    },
+    {
+      "name": "CA",
+      "text": "13 Iniciativa: +3 (13)"
+    },
+    {
+      "name": "PG",
+      "text": "67 (9d8 + 27)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "1,5 m, volar 18 m (levitar)"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 6 −2 −2 Des 16 +3 +3 Con 16 +3 +3 Int 12 +1 +1 sab 14 +2 +2 Car 15 +2 +2"
+    },
+    {
+      "name": "Resistencias",
+      "text": "ácido, contundente, cortante, frío, fuego, perforante"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "necrótico, veneno; agarrado, apresado, cansancio, derribado, envenenado, hechizado, inconsciente, paralizado, petrificado"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión en la oscuridad 18 m; Percepción pasiva 12"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común y otros dos idiomas"
+    },
+    {
+      "name": "VD",
+      "text": "5 (1800 PX; BC +3)"
+    },
+    {
+      "name": "Consumir vida",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 21 (4d8 + 3) de daño necrótico. Si el objetivo es una criatura, sus puntos de golpe máximos se reducen en una cantidad igual al daño sufrido."
+    },
+    {
+      "name": "Crear espectro",
+      "text": "La aparición hace objetivo a un cadáver de humanoide que esté a 3 m o menos de ella y haya muerto hace 1 minuto como máximo. El espíritu del objetivo se alza como un espectro en el espacio de su cadáver o en el espacio sin ocupar más cercano. El espectro estará bajo el control de la aparición. Esta última no puede tener más de siete espectros bajo su control a la vez. Araña de fase"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Ankheg",
+  "srd_es_page": 284
+}

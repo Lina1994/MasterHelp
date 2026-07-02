@@ -1,0 +1,103 @@
+{
+  "id": "saber_toothed_tiger",
+  "slug": "saber_toothed_tiger",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Tigre dientes de sable",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 52,
+    "roll": "7d10 + 14"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 17,
+    "con": 15,
+    "int": 3,
+    "wis": 12,
+    "cha": 8
+  },
+  "skills": [
+    "Percepción +5",
+    "Sigilo +7"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Saltar con carrera",
+      "text": "Si se ha movido al menos 3 m justo antes, el tigre puede realizar un salto de longitud de hasta 7,5 m."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El tigre realiza dos ataques de desgarro."
+    },
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 11 (2d6 + 4) de daño cortante. Acciones adicionales"
+    },
+    {
+      "name": "Huida veloz",
+      "text": "El tigre realiza las acciones de destrabarse o esconderse. Tiranosaurio rex Bestia Enorme (dinosaurio), sin alineamiento"
+    },
+    {
+      "name": "CA",
+      "text": "13 Iniciativa: +3 (13)"
+    },
+    {
+      "name": "PG",
+      "text": "136 (13d12 + 52)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "15 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 25 +7 +10 Des 10 +0 +0 Con 19 +4 +4 Int 2 −4 −4 sab 12 +1 +4 Car 9 −1 −1"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Percepción +4"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 14"
+    },
+    {
+      "name": "Idiomas",
+      "text": "ninguno"
+    },
+    {
+      "name": "VD",
+      "text": "8 (3900 PX; BC +3) Acciones mordisco y uno con su cola."
+    },
+    {
+      "name": "Cola",
+      "text": "Tirada de ataque cuerpo a cuerpo: +10, alcance 4,5 m. Acierto: 25 (4d8 + 7) de daño contundente. Si el objetivo es una criatura Enorme o más pequeña, tendrá el estado de derribada."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +10, alcance 3 m. Acierto: 33 (4d12 + 7) de daño perforante. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 17 para escapar). Mientras esté agarrada, tendrá el estado de apresada y no podrá ser objetivo de la cola del tiranosaurio."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Tigre dientes de sable",
+  "srd_es_page": 397
+}

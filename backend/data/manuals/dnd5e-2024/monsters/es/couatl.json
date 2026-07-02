@@ -1,0 +1,64 @@
+{
+  "id": "couatl",
+  "slug": "couatl",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Couatl",
+  "type": "Celestial",
+  "size": "Mediano",
+  "alignment": "legal bueno",
+  "armorClass": {
+    "value": 19
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 60,
+    "roll": "8d8 + 24"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 90
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 20,
+    "con": 17,
+    "int": 18,
+    "wis": 20,
+    "cha": 18
+  },
+  "senses": "visión verdadera 36 m; Percepción pasiva 15",
+  "languages": "todos; telepatía 36 m",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Mente protegida",
+      "text": "Los pensamientos del couatl no se pueden leer de ninguna forma y otras criaturas solo pueden comunicarse con él telepáticamente si se lo permite."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 11 (1d12 + 5) de daño perforante y el objetivo tendrá el estado de envenenado hasta el final del siguiente turno del couatl."
+    },
+    {
+      "name": "Constreñir",
+      "text": "Tirada de salvación de Fuerza: CD 15, una criatura Mediana o más pequeña que el couatl pueda ver a 1,5 m o menos. Fallo: 8 (1d6 + 5) de daño contundente. El objetivo tendrá el estado de agarrado (CD 13 para escapar) y el de apresado hasta que el agarre termine."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "El couatl lanza uno de los siguientes conjuros, que no requiere componentes y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 15):"
+    },
+    {
+      "name": "A voluntad",
+      "text": "cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el con-"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Couatl",
+  "srd_es_page": 291
+}

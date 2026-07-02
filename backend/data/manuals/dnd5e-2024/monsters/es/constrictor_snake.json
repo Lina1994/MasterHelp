@@ -1,0 +1,55 @@
+{
+  "id": "constrictor_snake",
+  "slug": "constrictor_snake",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Serpiente constrictora",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 13,
+    "roll": "2d10 + 2"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 14,
+    "con": 12,
+    "int": 1,
+    "wis": 10,
+    "cha": 3
+  },
+  "skills": [
+    "Percepción +2",
+    "Sigilo +4"
+  ],
+  "senses": "visión ciega 3 m; Percepción pasiva 12",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 6 (1d8 + 2) de daño perforante."
+    },
+    {
+      "name": "Constreñir",
+      "text": "Tirada de salvación de Fuerza: CD 12, una criatura Mediana o más pequeña que la serpiente pueda ver a 1,5 m o menos. Fallo: 7 (3d4) de daño contundente y el objetivo tendrá el estado de agarrado (CD 12 para escapar)."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Serpiente constrictora",
+  "srd_es_page": 394
+}

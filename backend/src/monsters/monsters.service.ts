@@ -3,6 +3,67 @@ import { MonstersRepository } from './monsters.repository';
 import { CustomManualsService } from '../manuals/custom-manuals.service';
 import type { LanguageCode, MonsterDetail, MonsterIndexItem } from './monster.types';
 
+/**
+ * EN canonical type -> Spanish SRD v5.2 synonyms. Used to normalise
+ * the Spanish `it.type` strings (e.g. "Humanoide (Cualquier Raza)",
+ * "Muerto viviente", "Elemental") to the EN-canonical key sent by the
+ * UI filter dropdown. Without this normalisation, any filter fired on
+ * a Spanish list would always return empty results.
+ */
+const EN_TO_ES_TYPE_SYNONYMS: Record<string, string[]> = {
+  aberration: ['aberración', 'aberracion'],
+  beast: ['bestia'],
+  celestial: ['celestial'],
+  construct: ['constructo'],
+  dragon: ['dragón', 'dragon'],
+  elemental: ['elemental'],
+  fey: ['feérico', 'feerico'],
+  fiend: ['infernal'],
+  giant: ['gigante'],
+  humanoid: ['humanoide'],
+  monstrosity: ['monstruosidad'],
+  ooze: ['cieno'],
+  plant: ['planta'],
+  undead: ['muerto viviente', 'no-muerto', 'no muerto'],
+};
+
+/** EN canonical size -> Spanish SRD v5.2 size tokens (incl. gender). */
+const EN_TO_ES_SIZE: Record<string, string[]> = {
+  tiny: ['diminuto', 'diminuta', 'menudo', 'menuda'],
+  small: ['pequeño', 'pequeña'],
+  medium: ['mediano', 'mediana'],
+  large: ['grande'],
+  huge: ['enorme'],
+  gargantuan: ['gargantuesco', 'gargantuesca'],
+};
+
+function canonicalTypeKey(rawType: string | undefined, lang: LanguageCode): string {
+  if (!rawType) return '';
+  // Strip parenthetical subtype "Humanoide (Cualquier Raza)" → "Humanoide".
+  const head = rawType.toLowerCase().split('(')[0].trim();
+  for (const [enKey, syns] of Object.entries(EN_TO_ES_TYPE_SYNONYMS)) {
+    if (lang === 'es') {
+      for (const syn of syns) {
+        if (head === syn || head.startsWith(syn + ' ')) return enKey;
+      }
+    }
+    if (head === enKey || head.startsWith(enKey + ' ')) return enKey;
+  }
+  return head;
+}
+
+function canonicalSizeKey(size: string | undefined): string {
+  if (!size) return '';
+  const lower = size.toLowerCase().trim();
+  for (const [enKey, syns] of Object.entries(EN_TO_ES_SIZE)) {
+    for (const syn of syns) {
+      if (lower === syn) return enKey;
+    }
+    if (lower === enKey) return enKey;
+  }
+  return lower;
+}
+
 @Injectable()
 export class MonstersService {
   private readonly repo = new MonstersRepository();
@@ -32,8 +93,14 @@ export class MonstersService {
 
     return items.filter((it) => {
       if (q && !it.name.toLowerCase().includes(q)) return false;
-      if (type && (it.type ? it.type.toLowerCase() !== type : true)) return false;
-      if (size && (it.size ? it.size.toLowerCase() !== size : true)) return false;
+      if (type) {
+        const key = canonicalTypeKey(it.type, lang);
+        if (key !== type) return false;
+      }
+      if (size) {
+        const key = canonicalSizeKey(it.size);
+        if (key !== size) return false;
+      }
       const itemCr = parseCr(it.challengeRating);
       if (crMin !== undefined && (itemCr === undefined || itemCr < crMin)) return false;
       if (crMax !== undefined && (itemCr === undefined || itemCr > crMax)) return false;
@@ -133,8 +200,14 @@ export class MonstersService {
 
     return list.filter((it) => {
       if (q && !it.name.toLowerCase().includes(q)) return false;
-      if (type && (it.type ? it.type.toLowerCase() !== type : true)) return false;
-      if (size && (it.size ? it.size.toLowerCase() !== size : true)) return false;
+      if (type) {
+        const key = canonicalTypeKey(it.type, lang);
+        if (key !== type) return false;
+      }
+      if (size) {
+        const key = canonicalSizeKey(it.size);
+        if (key !== size) return false;
+      }
       const itemCr = parseCr(it.challengeRating);
       if (crMin !== undefined && (itemCr === undefined || itemCr < crMin)) return false;
       if (crMax !== undefined && (itemCr === undefined || itemCr > crMax)) return false;

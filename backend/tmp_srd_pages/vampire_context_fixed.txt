@@ -1,0 +1,85 @@
+Acciones adicionales Atributos
+en línea recta hacia un enemigo que pueda ver. lario tiene desventaja en las pruebas de característica
+Extremidad de troll
+Gigante Pequeño, caótico malvado
+CA: 13 Iniciativa: +1 (11)
+PG: 14 (4d6)
+Velocidad: 6 m
+MOD. SALV. MOD. SALV. MOD. SALV.
+Fue 18 +4 +4 Des 12 +1 +1 Con 10 +0 +0 Espada necrótica. Tirada de ataque cuerpo a cuerpo:
+Int 1 −5 −5 sab 9 −1 −1 Car 1 −5 −5
+Sentidos: visión en la oscuridad 18 m; Percepción pasiva 9
+Idiomas: ninguno
+VD: 1/2 (100 PX; BC +2)
+Atributos
+Engendro de troll. Asombrosamente, la extremidad
+tiene los mismos sentidos que un troll entero. Si la ex-
+tremidad no se destruye en 24 horas, tira 1d12. Si el re-
+sultado es 12, la extremidad se convierte en un troll.
+Si no, la extremidad se atrofia y muere.
+Regeneración. La extremidad recupera 5 puntos de
+golpe al principio de cada uno de sus turnos. Si recibe
+daño de ácido o de fuego, este atributo no funcionará
+en su siguiente turno. La extremidad solo morirá si em-
+pieza su turno con 0 puntos de golpe y no se regenera. Unicornio
+Acciones
+Desgarro. Tirada de ataque cuerpo a cuerpo: +6, al-
+cance 1,5 m. Acierto: 9 (2d4 + 4) de daño cortante.
+Tumulario
+Tumulario
+Muerto viviente Mediano, neutral malvado
+CA: 14 Iniciativa: +4 (14)
+PG: 82 (11d8 + 33)
+Velocidad: 9 m
+MOD. SALV. MOD. SALV. MOD. SALV. pasiva 13
+Fue 15 +2 +2 Des 14 +2 +2 Con 16 +3 +3
+Int 10 +0 +0 sab 13 +1 +1 Car 15 +2 +2
+Habilidades: Percepción +3, Sigilo +4 Atributos
+Resistencias: necrótico
+Inmunidades: veneno; cansancio, envenenado
+Equipo: armadura de cuero tachonado
+Sentidos: visión en la oscuridad 18 m; Percepción
+VD: 3 (700 PX; BC +2) mágicos.
+372 Documento de referencia del sistema 5.2.1
+Carga. El troll se mueve hasta la mitad de su velocidad Sensibilidad a la luz solar. Bajo la luz del sol, el tumu-
+y las tiradas de ataque.
+Acciones
+Ataque múltiple. El tumulario realiza dos ataques con
+su espada necrótica o su arco necrótico en cualquier
+combinación. Puede sustituir un ataque por una acción
+de consumir vida.
++4, alcance 1,5 m. Acierto: 6 (1d8 + 2) de daño cor-
+tante más 4 (1d8) de daño necrótico.
+Arco necrótico. Tirada de ataque a distancia: +4,
+alcance 45/180 m. Acierto: 6 (1d8 + 2) de daño perfo-
+rante más 4 (1d8) de daño necrótico.
+Consumir vida. Tirada de salvación de Constitución:
+CD 13, una criatura a 1,5 m o menos. Fallo: 6 (1d8 +
+2) de daño necrótico y los puntos de golpe máximos
+del objetivo se reducirán en una cantidad igual al daño
+sufrido.
+Un humanoide que muera por este ataque se alzará
+24 horas después como un zombi bajo el control del
+tumulario, a menos que se le devuelva a la vida o su
+cuerpo sea destruido. El tumulario no puede tener más
+de doce zombis bajo su control a la vez.
+Unicornio
+Celestial Grande, legal bueno
+CA: 12 Iniciativa: +8 (18)
+PG: 97 (13d10 + 26)
+Velocidad: 15 m
+MOD. SALV. MOD. SALV. MOD. SALV.
+Fue 18 +4 +4 Des 14 +2 +2 Con 15 +2 +2
+Int 11 +0 +0 sab 17 +3 +3 Car 16 +3 +3
+Inmunidades: veneno; envenenado, hechizado, paralizado
+Sentidos: visión en la oscuridad 18 m; Percepción
+Idiomas: celestial, elfo, silvano; telepatía 36 m
+VD: 5 (1800 PX; BC +3)
+Resistencia legendaria (3/día). El unicornio puede
+elegir tener éxito en una tirada de salvación que haya
+fallado.
+pasiva 13 Resistencia mágica. El unicornio tiene ventaja en
+Idiomas: común y otro cualquiera las tiradas de salvación contra conjuros y otros efectos
+Acciones
+Ataque múltiple. El unicornio realiza un ataque con sus
+cascos y uno con su cuerno radiante.

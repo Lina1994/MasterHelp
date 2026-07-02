@@ -1,0 +1,73 @@
+{
+  "id": "mage",
+  "slug": "mage",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Mage",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "any alignment",
+  "armorClass": {
+    "value": 12,
+    "type": "mage armor"
+  },
+  "hitPoints": {
+    "average": 27,
+    "roll": "5d8 + 5"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 9,
+    "dex": 14,
+    "con": 11,
+    "int": 17,
+    "wis": 12,
+    "cha": 11
+  },
+  "skills": [
+    "Arcana +7"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 11",
+  "languages": "any four languages",
+  "challengeRating": "6",
+  "experiencePoints": 2300,
+  "traits": [
+    {
+      "name": "Death Burst",
+      "text": "The magmin explodes when it dies. Dex- terity Saving Throw: DC 11, each creature in a 10-foot"
+    },
+    {
+      "name": "Emanation originating from the magmin",
+      "text": "Failure: 7 (2d6)"
+    },
+    {
+      "name": "Fire damage",
+      "text": "Success: Half damage."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Touch",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d4 + 2) Fire damage. If the target is a creature or a flammable object that isn’t being worn or carried, it starts burning."
+    }
+  ],
+  "savingThrows": {
+    "int": 7
+  },
+  "proficiencyBonus": 2,
+  "reactions": [
+    {
+      "name": "",
+      "text": "Protective Magic (3/Day). The mage casts Counterspell or Shield in response to the spell’s trigger, using the same spellcasting ability as Spellcasting. Archmage Medium or Small Humanoid (Wizard), Neutral Protective Magic (3/Day). The archmage casts Coun- terspell or Shield in response to the spell’s trigger, using the same spellcasting ability as Spellcasting. Magmin Magmin"
+    }
+  ],
+  "srd_en_match_name": "Mage",
+  "srd_en_page": 302,
+  "initiative": 2
+}

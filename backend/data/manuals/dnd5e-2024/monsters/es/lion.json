@@ -1,0 +1,67 @@
+{
+  "id": "lion",
+  "slug": "lion",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "León",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 22,
+    "roll": "4d10"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 15,
+    "con": 11,
+    "int": 3,
+    "wis": 12,
+    "cha": 8
+  },
+  "skills": [
+    "Percepción +3",
+    "Sigilo +4"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Atacar en manada",
+      "text": "El león tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del león se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    },
+    {
+      "name": "Saltar con carrera",
+      "text": "Si se ha movido al menos 3 m justo antes, el león puede realizar un salto de longitud de hasta 7,5 m."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El león realiza dos ataques de desgarro. Puede sustituir un ataque por un rugido."
+    },
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 7 (1d8 + 3) de daño cortante."
+    },
+    {
+      "name": "Rugido",
+      "text": "Tirada de salvación de Sabiduría: CD 11, una criatura a 4,5 m o menos. Fallo: el objetivo tendrá el estado de asustado hasta el principio del siguiente turno del león."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "León",
+  "srd_es_page": 388
+}

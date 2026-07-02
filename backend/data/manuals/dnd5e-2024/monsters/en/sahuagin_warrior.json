@@ -1,0 +1,82 @@
+{
+  "id": "sahuagin_warrior",
+  "slug": "sahuagin_warrior",
+  "lang": "en",
+  "name": "Sahuagin Warrior",
+  "reactions": [
+    {
+      "name": "Reflexive Antennae",
+      "text": "Trigger: An attack roll hits the rust monster. Response: The rust monster uses Antennae. Sahuagin Sahuagin Warrior"
+    }
+  ],
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +2, Performance +6, Stealth +5",
+  "senses": {
+    "passivePerception": 12
+  },
+  "languages": "Common, Elvish, Sylvan",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Blood Frenzy",
+      "text": "The sahuagin has Advantage on at- tack rolls against any creature that doesn’t have all its Hit Points."
+    },
+    {
+      "name": "Limited Amphibiousness",
+      "text": "The sahuagin can breathe air and water, but it must be submerged at least once every 4 hours to avoid suffocating outside water."
+    },
+    {
+      "name": "Shark Telepathy",
+      "text": "The sahuagin can magically control sharks within 120 feet of itself, using a special telepathy."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The sahuagin makes two Claw attacks."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1) Slashing damage. Bonus Actions"
+    },
+    {
+      "name": "Aquatic Charge",
+      "text": "The sahuagin swims up to its Swim Speed straight toward an enemy it can see. Salamander Salamander"
+    }
+  ],
+  "srd_en_match_name": "Sahuagin Warrior",
+  "srd_en_page": 318,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fiend",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 12,
+    "type": "+0 (10)"
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 22,
+    "roll": "4d8 + 4"
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 11,
+    "con": 12,
+    "int": 12,
+    "wis": 13,
+    "cha": 9
+  },
+  "savingThrows": {
+    "str": 1,
+    "dex": 0,
+    "con": 1,
+    "int": 1,
+    "wis": 1,
+    "cha": 0
+  }
+}

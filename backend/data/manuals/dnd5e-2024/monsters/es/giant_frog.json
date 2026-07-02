@@ -1,0 +1,29 @@
+{
+  "id": "giant_frog",
+  "slug": "giant_frog",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Rana gigante",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 18,
+    "roll": "4d8"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Rana gigante",
+  "srd_es_page": 392
+}

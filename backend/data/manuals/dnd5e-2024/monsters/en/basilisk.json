@@ -1,0 +1,74 @@
+{
+  "id": "basilisk",
+  "name": "Basilisk",
+  "slug": "basilisk",
+  "size": "Medium",
+  "type": "monstrosity",
+  "alignment": "unaligned",
+  "armorClass": 15,
+  "hitPoints": {
+    "average": 33,
+    "roll": "6d8 + 6"
+  },
+  "speed": {
+    "walk": 20
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 8,
+    "con": 14,
+    "int": 2,
+    "wis": 8,
+    "cha": 7
+  },
+  "senses": "darkvision 60 ft., passive Perception 9",
+  "languages": "—",
+  "challengeRating": "3",
+  "traits": [
+    {
+      "name": "Barbed Hide",
+      "text": "At the start of each of its turns, the devil deals 5 (1d10) Piercing damage to any creature it is grappling or any creature grappling it."
+    },
+    {
+      "name": "Diabolical Restoration",
+      "text": "If the devil dies outside the Nine Hells, its body disappears in sulfurous smoke, and it gains a new body instantly, reviving with all its Hit Points somewhere in the Nine Hells."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The devil has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 10 (2d6 + 3) Piercing damage plus 7 (2d6) Poison damage. Bonus Actions Petrifying Gaze (Recharge 4–6). Constitution Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 12, each creature in a 30-foot Cone. If the basilisk sees its reflection in the Cone, the basilisk must make this save. First Failure: The target has the Restrained condition and repeats the save at the end of its next turn if it is still Restrained, ending the effect on itself on a success. Second Failure: The target has the Petrified condition instead of the Restrained condition. Bearded Devil Bearded Devil"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 700,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "skills": "Deception +5, Insight +5, Perception +8",
+  "reactions": [
+    {
+      "name": "Parry",
+      "text": "Trigger: The bandit is hit by a melee attack roll while holding a weapon. Response: The bandit adds 2 to its AC against that attack, possibly causing it to miss. Barbed Devil Barbed Devil"
+    }
+  ],
+  "srd_en_match_name": "Basilisk",
+  "srd_en_page": 259,
+  "subtype": "Devil",
+  "initiative": 3,
+  "savingThrows": {
+    "str": 6,
+    "dex": 3,
+    "con": 7,
+    "int": 1,
+    "wis": 5,
+    "cha": 5
+  }
+}

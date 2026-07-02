@@ -1,0 +1,99 @@
+{
+  "id": "shambling_mound",
+  "name": "Shambling Mound",
+  "slug": "shambling_mound",
+  "size": "Large",
+  "type": "plant",
+  "alignment": "unaligned",
+  "armorClass": 15,
+  "hitPoints": {
+    "average": 93,
+    "roll": "11d10 + 33"
+  },
+  "speed": {
+    "walk": 20,
+    "swim": 20
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 8,
+    "con": 16,
+    "int": 5,
+    "wis": 10,
+    "cha": 5
+  },
+  "skills": [
+    " Stealth +3 "
+  ],
+  "damageResistances": [
+    "cold",
+    "fire"
+  ],
+  "damageImmunities": [
+    "lightning"
+  ],
+  "conditionImmunities": [
+    "blinded",
+    "charmed",
+    "deafened",
+    "exhaustion",
+    "frightened",
+    "prone"
+  ],
+  "senses": "blindsight 60 ft., passive Perception 10",
+  "languages": "—",
+  "challengeRating": "5",
+  "traits": [
+    {
+      "name": "Lightning Absorption",
+      "text": "Whenever the shambling mound is subjected to Lightning damage, it regains a number of Hit Points equal to the Lightning damage dealt."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The shambling mound makes three"
+    },
+    {
+      "name": "Charged Tendril attacks",
+      "text": "It can replace one attack with a use of Engulf."
+    },
+    {
+      "name": "Charged Tendril",
+      "text": "Melee Attack Roll: +7, reach 10 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "7 (1d6 + 4) Bludgeoning damage plus 5 (2d4)"
+    },
+    {
+      "name": "Lightning damage",
+      "text": "If the target is a Medium or smaller creature, the shambling mound pulls the target 5 feet straight toward itself."
+    },
+    {
+      "name": "Engulf",
+      "text": "Strength Saving Throw: DC 15, one Medium or smaller creature within 5 feet. Failure: The target is pulled into the shambling mound’s space and has the Grappled condition (escape DC 14). Until the grapple ends, the target has the Blinded and Restrained con- ditions, and it takes 10 (3d6) Lightning damage at the start of each of its turns. When the shambling mound moves, the Grappled target moves with it, costing it no extra movement. The shambling mound can have only one creature Grappled by this action at a time. Shield Guardian Shield Guardian"
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 1800,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "reactions": [
+    {
+      "name": "Protection",
+      "text": "Trigger: An attack roll hits the wearer of the guardian’s amulet while the wearer is within 5 feet of the guardian. Response: The wearer gains a +5 bonus to AC, including against the triggering attack and pos- sibly causing it to miss, until the start of the guardian’s next turn."
+    }
+  ],
+  "srd_en_match_name": "Shambling Mound",
+  "srd_en_page": 320,
+  "initiative": 1,
+  "savingThrows": {
+    "str": 4,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

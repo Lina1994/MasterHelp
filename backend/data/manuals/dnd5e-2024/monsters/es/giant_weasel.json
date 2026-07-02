@@ -1,0 +1,52 @@
+{
+  "id": "giant_weasel",
+  "slug": "giant_weasel",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Comadreja gigante",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 9,
+    "roll": "2d8"
+  },
+  "speed": {
+    "walk": 40,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 17,
+    "con": 10,
+    "int": 4,
+    "wis": 12,
+    "cha": 5
+  },
+  "skills": [
+    "Acrobacias +5",
+    "Percepción +3",
+    "Sigilo +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 5 (1d4 + 3) de daño perforante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Comadreja gigante",
+  "srd_es_page": 383
+}

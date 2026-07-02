@@ -1,0 +1,46 @@
+{
+  "id": "shrieker_fungus",
+  "slug": "shrieker_fungus",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Hongo chillón",
+  "type": "Planta",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 5
+  },
+  "initiative": -5,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "speed": {
+    "walk": 15
+  },
+  "abilities": {
+    "str": 1,
+    "dex": 1,
+    "con": 10,
+    "int": 1,
+    "wis": 3,
+    "cha": 1
+  },
+  "senses": "visión ciega 9 m; Percepción pasiva 6",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 0,
+  "proficiencyBonus": 2,
+  "reactions": [
+    {
+      "name": "Chillar",
+      "text": "Detonante: una criatura o una fuente de luz brillante se acerca a 9 m o menos del chillón. Respuesta: el chillón emite un grito audible a 90 m de él durante 1 minuto o hasta que muera."
+    }
+  ],
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Hongo chillón",
+  "srd_es_page": 341
+}

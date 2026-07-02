@@ -1,0 +1,47 @@
+{
+  "id": "giant_bat",
+  "slug": "giant_bat",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Murciélago gigante",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 22,
+    "roll": "4d10"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 16,
+    "con": 11,
+    "int": 2,
+    "wis": 12,
+    "cha": 6
+  },
+  "senses": "visión ciega 36 m; Percepción pasiva 11",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 6 (1d6 + 3) de daño perforante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Murciélago gigante",
+  "srd_es_page": 390
+}

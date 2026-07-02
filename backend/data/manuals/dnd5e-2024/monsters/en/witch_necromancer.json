@@ -1,0 +1,52 @@
+{
+  "id": "witch_necromancer",
+  "name": "Witch",
+  "slug": "witch_necromancer",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "neutral evil",
+  "armorClass": 14,
+  "hitPoints": {
+    "average": 28,
+    "roll": "8d8 - 8"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 14,
+    "con": 10,
+    "int": 15,
+    "wis": 16,
+    "cha": 12
+  },
+  "skills": [
+    " Arcana +4 ",
+    " History +4 ",
+    " Nature +4 "
+  ],
+  "senses": "passive Perception 11",
+  "languages": "any two languages",
+  "challengeRating": "4",
+  "traits": [
+    {
+      "name": "Familiar (Witch)",
+      "text": "Has an imp familiar acting independently. Casts spells through it."
+    },
+    {
+      "name": "Spellcasting (Witch)",
+      "text": "INT save DC 13. Spells: Cantrips + 1st–3rd (Necromancy focus)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Spectral Scythe",
+      "text": "+5 to hit, reach 10 ft. Hit: 8 (1d10 + 2) force."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 1100,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

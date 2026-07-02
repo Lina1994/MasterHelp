@@ -1,0 +1,100 @@
+{
+  "id": "giant_spider",
+  "slug": "giant_spider",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Araña gigante",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 26,
+    "roll": "4d10 + 4"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 16,
+    "con": 12,
+    "int": 2,
+    "wis": 11,
+    "cha": 4
+  },
+  "skills": [
+    "Percepción +4",
+    "Sigilo +7"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Caminar por telarañas",
+      "text": "La araña ignora todas las restricciones de movimiento causadas por las telarañas y conoce la ubicación de cualquier otra criatura que esté en contacto con la misma telaraña."
+    },
+    {
+      "name": "Trepar cual arácnido",
+      "text": "La araña puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica."
+    },
+    {
+      "name": "Anfibio",
+      "text": "El archelon puede respirar tanto dentro como fuera del agua."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 7 (1d8 + 3) de daño perforante más 7 (2d6) de daño de veneno. Telaraña (recarga 5–6). Tirada de salvación de Destreza: CD 13, una criatura que la araña pueda ver a 18 m o menos. Fallo: el objetivo tendrá el estado de apresado hasta que se destruya la telaraña (CA 10, 5 pg, vulnerabilidad a daño de fuego e inmunidad a daño psíquico y de veneno). Archelon Bestia Enorme (dinosaurio), sin alineamiento"
+    },
+    {
+      "name": "CA",
+      "text": "17 Iniciativa: +3 (13)"
+    },
+    {
+      "name": "PG",
+      "text": "90 (12d12 + 12)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "6 m, nadar 24 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 18 +4 +4 Des 16 +3 +3 Con 13 +1 +1 Int 4 −3 −3 sab 14 +2 +2 Car 6 −2 −2"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Sigilo +5"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 12"
+    },
+    {
+      "name": "Idiomas",
+      "text": "ninguno"
+    },
+    {
+      "name": "VD",
+      "text": "4 (1100 PX; BC +2)"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El archelon realiza dos ataques de mordisco. cance 1,5 m. Acierto: 14 (3d6 + 4) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Araña gigante",
+  "srd_es_page": 378
+}

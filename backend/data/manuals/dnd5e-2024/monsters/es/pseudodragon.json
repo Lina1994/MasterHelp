@@ -1,0 +1,64 @@
+{
+  "id": "pseudodragon",
+  "slug": "pseudodragon",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Pseudodragón",
+  "type": "Dragón",
+  "size": "Diminuto",
+  "alignment": "neutral bueno",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 10,
+    "roll": "3d4 + 3"
+  },
+  "speed": {
+    "walk": 15,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 15,
+    "con": 13,
+    "int": 10,
+    "wis": 12,
+    "cha": 10
+  },
+  "skills": [
+    "Percepción +5",
+    "Sigilo +4"
+  ],
+  "senses": "visión ciega 3 m, visión en la oscuridad 18 m;",
+  "languages": "entiende común y dracónico, pero no puede",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Resistencia mágica",
+      "text": "El pseudodragón tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El pseudodragón realiza dos ataques de mordisco."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 4 (1d4 + 2) de daño perforante."
+    },
+    {
+      "name": "Aguijón",
+      "text": "Tirada de salvación de Constitución: CD 12, una criatura que el pseudodragón pueda ver a 1,5 m o menos. Fallo: 5 (2d4) de daño de veneno y el objetivo tendrá el estado de envenenado durante 1 hora. Fallo por 5 o más: mientras esté envenenado, el objetivo también tendrá el estado de inconsciente, que terminará antes si recibe daño o una criatura a 1,5 m o menos de él utiliza una acción para despertarlo. Pudin negro"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Pseudodragón",
+  "srd_es_page": 361
+}

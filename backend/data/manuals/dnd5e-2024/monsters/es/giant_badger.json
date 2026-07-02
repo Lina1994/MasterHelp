@@ -1,0 +1,50 @@
+{
+  "id": "giant_badger",
+  "slug": "giant_badger",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Tejón gigante",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 15,
+    "roll": "2d8 + 6"
+  },
+  "speed": {
+    "walk": 30,
+    "burrow": 10
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 10,
+    "con": 17,
+    "int": 2,
+    "wis": 12,
+    "cha": 5
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +3, alcance 1,5 m. Acierto: 6 (2d4 + 1) de daño perforante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Tejón gigante",
+  "srd_es_page": 396
+}

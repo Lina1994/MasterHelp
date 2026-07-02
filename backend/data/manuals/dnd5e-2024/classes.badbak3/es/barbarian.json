@@ -1,0 +1,496 @@
+{
+  "id": "barbarian",
+  "name": "Bárbaro",
+  "hitDie": 12,
+  "hitPoints": {
+    "hitDice": "1d12 por nivel de bárbaro",
+    "at1stLevel": "12 + tu modificador de Constitución",
+    "atHigherLevels": "1d12 (o 7) + tu modificador de Constitución por nivel de bárbaro después del 1.er"
+  },
+  "primaryAbilities": [
+    "Fuerza"
+  ],
+  "savingThrows": [
+    "Fuerza",
+    "Constitución"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Armadura Ligera",
+      "Armadura Media",
+      "Escudos"
+    ],
+    "weapons": [
+      "Armas Sencillas",
+      "Armas Marciales"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Trato con Animales",
+      "Atletismo",
+      "Intimidación",
+      "Naturaleza",
+      "Percepción",
+      "Supervivencia"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        "un arma marcial melee y dos hachuelas",
+        "dos armas marciales melee"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "un paquete de explorador",
+        "un paquete de calabozo"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "cuatro jabalinas",
+        "cualquier arma sencilla"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "rage",
+      "name": "Furia",
+      "level": 1,
+      "description": "Como acción adicional, puedes entrar en furia, ganando ventaja en pruebas y salvaciones de Fuerza, +2 de daño en ataques cuerpo a cuerpo con Fuerza y resistencia al daño contundente, perforante y cortante. La furia dura 1 minuto y termina antes si caes inconsciente o si tu turno termina sin atacar ni recibir daño."
+    },
+    {
+      "id": "unarmored-defense",
+      "name": "Defensa sin Armadura",
+      "level": 1,
+      "description": "Mientras no llevas armadura, tu CA equivale a 10 + mod DES + mod CON. Puedes usar un escudo."
+    },
+    {
+      "id": "reckless-attack",
+      "name": "Ataque Imprudente",
+      "level": 2,
+      "description": "Cuando hagas tu primer ataque en tu turno, puedes atacar imprudentemente, ganando ventaja en las tiradas de ataque de Fuerza pero dando ventaja a los atacantes contra ti hasta tu próximo turno."
+    },
+    {
+      "id": "danger-sense",
+      "name": "Sentido del Peligro",
+      "level": 2,
+      "description": "Tienes ventaja en salvaciones de Destreza contra efectos que puedas ver, como conjuros y trampas (no ataques no vistos)."
+    },
+    {
+      "id": "extra-attack",
+      "name": "Ataque Extra",
+      "level": 5,
+      "description": "Puedes atacar dos veces, en lugar de una, cuando tomas la acción de Atacar. (Aumenta a 3 en el nivel 11, 4 en el 17.)"
+    },
+    {
+      "id": "fast-movement",
+      "name": "Movimiento Rápido",
+      "level": 5,
+      "description": "Tu velocidad aumenta en 10 pies mientras no llevas armadura pesada."
+    },
+    {
+      "id": "feral-instinct",
+      "name": "Instinto Feroz",
+      "level": 7,
+      "description": "Tienes ventaja en tiradas de iniciativa. Si te sorprenden, puedes actuar normalmente en tu primer turno siempre que entres en furia."
+    },
+    {
+      "id": "brutal-critical",
+      "name": "Crítico Brutal",
+      "level": 9,
+      "description": "Tira dados de daño extra cuando saques un crítico con un ataque cuerpo a cuerpo (1 en el nivel 9, 2 en el 13, 3 en el 17)."
+    },
+    {
+      "id": "relentless-rage",
+      "name": "Furia Implacable",
+      "level": 11,
+      "description": "Si caes a 0 PG mientras estás en furia, puedes hacer una salvación de Constitución para caer a una cantidad de PG igual al doble de tu nivel de bárbaro. La CD de la salvación aumenta en 5 cada vez que la usas tras la primera en una furia."
+    },
+    {
+      "id": "persistent-rage",
+      "name": "Furia Persistente",
+      "level": 15,
+      "description": "Tu furia solo termina si decides terminarla o caes inconsciente."
+    },
+    {
+      "id": "indomitable-might",
+      "name": "Fuerza Indomable",
+      "level": 18,
+      "description": "Si el total de tu prueba de Fuerza es menor que tu puntuación de Fuerza, puedes usar tu puntuación de Fuerza en lugar del total de la prueba."
+    },
+    {
+      "id": "primal-champion",
+      "name": "Campeón Primigenio",
+      "level": 20,
+      "description": "Tus puntuaciones de Fuerza y Constitución aumentan en 4, hasta un máximo de 24."
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "rage",
+        "unarmored-defense"
+      ],
+      "ragesPerLongRest": 2,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "reckless-attack",
+        "danger-sense"
+      ],
+      "ragesPerLongRest": 2,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "primal-path"
+      ],
+      "ragesPerLongRest": 3,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 3,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "extra-attack",
+        "fast-movement"
+      ],
+      "ragesPerLongRest": 3,
+      "rageDamageBonus": 2,
+      "extraAttack": true
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "path-feature"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "feral-instinct"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [
+        "brutal-critical-1"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "path-feature"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [
+        "relentless-rage"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 3,
+      "extraAttack": true
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "brutal-critical-2"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "path-feature"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "persistent-rage"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 4
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "brutal-critical-3",
+        "extra-attack-2"
+      ],
+      "ragesPerLongRest": 6,
+      "rageDamageBonus": 4,
+      "extraAttack": true
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "indomitable-might"
+      ],
+      "ragesPerLongRest": 6,
+      "rageDamageBonus": 4
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 6,
+      "rageDamageBonus": 4
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "primal-champion"
+      ],
+      "ragesPerLongRest": "unlimited",
+      "rageDamageBonus": 4
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "berserker",
+      "name": "Berserker",
+      "grantedAtLevel": 3,
+      "description": "El Camino del Berserker enfatiza la fuerza bruta y la furia descontrolada.",
+      "features": [
+        {
+          "id": "frenzy",
+          "name": "Frenesí",
+          "level": 3,
+          "description": "Puedes hacer un único ataque melee como acción adicional en cada uno de tus turnos mientras estás en furia."
+        },
+        {
+          "id": "mindless-rage",
+          "name": "Furia Inconsciente",
+          "level": 6,
+          "description": "No puedes ser hechizado ni asustado mientras estás en furia."
+        },
+        {
+          "id": "intimidating-presence",
+          "name": "Presencia Intimidante",
+          "level": 10,
+          "description": "Como acción, puedes asustar a una criatura en 30 pies con una salvación de Sabiduría (CD = 8 + Prof + CAR). El efecto termina si tú o tus aliados atacan o le hacen daño."
+        },
+        {
+          "id": "retaliation",
+          "name": "Represalia",
+          "level": 14,
+          "description": "Cuando recibas daño de una criatura en 5 pies, puedes usar tu reacción para hacer un ataque melee contra ella."
+        }
+      ]
+    },
+    {
+      "class_id": "barbarian",
+      "id": "path_of_the_wild_heart",
+      "name": "Sendero del Corazón Salvaje",
+      "grantedAtLevel": 3,
+      "description_en": "You draw on the primal bond between barbarian and beast. Animals sense your kinship and your rage lets you channel beast-like power.",
+      "description_es": "Te nutres del vínculo primordial entre bárbaro y bestia. Los animales perciben tu afinidad y tu furia canaliza un poder bestial.",
+      "features": [
+        {
+          "id": "animal_speaker",
+          "name": "Hablante Animal",
+          "level": 3,
+          "description": "Con sonido y gesto, puedes comunicarte con bestias y siempre conoces su ubicación a 9 m de distancia."
+        },
+        {
+          "id": "aspect_of_the_wild",
+          "name": "Aspecto de lo Salvaje",
+          "level": 6,
+          "description": "Resistencia a un tipo de daño según tu aspecto: Oso (forzar marca), Águila (empuje), Lobo (efecto de empuje)."
+        },
+        {
+          "id": "bestial_soul",
+          "name": "Alma Bestial",
+          "level": 10,
+          "description": "Ganas velocidad de vuelo 9 m O nado 9 m O escalada 9 m."
+        },
+        {
+          "id": "wilderness_magician",
+          "name": "Mago de la Naturaleza",
+          "level": 14,
+          "description": "Aprendes hechizos de la lista del druida (Sabiduría)."
+        }
+      ]
+    },
+    {
+      "class_id": "barbarian",
+      "id": "path_of_the_world_tree",
+      "name": "Sendero del Árbol del Mundo",
+      "grantedAtLevel": 3,
+      "description_en": "Your rage harnesses the resilience of Yggdrasil, the World Tree. You can call on the cosmos for protection.",
+      "description_es": "Tu furia canaliza la fortaleza de Yggdrasil, el Árbol del Mundo. Puedes invocar la protección del cosmos.",
+      "features": [
+        {
+          "id": "world_tree_walker",
+          "name": "Caminante del Árbol",
+          "level": 3,
+          "description": "Ganas velocidad de escalada igual a tu velocidad de caminar."
+        },
+        {
+          "id": "branches_of_the_tree",
+          "name": "Ramas del Árbol",
+          "level": 6,
+          "description": "Mientras estás en furia, ganas 2d6 pg temporales al inicio de cada turno."
+        },
+        {
+          "id": "verdant_pierce",
+          "name": "Perforación Verdosa",
+          "level": 10,
+          "description": "Las ramas crecen verticalmente detrás de ti y se vuelven daño perforante."
+        },
+        {
+          "id": "mighty_descent",
+          "name": "Descenso Poderoso",
+          "level": 14,
+          "description": "Reduce daño por caída; una vez por descanso prolongado, derriba a todas las criaturas en un radio de 9 m al impactar."
+        }
+      ]
+    },
+    {
+      "class_id": "barbarian",
+      "id": "path_of_the_zealot",
+      "name": "Sendero del Celador",
+      "grantedAtLevel": 3,
+      "description_en": "Your rage is fueled by a fierce devotion to a deity, cause, or creed. You undergo divine transformations in battle.",
+      "description_es": "Tu furia se alimenta de una devoción feroz a una deidad, causa o credo. Sufres transformaciones divinas en batalla.",
+      "features": [
+        {
+          "id": "divine_fury",
+          "name": "Furia Divina",
+          "level": 3,
+          "description": "En furia, la primera criatura impactada por turno recibe 1d6 + mitad de nivel bárbaro radiante o necrótico (tú eliges)."
+        },
+        {
+          "id": "warrior_of_the_gods",
+          "name": "Guerrero de los Dioses",
+          "level": 6,
+          "description": "Conjuros de resurrección contra ti tienen 50% de fallo."
+        },
+        {
+          "id": "frenzied_focus",
+          "name": "Foco Frenesí",
+          "level": 10,
+          "description": "Ventaja en salvaciones de Constitución en furia."
+        },
+        {
+          "id": "zealous_presence",
+          "name": "Presencia Celadora",
+          "level": 14,
+          "description": "Como acción, salvación de Sabiduría en radio 18 m; falla: encantado o asustado 1 min (tú eliges).",
+          "savingThrow": "Wisdom"
+        }
+      ]
+    },
+    {
+      "id": "wild-heart",
+      "name": "Corazón Salvaje",
+      "grantedAtLevel": 3,
+      "description": "El Camino del Corazón Salvaje ofrece un guía animal mágico que te otorga dones sobrenaturales.",
+      "features": [
+        {
+          "id": "animal-speak",
+          "name": "Hablar con Animales",
+          "level": 3,
+          "description": "Puedes lanzar Hablar con Animales como ritual."
+        },
+        {
+          "id": "raging-flora-fauna",
+          "name": "Flora y Fauna Furiosa",
+          "level": 6,
+          "description": "Mientras estás en furia, las plantas crecen a tu alrededor y las criaturas te perciben como un depredador primordial, ganando ventaja en Intimidación y Supervivencia."
+        },
+        {
+          "id": "spirit-walk",
+          "name": "Caminar entre Espíritus",
+          "level": 10,
+          "description": "Puedes lanzar Paso de Árbol una vez por descanso largo."
+        },
+        {
+          "id": "wrath-of-the-nature",
+          "name": "Ira de la Naturaleza",
+          "level": 14,
+          "description": "Mientras estás en furia, puedes lanzar Llamada de Rayos como acción adicional."
+        }
+      ]
+    }
+  ],
+  "source": "SRD 5.2"
+}

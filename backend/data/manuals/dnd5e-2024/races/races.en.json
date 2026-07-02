@@ -1,0 +1,183 @@
+[
+  {
+    "id": "human",
+    "name": "Human",
+    "size": "Medium",
+    "speed": 30,
+    "abilityBonuses": { "choice": { "count": 2, "per": 1 } },
+    "languages": ["Common", "One extra language"],
+    "traits": [
+      { "id": "heroic-encouragement", "name": "Heroic Encouragement", "description": "When you make a Charisma (Persuasion) check or a saving throw against being charmed or frightened, you can give yourself one of the following advantages of your choice (you choose each time):\n- Advantage on a Charisma (Persuasion) check.\n- Advantage on a saving throw against being charmed or frightened.\nOnce you use this trait, you can't use it again until you finish a short or long rest." }
+    ],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "dwarf",
+    "name": "Dwarf",
+    "size": "Medium",
+    "speed": 30,
+    "abilityBonuses": { "con": 2 },
+    "languages": ["Common", "Dwarvish"],
+    "traits": [
+      { "id": "darkvision", "name": "Darkvision", "description": "You have Darkvision with a range of 60 feet." },
+      { "id": "dwarven-resilience", "name": "Dwarven Resilience", "description": "You have advantage on saving throws against poison, and you have resistance against poison damage." },
+      { "id": "stonecunning", "name": "Stonecunning", "description": "Whenever you make an Intelligence (History) check related to the origin of stonework, you are considered proficient and add double your proficiency bonus to the check." }
+    ],
+    "lineages": [
+      { "id": "duergar", "name": "Duergar", "description": "Descended from gray dwarves, you have advantage on saving throws against illusions and against being charmed or paralyzed, you have darkvision out to 120 feet, and you can cast the Enlarge/Reduce and Invisibility spells once per long rest (Intelligence is your spellcasting ability)." },
+      { "id": "mountain", "name": "Mountain Dwarf", "description": "Mountain dwarves are stocky and strong. You gain a +2 bonus to Strength, and you have proficiency with light and medium armor." },
+      { "id": "hill", "name": "Hill Dwarf", "description": "Hill dwarves have keen senses and remarkable resilience. You gain a +1 bonus to Wisdom, and your hit point maximum increases by 1, and increases by 1 every time you gain a level." }
+    ],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "elf",
+    "name": "Elf",
+    "size": "Medium",
+    "speed": 30,
+    "abilityBonuses": { "dex": 2 },
+    "languages": ["Common", "Elvish"],
+    "traits": [
+      { "id": "darkvision", "name": "Darkvision", "description": "You have Darkvision with a range of 60 feet." },
+      { "id": "fey-ancestry", "name": "Fey Ancestry", "description": "You have advantage on saving throws you make to avoid or end the charmed condition." },
+      { "id": "trance", "name": "Trance", "description": "You don't need to sleep, and magic can't put you to sleep. You can finish a long rest in 4 hours if you spend those hours in a tranquil state, during which you retain consciousness." }
+    ],
+    "lineages": [
+      { "id": "drow", "name": "Drow", "description": "Descended from dark elves, you have Darkvision out to 120 feet, you have proficiency with rapier, shortsword, and hand crossbow, you know the Dancing Lights cantrip, and you can cast Faerie Fire (3rd level) and Darkness once per long rest (Charisma is your spellcasting ability)." },
+      { "id": "high", "name": "High Elf", "description": "Graceful and studious, you gain a +1 bonus to Intelligence, you have proficiency with longsword, shortsword, shortbow, and longbow, you know one Wizard cantrip, and you can read and write one extra language." },
+      { "id": "wood", "name": "Wood Elf", "description": "Fleet and reclusive, you gain a +1 bonus to Wisdom, your walking speed becomes 35 feet, and you have proficiency with longsword, shortsword, shortbow, and longbow." }
+    ],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "halfling",
+    "name": "Halfling",
+    "size": "Small",
+    "speed": 30,
+    "abilityBonuses": { "dex": 2 },
+    "languages": ["Common", "Halfling"],
+    "traits": [
+      { "id": "lucky", "name": "Lucky", "description": "When you roll a 1 on the d20 for an attack roll, ability check, or saving throw, you can reroll the die and must use the new roll." },
+      { "id": "brave", "name": "Brave", "description": "You have advantage on saving throws you make to avoid or end the frightened condition." },
+      { "id": "halfling-nimbleness", "name": "Halfling Nimbleness", "description": "You can move through the space of any creature that is of a size larger than yours, but you can't stop in the same space." }
+    ],
+    "lineages": [
+      { "id": "ghostwise", "name": "Ghostwise", "description": "Ghostwise halflings have a strong bond with their family. You gain a +1 bonus to Wisdom, and you can communicate telepathically with any creature within 30 feet that shares a language with you." },
+      { "id": "lightfoot", "name": "Lightfoot Halfling", "description": "Lightfoot halflings are affable and good at hiding. You gain a +1 bonus to Charisma, and you can attempt to hide when you are obscured only by a creature of your size or larger." },
+      { "id": "stout", "name": "Stout Halfling", "description": "Stout halflings are hardier than average. You gain a +1 bonus to Constitution, and you have advantage on saving throws against poison and resistance to poison damage." }
+    ],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "gnome",
+    "name": "Gnome",
+    "size": "Small",
+    "speed": 30,
+    "abilityBonuses": { "int": 2 },
+    "languages": ["Common", "Gnomish"],
+    "traits": [
+      { "id": "darkvision", "name": "Darkvision", "description": "You have Darkvision with a range of 60 feet." },
+      { "id": "gnome-cunning", "name": "Gnome Cunning", "description": "You have advantage on Intelligence, Wisdom, and Charisma saving throws you make against spells and other magical effects." }
+    ],
+    "lineages": [
+      { "id": "deep", "name": "Deep Gnome", "description": "Descended from svirfneblin, you have advantage on Stealth checks, you ignore the Disadvantage normally imposed on attack rolls from being within 5 feet of a creature that you can see, and you know the Minor Illusion cantrip (Intelligence is your spellcasting ability)." },
+      { "id": "forest", "name": "Forest Gnome", "description": "You gain a +1 bonus to Dexterity, and you know the Minor Illusion cantrip (Intelligence is your spellcasting ability). In addition, you can communicate simple concepts to Small or smaller beasts." },
+      { "id": "rock", "name": "Rock Gnome", "description": "You gain a +1 bonus to Constitution, and you have proficiency with Tinker's Tools. You can use those tools to create Tiny clockwork devices that last for 24 hours (you can have up to three active)." }
+    ],
+    "source": "SRD 5.2 (Tasha's Cauldron of Everything)"
+  },
+  {
+    "id": "dragonborn",
+    "name": "Dragonborn",
+    "size": "Medium",
+    "speed": 30,
+    "abilityBonuses": { "str": 2, "cha": 1 },
+    "languages": ["Common", "Draconic"],
+    "traits": [
+      { "id": "draconic-ancestry", "name": "Draconic Ancestry", "description": "You have draconic ancestry. Choose one type of dragon from the Draconic Ancestry table. Your breath weapon and damage resistance are determined by the dragon type, as shown in the table." },
+      { "id": "breath-weapon", "name": "Breath Weapon", "description": "You can use your action to exhale destructive energy associated with your draconic ancestry. The damage type and area depend on your ancestry. Each creature in the area must make a saving throw (DC 8 + Con mod + proficiency). On a failed save, a creature takes 2d6 damage, half on success. Damage increases at higher levels. Once used, you cannot use it again until you finish a short or long rest." },
+      { "id": "damage-resistance", "name": "Damage Resistance", "description": "You have resistance to the damage type associated with your draconic ancestry." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "tiefling",
+    "name": "Tiefling",
+    "size": "Medium",
+    "speed": 30,
+    "abilityBonuses": { "cha": 2, "int": 1 },
+    "languages": ["Common", "Infernal"],
+    "traits": [
+      { "id": "darkvision", "name": "Darkvision", "description": "You have Darkvision with a range of 60 feet." },
+      { "id": "hellish-resistance", "name": "Hellish Resistance", "description": "You have resistance to fire damage." },
+      { "id": "infernal-legacy", "name": "Infernal Legacy", "description": "You know the Thaumaturgy cantrip. At 3rd level, you can cast Hellish Rebuke as a 2nd-level spell once per long rest. At 5th level, you can cast Darkness once per long rest. Charisma is your spellcasting ability for these spells." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "aasimar",
+    "name": "Aasimar",
+    "size": "Medium",
+    "speed": 30,
+    "abilityBonuses": { "cha": 2 },
+    "languages": ["Common", "Celestial"],
+    "traits": [
+      { "id": "darkvision", "name": "Darkvision", "description": "You have Darkvision with a range of 60 feet." },
+      { "id": "celestial-resistance", "name": "Celestial Resistance", "description": "You have resistance to necrotic damage and radiant damage." },
+      { "id": "hands-of-healing", "name": "Hands of Healing", "description": "As a magic action, you touch a creature and restore hit points equal to your proficiency bonus. Once you use this trait, you can't use it again until you finish a long rest." },
+      { "id": "healing-hands-innate", "name": "Healing Hands (Innate)", "description": "Starting at 3rd level, you can cast the Lesser Restoration spell once per long rest without expending a spell slot." }
+    ],
+    "lineages": [
+      { "id": "protector", "name": "Protector Aasimar", "description": "You gain a +1 bonus to Wisdom and proficiency with martial weapons. At 3rd level, you can cast Radiant Retribution, causing radiant damage to a target within 30 feet." },
+      { "id": "scourge", "name": "Scourge Aasimar", "description": "You gain a +1 bonus to Constitution. At 3rd level, you can cast Radiant Consumption, dealing radiant damage in a 30-foot radius centered on yourself (Constitution save for half)." },
+      { "id": "fallen", "name": "Fallen Aasimar", "description": "You gain a +1 bonus to Strength. At 3rd level, you can use Necrotic Shroud: as a bonus action, you become cloaked in necrotic energy and deal extra necrotic damage on your melee attacks (Wisdom save)." }
+    ],
+    "source": "SRD 5.2 (Mordenkainen Presents: Monsters of the Multiverse)"
+  },
+  {
+    "id": "goliath",
+    "name": "Goliath",
+    "size": "Medium",
+    "speed": 35,
+    "abilityBonuses": { "str": 2, "con": 1 },
+    "languages": ["Common", "Giant"],
+    "traits": [
+      { "id": "stoneborn", "name": "Stoneborn", "description": "You have damage resistance to bludgeoning damage from nonmagical attacks." },
+      { "id": "larger-than-life", "name": "Larger than Life", "description": "You can use your reaction to make yourself and your equipment grow one size category for 10 minutes. While enlarged, your reach increases by 5 feet, your attacks deal 1d4 extra damage, and you have advantage on Strength checks and saving throws. Once used, you can't use this trait again until you finish a long rest." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2 (Mordenkainen Presents: Monsters of the Multiverse)"
+  },
+  {
+    "id": "orc",
+    "name": "Orc",
+    "size": "Medium",
+    "speed": 30,
+    "abilityBonuses": { "str": 2, "con": 1 },
+    "languages": ["Common", "Orc"],
+    "traits": [
+      { "id": "darkvision", "name": "Darkvision", "description": "You have Darkvision with a range of 60 feet." },
+      { "id": "powerful-build", "name": "Powerful Build", "description": "You count as one size larger when determining your carrying capacity and the weight you can push, drag, or lift." },
+      { "id": "relentless-endurance", "name": "Relentless Endurance", "description": "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. Once you use this trait, you can't use it again until you finish a long rest." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2 (Mordenkainen Presents: Monsters of the Multiverse)"
+  },
+  {
+    "id": "half-orc",
+    "name": "Half-Orc",
+    "size": "Medium",
+    "speed": 30,
+    "abilityBonuses": { "str": 2, "con": 1 },
+    "languages": ["Common", "Orc"],
+    "traits": [
+      { "id": "darkvision", "name": "Darkvision", "description": "You have Darkvision with a range of 60 feet." },
+      { "id": "relentless-endurance", "name": "Relentless Endurance", "description": "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. Once you use this trait, you can't use it again until you finish a long rest." },
+      { "id": "savage-attacks", "name": "Savage Attacks", "description": "When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage dice one additional time and add it to the extra damage of the critical hit." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2"
+  }
+]

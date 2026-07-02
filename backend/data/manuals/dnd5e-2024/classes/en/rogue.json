@@ -1,0 +1,879 @@
+{
+  "id": "rogue",
+  "name": "Rogue",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 per rogue level",
+    "at1stLevel": "8 + your Constitution modifier",
+    "atHigherLevels": "1d8 (or 5) + your Constitution modifier per rogue level after 1st"
+  },
+  "primaryAbilities": [
+    "dex"
+  ],
+  "savingThrows": [
+    "dex",
+    "int"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Hand Crossbows",
+      "Longswords",
+      "Rapiers",
+      "Shortswords"
+    ],
+    "tools": [
+      "Thieves' Tools"
+    ]
+  },
+  "skills": {
+    "choose": 4,
+    "from": [
+      "Acrobatics",
+      "Athletics",
+      "Deception",
+      "Insight",
+      "Intimidation",
+      "Investigation",
+      "Perception",
+      "Performance",
+      "Persuasion",
+      "Sleight of Hand",
+      "Stealth"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "rapier",
+          "description": "A rapier"
+        },
+        {
+          "id": "shortsword",
+          "description": "A shortsword"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "shortbow_20_arrows",
+          "description": "A shortbow with 20 arrows"
+        },
+        {
+          "id": "shortsword",
+          "description": "A shortsword"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "burglars_pack",
+          "description": "Burglar's Pack"
+        },
+        {
+          "id": "dungeoneers_pack",
+          "description": "Dungeoneer's Pack"
+        },
+        {
+          "id": "explorers_pack",
+          "description": "Explorer's Pack"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "leather_armor_2_daggers",
+          "description": "Leather armor, two daggers, and thieves' tools"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "expertise",
+      "name": "Expertise",
+      "level": 1,
+      "description": "Choose two skills or thieves' tools you are proficient in; your proficiency bonus is doubled for any ability check you make that uses them. At 6th level, you gain two more.",
+      "effects": [
+        {
+          "type": "expertise",
+          "countByLevel": {
+            "1": 2,
+            "6": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "sneak_attack",
+      "name": "Sneak Attack",
+      "level": 1,
+      "description": "Once per turn, you can deal extra damage to one creature you hit with an attack with a finesse or ranged weapon; you must have advantage on the attack roll, or an ally within 5 ft of the target and you don't have disadvantage. Damage scales with level (1d6 at 1, 2d6 at 3, etc., up to 10d6 at 19).",
+      "effects": [
+        {
+          "type": "sneak_attack",
+          "damage_dice_by_level": {
+            "1": 1,
+            "3": 2,
+            "5": 3,
+            "7": 4,
+            "9": 5,
+            "11": 6,
+            "13": 7,
+            "15": 8,
+            "17": 9,
+            "19": 10
+          },
+          "per_turn_limit": 1,
+          "trigger": "finesse_or_ranged_attack_with_advantage_or_ally_in_melee"
+        }
+      ]
+    },
+    {
+      "id": "thieves_cant",
+      "name": "Thieves' Cant",
+      "level": 1,
+      "description": "You know Thieves' Cant, a secret mix of dialect, jargon, and code that allows you to hide messages in seemingly normal conversation. Only another creature that knows Thieves' Cant understands such messages.",
+      "effects": [
+        {
+          "type": "language_known",
+          "value": "Thieves' Cant"
+        }
+      ]
+    },
+    {
+      "id": "cunning_action",
+      "name": "Cunning Action",
+      "level": 2,
+      "description": "You can take a bonus action to Dash, Disengage, or Hide.",
+      "effects": [
+        {
+          "type": "bonus_action_options",
+          "options": [
+            "Dash",
+            "Disengage",
+            "Hide"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "roguish_archetype",
+      "name": "Roguish Archetype",
+      "level": 3,
+      "description": "You choose an archetype: Thief or Assassin.",
+      "effects": [
+        {
+          "type": "choose_subclass",
+          "atLevel": 3
+        }
+      ]
+    },
+    {
+      "id": "steady_aim",
+      "name": "Steady Aim (Optional 3rd)",
+      "level": 3,
+      "description": "As a bonus action, give yourself advantage on the next attack roll you make this turn, but your speed becomes 0 until the end of the turn.",
+      "effects": [
+        {
+          "type": "bonus_action_grant_advantage_self",
+          "trade": "speed_becomes_0"
+        }
+      ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "Increase one ability score by 2, or two by 1. Max 20.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "uncanny_dodge",
+      "name": "Uncanny Dodge",
+      "level": 5,
+      "description": "When an attacker you can see hits you with an attack roll, you can use your reaction to halve the attack's damage against you.",
+      "effects": [
+        {
+          "type": "reaction_halve_damage_when_hit"
+        }
+      ]
+    },
+    {
+      "id": "expertise_6",
+      "name": "Expertise (Level 6)",
+      "level": 6,
+      "description": "Choose 2 more proficiencies (skills or thieves' tools) for Expertise.",
+      "effects": [
+        {
+          "type": "expertise_additional",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "evasion",
+      "name": "Evasion",
+      "level": 7,
+      "description": "When subjected to an effect that allows a DEX save for half damage, you take no damage on success and half on failure (instead of half on success).",
+      "effects": [
+        {
+          "type": "improve_dex_save_against_area_effects",
+          "on_success": "no_damage",
+          "on_failure": "half_damage"
+        }
+      ]
+    },
+    {
+      "id": "reliable_talent",
+      "name": "Reliable Talent",
+      "level": 11,
+      "description": "Whenever you make an ability check that lets you add your proficiency bonus, you treat any d20 roll of 9 or lower as a 10.",
+      "effects": [
+        {
+          "type": "minimum_roll_10_when_adding_pb"
+        }
+      ]
+    },
+    {
+      "id": "blindsense",
+      "name": "Blindsense",
+      "level": 14,
+      "description": "If you are able to hear, you are aware of the location of any hidden or invisible creature within 10 ft of you.",
+      "effects": [
+        {
+          "type": "sense_hidden_invisible_in_10ft_when_can_hear"
+        }
+      ]
+    },
+    {
+      "id": "slippery_mind",
+      "name": "Slippery Mind",
+      "level": 15,
+      "description": "You gain proficiency in WIS saving throws.",
+      "effects": [
+        {
+          "type": "gain_proficiency_saving_throw_WIS"
+        }
+      ]
+    },
+    {
+      "id": "elusive",
+      "name": "Elusive",
+      "level": 18,
+      "description": "Attack rolls against you can't benefit from more than one of the following: advantage, the attacker being within 5 ft of you, or the attacker being invisible.",
+      "effects": [
+        {
+          "type": "soft_target_against_advantage_stacking_attacks"
+        }
+      ]
+    },
+    {
+      "id": "stroke_of_luck",
+      "name": "Stroke of Luck",
+      "level": 20,
+      "description": "You have an uncanny knack for succeeding when you need to. If your attack misses a target within range, you can turn the miss into a hit. Alternatively, if you fail an ability check, you can treat the d20 roll as a 20. Once you use this, you can't use it again until you finish a short or long rest.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Stroke of Luck",
+          "per": "short_rest",
+          "turn_attack_miss_into_hit": true,
+          "turn_ability_check_into_20": true
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "expertise",
+        "sneak_attack",
+        "thieves_cant"
+      ]
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "cunning_action"
+      ]
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "roguish_archetype",
+        "steady_aim"
+      ]
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "uncanny_dodge"
+      ]
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "expertise_6"
+      ]
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "evasion"
+      ]
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": []
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "archetype_10"
+      ]
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [
+        "reliable_talent"
+      ]
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": []
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "blindsense"
+      ]
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "slippery_mind"
+      ]
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": []
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "elusive"
+      ]
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "stroke_of_luck"
+      ]
+    }
+  ],
+  "subclasses": [
+    {
+      "class_id": "rogue",
+      "id": "arcane_trickster",
+      "name": "Arcane Trickster",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "sneak_attack",
+          "name": "Sneak Attack",
+          "level": 3,
+          "description": "+1d6 extra damage on attack with advantage (or target adjacent to ally + 0 ability cover)."
+        },
+        {
+          "id": "mage_hand_legerdemain",
+          "name": "Mage Hand Legerdemain",
+          "level": 3,
+          "description": "Cast Mage Hand with 5x range, you can stow/retrieve an object, open doors, attack bonuses."
+        },
+        {
+          "id": "spellcasting_rogue",
+          "name": "Spellcasting (AT)",
+          "level": 3,
+          "description": "Cast wizard cantrips and 1st level+ spells from wizard list."
+        },
+        {
+          "id": "magical_ambush",
+          "name": "Magical Ambush",
+          "level": 9,
+          "description": "Creatures have disadvantage on save vs. spells from hiding."
+        },
+        {
+          "id": ".verbose",
+          "name": "Versatile Trickster",
+          "level": 13,
+          "description": "Use bonus action Mage Hand to distract and attack with sneak attack."
+        },
+        {
+          "id": "elusive",
+          "name": "Elusive",
+          "level": 13,
+          "description": "No attack roll has advantage against you."
+        }
+      ],
+      "description": "You learn spells and develop techniques of arcane trickery. Focus on illusion and enchantment magic."
+    },
+    {
+      "id": "assassin",
+      "name": "Assassin",
+      "grantedAtLevel": 3,
+      "description": "You focus your training on dealing death with precision. You become expert at the ambush, the sudden kill.",
+      "features": [
+        {
+          "id": "bonus_proficiencies",
+          "name": "Bonus Proficiencies",
+          "level": 3,
+          "description": "You gain proficiency with the disguise kit and the poisoner's kit.",
+          "effects": [
+            {
+              "type": "gain_tool_proficiency",
+              "tools": [
+                "Disguise Kit",
+                "Poisoner's Kit"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "assassinate",
+          "name": "Assassinate",
+          "level": 3,
+          "description": "You are at your deadliest when you get the drop on your enemies. You have advantage on attack rolls against any creature that hasn't taken a turn in combat yet. On any hit against such a creature, it is a critical hit. If the target is surprised, it must make a CON save vs your spell save DC or drop to 0 HP instead of taking damage.",
+          "effects": [
+            {
+              "type": "advantage_on_creatures_that_have_not_acted"
+            },
+            {
+              "type": "auto_critical_vs_unacted_creatures"
+            },
+            {
+              "type": "surprised_targeting_save_or_die",
+              "save": "con",
+              "dc": "spell_save_DC"
+            }
+          ]
+        },
+        {
+          "id": "infiltration_expertise",
+          "name": "Infiltration Expertise",
+          "level": 9,
+          "description": "You can create a false identity for yourself; you can adopt it as a disguise. PCM: You can study a persona after 25 + (3 × INT mod) work and adopt it as if it were a disguise (using INT (Investigation) for Deception checks).",
+          "effects": [
+            {
+              "type": "create_and_adopt_disguise",
+              "study_work": "25 + 3 * INT mod"
+            }
+          ]
+        },
+        {
+          "id": "impostor",
+          "name": "Impostor",
+          "level": 13,
+          "description": "You gain the ability to mimic another person's speech patterns and mannerisms. You need to hear a person speak for at least 1 minute; you can then mimic them for 1 hour, gaining a +10 bonus to Deception checks to convince someone you are that person.",
+          "effects": [
+            {
+              "type": "mimic_speech_mannerisms",
+              "duration_after_listening": "1 minute listen → 1 hour mimic",
+              "deception_bonus": 10
+            }
+          ]
+        },
+        {
+          "id": "death_strike",
+          "name": "Death Strike",
+          "level": 17,
+          "description": "If you Assassinate a target that is surprised, double the damage of your attack. If it takes any damage, it must make a CON save vs your spell save DC or have its HP maximum reduced by an amount equal to the damage taken (or fall to 0 HP if the damage is lethal).",
+          "effects": [
+            {
+              "type": "double_damage_on_ambush",
+              "condition": "surprised_target"
+            },
+            {
+              "type": "max_hp_reduction_save",
+              "save": "con",
+              "dc": "spell_save_DC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "rogue",
+      "id": "phantom",
+      "name": "Phantom",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "ghostsight",
+          "name": "Whispers of the Dead",
+          "level": 3,
+          "description": "Cast Augury and 7th-level Commune with the Dead."
+        },
+        {
+          "id": "ethereal_pick_pocket",
+          "name": "Wails from Beyond",
+          "level": 3,
+          "description": "Sneak attack deals extra 2d6 necrotic on first attack from stealth."
+        },
+        {
+          "id": "skills_of_the_ghost",
+          "name": "Skills of the Ghost",
+          "level": 9,
+          "description": "Mage Hand from invisible position lets you steal without disturbing."
+        },
+        {
+          "id": "souls_of_the_dead",
+          "name": "Souls of the Dead",
+          "level": 13,
+          "description": "Use Wails from Beyond and an extra d6 necrotic per attack."
+        },
+        {
+          "id": "tokens_of_fallen",
+          "name": "Tokens of the Dying",
+          "level": 17,
+          "description": "Capture soul of a slain humanoid; use 1d6 phantom's wails and reaction."
+        }
+      ],
+      "description": "You channel the spirits of the dead to gain mastery of necrotic magic and stealth."
+    },
+    {
+      "class_id": "rogue",
+      "id": "soulknife",
+      "name": "Soulknife",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "psionic_power_soulknife",
+          "name": "Psionic Power",
+          "level": 3,
+          "description": "Gain 4 psionic energy dice (d6); learn 3 psionic disciplines."
+        },
+        {
+          "id": "psychic_blades_soulknife",
+          "name": "Psychic Blades",
+          "level": 3,
+          "description": "Bonus action create a bonus psychic weapon attack."
+        },
+        {
+          "id": "stealth_attack",
+          "name": "Homing Strikes",
+          "level": 9,
+          "description": "When you miss, reroll with a psionic die."
+        },
+        {
+          "id": "soul_blades",
+          "name": "Soul Blades",
+          "level": 13,
+          "description": "Cast Blade of Disorder with PSI dice; AOE psionic attack."
+        }
+      ],
+      "description": "You forge your mind and weapon into a single tool of destruction. Psionic rogue with psychic blades."
+    },
+    {
+      "id": "thief",
+      "name": "Thief",
+      "grantedAtLevel": 3,
+      "description": "You hone your abilities in areas of rogue's talents that few can match: the quickness of your hands, the resilience of your body, and the art of climbing.",
+      "features": [
+        {
+          "id": "fast_hands",
+          "name": "Fast Hands",
+          "level": 3,
+          "description": "You can take a bonus action to use Sleight of Hand, or use thieves' tools to pick a lock or disarm a trap, or take the Use an Object action.",
+          "effects": [
+            {
+              "type": "bonus_action_options",
+              "options": [
+                "Sleight_of_Hand_check",
+                "thieves_tools_lock_or_trap",
+                "Use_an_Object"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "second_story_work",
+          "name": "Second-Story Work",
+          "level": 3,
+          "description": "You gain climbing speed equal to your walking speed. Falling damage is reduced 0 at level 3, by 10 ft at 9th level, by 20 ft at 13th, by 30 ft at 17th.",
+          "effects": [
+            {
+              "type": "climb_speed_equal_walk",
+              "fall_reduction_by_level": {
+                "3": 0,
+                "9": 3,
+                "13": 6,
+                "17": 9
+              },
+              "unit": "meters"
+            }
+          ]
+        },
+        {
+          "id": "supreme_sneak",
+          "name": "Supreme Sneak",
+          "level": 9,
+          "description": "You have advantage on Stealth checks if you move no more than half your speed on the same turn.",
+          "effects": [
+            {
+              "type": "advantage_stealth_when_move_half_speed"
+            }
+          ]
+        },
+        {
+          "id": "thiefs_reflexes",
+          "name": "Thief's Reflexes",
+          "level": 13,
+          "description": "When a creature within 5 ft of you makes an attack roll, you can use your reaction to make a melee attack or use Sleight of Hand against that creature.",
+          "effects": [
+            {
+              "type": "reaction_melee_attack_or_sleight_of_hand",
+              "trigger": "creature_within_5ft_attacks"
+            }
+          ]
+        },
+        {
+          "id": "use_magic_device",
+          "name": "Use Magic Device (Optional 13th-level feature)",
+          "level": 13,
+          "description": "You gain proficiency with one of the following skills your choice: Arcana; you add your proficiency bonus to ability checks made to determine the properties and command words of magic items, and your attunement slot count increases by 1.",
+          "effects": [
+            {
+              "type": "proficiency_arcana",
+              "expertise_magic_items": true,
+              "attunement_slots_bonus": 1
+            }
+          ]
+        },
+        {
+          "id": "thiefs_reflexes_improvement",
+          "name": "Thief's Reflexes (Improved)",
+          "level": 17,
+          "description": "You can use Thief's Reflexes any number of times per rest.",
+          "effects": [
+            {
+              "type": "thiefs_reflexes_unlimited"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "asesino",
+      "name": "Asesino",
+      "grantedAtLevel": 3,
+      "description": "Te especializas en la emboscada, la muerte súbita.",
+      "features": [
+        {
+          "id": "competencias_adicionales",
+          "name": "Competencias adicionales",
+          "level": 3,
+          "description": "Competencia en Kit de disfraz y Kit de envenenador.",
+          "effects": [
+            {
+              "type": "ganar_competencia_herramientas",
+              "tools": [
+                "Kit de disfraz",
+                "Kit de envenenador"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "asesinar",
+          "name": "Asesinar",
+          "level": 3,
+          "description": "Ventaja y crítico automático contra criaturas que aún no han actuado; sorpresa: salva CON o a 0 PG.",
+          "effects": [
+            {
+              "type": "ventaja_y_crit_auto_no_actuantes"
+            },
+            {
+              "type": "sorpresa_salv_CON_o_die",
+              "dc": "spell_save_DC"
+            }
+          ]
+        },
+        {
+          "id": "pericia_infiltracion",
+          "name": "Pericia en infiltración",
+          "level": 9,
+          "description": "Creas una identidad falsa, trabajas 25 + 3 × INT mod horas para adoptarla.",
+          "effects": [
+            {
+              "type": "crear_y_adoptar_identidad_falsa",
+              "trabajo": "25 + 3 * mod_INT"
+            }
+          ]
+        },
+        {
+          "id": "impostor",
+          "name": "Impostor",
+          "level": 13,
+          "description": "Escuchas a una persona 1 minuto, luego la imitas durante 1 hora (Engaño +10).",
+          "effects": [
+            {
+              "type": "imitar_voz_maneras",
+              "bonificacion_engaño": 10
+            }
+          ]
+        },
+        {
+          "id": "golpe_mortal",
+          "name": "Golpe mortal",
+          "level": 17,
+          "description": "Asesina a objetivo sorprendido: duplica daño; salva CON o reduce pg max al daño recibido.",
+          "effects": [
+            {
+              "type": "duplicar_danho_emboscada"
+            },
+            {
+              "type": "reducir_pg_max",
+              "save": "con",
+              "dc": "spell_save_DC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ladron",
+      "name": "Ladrón",
+      "grantedAtLevel": 3,
+      "description": "Perfeccionas tus habilidades de pícaro: rapidez de manos, resistencia del cuerpo y arte del trepar.",
+      "features": [
+        {
+          "id": "manos_rapidas",
+          "name": "Manos rápidas",
+          "level": 3,
+          "description": "Acción adicional: Juego de manos, Herramientas de ladrón o Usar un objeto.",
+          "effects": [
+            {
+              "type": "opciones_accion_adicional",
+              "options": [
+                "juego_manos",
+                "herramientas_ladron",
+                "usar_objeto"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "trabajo_segundo_piso",
+          "name": "Trabajo de segundo piso",
+          "level": 3,
+          "description": "Velocidad de trepar igual a caminar; reducción de daño por caída.",
+          "effects": [
+            {
+              "type": "trepar_igual_caminar",
+              "reduccion_caida_por_nivel": {
+                "3": 0,
+                "9": 3,
+                "13": 6,
+                "17": 9
+              }
+            }
+          ]
+        },
+        {
+          "id": "sigilo_supremo",
+          "name": "Sigilo supremo",
+          "level": 9,
+          "description": "Ventaja en Sigilo si te mueves a la mitad o menos de tu velocidad este turno.",
+          "effects": [
+            {
+              "type": "ventaja_sigilo_mitad_velocidad"
+            }
+          ]
+        },
+        {
+          "id": "reflejos_ladron",
+          "name": "Reflejos del ladrón",
+          "level": 13,
+          "description": "Reacción: ataque cuerpo a cuerpo o Juego de manos contra criatura a 1,5 m que ataque.",
+          "effects": [
+            {
+              "type": "reaccion_ataque_o_juego_manos",
+              "trigger": "criatura_a_1_5_ataca"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spellcasting": null
+}

@@ -1,0 +1,6 @@
+{
+  "id": "skills",
+  "title": "Habilidades",
+  "format": "markdown",
+  "markdown": "# Habilidades\n\nLas habilidades reflejan áreas especializadas de pericia que tu personaje ha desarrollado. Cada habilidad está vinculada a una de las seis características y concede bonificadores de competencia cuando el personaje es competente en ella.\n\nEl SRD 5.2 contiene las 18 habilidades básicas (una por cada prueba de Fuerza, Destreza, Inteligencia, Sabiduría y Carisma):\n\n- **Fuerza (Str)** — Atletismo\n- **Destreza (Dex)** — Acrobacias, Juego de Manos, Sigilo\n- **Inteligencia (Int)** — Arcano, Historia, Investigación, Naturaleza, Religión\n- **Sabiduría (Wis)** — Trato con Animales, Percepción, Medicina, Perspicacia, Supervivencia\n- **Carisma (Cha)** — Engaño, Intimidación, Interpretación, Persuasión\n\nConsulta la página **Habilidades** de esta aplicación (filtra por característica o nombre) para ver la lista completa con descripciones."
+}

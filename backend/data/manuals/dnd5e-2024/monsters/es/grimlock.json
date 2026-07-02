@@ -1,0 +1,93 @@
+{
+  "id": "grimlock",
+  "slug": "grimlock",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Grimlock",
+  "type": "Aberración",
+  "size": "Mediana",
+  "alignment": "neutral malvada",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d8 + 2"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 12,
+    "con": 12,
+    "int": 9,
+    "wis": 8,
+    "cha": 6
+  },
+  "skills": [
+    "Atletismo +5",
+    "Percepción +3",
+    "Sigilo +5"
+  ],
+  "senses": "visión ciega 9 m; Percepción pasiva 13",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Garrote óseo",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 6 (1d6 + 3) de daño contundente más 2 (1d4) de daño psíquico. Guardián escudo Guardián escudo Autómata Grande, sin alineamiento"
+    },
+    {
+      "name": "CA",
+      "text": "17 Iniciativa: −1 (9)"
+    },
+    {
+      "name": "PG",
+      "text": "142 (15d10 + 60)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 18 +4 +4 Des 8 −1 −1 Con 18 +4 +4 Int 7 −2 −2 sab 10 +0 +0 Car 3 −4 −4"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "veneno; asustado, cansancio, envenenado, hechizado, paralizado, petrificado"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión ciega 3 m, visión en la oscuridad 18 m; Percepción pasiva 10"
+    },
+    {
+      "name": "Idiomas",
+      "text": "entiende las órdenes recibidas en cualquier idioma, pero no puede hablar"
+    },
+    {
+      "name": "VD",
+      "text": "7 (2900 PX; BC +3)"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Almacenar conjuros",
+      "text": "El lanzador de conjuros que porte el amuleto del guardián podrá hacer que el guardián almacene un conjuro de nivel 4 o menos. Para ello, el portador deberá lanzar el conjuro sobre el guardián estando a 1,5 m o menos. Este conjuro, en vez de tener efecto, se almacenará en él. Cualquier conjuro almacenado anteriormente se perderá cuando se almacene uno nuevo. El guardián puede lanzar el conjuro almacenado siguiendo los parámetros definidos por el lanzador original sin necesidad de componentes y empleará la aptitud mágica del lanzador. Luego, el conjuro almacenado se perderá."
+    },
+    {
+      "name": "Regeneración",
+      "text": "El guardián recupera 10 puntos de golpe al principio de cada uno de sus turnos si tiene al menos 1 punto de golpe."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Grimlock",
+  "srd_es_page": 334
+}

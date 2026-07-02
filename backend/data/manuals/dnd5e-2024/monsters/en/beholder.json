@@ -1,0 +1,69 @@
+{
+  "id": "beholder",
+  "slug": "beholder",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Beholder",
+  "size": "Huge",
+  "type": "aberration",
+  "alignment": "lawful evil",
+  "armorClass": {
+    "value": 18,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 180,
+    "roll": "19d10 + 76"
+  },
+  "speed": {
+    "walk": 0,
+    "fly": 20,
+    "climb": 0,
+    "swim": 0,
+    "burrow": 0
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 14,
+    "con": 18,
+    "int": 13,
+    "wis": 15,
+    "cha": 17
+  },
+  "savingThrows": [],
+  "skills": [
+    "Perception +7"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 120 ft., passive Perception 17",
+  "languages": "Deep Speech, Undercommon",
+  "challengeRating": "13",
+  "experiencePoints": 10000,
+  "traits": [
+    {
+      "name": "Antimagic Cone",
+      "text": "The beholder's central eye creates an area of antimagic, as in the antimagic field spell, in a 150-foot cone. At the start of each of its turns, the beholder decides which way the cone faces and whether the cone is active. The central eye is immune to spells."
+    },
+    {
+      "name": "Legendary Resistance (3/Day)",
+      "text": "If the beholder fails a saving throw, it can choose to succeed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 14 (4d6) piercing damage."
+    },
+    {
+      "name": "Eye Rays",
+      "text": "The beholder shoots three of the following magical eye rays at random (roll a d8 for each, no ray more than once per turn): 1-Along: charm ray, DC 16 WIS; 2-Beam: paralysis ray, DC 16 CON; 3-Down: enervation ray, 36 (8d8) necrotic; 4-Fire: 3d10 fire on each target in 20-ft line (DEX); 5-Horn: 3d8 thunder cone (CON); 6-North: ice, DEX, 4d6 cold; 7-Death: 45 (10d8) necrotic, DEX; 8-South: slowing; 9-West: telekinetic, CON."
+    },
+    {
+      "name": "Enslave",
+      "text": "The beholder targets one creature it can see within 30 feet of it. The target must succeed on a DC 16 Wisdom saving throw or be magically charmed by the beholder for 1 minute (concentration)."
+    }
+  ]
+}

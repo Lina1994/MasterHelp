@@ -1,0 +1,52 @@
+{
+  "id": "giant_lizard",
+  "slug": "giant_lizard",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Lagarto gigante",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d10 + 3"
+  },
+  "speed": {
+    "walk": 40,
+    "climb": 40
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 12,
+    "con": 13,
+    "int": 2,
+    "wis": 10,
+    "cha": 5
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Trepar cual arácnido",
+      "text": "El lagarto puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 6 (1d8 + 2) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Lagarto gigante",
+  "srd_es_page": 388
+}

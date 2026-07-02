@@ -1,0 +1,79 @@
+{
+  "id": "noble",
+  "slug": "noble",
+  "lang": "en",
+  "source": "SRD 5.2 (pendiente)",
+  "name": "Noble",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Any alignment",
+  "armorClass": {
+    "value": 15,
+    "type": "fine clothing"
+  },
+  "hitPoints": {
+    "average": 9,
+    "roll": "2d8"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 12,
+    "con": 11,
+    "int": 12,
+    "wis": 14,
+    "cha": 13
+  },
+  "savingThrows": {
+    "str": 2,
+    "dex": 0,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 12",
+  "languages": "Common + 1 other",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "traits": [
+    {
+      "name": "Amorphous",
+      "text": "The jelly can move through a space as narrow as 1 inch without expending extra move- ment to do so."
+    },
+    {
+      "name": "Spider Climb",
+      "text": "The jelly can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pseudopod",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 12 (3d6 + 2) Acid damage."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "Split",
+      "text": "Trigger: While the jelly is Large or Medium and has 10+ Hit Points, it becomes Bloodied or is subjected to Lightning or Slashing damage. Response: The jelly splits into two new Ochre Jellies. Each new jelly is one size smaller than the original jelly and acts on its Initia- tive. The original jelly’s Hit Points are divided evenly between the new jellies (round down). Ogre Ogre"
+    }
+  ],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 2,
+  "srd_en_match_name": "Noble",
+  "srd_en_page": 309,
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Noble' did not match any of 3 chunk heads; using chunk[0] as best-effort"
+  ]
+}

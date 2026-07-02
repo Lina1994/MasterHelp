@@ -1,0 +1,28 @@
+{
+  "id": "shadow",
+  "slug": "shadow",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Sombra",
+  "type": "Muerto viviente",
+  "size": "Mediano",
+  "alignment": "caótico malvado",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 27,
+    "roll": "5d8 + 5"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Sombra",
+  "srd_es_page": 369
+}

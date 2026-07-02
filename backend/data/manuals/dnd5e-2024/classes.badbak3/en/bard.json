@@ -1,0 +1,635 @@
+{
+  "id": "bard",
+  "name": "Bard",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 per bard level",
+    "at1stLevel": "8 + your Constitution modifier",
+    "atHigherLevels": "1d8 (or 5) + your Constitution modifier per bard level after 1st"
+  },
+  "primaryAbilities": [
+    "Charisma"
+  ],
+  "savingThrows": [
+    "Dexterity",
+    "Charisma"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Hand Crossbows",
+      "Longswords",
+      "Rapiers",
+      "Shortswords"
+    ],
+    "tools": [
+      "Three musical instruments of your choice"
+    ]
+  },
+  "skills": {
+    "choose": 3,
+    "from": [
+      "Any skills"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        "a rapier",
+        "a longsword",
+        "any simple weapon"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "a diplomat's pack",
+        "an entertainer's pack"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "a lute",
+        "any other musical instrument"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "leather armor",
+        "studded leather armor",
+        "chain mail"
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "cha",
+    "progression": "full",
+    "description": "You have learned to untangle and reshape the fabric of reality through music, poetry, and dance."
+  },
+  "features": [
+    {
+      "id": "bardic-inspiration",
+      "name": "Bardic Inspiration",
+      "level": 1,
+      "description": "As a bonus action, you can inspire another creature within 60 feet who can hear you, granting it a Bardic Inspiration die (d6 at 1st, d8 at 5th, d10 at 10th, d12 at 15th). The creature can add the die to one ability check, attack roll, or saving throw within the next 10 minutes. You have a number of these dice equal to your Charisma modifier (minimum one); you regain all expended dice on a short or long rest."
+    },
+    {
+      "id": "spellcasting",
+      "name": "Spellcasting",
+      "level": 1,
+      "description": "You have learned to cast spells using your Charisma as your spellcasting ability. You can prepare a number of bard spells equal to your Charisma modifier + half your bard level, rounded up. The bard spell list includes abjuration, conjuration, divination, enchantment, illusion, and transmutation spells drawn from multiple classes."
+    },
+    {
+      "id": "jack-of-all-trades",
+      "name": "Jack of All Trades",
+      "level": 2,
+      "description": "You can add half your proficiency bonus, rounded down, to any ability check you make that doesn't already include your proficiency bonus."
+    },
+    {
+      "id": "song-of-rest",
+      "name": "Song of Rest",
+      "level": 2,
+      "description": "During a short rest, you or any friendly creature who can hear your performance can use a Bonus Action to regain hit points as if they had spent Hit Dice. The amount is 1d6 at 2nd level and increases by 1d6 at 9th, 13th, and 17th."
+    },
+    {
+      "id": "expertise",
+      "name": "Expertise",
+      "level": 3,
+      "description": "Choose two skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of those proficiencies. You gain two more at 10th."
+    },
+    {
+      "id": "font-of-inspiration",
+      "name": "Font of Inspiration",
+      "level": 5,
+      "description": "You regain all your expended Bardic Inspiration dice when you finish a short rest."
+    },
+    {
+      "id": "countercharm",
+      "name": "Countercharm",
+      "level": 7,
+      "description": "As an action, you can start a performance that lasts until the end of your next turn. During that time, you and any friendly creatures within 30 feet of you have advantage on saving throws against being frightened or charmed. You must use your voice and a hand-held instrument."
+    },
+    {
+      "id": "magical-secrets",
+      "name": "Magical Secrets",
+      "level": 10,
+      "description": "You learn two spells of your choice from any class's spell list. You can cast each of these without expending a spell slot, and they don't count against the number of spells you know. You gain two more at 14th and two more at 18th level."
+    },
+    {
+      "id": "superior-inspiration",
+      "name": "Superior Inspiration",
+      "level": 20,
+      "description": "When you roll initiative and have no Bardic Inspiration dice remaining, you regain one."
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "bardic-inspiration",
+        "spellcasting"
+      ],
+      "knownSpellsCount": 4,
+      "knownCantripsCount": 2,
+      "spellSlots": {
+        "1": 2
+      }
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "jack-of-all-trades",
+        "song-of-rest"
+      ],
+      "knownSpellsCount": 5,
+      "knownCantripsCount": 2,
+      "spellSlots": {
+        "1": 3
+      }
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "expertise",
+        "college"
+      ],
+      "knownSpellsCount": 6,
+      "knownCantripsCount": 2,
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      }
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 7,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      }
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "font-of-inspiration"
+      ],
+      "knownSpellsCount": 8,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      }
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "college-feature"
+      ],
+      "knownSpellsCount": 9,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      }
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "countercharm"
+      ],
+      "knownSpellsCount": 10,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 11,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [
+        "song-of-rest-2"
+      ],
+      "knownSpellsCount": 12,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      }
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "magical-secrets",
+        "expertise-2"
+      ],
+      "knownSpellsCount": 13,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      }
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "knownSpellsCount": 14,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      }
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 15,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      }
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "song-of-rest-3"
+      ],
+      "knownSpellsCount": 16,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      }
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "magical-secrets-2",
+        "college-feature"
+      ],
+      "knownSpellsCount": 17,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      }
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "bardic-inspiration-d12"
+      ],
+      "knownSpellsCount": 18,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      }
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 19,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      }
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "song-of-rest-4"
+      ],
+      "knownSpellsCount": 20,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      }
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "magical-secrets-3"
+      ],
+      "knownSpellsCount": 21,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      }
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 22,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      }
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "superior-inspiration"
+      ],
+      "knownSpellsCount": 23,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 2,
+        "8": 1,
+        "9": 1
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "college-of-lore",
+      "name": "College of Lore",
+      "grantedAtLevel": 3,
+      "description": "Bards of the College of Lore collect and master ancient knowledge from every part of the multiverse.",
+      "features": [
+        {
+          "id": "bonus-proficiencies-lore",
+          "name": "Bonus Proficiencies",
+          "level": 3,
+          "description": "You gain proficiency with three additional skills of your choice."
+        },
+        {
+          "id": "cutting-words",
+          "name": "Cutting Words",
+          "level": 3,
+          "description": "You can use your Bardic Inspiration to subtract the die from an opponent's attack roll, ability check, or damage roll."
+        },
+        {
+          "id": "additional-magical-secrets-lore",
+          "name": "Additional Magical Secrets",
+          "level": 6,
+          "description": "You learn two additional spells from any class."
+        },
+        {
+          "id": "peerless-skill",
+          "name": "Peerless Skill",
+          "level": 14,
+          "description": "You can add a Bardic Inspiration die to any ability check (no action required)."
+        }
+      ]
+    },
+    {
+      "id": "college-of-valor",
+      "name": "College of Valor",
+      "grantedAtLevel": 3,
+      "description": "Bards of the College of Valor focus on inspiring heroism in battle.",
+      "features": [
+        {
+          "id": "bonus-proficiencies-valor",
+          "name": "Bonus Proficiencies",
+          "level": 3,
+          "description": "You gain proficiency with medium armor, shields, and martial weapons."
+        },
+        {
+          "id": "combat-inspiration",
+          "name": "Combat Inspiration",
+          "level": 3,
+          "description": "Your Bardic Inspiration can be used by the target to add the die to a weapon damage roll or to its Armor Class when hit."
+        },
+        {
+          "id": "extra-attack-valor",
+          "name": "Extra Attack",
+          "level": 6,
+          "description": "You can attack twice when you take the Attack action."
+        },
+        {
+          "id": "battle-magic",
+          "name": "Battle Magic",
+          "level": 14,
+          "description": "When you use your action to cast a bard spell, you can make one weapon attack as a bonus action."
+        }
+      ]
+    },
+    {
+      "class_id": "bard",
+      "id": "college_of_dance",
+      "name": "College of Dance",
+      "grantedAtLevel": 3,
+      "description_en": "Your art is movement itself. You weaponize dance into combat grace, magic, and inspiration.",
+      "description_es": "Tu arte es el movimiento mismo. Conviertes el baile en gracia combativa, magia e inspiración.",
+      "features": [
+        {
+          "id": "dance_of_the_dawn",
+          "name": "Dance of the Dawn",
+          "level": 3,
+          "description": "After a long rest, gain 4 inspiration points (instead of dice). Recover all expended inspiration on a short rest. Inspire by motion."
+        },
+        {
+          "id": "defensive_dance",
+          "name": "Defensive Dance",
+          "level": 6,
+          "description": "When you damage a creature, you can move 30 ft and gain +10 to AC against their next attack this turn."
+        },
+        {
+          "id": "panache",
+          "name": "Panache",
+          "level": 10,
+          "description": "When you hit a creature, they have disadvantage on their next roll."
+        },
+        {
+          "id": "irrepressible_energy",
+          "name": "Irrepressible Energy",
+          "level": 14,
+          "description": "Once per short rest, succeed on a save vs. being charmed or frightened (no roll)."
+        }
+      ]
+    },
+    {
+      "class_id": "bard",
+      "id": "college_of_glamour",
+      "name": "College of Glamour",
+      "grantedAtLevel": 3,
+      "description_en": "You weave fey magic through your art, taking on an otherworldly presence that enchants audiences.",
+      "description_es": "Tejes magia feérica en tu arte, asumiendo una presencia sobrenatural que encanta al público.",
+      "features": [
+        {
+          "id": "mantle_of_inspiration",
+          "name": "Mantle of Inspiration",
+          "level": 3,
+          "description": "Inspiration dice grant temp HP equal to roll + Charisma mod instead of granting advantage."
+        },
+        {
+          "id": "enthralling_performance",
+          "name": "Enthralling Performance",
+          "level": 3,
+          "description": "After 1 min of performance, Wis save or charmed for 1 min.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "unwavering_majesty",
+          "name": "Unwavering Majesty",
+          "level": 6,
+          "description": "Reaction: make a creature reroll attack against you; the new roll is used."
+        },
+        {
+          "id": "synthetic_versification",
+          "name": "Synthetic Versification",
+          "level": 14,
+          "description": "Advantage on rolls to communicate nonverbally; bonus action cast Suggestion at will with no spell slot."
+        }
+      ]
+    },
+    {
+      "class_id": "bard",
+      "id": "college_of_whispers",
+      "name": "College of Whispers",
+      "grantedAtLevel": 3,
+      "description_en": "Your art is subversion. You infiltrate, manipulate, and strike from the shadows using words as weapons.",
+      "description_es": "Tu arte es la subversión. Infiltras, manipulas y golpeas desde las sombras con palabras como arma.",
+      "features": [
+        {
+          "id": "psychic_blades",
+          "name": "Psychic Blades",
+          "level": 3,
+          "description": "Use Bardic Inspiration dice to add psychic damage to weapon attacks."
+        },
+        {
+          "id": "words_of_terror",
+          "name": "Words of Terror",
+          "level": 3,
+          "description": "Action to curse a creature in 30 ft: +1d6 psychic damage on attacks; Wis save or frightened 1 min.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "mantle_of_whispers",
+          "name": "Mantle of Whispers",
+          "level": 6,
+          "description": "Reaction when a humanoid dies within 30 ft: assume their appearance and gain their memories for 1 hour."
+        },
+        {
+          "id": "shadow_lore",
+          "name": "Shadow Lore",
+          "level": 14,
+          "description": "Cast Major Image at will as a full action."
+        }
+      ]
+    }
+  ],
+  "source": "SRD 5.2"
+}

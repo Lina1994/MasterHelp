@@ -1,0 +1,75 @@
+{
+  "id": "archmage",
+  "slug": "archmage",
+  "lang": "en",
+  "name": "Archmage",
+  "speed": {
+    "walk": 30
+  },
+  "skills": "Arcana +13, History +9, Perception +6",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 10
+  },
+  "languages": "Primordial (Ignan)",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Touch",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d4 + 2) Fire damage. If the target is a creature or a flammable object that isn’t being worn or carried, it starts burning."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "",
+      "text": "Protective Magic (3/Day). The mage casts Counterspell or Shield in response to the spell’s trigger, using the same spellcasting ability as Spellcasting. Archmage Medium or Small Humanoid (Wizard), Neutral Protective Magic (3/Day). The archmage casts Coun- terspell or Shield in response to the spell’s trigger, using the same spellcasting ability as Spellcasting. Magmin Magmin"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Death Burst",
+      "text": "The magmin explodes when it dies. Dex- terity Saving Throw: DC 11, each creature in a 10-foot"
+    },
+    {
+      "name": "Emanation originating from the magmin",
+      "text": "Failure: 7 (2d6)"
+    },
+    {
+      "name": "Fire damage",
+      "text": "Success: Half damage."
+    }
+  ],
+  "srd_en_match_name": "Archmage",
+  "srd_en_page": 302,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "elemental",
+  "alignment": "Chaotic Neutral",
+  "armorClass": {
+    "value": 14,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d6 + 3"
+  },
+  "abilities": {
+    "str": 7,
+    "dex": 15,
+    "con": 12,
+    "int": 8,
+    "wis": 11,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

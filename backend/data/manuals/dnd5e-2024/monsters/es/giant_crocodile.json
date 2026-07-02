@@ -1,0 +1,45 @@
+{
+  "id": "giant_crocodile",
+  "slug": "giant_crocodile",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Cocodrilo gigante",
+  "type": "Bestia",
+  "size": "Enorme",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": -1,
+  "hitPoints": {
+    "average": 85,
+    "roll": "9d12 + 27"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 50
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 9,
+    "con": 17,
+    "int": 2,
+    "wis": 10,
+    "cha": 7
+  },
+  "skills": [
+    "Sigilo +5"
+  ],
+  "senses": "Percepción pasiva 10",
+  "languages": "ninguno",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Cocodrilo gigante",
+  "srd_es_page": 382
+}

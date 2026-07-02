@@ -1,0 +1,79 @@
+{
+  "id": "nightmare",
+  "slug": "nightmare",
+  "lang": "en",
+  "name": "Nightmare",
+  "reactions": [
+    {
+      "name": "Pursuit",
+      "text": "Trigger: Another creature the nalfeshnee can see ends its move within 120 feet of the nalfeshnee."
+    },
+    {
+      "name": "Response",
+      "text": "The nalfeshnee uses Teleport, but its des- tination space must be within 10 feet of the trigger- ing creature. Night Hag Night Hag"
+    }
+  ],
+  "speed": {
+    "walk": 60,
+    "fly": 90
+  },
+  "skills": "Deception +6, Insight +5, Perception +5, Stealth +5",
+  "senses": {
+    "passivePerception": 11
+  },
+  "languages": "Understands Abyssal, Common, and Infernal",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Confer Fire Resistance",
+      "text": "The nightmare can grant Re- sistance to Fire damage to a rider while it is on the nightmare."
+    },
+    {
+      "name": "Illumination",
+      "text": "The nightmare sheds Bright Light in a 10- foot radius and Dim Light for an additional 10 feet."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Hooves",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 13 (2d8 + 4) Bludgeoning damage plus 10 (3d6) Fire damage."
+    },
+    {
+      "name": "Ethereal Stride",
+      "text": "The nightmare and up to three willing creatures within 5 feet of it teleport to the Ethereal Plane from the Material Plane or vice versa."
+    }
+  ],
+  "srd_en_match_name": "Nightmare",
+  "srd_en_page": 308,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fiend",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 17,
+    "type": "+5 (15)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 112,
+    "roll": "15d8 + 45"
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 15,
+    "con": 16,
+    "int": 16,
+    "wis": 14,
+    "cha": 16
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 2,
+    "con": 3,
+    "int": 3,
+    "wis": 2,
+    "cha": 3
+  }
+}

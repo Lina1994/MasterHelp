@@ -1,0 +1,54 @@
+{
+  "id": "deer",
+  "slug": "deer",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Ciervo",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 4,
+    "roll": "1d8"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 16,
+    "con": 11,
+    "int": 2,
+    "wis": 14,
+    "cha": 5
+  },
+  "skills": [
+    "Percepción +4"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Ágil",
+      "text": "El ciervo no provoca ataques de oportunidad cuando se mueve para ponerse fuera del alcance de un enemigo."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Embestir",
+      "text": "Tirada de ataque cuerpo a cuerpo: +2, alcance 1,5 m. Acierto: 2 (1d4) de daño contundente."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Ciervo",
+  "srd_es_page": 382
+}

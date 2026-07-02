@@ -1,0 +1,63 @@
+{
+  "id": "dryad",
+  "slug": "dryad",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Dríade",
+  "type": "Feérico",
+  "size": "Mediano",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 16
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 22,
+    "roll": "5d8"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 12,
+    "con": 11,
+    "int": 14,
+    "wis": 15,
+    "cha": 18
+  },
+  "skills": [
+    "Percepción +4",
+    "Sigilo +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "elfo, silvano",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Hablar con las bestias y las plantas",
+      "text": "La dríade puede comunicarse con bestias y plantas como si tuvieran un idioma en común."
+    },
+    {
+      "name": "Resistencia mágica",
+      "text": "La dríade tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La dríade realiza un ataque con su latigazo de enredadera o su estallido de espinas y puede utilizar su lanzamiento de conjuros para lanzar hechizar monstruo."
+    },
+    {
+      "name": "Latigazo de enredadera",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 3 m. Acierto: 8 (1d8 + 4) de daño cortante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Dríade",
+  "srd_es_page": 317
+}

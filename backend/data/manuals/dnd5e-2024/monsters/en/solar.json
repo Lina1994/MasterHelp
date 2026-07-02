@@ -1,0 +1,118 @@
+{
+  "id": "solar",
+  "name": "Solar",
+  "slug": "solar",
+  "size": "Large",
+  "type": "celestial",
+  "alignment": "lawful good",
+  "armorClass": 21,
+  "hitPoints": {
+    "average": 264,
+    "roll": "24d10 + 144"
+  },
+  "speed": {
+    "walk": 50,
+    "fly": 150
+  },
+  "abilities": {
+    "str": 26,
+    "dex": 22,
+    "con": 26,
+    "int": 25,
+    "wis": 25,
+    "cha": 30
+  },
+  "saves": [
+    " INT +12 ",
+    " WIS +12 ",
+    " CHA +15 "
+  ],
+  "skills": [
+    " Perception +12 ",
+    " Persuasion +15 "
+  ],
+  "damageResistances": [
+    "radiant",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "poisoned"
+  ],
+  "senses": "truesight 120 ft., passive Perception 22",
+  "languages": "all languages, telepathy 120 ft.",
+  "challengeRating": "21",
+  "traits": [
+    {
+      "name": "Divine Awareness",
+      "text": "The solar knows if it hears a lie."
+    },
+    {
+      "name": "Exalted Restoration",
+      "text": "If the solar dies outside Mount Celestia, its body disappears, and it gains a new body instantly, reviving with all its Hit Points somewhere in Mount Celestia. Legendary Resistance (4/Day). If the solar fails a saving throw, it can choose to succeed instead."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The solar has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The solar makes two Flying Sword attacks. It can replace one attack with a use of Slaying Bow."
+    },
+    {
+      "name": "Flying Sword",
+      "text": "Melee or Ranged Attack Roll: +15, reach 10 ft. or range 120 ft. Hit: 22 (4d6 + 8) Slashing damage plus 36 (8d8) Radiant damage. Hit or Miss: The sword magically returns to the solar’s hand or hovers within 5 feet of the solar immediately after a ranged attack."
+    },
+    {
+      "name": "Slaying Bow",
+      "text": "Dexterity Saving Throw: DC 21, one crea- ture the solar can see within 600 feet. Failure: If the creature has 100 Hit Points or fewer, it dies. It other- wise takes 24 (4d8 + 6) Piercing damage plus 36 (8d8) Radiant damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The solar casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 25):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Evil and Good 1/Day Each: Commune, Control Weather, Dispel Evil and Good, Resurrection Bonus Actions Divine Aid (3/Day). The solar casts Cure Wounds (level 2 version), Lesser Restoration, or Remove Curse, using the same spellcasting ability as Spellcasting."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Teleport",
+      "text": "Magic: teleport up to 120 ft to unoccupied space."
+    },
+    {
+      "name": "Searing Burst (2)",
+      "text": "Each creature in 15 ft: 14 (4d6) radiant, DC 21 DEX half."
+    },
+    {
+      "name": "Blinding Gaze (3)",
+      "text": "Target WIS 21 or blinded 1 min."
+    }
+  ],
+  "proficiencyBonus": 7,
+  "experiencePoints": 33000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "srd_en_match_name": "Solar",
+  "srd_en_page": 323,
+  "subtype": "Angel",
+  "initiative": 20,
+  "savingThrows": {
+    "str": 8,
+    "dex": 6,
+    "con": 8,
+    "int": 7,
+    "wis": 7,
+    "cha": 10
+  },
+  "srd_en_soft_warnings": [
+    "soft: CR 21 but no legendaryActions[] (SRD v5.2 omits)"
+  ]
+}

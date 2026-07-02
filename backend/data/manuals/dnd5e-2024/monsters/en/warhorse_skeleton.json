@@ -1,0 +1,70 @@
+{
+  "id": "warhorse_skeleton",
+  "slug": "warhorse_skeleton",
+  "lang": "en",
+  "name": "Warhorse Skeleton",
+  "actions": [
+    {
+      "name": "Hooves",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 7 (1d6 + 4) Bludgeoning damage. If the target is a Large or smaller creature and the skeleton moved 20+ feet straight toward it immediately before the hit, the target has the Prone condition. Minotaur Skeleton"
+    }
+  ],
+  "speed": {
+    "walk": 50,
+    "fly": 150
+  },
+  "senses": {
+    "truesight": "120 ft",
+    "passivePerception": 24
+  },
+  "languages": "All; telepathy 120 ft.",
+  "challengeRating": "21",
+  "experiencePoints": 33000,
+  "proficiencyBonus": 7,
+  "skills": "Perception +14",
+  "traits": [
+    {
+      "name": "Divine Awareness",
+      "text": "The solar knows if it hears a lie."
+    },
+    {
+      "name": "Exalted Restoration",
+      "text": "If the solar dies outside Mount Celestia, its body disappears, and it gains a new body instantly, reviving with all its Hit Points somewhere in Mount Celestia. Legendary Resistance (4/Day). If the solar fails a saving throw, it can choose to succeed instead."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The solar has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "srd_en_match_name": "Warhorse Skeleton",
+  "srd_en_page": 323,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "undead",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 13,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 22,
+    "roll": "3d10 + 6"
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 12,
+    "con": 15,
+    "int": 2,
+    "wis": 8,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 1,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

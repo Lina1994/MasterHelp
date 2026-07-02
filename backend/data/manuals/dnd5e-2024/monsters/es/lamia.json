@@ -1,0 +1,83 @@
+{
+  "id": "lamia",
+  "slug": "lamia",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Lamia",
+  "type": "Infernal",
+  "size": "Grande",
+  "alignment": "caótico malvado",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 97,
+    "roll": "13d10 + 26"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 13,
+    "con": 15,
+    "int": 14,
+    "wis": 15,
+    "cha": 16
+  },
+  "skills": [
+    "Engaño +7",
+    "Perspicacia +4",
+    "Sigilo +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "abisal, común",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La lamia realiza dos ataques con sus garras. Puede sustituir un ataque por un uso de su toque corruptor."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 7 (1d8 + 3) de daño cortante más 7 (2d6) de daño psíquico."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "La lamia lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 13):"
+    },
+    {
+      "name": "A voluntad",
+      "text": "disfrazarse (puede presentarse como un b ípedo Grande o Mediano), ilusión menor 1/día cada uno: escudriñar, geas, imagen mayor"
+    },
+    {
+      "name": "Toque corruptor",
+      "text": "Tirada de salvación de Sabiduría: CD 13, una criatura que la lamia pueda ver a 1,5 m o menos. Fallo: 13 (3d8) de daño psíquico y el objetivo estará maldito durante 1 hora. Hasta que se levante la maldición, el objetivo tendrá los estados de envenenado y hechizado. Acciones adicionales"
+    },
+    {
+      "name": "Salto",
+      "text": "La lamia gasta 3 m de movimiento para saltar hasta 9 m. Lémur Lémur Infernal Mediano (diablo), legal malvado"
+    },
+    {
+      "name": "CA",
+      "text": "9 Iniciativa: −3 (7)"
+    },
+    {
+      "name": "PG",
+      "text": "9 (2d8)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "6 m"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Lamia",
+  "srd_es_page": 344
+}

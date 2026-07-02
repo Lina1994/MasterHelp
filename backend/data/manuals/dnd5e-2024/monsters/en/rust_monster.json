@@ -1,0 +1,65 @@
+{
+  "id": "rust_monster",
+  "slug": "rust_monster",
+  "lang": "en",
+  "name": "Rust Monster",
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +6, Stealth +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The rust monster makes one Bite attack and uses Antennae twice."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 5 (1d8 + 1) Piercing damage."
+    }
+  ],
+  "traits": [
+    {
+      "name": "Iron Scent",
+      "text": "The rust monster can pinpoint the location of ferrous metal within 30 feet of itself."
+    }
+  ],
+  "srd_en_match_name": "Rust Monster",
+  "srd_en_page": 317,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "monstrosity",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 15,
+    "type": "+8 (18)"
+  },
+  "initiative": 8,
+  "hitPoints": {
+    "average": 248,
+    "roll": "16d20 + 80"
+  },
+  "abilities": {
+    "str": 28,
+    "dex": 10,
+    "con": 20,
+    "int": 3,
+    "wis": 10,
+    "cha": 9
+  },
+  "savingThrows": {
+    "str": 9,
+    "dex": 4,
+    "con": 5,
+    "int": 0,
+    "wis": 4,
+    "cha": 0
+  }
+}

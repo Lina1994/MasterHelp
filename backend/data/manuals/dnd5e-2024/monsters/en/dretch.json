@@ -1,0 +1,67 @@
+{
+  "id": "dretch",
+  "name": "Dretch",
+  "slug": "dretch",
+  "size": "Small",
+  "type": "fiend (demon)",
+  "alignment": "chaotic evil",
+  "armorClass": 11,
+  "hitPoints": {
+    "average": 18,
+    "roll": "4d6 + 4"
+  },
+  "speed": {
+    "walk": 20
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 11,
+    "con": 12,
+    "int": 5,
+    "wis": 8,
+    "cha": 3
+  },
+  "damageResistances": [
+    "cold",
+    "fire",
+    "lightning",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 9",
+  "languages": "understands Abyssal but cannot speak",
+  "challengeRating": "1/4",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The dragon can breathe air and water."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1) Slashing damage. Fetid Cloud (1/Day). Constitution Saving Throw: DC 11, each creature in a 10-foot Emanation originating from the dretch. Failure: The target has the Poisoned condi- tion until the end of its next turn. While Poisoned, the creature can take either an action or a Bonus Action on its turn, not both, and it can’t take Reactions. Drider Drider"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 50,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "skills": "Perception +6, Stealth +10",
+  "srd_en_match_name": "Dretch",
+  "srd_en_page": 278,
+  "initiative": 6,
+  "savingThrows": {
+    "str": 7,
+    "dex": 0,
+    "con": 11,
+    "int": 0,
+    "wis": 7,
+    "cha": 1
+  },
+  "subtype": "Demon"
+}

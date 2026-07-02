@@ -1,0 +1,63 @@
+{
+  "id": "sprite",
+  "slug": "sprite",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Duende",
+  "type": "Feérico",
+  "size": "Diminuto",
+  "alignment": "neutral bueno",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 10,
+    "roll": "4d4"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 40
+  },
+  "abilities": {
+    "str": 3,
+    "dex": 18,
+    "con": 10,
+    "int": 14,
+    "wis": 13,
+    "cha": 11
+  },
+  "skills": [
+    "Percepción +3",
+    "Sigilo +8"
+  ],
+  "senses": "Percepción pasiva 13",
+  "languages": "común, elfo, silvano",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Espada aguja",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 6 (1d4 + 4) de daño perforante."
+    },
+    {
+      "name": "Arco encantador",
+      "text": "Tirada de ataque a distancia: +6, alcance 12/48 m. Acierto: 1 de daño perforante y el objetivo tendrá el estado de hechizado hasta el principio del siguiente turno del duende."
+    },
+    {
+      "name": "Invisibilidad",
+      "text": "El duende lanza invisibilidad sobre sí mismo sin necesidad de componentes y utiliza el Carisma como aptitud mágica."
+    },
+    {
+      "name": "Visión del corazón",
+      "text": "Tirada de salvación de Carisma: CD 10, una criatura que el duende pueda ver a 1,5 m o menos (los celestiales, infernales y muertos vivientes fallan automáticamente la tirada). Fallo: el duende descubre las emociones y el alineamiento del objetivo. Elemental de agua"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Duende",
+  "srd_es_page": 318
+}

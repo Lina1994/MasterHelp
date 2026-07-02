@@ -1,0 +1,87 @@
+{
+  "id": "pegasus",
+  "slug": "pegasus",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Pegaso",
+  "type": "Celestial",
+  "size": "Grande",
+  "alignment": "caótico bueno",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 59,
+    "roll": "7d10 + 21"
+  },
+  "speed": {
+    "walk": 60,
+    "fly": 90
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 15,
+    "con": 16,
+    "int": 10,
+    "wis": 15,
+    "cha": 13
+  },
+  "skills": [
+    "Percepción +6"
+  ],
+  "senses": "Percepción pasiva 16",
+  "languages": "entiende celestial, común, elfo y silvano, pero no",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Cascos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 7 (1d6 + 4) de daño contundente más 5 (2d4) de daño radiante. Pendencieros Pendenciero Humanoide Mediano o Pequeño, neutral"
+    },
+    {
+      "name": "CA",
+      "text": "12 Iniciativa: +1 (11)"
+    },
+    {
+      "name": "PG",
+      "text": "32 (5d8 + 10)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 15 +2 +2 Des 12 +1 +1 Con 14 +2 +2 Int 10 +0 +0 sab 10 +0 +0 Car 11 +0 +0"
+    },
+    {
+      "name": "Equipo",
+      "text": "armadura de cuero, ballesta pesada, maza"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 10"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común"
+    },
+    {
+      "name": "VD",
+      "text": "1/2 (100 PX; BC +2)"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Atacar en grupo",
+      "text": "El pendenciero tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del pendenciero se encuentra a 1,5 m de la criatura y no tiene el estado de incapacitado."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Pegaso",
+  "srd_es_page": 357
+}

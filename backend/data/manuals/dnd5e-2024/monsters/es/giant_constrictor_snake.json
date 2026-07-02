@@ -1,0 +1,58 @@
+{
+  "id": "giant_constrictor_snake",
+  "slug": "giant_constrictor_snake",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Serpiente constrictora gigante",
+  "type": "Bestia",
+  "size": "Enorme",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 60,
+    "roll": "8d12 + 8"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 12,
+    "int": 1,
+    "wis": 10,
+    "cha": 3
+  },
+  "skills": [
+    "Percepción +2"
+  ],
+  "senses": "visión ciega 3 m; Percepción pasiva 12",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La serpiente realiza un ataque de mordisco y emplea su acción de constreñir."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 3 m. Acierto: 11 (2d6 + 4) de daño perforante."
+    },
+    {
+      "name": "Constreñir",
+      "text": "Tirada de salvación de Fuerza: CD 14, una criatura Grande o más pequeña que la serpiente pueda ver a 3 m o menos. Fallo: 13 (2d8 + 4) de daño contundente y el objetivo tendrá el estado de agarrado (CD 14 para escapar)."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Serpiente constrictora gigante",
+  "srd_es_page": 394
+}

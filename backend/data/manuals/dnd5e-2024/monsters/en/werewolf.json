@@ -1,0 +1,74 @@
+{
+  "id": "werewolf",
+  "slug": "werewolf",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Werewolf",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 11,
+    "type": "natural armor (wolf form) or no armor"
+  },
+  "hitPoints": {
+    "average": 58,
+    "roll": "9d8+18"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 13,
+    "con": 14,
+    "int": 10,
+    "wis": 11,
+    "cha": 10
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [
+    "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered"
+  ],
+  "conditionImmunities": [],
+  "senses": "passive Perception 10",
+  "languages": "Common (can't speak in wolf form)",
+  "proficiencyBonus": 2,
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "traits": [
+    {
+      "name": "Shapechanger.",
+      "text": "The werewolf can use its action to polymorph into a wolf-humanoid hybrid or into a wolf, or back into its true form, which is humanoid. Its statistics, not including AC, are the same in each form. Equipment isn't transformed. Reverts to humanoid form if it dies."
+    },
+    {
+      "name": "Keen Hearing and Smell.",
+      "text": "Advantage on Perception checks that rely on hearing or smell."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack.",
+      "text": "In humanoid form: two attacks (one bite, one shortsword). In wolf/hybrid form: two bites."
+    },
+    {
+      "name": "Bite.",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) piercing damage. Humanoid target must succeed DC 12 CON or contract werewolf lycanthropy."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "subtype": "Chromatic",
+  "initiative": 2,
+  "srd_en_match_name": "Werewolf",
+  "srd_en_page": 336,
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

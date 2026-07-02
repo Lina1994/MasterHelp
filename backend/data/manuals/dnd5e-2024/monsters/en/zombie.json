@@ -1,0 +1,71 @@
+{
+  "id": "zombie",
+  "slug": "zombie",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Zombie",
+  "size": "Medium",
+  "type": "Undead",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 8
+  },
+  "hitPoints": {
+    "average": 22,
+    "roll": "3d8+9"
+  },
+  "speed": {
+    "walk": 20
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 6,
+    "con": 16,
+    "int": 3,
+    "wis": 6,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 1,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 8",
+  "languages": "understands the languages it knew in life but can't speak",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "traits": [
+    {
+      "name": "Undead Fortitude",
+      "text": "If damage reduces the zombie to 0 Hit Points, it makes a Constitution saving throw (DC 5 plus the damage taken) unless the damage is Radiant or from a Critical Hit. On a successful save, the zombie drops to 1 Hit Point instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Slam.",
+      "text": "Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 4 (1d6 + 1) bludgeoning damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 2,
+  "srd_en_match_name": "Zombie",
+  "srd_en_page": 340,
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

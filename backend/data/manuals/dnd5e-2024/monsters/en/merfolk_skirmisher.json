@@ -1,0 +1,65 @@
+{
+  "id": "merfolk_skirmisher",
+  "slug": "merfolk_skirmisher",
+  "lang": "en",
+  "name": "Merfolk Skirmisher",
+  "speed": {
+    "walk": 20
+  },
+  "skills": "Stealth +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The merfolk can breathe air and water."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ocean Spear",
+      "text": "Melee or Ranged Attack Roll: +2, reach 5 ft. or range 20/60 ft. Hit: 3 (1d6) Piercing damage plus 2 (1d4) Cold damage. If the target is a creature, its Speed decreases by 10 feet until the end of its next turn. Hit or"
+    },
+    {
+      "name": "Miss",
+      "text": "The spear magically returns to the merfolk’s hand immediately after a ranged attack. Merrow Merrow"
+    }
+  ],
+  "srd_en_match_name": "Merfolk Skirmisher",
+  "srd_en_page": 305,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "elemental",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 10,
+    "type": "+0 (10)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 17,
+    "roll": "5d6"
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 11,
+    "con": 10,
+    "int": 11,
+    "wis": 10,
+    "cha": 12
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 1
+  }
+}

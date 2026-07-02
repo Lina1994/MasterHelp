@@ -1,0 +1,55 @@
+{
+  "id": "panther",
+  "slug": "panther",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Pantera",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "speed": {
+    "walk": 50,
+    "climb": 40
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 16,
+    "con": 10,
+    "int": 3,
+    "wis": 14,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +4",
+    "Sigilo +7"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 6 (1d6 + 3) de daño cortante. Acciones adicionales"
+    },
+    {
+      "name": "Huida veloz",
+      "text": "La pantera realiza las acciones de destrabarse o esconderse."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Pantera",
+  "srd_es_page": 391
+}

@@ -1,0 +1,62 @@
+{
+  "id": "rat",
+  "slug": "rat",
+  "lang": "en",
+  "name": "Rat",
+  "senses": {
+    "blindsight": "30 ft",
+    "passivePerception": 12
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 1 Piercing damage. Raven"
+    }
+  ],
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +2",
+  "traits": [
+    {
+      "name": "Agile",
+      "text": "The rat doesn’t provoke an Opportunity Attack when it moves out of an enemy’s reach."
+    }
+  ],
+  "srd_en_match_name": "Rat",
+  "srd_en_page": 356,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "beast",
+  "subtype": "Dinosaur",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "abilities": {
+    "str": 12,
+    "dex": 15,
+    "con": 10,
+    "int": 2,
+    "wis": 9,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 1,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

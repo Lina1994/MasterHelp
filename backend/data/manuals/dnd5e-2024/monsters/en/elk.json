@@ -1,0 +1,62 @@
+{
+  "id": "elk",
+  "slug": "elk",
+  "lang": "en",
+  "name": "Elk",
+  "senses": {
+    "darkvision": "30 ft",
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ram",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3) Bludgeoning damage. If the target is a Large or smaller creature and the elk moved 20+ feet straight toward it immediately before the hit, the target takes an extra 3 (1d6) Bludgeoning damage and has the Prone condition. Flying Snake"
+    }
+  ],
+  "speed": {
+    "walk": 20,
+    "swim": 20
+  },
+  "skills": "Perception +1, Stealth +3",
+  "traits": [
+    {
+      "name": "Flyby",
+      "text": "The snake doesn’t provoke an Opportunity At- tack when it flies out of an enemy’s reach."
+    }
+  ],
+  "srd_en_match_name": "Elk",
+  "srd_en_page": 345,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 4,
+    "roll": "1d6 + 1"
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 15,
+    "con": 12,
+    "int": 2,
+    "wis": 14,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 1,
+    "int": 0,
+    "wis": 2,
+    "cha": 0
+  }
+}

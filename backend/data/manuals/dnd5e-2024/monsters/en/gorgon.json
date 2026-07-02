@@ -1,0 +1,99 @@
+{
+  "id": "gorgon",
+  "slug": "gorgon",
+  "lang": "en",
+  "name": "Gorgon",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Banish",
+      "text": "Charisma Saving Throw: DC 24, one creature the dragon can see within 120 feet. Failure: 24 (7d6) Force damage, and the target has the Incapacitated condition and is transported to a harmless demiplane until the start of the dragon’s next turn, at which point it reappears in an unoccupied space of the dragon’s choice within 120 feet of the dragon. Failure or Success: The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Guiding Light",
+      "text": "The dragon uses Spellcasting to cast Guiding Bolt (level 4 version)."
+    },
+    {
+      "name": "Pounce",
+      "text": "The dragon moves up to half its Speed, and it makes one Rend attack. Gorgon Gorgon"
+    }
+  ],
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +7",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 17
+  },
+  "languages": "None",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The dragon can breathe air and water. Legendary Resistance (4/Day, or 5/Day in Lair). If the dragon fails a saving throw, it can choose to suc- ceed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes three Rend attacks. It can replace one attack with a use of (A) Spellcasting to cast Guiding Bolt (level 4 version) or (B) Weaken- ing Breath."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +17 to hit, reach 15 ft. Hit: 19 (2d8 + 10) Slashing damage plus 9 (2d8) Fire damage. Fire Breath (Recharge 5–6). Dexterity Saving Throw: DC 24, each creature in a 90-foot Cone. Failure: 71 (13d10) Fire damage. Success: Half damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The dragon casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 24, +16 to hit with spell attacks):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Magic, Guiding Bolt (level 4 version), Shapechange (Beast or Humanoid form only, no Temporary Hit Points gained from the spell, and no Concentration or Temporary Hit Points required to maintain the spell) 1/Day Each: Flame Strike (level 6 version), Word of Re- call, Zone of Truth"
+    },
+    {
+      "name": "Weakening Breath",
+      "text": "Strength Saving Throw: DC 24, each creature that isn’t currently affected by this breath in a 90-foot Cone. Failure: The target has Disadvantage on Strength-based D20 Tests and subtracts 5 (1d10) from its damage rolls. It repeats the save at the end of each of its turns, ending the effect on itself on a suc- cess. After 1 minute, it succeeds automatically."
+    }
+  ],
+  "srd_en_match_name": "Gorgon",
+  "srd_en_page": 289,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "dragon",
+  "subtype": "Metallic",
+  "alignment": "Lawful Good",
+  "armorClass": {
+    "value": 22,
+    "type": "+16 (26)"
+  },
+  "initiative": 16,
+  "hitPoints": {
+    "average": 546,
+    "roll": "28d20 + 252"
+  },
+  "abilities": {
+    "str": 30,
+    "dex": 14,
+    "con": 29,
+    "int": 18,
+    "wis": 17,
+    "cha": 28
+  },
+  "savingThrows": {
+    "str": 10,
+    "dex": 9,
+    "con": 9,
+    "int": 4,
+    "wis": 10,
+    "cha": 9
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

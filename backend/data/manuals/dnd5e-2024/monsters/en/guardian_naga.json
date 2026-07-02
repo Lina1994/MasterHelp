@@ -1,0 +1,92 @@
+{
+  "id": "guardian_naga",
+  "slug": "guardian_naga",
+  "lang": "en",
+  "name": "Guardian Naga",
+  "speed": {
+    "walk": 30
+  },
+  "skills": "Athletics +6, Perception +4",
+  "senses": {
+    "passivePerception": 14
+  },
+  "languages": "Common",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The naga makes two Bite attacks. It can replace any attack with a use of Poisonous Spittle."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +8, reach 10 ft. Hit: 17 (2d12 + 4) Piercing damage plus 22 (4d10) Poison damage."
+    },
+    {
+      "name": "Poisonous Spittle",
+      "text": "Constitution Saving Throw: DC 16, one creature the naga can see within 60 feet. Failure: 31 (7d8) Poison damage, and the target has the Blinded condition until the start of the naga’s next turn. Success: Half damage only."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The naga casts one of the following spells, requiring no Somatic or Material components and using Wisdom as the spellcasting ability (spell save DC 16):"
+    },
+    {
+      "name": "At Will",
+      "text": "Thaumaturgy 1/Day Each: Clairvoyance, Cure Wounds (level 6 ver- sion), Flame Strike (level 6 version), Geas, True Seeing Guards Guard Medium or Small Humanoid, Neutral AC 16 Initiative +1 (11) HP 11 (2d8 + 2) Speed 30 ft. MOD SAVE MOD SAVE MOD SAVE Str 13 +1 +1 Dex 12 +1 +1 Con 12 +1 +1 Int 10 +0 +0 WIS 11 +0 +0 Cha 10 +0 +0 Skills Perception +2 Gear Chain Shirt, Shield, Spear Senses Passive Perception 12 Languages Common CR 1/8 (XP 25; PB +2) Actions"
+    },
+    {
+      "name": "Spear",
+      "text": "Melee or Ranged Attack Roll: +3, reach 5 ft. or range 20/60 ft. Hit: 4 (1d6 + 1) Piercing damage. Guard Captain Medium or Small Humanoid, Neutral AC 18 Initiative +4 (14) HP 75 (10d8 + 30) Speed 30 ft. MOD SAVE MOD SAVE MOD SAVE Str 18 +4 +4 Dex 14 +2 +2 Con 16 +3 +3 Int 12 +1 +1 WIS 14 +2 +2 Cha 13 +1 +1 Skills Athletics +6, Perception +4 Gear Breastplate, Javelins (6), Longsword, Shield Senses Passive Perception 14 Languages Common CR 4 (XP 1,100; PB +2) Actions"
+    },
+    {
+      "name": "Multiattack",
+      "text": "The guard makes two attacks, using Javelin or Longsword in any combination."
+    },
+    {
+      "name": "Javelin",
+      "text": "Melee or Ranged Attack Roll: +6, reach 5 ft. or range 30/120 ft. Hit: 14 (3d6 + 4) Piercing damage."
+    },
+    {
+      "name": "Longsword",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 15 (2d10 + 4) Slashing damage."
+    }
+  ],
+  "traits": [
+    {
+      "name": "Celestial Restoration",
+      "text": "If the naga dies, it returns to life in 1d6 days and regains all its Hit Points unless Dispel Evil and Good is cast on its remains."
+    }
+  ],
+  "srd_en_match_name": "Guardian Naga",
+  "srd_en_page": 293,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "aberration",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 11,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d8 + 2"
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 12,
+    "con": 12,
+    "int": 9,
+    "wis": 8,
+    "cha": 6
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 1,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "id": "sahuagin_warrior",
+  "slug": "sahuagin_warrior",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Guerrero sahuagin",
+  "type": "Infernal",
+  "size": "Mediano",
+  "alignment": "legal malvado",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 22,
+    "roll": "4d8 + 4"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 11,
+    "con": 12,
+    "int": 12,
+    "wis": 13,
+    "cha": 9
+  },
+  "skills": [
+    "Percepción +5"
+  ],
+  "senses": "visión en la oscuridad 36 m; Percepción",
+  "languages": "sahuagin",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Frenesí sangriento",
+      "text": "El sahuagin tiene ventaja en las tiradas de ataque contra cualquier criatura que no posea todos sus puntos de golpe."
+    },
+    {
+      "name": "Parcialmente anfibio",
+      "text": "El sahuagin puede respirar tanto dentro del agua como fuera de ella, pero necesita sumergirse cada 4 horas para evitar asfixiarse fuera del agua."
+    },
+    {
+      "name": "Telepatía con tiburones",
+      "text": "El sahuagin puede controlar mágicamente a los tiburones a 36 m o menos de él usando una telepatía especial."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El sahuagin realiza dos ataques con sus garras."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +3, alcance 1,5 m. Acierto: 4 (1d6 + 1) de daño cortante. Acciones adicionales"
+    },
+    {
+      "name": "Carga acuática",
+      "text": "El sahuagin nada hasta la mitad de su velocidad nadando en línea recta hacia un enemigo que pueda ver. Salamandra"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Guerrero sahuagin",
+  "srd_es_page": 367
+}

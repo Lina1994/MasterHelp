@@ -1,0 +1,100 @@
+{
+  "id": "death_knight",
+  "name": "Death Knight",
+  "slug": "death_knight",
+  "size": "Medium",
+  "type": "undead",
+  "alignment": "lawful evil",
+  "armorClass": 20,
+  "hitPoints": {
+    "average": 180,
+    "roll": "19d8 + 95"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 11,
+    "con": 20,
+    "int": 16,
+    "wis": 14,
+    "cha": 18
+  },
+  "saves": [
+    " STR +9 ",
+    " CON +10 ",
+    " WIS +7 ",
+    " CHA +9 "
+  ],
+  "skills": [
+    " Athletics +9 ",
+    " Intimidation +9 ",
+    " Perception +7 "
+  ],
+  "damageVulnerabilities": [
+    "radiant"
+  ],
+  "damageResistances": [
+    "necrotic",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "damageImmunities": [
+    "fear",
+    "poison"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "poisoned"
+  ],
+  "senses": "darkvision 120 ft., passive Perception 17",
+  "languages": "Common + two more",
+  "challengeRating": "17",
+  "traits": [
+    {
+      "name": "Magic Resistance",
+      "text": "Advantage on saves vs. spells and magical effects."
+    },
+    {
+      "name": "Spellcasting (Death Knight)",
+      "text": "CHA save DC 16. At will: Detect Magic, Command, Hold Person. 3/day each: Animate Dead, Cone of Cold. 1/day each: Dominate Monster, Wall of Ice."
+    },
+    {
+      "name": "Hellish Rejuvenation",
+      "text": "If reduced to 0 HP: returns in 1d4 days, gaining HP equal to half its max + 1d10 per day waited. Cannot be destroyed permanently unless bless spell cast at 9th level over corpse."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two longsword attacks or one with spell."
+    },
+    {
+      "name": "Longsword",
+      "text": "+9 to hit. Hit: 10 (2d8 + 4) slashing or 12 (2d10 + 4) two-handed, or 11 (2d8 + 4) slashing + 5 (1d10) necrotic on two-handed."
+    },
+    {
+      "name": "Hellfire Orb",
+      "text": "1/day; ranged spell attack +9, range 150 ft. Hit: 21 (4d8 + 4) fire + 14 (4d6) necrotic. DC 16 CON or half damage."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Rallying Blow",
+      "text": "Bonus: One ally within 30 ft gains advantage on attacks until end of next turn; 1 use per ally per combat."
+    },
+    {
+      "name": "Reaping Strike (Cost 2)",
+      "text": "One greatsword attack; on hit, target must save STR vs DC 16 or fall prone and lose 10 ft of movement."
+    }
+  ],
+  "proficiencyBonus": 6,
+  "experiencePoints": 18000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

@@ -1,0 +1,56 @@
+{
+  "id": "bat",
+  "slug": "bat",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Bat",
+  "size": "Tiny",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 1,
+    "roll": "1d4 - 1"
+  },
+  "speed": {
+    "walk": 5,
+    "fly": 40
+  },
+  "abilities": {
+    "str": 2,
+    "dex": 15,
+    "con": 8,
+    "int": 2,
+    "wis": 12,
+    "cha": 4
+  },
+  "senses": "blindsight 60 ft., passive Perception 11",
+  "languages": "—",
+  "challengeRating": "1/8",
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The baboon has Advantage on an attack roll against a creature if at least one of the baboon’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 1 Piercing damage. Black Bear"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 25,
+  "skills": "Perception +6",
+  "srd_en_match_name": "Bat",
+  "srd_en_page": 342,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

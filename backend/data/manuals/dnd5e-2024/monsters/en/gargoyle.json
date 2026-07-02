@@ -1,0 +1,71 @@
+{
+  "id": "gargoyle",
+  "slug": "gargoyle",
+  "lang": "en",
+  "name": "Gargoyle",
+  "skills": "Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 10
+  },
+  "languages": "Primordial (Terran)",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The gargoyle makes two Claw attacks."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d4 + 2) Slashing damage. Gelatinous Cube Gelatinous Cube"
+    }
+  ],
+  "speed": {
+    "walk": 15
+  },
+  "reactions": [
+    {
+      "name": "Shriek",
+      "text": "Trigger: A creature or a source of Bright Light moves within 30 feet of the shrieker. Response: The shrieker emits a shriek audible within 300 feet of itself for 1 minute or until the shrieker dies. Violet Fungus"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Flyby",
+      "text": "The gargoyle doesn’t provoke an Opportunity Attack when it flies out of an enemy’s reach."
+    }
+  ],
+  "srd_en_match_name": "Gargoyle",
+  "srd_en_page": 283,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "plant",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 5,
+    "type": "−5 (5)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "abilities": {
+    "str": 1,
+    "dex": 1,
+    "con": 10,
+    "int": 1,
+    "wis": 3,
+    "cha": 1
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

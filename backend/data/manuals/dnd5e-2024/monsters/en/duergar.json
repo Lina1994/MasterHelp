@@ -1,0 +1,67 @@
+{
+  "id": "duergar",
+  "slug": "duergar",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Duergar",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 16,
+    "type": "scale mail, shield"
+  },
+  "hitPoints": {
+    "average": 26,
+    "roll": "4d8+8"
+  },
+  "speed": {
+    "walk": 25
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 11,
+    "con": 14,
+    "int": 11,
+    "wis": 12,
+    "cha": 9
+  },
+  "savingThrows": {
+    "con": 4
+  },
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 120 ft., passive Perception 11",
+  "languages": "Dwarvish, Undercommon",
+  "proficiencyBonus": 2,
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "traits": [
+    {
+      "name": "Duergar Resilience.",
+      "text": "The duergar has advantage on saving throws against poison, spells, and illusions, and has resistance against poison damage."
+    },
+    {
+      "name": "Innate Spellcasting.",
+      "text": "The duergar's innate spellcasting ability is Intelligence. It can innately cast fog cloud, jump, and enlarge/reduce (each 1/day)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "War Pick.",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 6 (1d8 + 2) piercing damage, or 11 (2d8 + 2) if used with two hands to make a melee attack."
+    },
+    {
+      "name": "Javelin.",
+      "text": "Melee or Ranged Weapon Attack: +4 to hit, reach 5 ft. or range 30/120 ft. Hit: 5 (1d6 + 2) piercing damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

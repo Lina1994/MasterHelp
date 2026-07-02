@@ -1,0 +1,77 @@
+{
+  "id": "chuul",
+  "slug": "chuul",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Chuul",
+  "size": "Medium",
+  "type": "Aberration",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 16,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 84,
+    "roll": "11d8+33"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 10,
+    "con": 16,
+    "int": 7,
+    "wis": 11,
+    "cha": 9
+  },
+  "savingThrows": {
+    "con": 6
+  },
+  "skills": [
+    "Perception +4"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [
+    "poison"
+  ],
+  "conditionImmunities": [
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 10",
+  "languages": "Undercommon",
+  "proficiencyBonus": 2,
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The chuul can breathe air and water."
+    },
+    {
+      "name": "Sense Magic",
+      "text": "The chuul senses magic within 120 feet of itself. This trait otherwise works like the Detect Magic spell but isn’t itself magical."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The chuul makes two Pincer attacks and uses Paralyzing Tentacles."
+    },
+    {
+      "name": "Pincer",
+      "text": "Melee Attack Roll: +6, reach 10 ft. Hit: 9 (1d10 + 4) Bludgeoning damage. If the target is a Large or smaller creature, it has the Grappled condition (escape DC 14) from one of two pincers."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 0,
+  "srd_en_match_name": "Chuul",
+  "srd_en_page": 270
+}

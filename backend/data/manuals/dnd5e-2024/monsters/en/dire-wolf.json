@@ -1,0 +1,74 @@
+{
+  "id": "dire-wolf",
+  "slug": "dire-wolf",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Dire Wolf",
+  "size": "Large",
+  "type": "Beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 14,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 37,
+    "roll": "5d10+10"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 15,
+    "con": 15,
+    "int": 3,
+    "wis": 12,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 2,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  },
+  "skills": {
+    "perception": 3,
+    "stealth": 4
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 13",
+  "languages": "—",
+  "proficiencyBonus": 2,
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The wolf has Advantage on an attack roll against a creature if at least one of the wolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 8 (1d10 + 3)"
+    },
+    {
+      "name": "Piercing damage",
+      "text": "If the target is a Large or smaller crea- ture, it has the Prone condition. Draft Horse"
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 2,
+  "srd_en_match_name": "Dire-Wolf",
+  "srd_en_page": 344
+}

@@ -1,0 +1,121 @@
+{
+  "id": "succubus",
+  "slug": "succubus",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Súcubo",
+  "type": "Infernal",
+  "size": "Mediano",
+  "alignment": "neutral malvado",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 71,
+    "roll": "13d8 + 13"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 17,
+    "con": 13,
+    "int": 15,
+    "wis": 12,
+    "cha": 20
+  },
+  "skills": [
+    "Engaño +9",
+    "Percepción +5",
+    "Perspicacia +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "abisal, común, infernal; telepatía 18 m",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Forma de íncubo",
+      "text": "Cuando el súcubo finaliza un descanso largo, puede adoptar la forma de un íncubo y pasar a utilizar ese perfil en lugar de este."
+    },
+    {
+      "name": "Caparazón reflectante",
+      "text": "Si la tarasca es el objetivo de un conjuro proyectil mágico o de un conjuro que requiera una tirada de ataque a distancia, tira 1d6. Con un resultado de 1 a 5, la tarasca no se verá afectada. Con un 6, la tarasca no se verá afectada y reflejará el conjuro, convirtiendo al lanzador en el objetivo."
+    },
+    {
+      "name": "Monstruo de asedio",
+      "text": "La tarasca inflige el doble de daño a objetos y estructuras."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El súcubo realiza un ataque con su toque infernal y emplea su beso debilitador o su acción de hechizar."
+    },
+    {
+      "name": "Toque infernal",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 16 (2d10 + 5) de daño psíquico."
+    },
+    {
+      "name": "Beso debilitador",
+      "text": "Tirada de salvación de Constitución: CD 15, una criatura hechizada por el súcubo a 1,5 m o menos. Fallo: 13 (3d8) de daño psíquico. Éxito: la mitad del daño. Fallo o éxito: los puntos de golpe máximos del objetivo se reducirán en una cantidad igual al daño sufrido."
+    },
+    {
+      "name": "Hechizar",
+      "text": "El súcubo lanza dominar persona (versión de nivel 8), que no requiere componentes y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 15). Acciones adicionales"
+    },
+    {
+      "name": "Cambio de forma",
+      "text": "El súcubo adopta la forma de un humanoide Mediano o Pequeño, o recupera su verdadera forma. Su perfil es el mismo en todas las formas, excepto porque su velocidad volando solo está disponible en su forma verdadera. Cualquier equipo que vista o lleve no se transformará. Tarasca Tarasca Monstruosidad Gargantuesca (titán), sin alineamiento"
+    },
+    {
+      "name": "CA",
+      "text": "25 Iniciativa: +18 (28)"
+    },
+    {
+      "name": "PG",
+      "text": "697 (34d20 + 340)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "18 m, excavar 12 m, trepar 18 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 30 +10 +10 Des 11 +0 +9 Con 30 +10 +10 Int 3 −4 +5 sab 11 +0 +9 Car 11 +0 +9"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Percepción +9"
+    },
+    {
+      "name": "Resistencias",
+      "text": "contundente, cortante, perforante"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "fuego, veneno; asustado, ensordecido, envenenado, hechizado, paralizado"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión ciega 36 m; Percepción pasiva 19"
+    },
+    {
+      "name": "Idiomas",
+      "text": "ninguno"
+    },
+    {
+      "name": "VD",
+      "text": "30 (155 000 PX; BC +9)"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Súcubo",
+  "srd_es_page": 370
+}

@@ -1,0 +1,57 @@
+{
+  "id": "pixie_leader",
+  "name": "Pixie Empress",
+  "slug": "pixie_leader",
+  "size": "Tiny",
+  "type": "fey",
+  "alignment": "neutral good",
+  "armorClass": 15,
+  "hitPoints": {
+    "average": 39,
+    "roll": "12d4 + 12"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 20,
+    "con": 12,
+    "int": 16,
+    "wis": 16,
+    "cha": 18
+  },
+  "saves": [
+    " INT +6 ",
+    " WIS +6 ",
+    " CHA +7 "
+  ],
+  "skills": [
+    " Perception +6 ",
+    " Stealth +8 "
+  ],
+  "senses": "passive Perception 16",
+  "languages": "Common, Elvish, Sylvan",
+  "challengeRating": "3",
+  "traits": [
+    {
+      "name": "Magic Resistance",
+      "text": "Advantage on saves vs. spells."
+    },
+    {
+      "name": "Innate Spellcasting (Pixie)",
+      "text": "CHA save DC 13. At will: Druidcraft, Guidance. 1/day each: Sleep, Calm Emotions, Phantasmal Force."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Superior Bow",
+      "text": "+7 to hit, range 80/320 ft. Hit: 9 (1d10 + 4) piercing."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 700,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

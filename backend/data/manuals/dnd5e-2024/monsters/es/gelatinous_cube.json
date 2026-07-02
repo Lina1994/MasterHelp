@@ -1,0 +1,123 @@
+{
+  "id": "gelatinous_cube",
+  "slug": "gelatinous_cube",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Cubo gelatinoso",
+  "type": "Cieno",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 6
+  },
+  "initiative": -4,
+  "hitPoints": {
+    "average": 63,
+    "roll": "6d10 + 30"
+  },
+  "speed": {
+    "walk": 15
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 3,
+    "con": 20,
+    "int": 1,
+    "wis": 6,
+    "cha": 1
+  },
+  "senses": "visión ciega 18 m; Percepción pasiva 8",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Cubo de cieno",
+      "text": "El cubo ocupa su espacio por completo y es transparente. Otras criaturas podrán entrar en ese área, pero las que lo hagan serán sometidas a la acción de absorber del cubo y tendrán desventaja en la tirada de salvación. Las criaturas tienen cobertura completa en su interior y el cubo puede albergar una criatura Grande o hasta cuatro Medianas o Pequeñas a la vez. Como acción, una criatura a 1,5 m o menos del cubo puede tirar de una criatura u objeto y sacarlo del cubo si supera una prueba de Fuerza (Atletismo) con CD 12, y recibirá 10 (3d6) de daño de ácido."
+    },
+    {
+      "name": "Transparente",
+      "text": "Incluso cuando el cubo está a plena vista, una criatura debe superar una prueba de Sabiduría (Percepción) con CD 15 para detectarlo si no lo ha visto moverse o actuar."
+    },
+    {
+      "name": "Recuperación exaltada",
+      "text": "Si el deva muere fuera del Monte Celestia, su cuerpo desaparece, obtiene un cuerpo nuevo al instante y revive con todos sus puntos de golpe en algún lugar del Monte Celestia."
+    },
+    {
+      "name": "Resistencia mágica",
+      "text": "El deva tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pseudópodo",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 12 (3d6 + 2) de daño de ácido."
+    },
+    {
+      "name": "Absorber",
+      "text": "El cubo se mueve hasta su velocidad sin provocar ataques de oportunidad. Puede atravesar los espacios de criaturas Grandes o más pequeñas si tiene sitio en su interior para albergarlas (consulta el atributo Cubo de cieno). Tirada de salvación de Destreza: CD 12, todas las criaturas en cuyo espacio entre el cubo por primera vez durante este movimiento. Fallo: 10 (3d6) de daño de ácido y el objetivo será absorbido. Un objetivo absorbido sufrirá asfixia, no podrá lanzar conjuros con un componente verbal, tendrá el estado de apresado y sufrirá 10 (3d6) de daño de ácido al principio de cada turno del cubo. Cuando el cubo se mueva, el objetivo absorbido se moverá con él. Un objetivo absorbido puede intentar escapar utilizando una acción para realizar una prueba de Fuerza (Atletismo) con CD 12. Si la supera, escapará y entrará en el espacio sin ocupar más cercano. Éxito: la mitad del daño y el objetivo se moverá a un espacio sin ocupar a 1,5 m del cubo. Si no hay espacios sin ocupar, fallará la tirada de salvación. Deva Deva Celestial Mediano (ángel), legal bueno"
+    },
+    {
+      "name": "CA",
+      "text": "17 Iniciativa: +4 (14)"
+    },
+    {
+      "name": "PG",
+      "text": "229 (27d8 + 108)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m, volar 27 m (levitar)"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 18 +4 +4 Des 18 +4 +4 Con 18 +4 +4 Int 17 +3 +3 sab 20 +5 +9 Car 20 +5 +9"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Percepción +9, Perspicacia +9"
+    },
+    {
+      "name": "Resistencias",
+      "text": "radiante"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "asustado, cansancio, hechizado"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión en la oscuridad 36 m; Percepción pasiva 19"
+    },
+    {
+      "name": "Idiomas",
+      "text": "todos; telepatía 36 m"
+    },
+    {
+      "name": "VD",
+      "text": "10 (5900 PX; BC +4)"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El deva realiza dos ataques con su maza sagrada."
+    },
+    {
+      "name": "Maza sagrada",
+      "text": "Tirada de ataque cuerpo a cuerpo: +8, alcance 1,5 m. Acierto: 7 (1d6 + 4) de daño contundente más 18 (4d8) de daño radiante."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "El deva lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17):"
+    },
+    {
+      "name": "A voluntad",
+      "text": "cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Cubo gelatinoso",
+  "srd_es_page": 292
+}

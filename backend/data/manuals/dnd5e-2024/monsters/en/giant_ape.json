@@ -1,0 +1,81 @@
+{
+  "id": "giant_ape",
+  "slug": "giant_ape",
+  "lang": "en",
+  "name": "Giant Ape",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The frog can breathe air and water."
+    },
+    {
+      "name": "Standing Leap",
+      "text": "The frog’s Long Jump is up to 10 feet and its High Jump is up to 5 feet with or without a run- ning start."
+    },
+    {
+      "name": "Bloodied Fury",
+      "text": "The boar has Advantage on melee at- tack rolls while it is Bloodied."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The ape makes two Fist attacks."
+    },
+    {
+      "name": "Fist",
+      "text": "Melee Attack Roll: +9, reach 10 ft. Hit: 22 (3d10 + 6) Bludgeoning damage. Boulder Toss (Recharge 6). The ape hurls a boulder at a point it can see within 90 feet. Dexterity Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 17, each creature in a 5-foot-radius Sphere centered on that point. Failure: 24 (7d6) Bludgeoning damage. If the target is a Large or smaller creature, it has the Prone condition. Success: Half damage only. Bonus Actions"
+    },
+    {
+      "name": "Leap",
+      "text": "The ape jumps up to 30 feet by spending 10 feet of movement. Giant Badger"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "skills": "Perception +3",
+  "senses": {
+    "passivePerception": 8
+  },
+  "languages": "None",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "srd_en_match_name": "Giant Ape",
+  "srd_en_page": 346,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+5 (15)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 168,
+    "roll": "16d12 + 64"
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 14,
+    "con": 18,
+    "int": 5,
+    "wis": 12,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 2,
+    "con": 4,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

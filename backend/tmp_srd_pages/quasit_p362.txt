@@ -1,0 +1,90 @@
+hasta 10. El penalizador se puede eliminar lanzando
+el conjuro reparar sobre la armadura.
+Reacciones
+Dividirse. Detonante: mientras sea Grande o Mediano
+y tenga 10 o más puntos de golpe, el pudin pasa a es-
+tar maltrecho o recibe daño cortante o de relámpago.
+Respuesta: el pudin se divide en dos nuevos púdines
+negros. Cada nuevo pudin tiene un tamaño inferior
+al del pudin original y actúa en su orden de iniciativa.
+Los puntos de golpe del pudin original se dividen
+a partes iguales entre los nuevos púdines (redondeados
+hacia abajo).
+Quasit
+Quasit
+Infernal Diminuto (demonio), caótico malvado
+CA: 13 Iniciativa: +3 (13)
+PG: 25 (10d4)
+Velocidad: 12 m
+MOD. SALV. MOD. SALV. MOD. SALV.
+Fue 5 −3 −3 Des 17 +3 +3 Con 10 +0 +0
+Int 7 −2 −2 sab 10 +0 +0 Car 10 +0 +0
+Habilidades: Sigilo +5
+Resistencias: frío, fuego, relámpago
+Inmunidades: veneno; envenenado
+Sentidos: visión en la oscuridad 36 m; Percepción
+pasiva 10
+Idiomas: abisal, común
+VD: 1 (200 PX; BC +2)
+Atributos
+Resistencia mágica. El quasit tiene ventaja en las tiradas
+de salvación contra conjuros y otros efectos mágicos.
+Acciones
+Desgarro. Tirada de ataque cuerpo a cuerpo: +5, al-
+cance 1,5 m. Acierto: 5 (1d4 + 3) de daño cortante
+y el objetivo tendrá el estado de envenenado hasta
+el principio del siguiente turno del quasit.
+Asustar (1/día). Tirada de salvación de Sabiduría:
+CD 10, una criatura a 6 m o menos. Fallo: el objetivo
+tendrá el estado de asustado. Al final de cada uno de
+sus turnos, el objetivo repetirá la tirada de salvación
+y, si tiene éxito, se librará del efecto. Tras 1 minuto,
+tendrá éxito automáticamente.
+Cambio de forma. El quasit cambia de forma para pa-
+recerse a un ciempiés (velocidad 12 m, trepar 12 m),
+un murciélago (3 m, volar 12 m) o un sapo (12 m, nadar
+12 m), o recupera su auténtica forma. Su perfil es el
+mismo en todas las formas, excepto por su velocidad.
+Cualquier equipo que vista o lleve no se transformará.
+Invisibilidad. El quasit lanza invisibilidad sobre sí
+mismo sin necesidad de componentes y utiliza el
+Carisma como aptitud mágica.
+Quimera
+Quimera
+Monstruosidad Grande, caótica malvada
+CA: 14 Iniciativa: +0 (10)
+PG: 114 (12d10 + 48)
+Velocidad: 9 m, volar 18 m
+MOD. SALV. MOD. SALV. MOD. SALV.
+Fue 19 +4 +4 Des 11 +0 +0 Con 19 +4 +4
+Int 3 −4 −4 sab 14 +2 +2 Car 10 +0 +0
+Habilidades: Percepción +8
+Sentidos: visión en la oscuridad 18 m; Percepción
+pasiva 18
+Idiomas: entiende dracónico, pero no puede hablar
+VD: 6 (2300 PX; BC +3)
+Acciones
+Ataque múltiple. La quimera embiste una vez y realiza
+un ataque de mordisco y uno con sus garras. Puede
+sustituir el ataque con sus garras por un uso de su
+aliento de fuego, si está disponible.
+Garra. Tirada de ataque cuerpo a cuerpo: +7, alcance
+1,5 m. Acierto: 7 (1d6 + 4) de daño cortante.
+Embestir. Tirada de ataque cuerpo a cuerpo: +7, al-
+cance 1,5 m. Acierto: 10 (1d12 + 4) de daño contun-
+dente. Si el objetivo es una criatura Mediana o más
+pequeña, tendrá el estado de derribada.
+Mordisco. Tirada de ataque cuerpo a cuerpo: +7, al-
+cance 1,5 m. Acierto: 11 (2d6 + 4) de daño perforante
+o 18 (4d6 + 4) de daño perforante si la quimera tenía
+ventaja en la tirada de ataque.
+Aliento de fuego (recarga 5–6). Tirada de salvación
+de Destreza: CD 15, todas las criaturas en un cono de
+4,5 m. Fallo: 31 (7d8) de daño de fuego. Éxito: la mitad
+del daño.
+Rakshasa
+Rakshasa
+Infernal Mediano, legal malvado
+CA: 17 Iniciativa: +8 (18)
+PG: 221 (26d8 + 104)
+Velocidad: 12 m

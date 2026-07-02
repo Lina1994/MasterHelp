@@ -1,0 +1,90 @@
+{
+  "id": "spy",
+  "slug": "spy",
+  "lang": "en",
+  "source": "SRD 5.2 (pendiente)",
+  "name": "Spy",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Any alignment",
+  "armorClass": {
+    "value": 12
+  },
+  "hitPoints": {
+    "average": 27,
+    "roll": "6d8"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 15,
+    "con": 10,
+    "int": 13,
+    "wis": 12,
+    "cha": 14
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 6,
+    "con": 5,
+    "int": 3,
+    "wis": 5,
+    "cha": 6
+  },
+  "skills": {
+    "deception": 4,
+    "stealth": 4,
+    "persuasion": 4
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 11",
+  "languages": "Common, Thieves' Cant + 1 other",
+  "proficiencyBonus": 2,
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "traits": [
+    {
+      "name": "Fiendish Restoration",
+      "text": "If it dies, the naga returns to life in 1d6 days and regains all its Hit Points. Only a Wish spell can prevent this trait from functioning."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The naga makes three attacks, using Bite or Necrotic Ray in any combination."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +7, reach 10 ft. Hit: 7 (1d6 + 4) Piercing damage plus 14 (4d6) Poison damage."
+    },
+    {
+      "name": "Necrotic Ray",
+      "text": "Ranged Attack Roll: +6, range 60 ft. Hit: 21 (6d6) Necrotic damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The naga casts one of the following spells, requiring no Somatic or Material components and using Intelligence as the spellcasting ability (spell save DC 14):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Magic, Mage Hand, Minor Illusion, Wa- ter Breathing 2/Day Each: Detect Thoughts, Dimension Door, Hold Person (level 3 version), Lightning Bolt (level 4 version) Sprite Sprite"
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 3,
+  "srd_en_match_name": "Spy",
+  "srd_en_page": 326,
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Spy' did not match any of 3 chunk heads; using chunk[0] as best-effort"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "id": "will_o_wisp",
+  "slug": "will_o_wisp",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Fuego fatuo",
+  "type": "Muerto viviente",
+  "size": "Diminuto",
+  "alignment": "caótico malvado",
+  "armorClass": {
+    "value": 19
+  },
+  "initiative": 9,
+  "hitPoints": {
+    "average": 27,
+    "roll": "11d4"
+  },
+  "speed": {
+    "walk": 15,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 1,
+    "dex": 28,
+    "con": 10,
+    "int": 13,
+    "wis": 14,
+    "cha": 11
+  },
+  "senses": "visión en la oscuridad 36 m; Percepción",
+  "languages": "común y otro cualquiera",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Efímero",
+      "text": "El fuego fatuo no puede llevar puesto ni transportar nada."
+    },
+    {
+      "name": "Iluminación",
+      "text": "El fuego fatuo emite luz brillante en un radio de 6 m y luz tenue 6 m más allá."
+    },
+    {
+      "name": "Movimiento incorpóreo",
+      "text": "El fuego fatuo puede moverse a través de otras criaturas y objetos como si fueran terreno difícil. Recibe 5 (1d10) de daño de fuerza si acaba su turno dentro de un objeto."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Descarga",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 11 (2d8 + 2) de daño de relámpago. Acciones adicionales"
+    },
+    {
+      "name": "Desvanecerse",
+      "text": "El fuego fatuo y su luz tienen el estado de invisibles hasta que el fuego fatuo deje de concentrarse en este efecto, que terminará antes de tiempo inmediatamente después de que el fuego fatuo haga una tirada de ataque o use su acción de devorar vida."
+    },
+    {
+      "name": "Devorar vida",
+      "text": "Tirada de salvación de Constitución: CD 10, una criatura viva que el fuego fatuo pueda ver a 1,5 m o menos y tenga 0 puntos de golpe. Fallo: el objetivo muere y el fuego fatuo recupera 10 (3d6) puntos de golpe. Gárgola"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Fuego fatuo",
+  "srd_es_page": 326
+}

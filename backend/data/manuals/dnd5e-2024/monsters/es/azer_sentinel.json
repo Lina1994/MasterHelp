@@ -1,0 +1,127 @@
+{
+  "id": "azer_sentinel",
+  "slug": "azer_sentinel",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Centinela azer",
+  "type": "Elemental",
+  "size": "Mediano",
+  "alignment": "legal neutral",
+  "armorClass": {
+    "value": 17
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 39,
+    "roll": "6d8 + 12"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 12,
+    "con": 15,
+    "int": 12,
+    "wis": 13,
+    "cha": 10
+  },
+  "senses": "Percepción pasiva 11",
+  "languages": "primordial (ígneo)",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Aura de fuego",
+      "text": "Al final de cada turno del azer, todas las criaturas a elección del azer en una emanación de 1,5 m que se origina en él recibirán 5 (1d10) de daño de fuego, a menos que el azer tenga el estado de incapacitado."
+    },
+    {
+      "name": "Iluminación",
+      "text": "El azer emite luz brillante en un radio de 3 m y luz tenue 3 m más allá. las criaturas en una emanación de 1,5 m que se origina en él reciben 13 (3d8) de daño de fuego. Resistencia legendaria (3/día). El balor puede elegir tener éxito en una tirada de salvación que haya fallado."
+    },
+    {
+      "name": "Resistencia mágica",
+      "text": "El balor tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+    },
+    {
+      "name": "Últimos estertores",
+      "text": "El balor explota cuando muere."
+    },
+    {
+      "name": "Tirada de salvación de Destreza",
+      "text": "CD 20, todas las criaturas en una emanación de 9 m que se origina en el balor. Fallo: 31 (9d6) de daño de fuego más 31 (9d6) de daño de fuerza. Éxito: la mitad del daño. Fallo o éxito: si el balor muere fuera del Abismo, obtiene un cuerpo nuevo al instante y revive con todos sus puntos de golpe en algún lugar del Abismo."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Martillo ardiente",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 8 (1d10 + 3) de daño contundente más 3 (1d6) de daño de fuego. Balor Balor Infernal Enorme (demonio), caótico malvado"
+    },
+    {
+      "name": "CA",
+      "text": "19 Iniciativa: +14 (24)"
+    },
+    {
+      "name": "PG",
+      "text": "287 (23d12 + 138)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "12 m, volar 24 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 26 +8 +8 Des 15 +2 +2 Con 22 +6 +12 Int 20 +5 +5 sab 16 +3 +9 Car 22 +6 +6"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Percepción +9"
+    },
+    {
+      "name": "Resistencias",
+      "text": "frío, relámpago"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "fuego, veneno; asustado, envenenado, hechizado"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión verdadera 36 m; Percepción pasiva 19"
+    },
+    {
+      "name": "Idiomas",
+      "text": "abisal; telepatía 36 m"
+    },
+    {
+      "name": "VD",
+      "text": "19 (22 000 PX; BC +6)"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El balor realiza un ataque con su látigo de llamas y un ataque con su hoja de relámpago."
+    },
+    {
+      "name": "Hoja de relámpago",
+      "text": "Tirada de ataque cuerpo a cuerpo: +14, alcance 3 m. Acierto: 21 (3d8 + 8) de daño de fuerza más 22 (4d10) de daño de relámpago y el objetivo no puede llevar a cabo reacciones hasta el principio del siguiente turno del balor."
+    },
+    {
+      "name": "Látigo de llamas",
+      "text": "Tirada de ataque cuerpo a cuerpo: +14, alcance 9 m. Acierto: 18 (3d6 + 8) de daño de fuerza más 17 (5d6) de daño de fuego. Si el objetivo es una criatura Enorme o más pequeña, el balor la atrae hasta 7,5 m en línea recta hacia él y dicho objetivo tiene el estado de derribado. Acciones adicionales"
+    },
+    {
+      "name": "Teletransporte",
+      "text": "El balor se teletransporta a sí mismo o a un demonio voluntario que esté a 3 m o menos de él hasta 18 m a un espacio sin ocupar que el balor pueda ver. Bandidos Bandido Humanoide Mediano o Pequeño, neutral Fue 11 +0 +0 Des 12 +1 +1 Con 12 +1 +1 Int 10 +0 +0 sab 10 +0 +0 Car 10 +0 +0"
+    },
+    {
+      "name": "Equipo",
+      "text": "armadura de cuero, ballesta ligera, cimitarra"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Centinela azer",
+  "srd_es_page": 286
+}

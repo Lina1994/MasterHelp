@@ -1,0 +1,54 @@
+{
+  "id": "giant_eagle",
+  "slug": "giant_eagle",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Águila gigante",
+  "type": "Celestial",
+  "size": "Grande",
+  "alignment": "neutral bueno",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 26,
+    "roll": "4d10 + 4"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 80
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 17,
+    "con": 13,
+    "int": 8,
+    "wis": 14,
+    "cha": 10
+  },
+  "skills": [
+    "Percepción +6"
+  ],
+  "senses": "Percepción pasiva 16",
+  "languages": "celestial; entiende común y primordial (aurano),",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El águila realiza dos ataques de desgarro."
+    },
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 5 (1d4 + 3) de daño cortante más 3 (1d6) de daño radiante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Águila gigante",
+  "srd_es_page": 376
+}

@@ -1,0 +1,58 @@
+{
+  "id": "hydra",
+  "slug": "hydra",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Hidra",
+  "type": "Monstruosidad",
+  "size": "Enorme",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 184,
+    "roll": "16d12 + 80"
+  },
+  "speed": {
+    "walk": 40,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 20,
+    "dex": 12,
+    "con": 20,
+    "int": 2,
+    "wis": 10,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +6"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "8",
+  "experiencePoints": 3900,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Aguantar la respiración",
+      "text": "La hidra puede aguantar la respiración durante 1 hora."
+    },
+    {
+      "name": "Cabezas reactivas",
+      "text": "Por cada cabeza que tenga además de la primera, la hidra obtiene una reacción adicional que solo puede usar para realizar ataques de oportunidad."
+    },
+    {
+      "name": "Múltiples cabezas",
+      "text": "La hidra tiene cinco cabezas. Si recibe 25 o más de daño en un solo turno, perderá una de sus cabezas. Si todas sus cabezas mueren, la hidra morirá. Al final de cada uno de sus turnos, mientras tenga al menos una cabeza viva, a la hidra le crecerán dos cabezas por cada cabeza que haya muerto desde su último turno, a menos que haya recibido daño de fuego desde su último turno. Cuando le crecen nuevas cabezas, la hidra recupera 20 puntos de golpe."
+    }
+  ],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Hidra",
+  "srd_es_page": 337
+}

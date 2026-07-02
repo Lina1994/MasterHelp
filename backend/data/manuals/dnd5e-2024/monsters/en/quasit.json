@@ -1,0 +1,81 @@
+{
+  "id": "quasit",
+  "name": "Quasit",
+  "slug": "quasit",
+  "size": "Tiny",
+  "type": "fiend (demon)",
+  "alignment": "chaotic evil",
+  "armorClass": 13,
+  "hitPoints": {
+    "average": 7,
+    "roll": "3d4"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 17,
+    "con": 10,
+    "int": 7,
+    "wis": 10,
+    "cha": 10
+  },
+  "skills": [
+    " Stealth +5 "
+  ],
+  "damageResistances": [
+    "cold",
+    "fire",
+    "lightning",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "poisoned"
+  ],
+  "senses": "darkvision 120 ft., passive Perception 10",
+  "languages": "Abyssal, Common",
+  "challengeRating": "1",
+  "traits": [
+    {
+      "name": "Magic Resistance",
+      "text": "The quasit has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3) Slashing damage, and the target has the Poisoned con- dition until the start of the quasit’s next turn."
+    },
+    {
+      "name": "Invisibility",
+      "text": "The quasit casts Invisibility on itself, requir- ing no spell components and using Charisma as the spellcasting ability. Scare (1/Day). Wisdom Saving Throw: DC 10, one creature within 20 feet. Failure: The target has the"
+    },
+    {
+      "name": "Frightened condition",
+      "text": "At the end of each of its turns, the target repeats the save, ending the effect on itself on a success. After 1 minute, it succeeds automatically."
+    },
+    {
+      "name": "Shape-Shift",
+      "text": "The quasit shape-shifts to resemble a bat (Speed 10 ft., Fly 40 ft.), a centipede (40 ft., Climb 40 ft.), or a toad (40 ft., Swim 40 ft.), or it returns to its true form. Its game statistics are the same in each form, except for its Speed. Any equipment it is wearing or carrying isn’t transformed. Rakshasa Rakshasa"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 200,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "srd_en_match_name": "Quasit",
+  "srd_en_page": 314,
+  "subtype": "Demon",
+  "initiative": 3,
+  "savingThrows": {
+    "str": 0,
+    "dex": 3,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "id": "ape",
+  "slug": "ape",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Ape",
+  "size": "Medium",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d8 + 6"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 20
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 14,
+    "con": 14,
+    "int": 6,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    " Athletics +5 ",
+    " Perception +3 "
+  ],
+  "senses": "passive Perception 13",
+  "languages": "—",
+  "challengeRating": "1/2",
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The ape makes two Fist attacks."
+    },
+    {
+      "name": "Fist",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3) Bludgeoning damage. Rock (Recharge 6). Ranged Attack Roll: +5, range 25/50 ft. Hit: 10 (2d6 + 3) Bludgeoning damage. Archelon"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Undead Fortitude",
+      "text": "If damage reduces the zombie to 0 Hit Points, it makes a Constitution saving throw (DC 5 plus the damage taken) unless the damage is Radiant or from a Critical Hit. On a successful save, the zombie drops to 1 Hit Point instead."
+    }
+  ],
+  "srd_en_match_name": "Ape",
+  "srd_en_page": 341,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 4,
+    "dex": 0,
+    "con": 4,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

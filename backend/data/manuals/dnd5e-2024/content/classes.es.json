@@ -1,0 +1,6 @@
+{
+  "id": "classes",
+  "title": "Clases",
+  "format": "markdown",
+  "markdown": "# Clases\n\nLa **clase** de un personaje es su profesión — el núcleo de quién es como aventurero. El SRD 5.2 contiene **12 clases de personaje**:\n\n- **Bárbaro**, **Bardo**, **Clérigo**, **Druida**, **Guerrero**, **Monje**, **Paladín**, **Explorador**, **Pícaro**, **Hechicero**, **Brujo** y **Mago**.\n\nCada clase define:\n\n- **Dado de Golpe** — el dado que tiras para los puntos de golpe en cada nivel.\n- **Característica principal** — la puntuación de característica en la que más confías.\n- **Tiradas de Salvación** — dos características en las que te vuelves competente.\n- **Competencias** — armaduras, armas, herramientas y habilidades.\n- **Rasgos de clase** — capacidades obtenidas en ciertos niveles (por ejemplo, Furia, Lanzamiento de Conjuros, Ataque Furtivo).\n- **Subclase** — elegida en el nivel 1, 2 o 3 según la clase.\n\n## Lanzamiento de conjuros\n\nDe las 12 clases, **8** son lanzadores de conjuros: Bardo, Clérigo, Druida, Paladín, Explorador, Hechicero, Brujo y Mago. Cada lanzador usa una progresión distinta — completa, mitad, tercio o magia de pacto.\n\nConsulta la página **Clases** para ver la progresión completa de una clase, los rasgos nivel a nivel y las subclases."
+}

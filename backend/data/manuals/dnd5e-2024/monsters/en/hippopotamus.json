@@ -1,0 +1,64 @@
+{
+  "id": "hippopotamus",
+  "slug": "hippopotamus",
+  "lang": "en",
+  "name": "Hippopotamus",
+  "senses": {
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Hold Breath",
+      "text": "The hippopotamus can hold its breath for 10 minutes."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3) Piercing damage. Giant Wolf Spider"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "skills": "Perception +3",
+  "srd_en_match_name": "Hippopotamus",
+  "srd_en_page": 352,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 9,
+    "roll": "2d8"
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 17,
+    "con": 10,
+    "int": 4,
+    "wis": 12,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 3,
+    "con": 0,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

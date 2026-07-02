@@ -1,0 +1,93 @@
+{
+  "id": "young_bronze_dragon",
+  "slug": "young_bronze_dragon",
+  "lang": "en",
+  "name": "Young Bronze Dragon",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The dragon can breathe air and water."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes three Rend attacks. It can replace one attack with a use of Repulsion Breath."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +8, reach 10 ft. Hit: 16 (2d10 + 5) Slashing damage. Lightning Breath (Recharge 5–6). Dexterity Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 15, each creature in a 60-foot-long, 5-foot- wide Line. Failure: 49 (9d10) Lightning damage. Suc- cess: Half damage."
+    },
+    {
+      "name": "Repulsion Breath",
+      "text": "Strength Saving Throw: DC 15, each creature in a 30-foot Cone. Failure: The target is pushed up to 40 feet straight away from the dragon and has the Prone condition. Adult Bronze Dragon"
+    }
+  ],
+  "speed": {
+    "walk": 40,
+    "fly": 80,
+    "swim": 40
+  },
+  "skills": "Insight +7, Perception +12, Stealth +5",
+  "senses": {
+    "blindsight": "60 ft."
+  },
+  "languages": "Common, Draconic",
+  "challengeRating": "15",
+  "experiencePoints": 13000,
+  "proficiencyBonus": 5,
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Guiding Light",
+      "text": "The dragon uses Spellcasting to cast Guiding Bolt (level 2 version)."
+    },
+    {
+      "name": "Pounce",
+      "text": "The dragon moves up to half its Speed, and it makes one Rend attack."
+    },
+    {
+      "name": "Thunderclap",
+      "text": "Constitution Saving Throw: DC 17, each creature in a 20-foot-radius Sphere centered on a point the dragon can see within 90 feet. Failure: 10 (3d6)"
+    }
+  ],
+  "srd_en_match_name": "Young Bronze Dragon",
+  "srd_en_page": 267,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "dragon",
+  "subtype": "Metallic",
+  "alignment": "Lawful Good",
+  "armorClass": {
+    "value": 17,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 142,
+    "roll": "15d10 + 60"
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 10,
+    "con": 19,
+    "int": 14,
+    "wis": 13,
+    "cha": 17
+  },
+  "savingThrows": {
+    "str": 5,
+    "dex": 3,
+    "con": 4,
+    "int": 2,
+    "wis": 4,
+    "cha": 3
+  }
+}

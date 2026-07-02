@@ -1,0 +1,55 @@
+{
+  "id": "cloud_giant",
+  "slug": "cloud_giant",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Gigante de las nubes",
+  "type": "Gigante",
+  "size": "Enorme",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 200,
+    "roll": "16d12 + 96"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 20
+  },
+  "abilities": {
+    "str": 27,
+    "dex": 10,
+    "con": 22,
+    "int": 12,
+    "wis": 16,
+    "cha": 16
+  },
+  "skills": [
+    "Percepción +11",
+    "Perspicacia +7"
+  ],
+  "senses": "Percepción pasiva 21",
+  "languages": "común, gigante",
+  "challengeRating": "9",
+  "experiencePoints": 5000,
+  "proficiencyBonus": 4,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El gigante realiza dos ataques con su maza atronadora o su nube de tormenta en cualquier combinación. Puede sustituir un ataque por un uso de su lanzamiento de conjuros para lanzar nube de oscurecimiento."
+    },
+    {
+      "name": "Maza atronadora",
+      "text": "Tirada de ataque cuerpo a cuerpo: +12, alcance 3 m. Acierto: 21 (3d8 + 8) de daño contundente más 7 (2d6) de daño de trueno."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Gigante de las nubes",
+  "srd_es_page": 328
+}

@@ -1,0 +1,55 @@
+{
+  "id": "giant_rat",
+  "slug": "giant_rat",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Rata gigante",
+  "type": "Bestia",
+  "size": "Pequeña",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 7,
+    "roll": "2d6"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 7,
+    "dex": 16,
+    "con": 11,
+    "int": 2,
+    "wis": 10,
+    "cha": 4
+  },
+  "skills": [
+    "Percepción +2"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Atacar en manada",
+      "text": "La rata tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados de la rata se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 5 (1d4 + 3) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Rata gigante",
+  "srd_es_page": 393
+}

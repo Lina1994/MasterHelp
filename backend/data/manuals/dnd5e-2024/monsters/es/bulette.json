@@ -1,0 +1,98 @@
+{
+  "id": "bulette",
+  "slug": "bulette",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Bulette",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 17
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 94,
+    "roll": "9d10 + 45"
+  },
+  "speed": {
+    "walk": 40,
+    "burrow": 40
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 11,
+    "con": 21,
+    "int": 2,
+    "wis": 10,
+    "cha": 5
+  },
+  "skills": [
+    "Percepción +6"
+  ],
+  "senses": "sentir vibraciones 36 m, visión en la oscuridad",
+  "languages": "ninguno",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El bulette realiza dos ataques de mordisco."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 17 (2d12 + 4) de daño perforante."
+    },
+    {
+      "name": "Salto mortífero",
+      "text": "El bulette gasta 1,5 m de movimiento para saltar a un espacio a 4,5 m o menos que contenga una o varias criaturas Grandes o más pequeñas. Tirada de salvación de Destreza: CD 15, todas las criaturas situadas en el espacio de destino del bulette. Fallo: 19 (3d12) de daño contundente y el objetivo tiene el estado de derribado. Éxito: la mitad del daño y el objetivo es empujado 1,5 m respecto al bulette en línea recta. Acciones adicionales"
+    },
+    {
+      "name": "Salto",
+      "text": "El bulette gasta 3 m de movimiento para saltar hasta 9 m. Caballero Caballero Humanoide Mediano o Pequeño, neutral"
+    },
+    {
+      "name": "CA",
+      "text": "18 Iniciativa: +0 (10)"
+    },
+    {
+      "name": "PG",
+      "text": "52 (8d8 + 16)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 16 +3 +3 Des 11 +0 +0 Con 14 +2 +4 Int 11 +0 +0 sab 11 +0 +2 Car 15 +2 +2"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "asustado"
+    },
+    {
+      "name": "Equipo",
+      "text": "armadura de placas, ballesta pesada, espadón"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 10"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común y otro cualquiera"
+    },
+    {
+      "name": "VD",
+      "text": "3 (700 PX; BC +2)"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Bulette",
+  "srd_es_page": 289
+}

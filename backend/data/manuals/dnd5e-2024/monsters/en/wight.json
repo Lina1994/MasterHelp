@@ -1,0 +1,93 @@
+{
+  "id": "wight",
+  "slug": "wight",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Wight",
+  "size": "Medium",
+  "type": "Undead",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 14,
+    "type": "studded leather"
+  },
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d8+18"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 14,
+    "con": 16,
+    "int": 11,
+    "wis": 13,
+    "cha": 16
+  },
+  "savingThrows": {
+    "str": 2,
+    "dex": 2,
+    "con": 3,
+    "int": 0,
+    "wis": 1,
+    "cha": 2
+  },
+  "skills": [
+    "Perception +3",
+    "Stealth +4"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "acid",
+    "cold",
+    "fire",
+    "lightning"
+  ],
+  "damageImmunities": [],
+  "conditionImmunities": [
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 11",
+  "languages": "Common + 1 other",
+  "proficiencyBonus": 2,
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "traits": [
+    {
+      "name": "Sunlight Sensitivity",
+      "text": "While in sunlight, the wight has Disadvantage on ability checks and attack rolls."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The wight makes two attacks, using Ne- crotic Sword or Necrotic Bow in any combination. It can replace one attack with a use of Life Drain."
+    },
+    {
+      "name": "Necrotic Sword",
+      "text": "Melee Attack Roll: +4, reach 5 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "6 (1d8 + 2) Slashing damage plus 4 (1d8) Ne- crotic damage."
+    },
+    {
+      "name": "Necrotic Bow",
+      "text": "Ranged Attack Roll: +4, range 150/600 ft. Hit: 6 (1d8 + 2) Piercing damage plus 4 (1d8) Necrotic damage."
+    },
+    {
+      "name": "Life Drain",
+      "text": "Constitution Saving Throw: DC 13, one creature within 5 feet. Failure: 6 (1d8 + 2) Necrotic damage, and the target’s Hit Point maximum decreases by an amount equal to the damage taken. A Humanoid slain by this attack rises 24 hours later as a Zombie under the wight’s control, unless the Hu- manoid is restored to life or its body is destroyed. The wight can have no more than twelve zombies under its control at a time. Will-o’-Wisp Will-o’-Wisp"
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 4,
+  "srd_en_match_name": "Wight",
+  "srd_en_page": 338
+}

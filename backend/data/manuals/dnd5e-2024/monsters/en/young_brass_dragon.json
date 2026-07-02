@@ -1,0 +1,71 @@
+{
+  "id": "young_brass_dragon",
+  "slug": "young_brass_dragon",
+  "lang": "en",
+  "name": "Young Brass Dragon",
+  "speed": {
+    "walk": 40,
+    "burrow": 30,
+    "fly": 80
+  },
+  "skills": "History +7, Perception +11, Persuasion +8, Stealth +5",
+  "senses": {
+    "blindsight": "60 ft."
+  },
+  "languages": "Common, Draconic",
+  "challengeRating": "13",
+  "experiencePoints": 10000,
+  "proficiencyBonus": 5,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes three Rend attacks. It can replace two attacks with a use of Sleep Breath."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +7, reach 10 ft. Hit: 15 (2d10 + 4) Slashing damage. Fire Breath (Recharge 5–6). Dexterity Saving Throw: DC 14, each creature in a 40-foot-long, 5-foot- wide Line. Failure: 38 (11d6) Fire damage. Success: Half damage."
+    },
+    {
+      "name": "Sleep Breath",
+      "text": "Constitution Saving Throw: DC 14, each creature in a 30-foot Cone. Failure: The target has the Incapacitated condition until the end of its next turn, at which point it repeats the save. Second Failure: The target has the Unconscious condition for 1 minute. This effect ends for the target if it takes damage or a creature within 5 feet of it takes an action to wake it. Adult Brass Dragon"
+    }
+  ],
+  "traits": [
+    {
+      "name": "",
+      "text": "Legendary Resistance (3/Day, or 4/Day in Lair). If the dragon fails a saving throw, it can choose to suc- ceed instead."
+    }
+  ],
+  "srd_en_match_name": "Young Brass Dragon",
+  "srd_en_page": 265,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "dragon",
+  "subtype": "Metallic",
+  "alignment": "Chaotic Good",
+  "armorClass": {
+    "value": 15,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 22,
+    "roll": "4d8 + 4"
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 10,
+    "con": 13,
+    "int": 10,
+    "wis": 11,
+    "cha": 13
+  },
+  "savingThrows": {
+    "str": 2,
+    "dex": 2,
+    "con": 1,
+    "int": 0,
+    "wis": 2,
+    "cha": 1
+  }
+}

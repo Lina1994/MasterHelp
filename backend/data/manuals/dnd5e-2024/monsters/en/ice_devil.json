@@ -1,0 +1,75 @@
+{
+  "id": "ice_devil",
+  "slug": "ice_devil",
+  "lang": "en",
+  "name": "Ice Devil",
+  "speed": {
+    "walk": 20,
+    "fly": 40
+  },
+  "skills": "Insight +7, Perception +7, Persuasion +9",
+  "senses": {
+    "blindsight": "120 ft",
+    "passivePerception": 17
+  },
+  "languages": "Infernal; telepathy 120 ft.",
+  "challengeRating": "14",
+  "experiencePoints": 11500,
+  "proficiencyBonus": 5,
+  "traits": [
+    {
+      "name": "Diabolical Restoration",
+      "text": "If the devil dies outside the Nine Hells, its body disappears in sulfurous smoke, and it gains a new body instantly, reviving with all its Hit Points somewhere in the Nine Hells."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The devil has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The devil makes three Ice Spear attacks. It can replace one attack with a Tail attack."
+    },
+    {
+      "name": "Ice Spear",
+      "text": "Melee or Ranged Attack Roll: +10, reach 5 ft. or range 30/120 ft. Hit: 14 (2d8 + 5) Piercing damage plus 10 (3d6) Cold damage. Until the end of its next turn, the target can’t take a Bonus Action or Reaction, its Speed decreases by 10 feet, and it can move or take one action on its turn, not both. Hit or Miss: The spear magically returns to the devil’s hand immediately after a ranged attack."
+    },
+    {
+      "name": "Tail",
+      "text": "Melee Attack Roll: +10, reach 10 ft. Hit: 15 (3d6 + 5) Bludgeoning damage plus 18 (4d8) Cold damage. Ice Wall (Recharge 6). The devil casts Wall of Ice (level 8 version), requiring no spell components and using In- telligence as the spellcasting ability (spell save DC 17). Imp Imp"
+    }
+  ],
+  "srd_en_match_name": "Ice Devil",
+  "srd_en_page": 297,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "monstrosity",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 15,
+    "type": "+4 (14)"
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 184,
+    "roll": "16d12 + 80"
+  },
+  "abilities": {
+    "str": 20,
+    "dex": 12,
+    "con": 20,
+    "int": 2,
+    "wis": 10,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 5,
+    "dex": 1,
+    "con": 5,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "subtype": "Devil"
+}

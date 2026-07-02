@@ -1,0 +1,50 @@
+{
+  "id": "giant_crab",
+  "slug": "giant_crab",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Cangrejo gigante",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 13,
+    "con": 11,
+    "int": 1,
+    "wis": 9,
+    "cha": 3
+  },
+  "skills": [
+    "Sigilo +3"
+  ],
+  "senses": "visión ciega 9 m; Percepción pasiva 9",
+  "languages": "ninguno",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Anfibio",
+      "text": "El cangrejo puede respirar tanto dentro como fuera del agua."
+    }
+  ],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Cangrejo gigante",
+  "srd_es_page": 381
+}

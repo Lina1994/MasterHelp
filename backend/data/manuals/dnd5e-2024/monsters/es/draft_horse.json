@@ -1,0 +1,46 @@
+{
+  "id": "draft_horse",
+  "slug": "draft_horse",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Caballo de tiro",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 15,
+    "roll": "2d10 + 4"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 10,
+    "con": 15,
+    "int": 2,
+    "wis": 11,
+    "cha": 7
+  },
+  "senses": "Percepción pasiva 10",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Cascos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 6 (1d4 + 4) de daño contundente."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Caballo de tiro",
+  "srd_es_page": 380
+}

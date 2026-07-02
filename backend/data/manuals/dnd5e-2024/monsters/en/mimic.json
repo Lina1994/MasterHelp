@@ -1,0 +1,84 @@
+{
+  "id": "mimic",
+  "slug": "mimic",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Mimic",
+  "size": "Medium",
+  "type": "Monstrosity",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 12,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 58,
+    "roll": "9d8+18"
+  },
+  "speed": {
+    "walk": 15,
+    "climb": 15
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 12,
+    "con": 15,
+    "int": 5,
+    "wis": 13,
+    "cha": 8
+  },
+  "savingThrows": {
+    "str": 6
+  },
+  "skills": {
+    "stealth": 5
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [
+    "acid"
+  ],
+  "conditionImmunities": [
+    "prone"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 11",
+  "languages": "—",
+  "proficiencyBonus": 2,
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "traits": [
+    {
+      "name": "Adhesive (Object Form Only).",
+      "text": "The mimic adheres to anything that touches it. A creature within 5 ft. must succeed on a DC 13 DEX save or be grappled. The mimic can have up to 4 creatures grappled at a time."
+    },
+    {
+      "name": "False Appearance.",
+      "text": "The mimic can use its action to alter its form to look like an object (chest, door, furniture, etc.). A successful DC 20 Investigation check reveals its true form."
+    },
+    {
+      "name": "Shapechanger.",
+      "text": "The mimic can use its action to polymorph into an object or back into its true, amorphous form. Its statistics are the same in each form."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pseudopod.",
+      "text": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 7 (1d8 + 3) bludgeoning damage. If the mimic is in object form, the target takes an extra 7 (2d6) bludgeoning damage and DC 13 STR save or grappled."
+    },
+    {
+      "name": "Bite.",
+      "text": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 7 (1d8 + 3) piercing damage plus 4 (1d8) acid damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 3,
+  "srd_en_match_name": "Mimic",
+  "srd_en_page": 305,
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

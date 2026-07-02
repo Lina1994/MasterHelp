@@ -1,0 +1,86 @@
+{
+  "id": "lemure",
+  "slug": "lemure",
+  "lang": "en",
+  "name": "Lemure",
+  "actions": [
+    {
+      "name": "Vile Slime",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 2 (1d4) Poison damage. Lich Lich"
+    }
+  ],
+  "speed": {
+    "walk": 30
+  },
+  "senses": {
+    "truesight": "120 ft",
+    "passivePerception": 19
+  },
+  "languages": "All",
+  "challengeRating": "21",
+  "experiencePoints": 33000,
+  "proficiencyBonus": 7,
+  "traits": [
+    {
+      "name": "Hellish Restoration",
+      "text": "If the lemure dies in the Nine Hells, it revives with all its Hit Points in 1d10 days un- less it is killed by a creature under the effects of a Bless spell or its remains are sprinkled with Holy Water."
+    }
+  ],
+  "skills": "Arcana +19, History +12, Insight +9, Perception +9",
+  "reactions": [
+    {
+      "name": "Protective Magic",
+      "text": "The lich casts Counterspell or Shield in response to the spell’s trigger, using the same spell- casting ability as Spellcasting."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the lich can expend a use to take one of the following actions. The lich regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Deathly Teleport",
+      "text": "The lich teleports up to 60 feet to an unoccupied space it can see, and each creature within 10 feet of the space it left takes 11 (2d10) Ne- crotic damage."
+    },
+    {
+      "name": "Disrupt Life",
+      "text": "Constitution Saving Throw: DC 20, each creature that isn’t an Undead in a 20-foot Emanation originating from the lich. Failure: 31 (9d6) Necrotic damage. Success: Half damage. Failure or Success: The lich can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Frightening Gaze",
+      "text": "The lich casts Fear, using the same spellcasting ability as Spellcasting. The lich can’t take this action again until the start of its next turn."
+    }
+  ],
+  "srd_en_match_name": "Lemure",
+  "srd_en_page": 301,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fiend",
+  "subtype": "Devil",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 9,
+    "type": "−3 (7)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 9,
+    "roll": "2d8"
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 5,
+    "con": 11,
+    "int": 1,
+    "wis": 11,
+    "cha": 3
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

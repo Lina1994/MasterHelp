@@ -1,0 +1,60 @@
+{
+  "id": "knight_veteran",
+  "name": "Knight of the Realm",
+  "slug": "knight_veteran",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "lawful good",
+  "armorClass": 18,
+  "hitPoints": {
+    "average": 52,
+    "roll": "8d8 + 16"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 11,
+    "con": 14,
+    "int": 11,
+    "wis": 14,
+    "cha": 14
+  },
+  "saves": [
+    " CON +4 ",
+    " WIS +4 "
+  ],
+  "skills": [
+    " Athletics +5 ",
+    " Intimidation +4 ",
+    " Perception +4 "
+  ],
+  "senses": "passive Perception 14",
+  "languages": "any one language (usually Common)",
+  "challengeRating": "8",
+  "traits": [
+    {
+      "name": "Parry",
+      "text": "Reaction: +2 AC against one attack (must be holding a weapon)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two longsword attacks."
+    },
+    {
+      "name": "Longsword",
+      "text": "+5 to hit, reach 5 ft. Hit: 6 (1d8 + 3) slashing or 9 (1d10 + 3) two-handed."
+    },
+    {
+      "name": "Heavy Crossbow",
+      "text": "+2 to hit, range 100/400 ft. Hit: 5 (1d10) piercing."
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 3900,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

@@ -1,0 +1,652 @@
+{
+  "id": "ranger",
+  "name": "Explorador",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 por nivel de explorador",
+    "at1stLevel": "10 + tu modificador de Constitución",
+    "atHigherLevels": "1d10 (o 6) + tu modificador de Constitución por cada nivel de explorador por encima del primero"
+  },
+  "primaryAbilities": [
+    "dex",
+    "wis"
+  ],
+  "savingThrows": [
+    "str",
+    "dex"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Armadura ligera",
+      "Armadura media",
+      "Escudos"
+    ],
+    "weapons": [
+      "Armas simples",
+      "Armas marciales"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 3,
+    "from": [
+      "Trato con animales",
+      "Atletismo",
+      "Perspicacia",
+      "Investigación",
+      "Naturaleza",
+      "Percepción",
+      "Sigilo",
+      "Supervivencia"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "cota_de_malla",
+          "description": "Cota de malla"
+        },
+        {
+          "id": "armadura_cuero",
+          "description": "Armadura de cuero"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "dos_espadas_cortas",
+          "description": "Dos espadas cortas"
+        },
+        {
+          "id": "dos_simples_cuerpo",
+          "description": "Dos armas simples cuerpo a cuerpo"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "paquete_explorador",
+          "description": "Paquete de explorador"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "arco_largo_20_flechas",
+          "description": "Arco largo y 20 flechas"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "enemigo_favorito",
+      "name": "Enemigo favorito",
+      "level": 1,
+      "description": "Elige un tipo. Ventaja en Supervivencia para rastrearlo e INT para recordar info.",
+      "effects": [
+        {
+          "type": "ventaja_en_pruebas",
+          "categorias": [
+            "supervivencia_rastrear",
+            "inteligencia_info"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "explorador_natural",
+      "name": "Explorador natural",
+      "level": 1,
+      "description": "Beneficios en terreno favorito: terreno difícil no os ralentiza, no os perdéis fuera de magia, siempre alerta, encuentráis comida/agua, idioma extra.",
+      "effects": [
+        {
+          "type": "beneficios_viaje_grupo",
+          "beneficios": [
+            "ignorar_terreno_dificil",
+            "no_perderse",
+            "siempre_alerta",
+            "comida_agua",
+            "idioma_extra"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "estilo_combate",
+      "name": "Estilo de combate",
+      "level": 2,
+      "description": "Arquería, Defensa, Duelo o Combate con dos armas.",
+      "effects": [
+        {
+          "type": "eleguir_estilo_combate",
+          "options": [
+            "arquería",
+            "defensa",
+            "duelo",
+            "combate_dos_armas"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conjuracion",
+      "name": "Lanzamiento de conjuros",
+      "level": 2,
+      "description": "Lanzas conjuros de explorador (Sabiduría).",
+      "effects": [
+        {
+          "type": "lanzador_medio",
+          "ability": "wis",
+          "list": "explorador"
+        }
+      ]
+    },
+    {
+      "id": "arquetipo_explorador",
+      "name": "Arquetipo de explorador",
+      "level": 3,
+      "description": "Cazador o Maestro de bestias.",
+      "effects": [
+        {
+          "type": "eleguir_subclase",
+          "atLevel": 3
+        }
+      ]
+    },
+    {
+      "id": "conciencia_primitiva",
+      "name": "Conciencia primordial",
+      "level": 3,
+      "description": "Acción: detectas aberraciones/celestiales/dragones/elementales/etc. en 1 milla (6 al aire libre). Usos = mod SAB por descanso largo.",
+      "effects": [
+        {
+          "type": "recurso",
+          "name": "Conciencia primordial",
+          "per": "descanso_largo",
+          "count": "mod_SAB (min 1)"
+        }
+      ]
+    },
+    {
+      "id": "mejora_puntuacion_caracteristica",
+      "name": "Mejora de puntuación de característica",
+      "level": 4,
+      "description": "Una en 2 o dos en 1.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "ataque_adicional",
+      "name": "Ataque adicional",
+      "level": 5,
+      "description": "Atacas dos veces con la acción de Atacar.",
+      "effects": [
+        {
+          "type": "ataque_adicional",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "enemigo_favorito",
+        "explorador_natural"
+      ]
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "estilo_combate",
+        "conjuracion"
+      ],
+      "spellSlots": {
+        "1": 2
+      }
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "arquetipo_explorador",
+        "conciencia_primitiva"
+      ],
+      "spellSlots": {
+        "1": 3
+      }
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 3
+      }
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "ataque_adicional"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      },
+      "attaccks": 2
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "dote_enemigo_favorito"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      }
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "dote_explorador_natural"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      }
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "paso_de_tierra"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      }
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [
+        "velo_naturaleza"
+      ]
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "escondido_plena_luz",
+        "velo_naturaleza_v2"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      }
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      }
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      }
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "ventaja_ataque_enemigo_favorito"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      }
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "enemigos_favoritos_desventaja_ataques"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      }
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      }
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "asesino_enemigos"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "class_id": "ranger",
+      "id": "beast_master",
+      "name": "Maestro de Bestias",
+      "grantedAtLevel": 3,
+      "description_en": "You bond with a primal beast to fight alongside you as your companion.",
+      "description_es": "Te une a una bestia primordial que lucha a tu lado como compañera.",
+      "features": [
+        {
+          "id": "primal_companion",
+          "name": "Compañero Primordial",
+          "level": 3,
+          "description": "Detectar magia 9 m; tú y el compañero comparten Iniciativa."
+        },
+        {
+          "id": "beastly_ferocity",
+          "name": "Ferocidad Bestial",
+          "level": 3,
+          "description": "Si el compañero haría 0 daño, hace 1d4."
+        },
+        {
+          "id": "coordinated_assault",
+          "name": "Asalto Coordinado",
+          "level": 7,
+          "description": "Cuando atacas, el compañero ataca el mismo objetivo."
+        },
+        {
+          "id": "exceptional_training",
+          "name": "Entrenamiento Excepcional",
+          "level": 11,
+          "description": "Compañero gana competencia en una estadística."
+        },
+        {
+          "id": "share_spells",
+          "name": "Compartir Conjuros",
+          "level": 15,
+          "description": "Lanza conjuro sobre ti; el compañero se beneficia."
+        },
+        {
+          "id": "capstone",
+          "name": "Culminación",
+          "level": 20,
+          "description": "Acción del compañero: Atronar o Rugido."
+        }
+      ]
+    },
+    {
+      "id": "cazador",
+      "name": "Cazador",
+      "grantedAtLevel": 3,
+      "description": "Emulando al cazador del bosque, te conviertes en un depredador sin igual.",
+      "features": [
+        {
+          "id": "presa_cazador",
+          "name": "Presa del cazador",
+          "level": 3,
+          "description": "Elige una técnica: Cazador de colosos (1d8 una vez por turno contra herido), Matagigantes (reacción contra Grande+), o Rompehordas (un ataque extra contra objetivo adyacente).",
+          "effects": [
+            {
+              "type": "eligir_tecnica",
+              "opciones": [
+                "cazador_colosos",
+                "matagigantes",
+                "rompehordas"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tacticas_defensivas",
+          "name": "Tácticas defensivas",
+          "level": 7,
+          "description": "Escapa de la horda, Defensa multiataque, o Voluntad de acero.",
+          "effects": [
+            {
+              "type": "eligir_tactica",
+              "opciones": [
+                "escapar_horda",
+                "defensa_multiataque",
+                "voluntad_acero"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "ranger",
+      "id": "gloom_stalker",
+      "name": "Acechador Sombrío",
+      "grantedAtLevel": 3,
+      "description_en": "You learned to fight in darkness, an ambush predator lurking in the longest shadows.",
+      "description_es": "Aprendiste a luchar en la oscuridad, un depredador de emboscada que acecha en las sombras más largas.",
+      "features": [
+        {
+          "id": "dreadful_strike_gloom",
+          "name": "Golpe Temible",
+          "level": 3,
+          "description": "Primer ataque cada combate: +1d8 daño."
+        },
+        {
+          "id": "umbral_sight",
+          "name": "Vista Umbría",
+          "level": 3,
+          "description": "Visión en la oscuridad 18 m; invisible para visión en la oscuridad en oscuridad total."
+        },
+        {
+          "id": "steel_will_shadow",
+          "name": "Mente de Hierro",
+          "level": 7,
+          "description": "Ventaja en salvaciones contra miedo."
+        },
+        {
+          "id": "strides_of_starlight",
+          "name": "Tormenta del Acechador",
+          "level": 11,
+          "description": "Acción adicional para atacar dos veces una vez por descanso corto."
+        },
+        {
+          "id": "shadowy_dodge",
+          "name": "Esquiva Sombría",
+          "level": 15,
+          "description": "Reacción al ser atacado fallido: atacarlo."
+        }
+      ]
+    },
+    {
+      "class_id": "ranger",
+      "id": "horizon_walker",
+      "name": "Caminante del Horizonte",
+      "grantedAtLevel": 3,
+      "description_en": "You guard the borders between worlds, hunting aberrations that threaten them.",
+      "description_es": "Guardas las fronteras entre mundos, cazando aberraciones que las amenazan.",
+      "features": [
+        {
+          "id": "planar_warden",
+          "name": "Guerrero Planar",
+          "level": 3,
+          "description": "Acción adicional: +1d8 fuerza contra aberración/feérico/elemental."
+        },
+        {
+          "id": "ethereal_step",
+          "name": "Paso Etéreo",
+          "level": 7,
+          "description": "Lanza Etérea sobre sí mismo."
+        },
+        {
+          "id": "distant_strike",
+          "name": "Golpe Distante",
+          "level": 11,
+          "description": "Acción adicional: teletransporte 3 m antes del ataque."
+        },
+        {
+          "id": "ranger_of_the_sinkhole",
+          "name": "Defensa Espectral",
+          "level": 15,
+          "description": "Reacción: da resistencia B/P/C a un aliado."
+        }
+      ]
+    },
+    {
+      "id": "maestro_bestias",
+      "name": "Maestro de bestias",
+      "grantedAtLevel": 3,
+      "description": "Pocos exploradores igualan al Maestro de bestias en el entrenamiento y vínculo con el mundo natural.",
+      "features": [
+        {
+          "id": "compania_primal",
+          "name": "Compañero primal",
+          "level": 3,
+          "description": "Obtienes una bestia compañera del SRD (ND ≤ 1/4, sin volar/nadar inicialmente). Usa tu iniciativa, comparte tu bonificador de competencia.",
+          "effects": [
+            {
+              "type": "invocar_companero",
+              "max_cr": 0.25,
+              "comparte_pb": true
+            }
+          ]
+        },
+        {
+          "id": "bestia_tierra",
+          "name": "Bestia de la tierra",
+          "level": 7,
+          "description": "Tu compañero gana +2 CA y salvaciones, competencia en todas las salvaciones y ataques mágicos.",
+          "effects": [
+            {
+              "type": "companero_mejora",
+              "bonus_ca": 2,
+              "ataques_magicos": true
+            }
+          ]
+        },
+        {
+          "id": "bestia_aire",
+          "name": "Bestia del aire",
+          "level": 11,
+          "description": "Gana velocidad de vuelo de 18 m.",
+          "effects": [
+            {
+              "type": "companero_volando",
+              "value": 18
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "wis",
+    "list": "explorador",
+    "spellbook": false,
+    "preparedCasting": false,
+    "halfCaster": true
+  }
+}

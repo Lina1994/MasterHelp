@@ -1,0 +1,55 @@
+{
+  "id": "black_bear",
+  "slug": "black_bear",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Oso negro",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d8 + 6"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 12,
+    "con": 14,
+    "int": 2,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El oso realiza dos ataques de desgarro."
+    },
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 5 (1d6 + 2) de daño cortante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Oso negro",
+  "srd_es_page": 390
+}

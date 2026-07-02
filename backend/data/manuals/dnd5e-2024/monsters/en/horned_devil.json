@@ -1,0 +1,65 @@
+{
+  "id": "horned_devil",
+  "slug": "horned_devil",
+  "lang": "en",
+  "name": "Horned Devil",
+  "traits": [
+    {
+      "name": "Diabolical Restoration",
+      "text": "If the devil dies outside the Nine Hells, its body disappears in sulfurous smoke, and it gains a new body instantly, reviving with all its Hit Points somewhere in the Nine Hells."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The devil has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The devil makes three attacks, using Sear- ing Fork or Hurl Flame in any combination. It can re- place one attack with a use of Infernal Tail."
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "fly": 60
+  },
+  "senses": {
+    "darkvision": "150 ft."
+  },
+  "languages": "Infernal; telepathy 120 ft.",
+  "challengeRating": "11",
+  "experiencePoints": 7200,
+  "proficiencyBonus": 4,
+  "srd_en_match_name": "Horned Devil",
+  "srd_en_page": 296,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fey",
+  "subtype": "Goblinoid",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 17,
+    "type": "+4 (14)"
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 58,
+    "roll": "9d8 + 18"
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 14,
+    "con": 14,
+    "int": 12,
+    "wis": 10,
+    "cha": 13
+  },
+  "savingThrows": {
+    "str": 2,
+    "dex": 2,
+    "con": 2,
+    "int": 1,
+    "wis": 0,
+    "cha": 1
+  }
+}

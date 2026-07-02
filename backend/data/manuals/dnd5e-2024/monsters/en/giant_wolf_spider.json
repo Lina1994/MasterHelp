@@ -1,0 +1,61 @@
+{
+  "id": "giant_wolf_spider",
+  "slug": "giant_wolf_spider",
+  "lang": "en",
+  "name": "Giant Wolf Spider",
+  "senses": {
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The spider can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3) Piercing damage plus 5 (2d4) Poison damage. Goat"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "skills": "Perception +3",
+  "srd_en_match_name": "Giant Wolf Spider",
+  "srd_en_page": 352,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 9,
+    "roll": "2d8"
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 17,
+    "con": 10,
+    "int": 4,
+    "wis": 12,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 3,
+    "con": 0,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

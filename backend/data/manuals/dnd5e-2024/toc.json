@@ -4,10 +4,21 @@
   "children": [
     { "id": "about", "title": "About", "children": [] },
     { "id": "intro", "title": "Introduction", "children": [] },
-    { "id": "rules-basic", "title": "Basic Rules", "children": [
-      { "id": "abilities", "title": "Ability Scores", "children": [] },
-      { "id": "combat", "title": "Combat", "children": [] }
-    ]},
-    { "id": "spells", "title": "Spells", "children": [] }
+    {
+      "id": "rules-basic",
+      "title": "Basic Rules",
+      "children": [
+        { "id": "abilities", "title": "Ability Scores", "children": [] },
+        { "id": "combat", "title": "Combat", "children": [] }
+      ]
+    },
+    { "id": "spells", "title": "Spells", "children": [] },
+    { "id": "classes", "title": "Classes", "children": [] },
+    { "id": "races", "title": "Races", "children": [] },
+    { "id": "bestiary", "title": "Bestiary", "children": [] },
+    { "id": "feats", "title": "Feats", "children": [] },
+    { "id": "traits", "title": "Traits", "children": [] },
+    { "id": "backgrounds", "title": "Backgrounds", "children": [] },
+    { "id": "skills", "title": "Skills", "children": [] }
   ]
 }

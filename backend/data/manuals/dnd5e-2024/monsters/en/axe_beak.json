@@ -1,0 +1,60 @@
+{
+  "id": "axe_beak",
+  "slug": "axe_beak",
+  "lang": "en",
+  "name": "Axe Beak",
+  "speed": {
+    "walk": 50
+  },
+  "skills": "Acrobatics +7, Perception +6, Stealth +10",
+  "senses": {
+    "passivePerception": 10
+  },
+  "languages": "None",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Evasion",
+      "text": "If the assassin is subjected to an effect that allows it to make a Dexterity saving throw to take only half damage, the assassin instead takes no damage if it succeeds on the save and only half damage if it fails. It can’t use this trait if it has the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Beak",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8 + 2) Slashing damage."
+    }
+  ],
+  "srd_en_match_name": "Axe Beak",
+  "srd_en_page": 257,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "plant",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 9,
+    "type": "−1 (9)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 10,
+    "roll": "3d6"
+  },
+  "abilities": {
+    "str": 3,
+    "dex": 8,
+    "con": 11,
+    "int": 10,
+    "wis": 10,
+    "cha": 6
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "id": "air_elemental",
+  "slug": "air-elemental",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Air Elemental",
+  "size": "Large",
+  "type": "Elemental",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 13
+  },
+  "hitPoints": {
+    "average": 90,
+    "roll": "12d10+24"
+  },
+  "speed": {
+    "fly": 90
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 20,
+    "con": 14,
+    "int": 6,
+    "wis": 10,
+    "cha": 6
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "lightning",
+    "thunder"
+  ],
+  "damageImmunities": [],
+  "conditionImmunities": [
+    "exhaustion",
+    "grappled",
+    "paralyzed",
+    "petrified",
+    "poisoned",
+    "prone",
+    "restrained",
+    "unconscious"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 10",
+  "languages": "Auran",
+  "proficiencyBonus": 3,
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "traits": [
+    {
+      "name": "Air Form.",
+      "text": "The elemental can enter a creature's space and stop there. It can move through a space as narrow as 1 inch wide without squeezing."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack.",
+      "text": "The elemental makes two slam attacks."
+    },
+    {
+      "name": "Slam.",
+      "text": "Melee Weapon Attack: +8 to hit, reach 5 ft., one target. Hit: 14 (2d8 + 5) bludgeoning damage, or 7 (1d8 + 3) bludgeoning damage if the elemental has half HP or fewer."
+    },
+    {
+      "name": "Whirlwind (Recharges 4-6).",
+      "text": "Each creature in the elemental's space must make a DC 13 STR save or take 14 (4d6) bludgeoning damage and be moved up to 20 ft."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

@@ -1,0 +1,73 @@
+{
+  "id": "swarm_of_ravens",
+  "slug": "swarm_of_ravens",
+  "lang": "en",
+  "name": "Swarm of Ravens",
+  "speed": {
+    "walk": 40
+  },
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Swarm",
+      "text": "The swarm can occupy another creature’s space and vice versa, and the swarm can move through any opening large enough for a Tiny rat. The swarm can’t regain Hit Points or gain Temporary Hit Points."
+    },
+    {
+      "name": "Swarm",
+      "text": "The swarm can occupy another creature’s space and vice versa, and the swarm can move through any opening large enough for a Tiny raven. The swarm can’t regain Hit Points or gain Temporary Hit Points."
+    },
+    {
+      "name": "Swarm",
+      "text": "The swarm can occupy another creature’s space and vice versa, and the swarm can move through any opening large enough for a Tiny snake. The swarm can’t regain Hit Points or gain Temporary Hit Points."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 10 (2d6 + 3) Slashing damage. If the target is a Large or smaller creature, it has the Prone condition. Bonus Actions"
+    },
+    {
+      "name": "Nimble Escape",
+      "text": "The tiger takes the Disengage or Hide action."
+    }
+  ],
+  "skills": "Perception +3, Stealth +7",
+  "srd_en_match_name": "Swarm of Ravens",
+  "srd_en_page": 359,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 30,
+    "roll": "4d10 + 8"
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 16,
+    "con": 14,
+    "int": 3,
+    "wis": 12,
+    "cha": 8
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 3,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

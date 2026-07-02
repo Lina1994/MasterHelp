@@ -1,0 +1,63 @@
+{
+  "id": "steam_mephit",
+  "slug": "steam_mephit",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Mephit de vapor",
+  "type": "Elemental",
+  "size": "Pequeño",
+  "alignment": "neutral malvado",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 17,
+    "roll": "5d6"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 30
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 11,
+    "con": 10,
+    "int": 11,
+    "wis": 10,
+    "cha": 12
+  },
+  "skills": [
+    "Sigilo +2"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "primordial (acuano, ígneo)",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Explotar al morir",
+      "text": "El mephit explota cuando muere."
+    },
+    {
+      "name": "Tirada de salvación de Destreza",
+      "text": "CD 10, todas las criaturas en una emanación de 1,5 m que se origina en el mephit. Fallo: 5 (2d4) de daño de fuego. Éxito: la mitad del daño."
+    },
+    {
+      "name": "Forma borrosa",
+      "text": "Las tiradas de ataque contra el mephit se harán con desventaja a menos que tenga el estado de incapacitado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +2, alcance 1,5 m. Acierto: 2 (1d4) de daño cortante más 2 (1d4) de daño de fuego. Aliento de vapor (recarga 6). Tirada de salvación de Constitución: CD 10, todas las criaturas en un cono de 4,5 m. Fallo: 5 (2d4) de daño de fuego y la velocidad del objetivo se reducirá en 3 m hasta el final del siguiente turno del mephit. Éxito: solo la mitad del daño. Fallo o éxito: estar bajo el agua no otorga resistencia a este daño de fuego. Merrow"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Mephit de vapor",
+  "srd_es_page": 350
+}

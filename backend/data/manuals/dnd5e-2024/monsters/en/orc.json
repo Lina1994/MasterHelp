@@ -1,0 +1,56 @@
+{
+  "id": "orc",
+  "slug": "orc",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Orc",
+  "size": "Medium",
+  "type": "humanoid (orc)",
+  "alignment": "chaotic evil",
+  "armorClass": {
+    "value": 13,
+    "type": "hide armor, shield"
+  },
+  "hitPoints": {
+    "average": 15,
+    "roll": "2d8 + 6"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 12,
+    "con": 16,
+    "int": 7,
+    "wis": 11,
+    "cha": 10
+  },
+  "skills": [
+    "Intimidation +2"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 60 ft., passive Perception 10",
+  "languages": "Common, Orc",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Aggressive",
+      "text": "As a bonus action, the orc can move up to its speed toward a hostile creature it can see."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Greataxe",
+      "text": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 9 (1d12 + 3) slashing damage."
+    },
+    {
+      "name": "Javelin",
+      "text": "Melee or Ranged Weapon Attack: +5 to hit, reach 5 ft. or range 30/120 ft., one target. Hit: 6 (1d6 + 3) piercing damage."
+    }
+  ]
+}

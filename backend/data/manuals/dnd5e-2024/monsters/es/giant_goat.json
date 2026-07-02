@@ -1,0 +1,50 @@
+{
+  "id": "giant_goat",
+  "slug": "giant_goat",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Cabra gigante",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d10 + 3"
+  },
+  "speed": {
+    "walk": 40,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 13,
+    "con": 12,
+    "int": 3,
+    "wis": 12,
+    "cha": 6
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Embestir",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 6 (1d6 + 3) de daño contundente. Si el objetivo es una criatura Grande o más pequeña y la cabra recorre al menos 6 m en línea recta hacia ella justo antes de acertarle, esta recibirá 5 (2d4) de daño contundente adicional y tendrá el estado de derribada."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Cabra gigante",
+  "srd_es_page": 381
+}

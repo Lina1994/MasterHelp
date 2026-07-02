@@ -1,0 +1,61 @@
+{
+  "id": "weasel",
+  "slug": "weasel",
+  "lang": "en",
+  "name": "Weasel",
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +5, Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 15
+  },
+  "languages": "None",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 1 Piercing damage. Wolf"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The wolf has Advantage on attack rolls against a creature if at least one of the wolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "srd_en_match_name": "Weasel",
+  "srd_en_page": 361,
+  "source": "SRD 5.2 (2024)",
+  "size": "tiny",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 1,
+    "roll": "1d4 − 1"
+  },
+  "abilities": {
+    "str": 3,
+    "dex": 16,
+    "con": 8,
+    "int": 2,
+    "wis": 12,
+    "cha": 3
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 3,
+    "con": 0,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

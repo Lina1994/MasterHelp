@@ -1,0 +1,67 @@
+{
+  "id": "spirit_naga",
+  "slug": "spirit_naga",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Naga espiritual",
+  "type": "Infernal",
+  "size": "Grande",
+  "alignment": "caótico malvado",
+  "armorClass": {
+    "value": 17
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 135,
+    "roll": "18d10 + 36"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 17,
+    "con": 14,
+    "int": 16,
+    "wis": 15,
+    "cha": 16
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "abisal, común",
+  "challengeRating": "8",
+  "experiencePoints": 3900,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Recuperación infernal",
+      "text": "Si muere, la naga volverá a la vida tras 1d6 días y recuperará todos sus puntos de golpe. Solo un conjuro deseo puede evitar que este atributo tenga efecto."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La naga realiza tres ataques de mordisco o rayo necrótico en cualquier combinación."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 3 m. Acierto: 7 (1d6 + 4) de daño perforante más 14 (4d6) de daño de veneno."
+    },
+    {
+      "name": "Rayo necrótico",
+      "text": "Tirada de ataque a distancia: +6, alcance 18 m. Acierto: 21 (6d6) de daño necrótico."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "La naga lanza uno de los siguientes conjuros, que no requiere componentes somáticos o materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14):"
+    },
+    {
+      "name": "A voluntad",
+      "text": "detectar magia, ilusión menor, mano de mago, respirar bajo el agua 2/día cada uno: detectar pensamientos, inmovilizar persona (versión de nivel 3), puerta dimensional, relámpago (versión de nivel 4) Naga guardiana"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Naga espiritual",
+  "srd_es_page": 353
+}

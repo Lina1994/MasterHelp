@@ -1,0 +1,29 @@
+{
+  "id": "oni",
+  "slug": "oni",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Oni",
+  "type": "Infernal",
+  "size": "Grande",
+  "alignment": "legal malvado",
+  "armorClass": {
+    "value": 17
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 119,
+    "roll": "14d10 + 42"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 30
+  },
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Oni",
+  "srd_es_page": 355
+}

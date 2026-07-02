@@ -1,0 +1,54 @@
+{
+  "id": "griffon",
+  "slug": "griffon",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Grifo",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 59,
+    "roll": "7d10 + 21"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 80
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 15,
+    "con": 16,
+    "int": 2,
+    "wis": 13,
+    "cha": 8
+  },
+  "skills": [
+    "Percepción +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El grifo realiza dos ataques de desgarro."
+    },
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 8 (1d8 + 4) de daño perforante. Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de agarrada (CD 14 para escapar) por ambas garras delanteras del grifo. Grimlock"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Grifo",
+  "srd_es_page": 334
+}

@@ -1,0 +1,115 @@
+{
+  "id": "hippogriff",
+  "slug": "hippogriff",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Hipogrifo",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 26,
+    "roll": "4d10 + 4"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 13,
+    "con": 13,
+    "int": 2,
+    "wis": 12,
+    "cha": 8
+  },
+  "skills": [
+    "Percepción +5"
+  ],
+  "senses": "Percepción pasiva 15",
+  "languages": "ninguno",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pasar volando",
+      "text": "El hipogrifo no provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo."
+    },
+    {
+      "name": "Atacar en grupo",
+      "text": "El hobgoblin tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del hobgoblin se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    },
+    {
+      "name": "Aura de autoridad",
+      "text": "Mientras estén en una emanación de 3 m que se origina en el hobgoblin, este y sus aliados tendrán ventaja en las tiradas de ataque y las tiradas de salvación, siempre que el hobgoblin no tenga el estado de incapacitado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El hipogrifo realiza dos ataques de desgarro."
+    },
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 7 (1d8 + 3) de daño cortante. Hobgoblins Guerrero hobgoblin Feérico Mediano (trasgo), legal malvado"
+    },
+    {
+      "name": "CA",
+      "text": "18 Iniciativa: +3 (13)"
+    },
+    {
+      "name": "PG",
+      "text": "11 (2d8 + 2)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 13 +1 +1 Des 12 +1 +1 Con 12 +1 +1 Int 10 +0 +0 sab 10 +0 +0 Car 9 −1 −1"
+    },
+    {
+      "name": "Equipo",
+      "text": "arco largo, escudo, espada larga, media armadura"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión en la oscuridad 18 m; Percepción pasiva 10"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común, goblin"
+    },
+    {
+      "name": "VD",
+      "text": "1/2 (100 PX; BC +2)"
+    },
+    {
+      "name": "Espada larga",
+      "text": "Tirada de ataque cuerpo a cuerpo: +3, alcance 1,5 m. Acierto: 12 (2d10 + 1) de daño cortante."
+    },
+    {
+      "name": "Arco largo",
+      "text": "Tirada de ataque a distancia: +3, alcance 45/180 m. Acierto: 5 (1d8 + 1) de daño perforante más 7 (3d4) de daño de veneno. Capitán hobgoblin Feérico Mediano (trasgo), legal malvado Fue 15 +2 +2 Des 14 +2 +2 Con 14 +2 +2 Int 12 +1 +1 sab 10 +0 +0 Car 13 +1 +1 pasiva 10 su arco largo o su espadón en cualquier combinación."
+    },
+    {
+      "name": "Espadón",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 9 (2d6 + 2) de daño cortante más 3 (1d6) de daño de veneno. 45/180 m. Acierto: 6 (1d8 + 2) de daño perforante más 5 (2d4) de daño de veneno. Hombre jabalí Hombre jabalí Monstruosidad Mediana o Pequeña (licántropo), neutral malvada Fue 17 +3 +3 Des 10 +0 +0 Con 15 +2 +2 Int 10 +0 +0 sab 11 +0 +0 Car 8 −1 −1"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Percepción +2"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Hipogrifo",
+  "srd_es_page": 338
+}

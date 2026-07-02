@@ -1,0 +1,74 @@
+{
+  "id": "minotaur_skeleton",
+  "slug": "minotaur_skeleton",
+  "lang": "en",
+  "name": "Minotaur Skeleton",
+  "actions": [
+    {
+      "name": "Gore",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 11 (2d6 + 4) Piercing damage. If the target is a Large or smaller creature and the skeleton moved 20+ feet straight toward it immediately before the hit, the target takes an extra 9 (2d8) Piercing damage and has the Prone condition."
+    },
+    {
+      "name": "Slam",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 15 (2d10 + 4) Bludgeoning damage. Solar Solar"
+    }
+  ],
+  "speed": {
+    "walk": 50,
+    "fly": 150
+  },
+  "senses": {
+    "truesight": "120 ft",
+    "passivePerception": 24
+  },
+  "languages": "All; telepathy 120 ft.",
+  "challengeRating": "21",
+  "experiencePoints": 33000,
+  "proficiencyBonus": 7,
+  "skills": "Perception +14",
+  "traits": [
+    {
+      "name": "Divine Awareness",
+      "text": "The solar knows if it hears a lie."
+    },
+    {
+      "name": "Exalted Restoration",
+      "text": "If the solar dies outside Mount Celestia, its body disappears, and it gains a new body instantly, reviving with all its Hit Points somewhere in Mount Celestia. Legendary Resistance (4/Day). If the solar fails a saving throw, it can choose to succeed instead."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The solar has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "srd_en_match_name": "Minotaur Skeleton",
+  "srd_en_page": 323,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "undead",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 12,
+    "type": "+0 (10)"
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 11,
+    "con": 15,
+    "int": 6,
+    "wis": 8,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 0,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

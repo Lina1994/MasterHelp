@@ -1,0 +1,78 @@
+{
+  "id": "cloaker",
+  "slug": "cloaker",
+  "lang": "en",
+  "name": "Cloaker",
+  "speed": {
+    "walk": 10,
+    "fly": 40
+  },
+  "senses": {
+    "darkvision": "120 ft",
+    "passivePerception": 12
+  },
+  "languages": "Deep Speech, Undercommon",
+  "challengeRating": "8",
+  "experiencePoints": 3900,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Light Sensitivity",
+      "text": "While in Bright Light, the cloaker has Disadvantage on attack rolls."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The cloaker makes one Attach attack and two Tail attacks."
+    },
+    {
+      "name": "Attach",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 13 (3d6 + 3) Piercing damage. If the target is a Large or smaller creature, the cloaker attaches to it. While the cloaker is attached, the target has the Blinded condition, and the cloaker can’t make Attach attacks against other tar- gets. In addition, the cloaker halves the damage it takes (round down), and the target takes the same amount of damage. The cloaker can detach itself by spending 5 feet of movement. The target or a creature within 5 feet of it can take an action to try to detach the cloaker, doing so by succeeding on a DC 14 Strength (Athletics) check."
+    },
+    {
+      "name": "Tail",
+      "text": "Melee Attack Roll: +6, reach 10 ft. Hit: 8 (1d10 + 3) Slashing damage. Bonus Actions"
+    },
+    {
+      "name": "Moan",
+      "text": "Wisdom Saving Throw: DC 13, each creature in a 60-foot Emanation originating from the cloaker."
+    },
+    {
+      "name": "Failure",
+      "text": "The target has the Frightened condition until the end of the cloaker’s next turn. Success: The target is immune to this cloaker’s Moan for the next 24 hours. Phantasms (Recharge after a Short or Long Rest). The cloaker casts the Mirror Image spell, requiring no spell components and using Wisdom as the spellcasting abil- ity. The spell ends early if the cloaker starts or ends its turn in Bright Light."
+    }
+  ],
+  "skills": "Stealth +5",
+  "srd_en_match_name": "Cloaker",
+  "srd_en_page": 271,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "construct",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 14,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 123,
+    "roll": "13d10 + 52"
+  },
+  "abilities": {
+    "str": 20,
+    "dex": 9,
+    "con": 18,
+    "int": 3,
+    "wis": 8,
+    "cha": 1
+  },
+  "savingThrows": {
+    "str": 5,
+    "dex": 0,
+    "con": 4,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

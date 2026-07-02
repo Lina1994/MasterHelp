@@ -1,0 +1,2147 @@
+[
+ {
+  "i": 0,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 1,
+  "style": "Normal",
+  "text": "MasterHelp"
+ },
+ {
+  "i": 2,
+  "style": "Normal",
+  "text": "Guía de Usuario"
+ },
+ {
+  "i": 3,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 4,
+  "style": "Normal",
+  "text": "MasterHelp es una aplicación diseñada para ayudar al Dungeon Master a dirigir partidas de rol presenciales de forma fluida, sin necesidad de alternar entre distintas notas, webs y aplicaciones."
+ },
+ {
+  "i": 5,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 6,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 7,
+  "style": "Normal",
+  "text": "Mayo 2026 — v1.0"
+ },
+ {
+  "i": 8,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 9,
+  "style": "Heading 1",
+  "text": "Índice"
+ },
+ {
+  "i": 10,
+  "style": "Normal",
+  "text": "1. Introducción y conceptos básicos"
+ },
+ {
+  "i": 11,
+  "style": "Normal",
+  "text": "2. Primeros pasos: Registro, inicio de sesión y configuración"
+ },
+ {
+  "i": 12,
+  "style": "Normal",
+  "text": "3. HOME: Pantalla principal y ajustes"
+ },
+ {
+  "i": 13,
+  "style": "Normal",
+  "text": "4. Pantallas secundarias: SKYLINE y MAPAS"
+ },
+ {
+  "i": 14,
+  "style": "Normal",
+  "text": "5. Sidebar: Accesos rápidos siempre visibles"
+ },
+ {
+  "i": 15,
+  "style": "Normal",
+  "text": "6. Herramientas"
+ },
+ {
+  "i": 16,
+  "style": "Normal",
+  "text": "   6.1. Campañas"
+ },
+ {
+  "i": 17,
+  "style": "Normal",
+  "text": "   6.2. Mapas"
+ },
+ {
+  "i": 18,
+  "style": "Normal",
+  "text": "   6.3. Combate"
+ },
+ {
+  "i": 19,
+  "style": "Normal",
+  "text": "   6.4. Escenas (Scenes)"
+ },
+ {
+  "i": 20,
+  "style": "Normal",
+  "text": "   6.5. Soundtrack"
+ },
+ {
+  "i": 21,
+  "style": "Normal",
+  "text": "   6.6. Personajes"
+ },
+ {
+  "i": 22,
+  "style": "Normal",
+  "text": "   6.7. Bestiario"
+ },
+ {
+  "i": 23,
+  "style": "Normal",
+  "text": "   6.8. Conjuros (Spells)"
+ },
+ {
+  "i": 24,
+  "style": "Normal",
+  "text": "   6.9. Manuales"
+ },
+ {
+  "i": 25,
+  "style": "Normal",
+  "text": "   6.10. Misiones (Quests)"
+ },
+ {
+  "i": 26,
+  "style": "Normal",
+  "text": "   6.11. Tiendas (Shops)"
+ },
+ {
+  "i": 27,
+  "style": "Normal",
+  "text": "   6.12. Diario (Journal)"
+ },
+ {
+  "i": 28,
+  "style": "Normal",
+  "text": "   6.13. Worldpedia"
+ },
+ {
+  "i": 29,
+  "style": "Normal",
+  "text": "7. Atajos (Shortcuts)"
+ },
+ {
+  "i": 30,
+  "style": "Normal",
+  "text": "8. Iconos Skyline flotantes"
+ },
+ {
+  "i": 31,
+  "style": "Normal",
+  "text": "9. Funcionalidades adicionales"
+ },
+ {
+  "i": 32,
+  "style": "Normal",
+  "text": "10. Acceso web y multi-dispositivo"
+ },
+ {
+  "i": 33,
+  "style": "Normal",
+  "text": "11. Roles de usuario: Master vs Jugador"
+ },
+ {
+  "i": 34,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 35,
+  "style": "Heading 1",
+  "text": "1. Introducción y conceptos básicos"
+ },
+ {
+  "i": 36,
+  "style": "Normal",
+  "text": "MasterHelp es una app orientada a gestionar partidas de rol presenciales, principalmente pensada para el Dungeon Master, pero con funciones específicas para los jugadores."
+ },
+ {
+  "i": 37,
+  "style": "Normal",
+  "text": "La aplicación está diseñada para usarse con hasta 3 monitores o ventanas:"
+ },
+ {
+  "i": 38,
+  "style": "List Bullet",
+  "text": "Monitor principal: Solo visible para el Dungeon Master. Contiene todas las herramientas de gestión."
+ },
+ {
+  "i": 39,
+  "style": "List Bullet",
+  "text": "Pantalla MAPAS: Pensada para colocarse entre el máster y los jugadores. Muestra el mapa de batalla, tokens, niebla de guerra y la cuadrícula."
+ },
+ {
+  "i": 40,
+  "style": "List Bullet",
+  "text": "Pantalla SKYLINE: Pensada para colocarse tumbada sobre la mesa. Muestra escenas vinculadas a los mapas, información como el día del rol, el título de la canción que suena, el orden de iniciativa, imágenes de personajes o enemigos e imágenes de objetos."
+ },
+ {
+  "i": 41,
+  "style": "Normal",
+  "text": "Además, la aplicación despliega una versión webapp accediendo a la misma base de datos. Esto permite acceder desde distintos dispositivos en la misma red (móvil, tablet, proyector, Smart TV, Chromecast), y que los jugadores puedan interactuar con algunas partes de la app desde su propio dispositivo."
+ },
+ {
+  "i": 42,
+  "style": "Normal",
+  "text": "La app puede ejecutarse como aplicación de escritorio (Windows, Linux, Mac) o como aplicación web, y es instalable en servidores mediante Portainer/Docker."
+ },
+ {
+  "i": 43,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 44,
+  "style": "Heading 1",
+  "text": "2. Primeros pasos: Registro, inicio de sesión y configuración"
+ },
+ {
+  "i": 45,
+  "style": "Heading 2",
+  "text": "2.1 Registro e inicio de sesión"
+ },
+ {
+  "i": 46,
+  "style": "Normal",
+  "text": "Al iniciar la aplicación, se te pedirá que inicies sesión o crees una cuenta nueva. Si ya has iniciado sesión anteriormente, la app recordará tu usuario. Si olvidas tu contraseña, puedes recuperarla mediante la opción \"¿Olvidaste tu contraseña?\"."
+ },
+ {
+  "i": 47,
+  "style": "Heading 2",
+  "text": "2.2 Selección de idioma y tema"
+ },
+ {
+  "i": 48,
+  "style": "Normal",
+  "text": "Una vez dentro de la app, desde el HOME puedes acceder a los ajustes y configurar:"
+ },
+ {
+  "i": 49,
+  "style": "List Bullet",
+  "text": "Idioma: Español o Inglés (algunas partes aún no están traducidas)."
+ },
+ {
+  "i": 50,
+  "style": "List Bullet",
+  "text": "Tema: Claro, Oscuro o Personalizado."
+ },
+ {
+  "i": 51,
+  "style": "Heading 2",
+  "text": "2.3 Selección y activación de campaña"
+ },
+ {
+  "i": 52,
+  "style": "Normal",
+  "text": "En el HOME verás tus campañas disponibles. Puedes seleccionar una campaña como activa, crear una nueva campaña como máster o aceptar una invitación para unirte como jugador."
+ },
+ {
+  "i": 53,
+  "style": "Normal",
+  "text": "Para unirte como jugador, el máster debe invitarte primero. Una vez aceptada la invitación, la campaña aparecerá en tu lista."
+ },
+ {
+  "i": 54,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 55,
+  "style": "Heading 1",
+  "text": "3. HOME: Pantalla principal y ajustes"
+ },
+ {
+  "i": 56,
+  "style": "Normal",
+  "text": "La pantalla de bienvenida una vez hecho el login muestra 12 botones grandes representando las 12 herramientas principales y un botón de ajustes."
+ },
+ {
+  "i": 57,
+  "style": "Heading 2",
+  "text": "3.1 Ajustes del HOME"
+ },
+ {
+  "i": 58,
+  "style": "List Bullet",
+  "text": "Selector de idioma: Español o Inglés."
+ },
+ {
+  "i": 59,
+  "style": "List Bullet",
+  "text": "Selector de tema: Claro, Oscuro o Personalizado."
+ },
+ {
+  "i": 60,
+  "style": "List Bullet",
+  "text": "Acceso web: Muestra la URL para acceder a la webapp. Incluye un botón para mostrar un código QR en la ventana principal y en la pantalla SKYLINE."
+ },
+ {
+  "i": 61,
+  "style": "List Bullet",
+  "text": "Previsualización Skyline: Activa/desactiva la opción de mostrar en la esquina inferior derecha de la pantalla principal una miniatura de las imágenes que se están proyectando en la ventana Skyline (personaje activo, enemigo/aliado del turno actual e ítems de tienda)."
+ },
+ {
+  "i": 62,
+  "style": "List Bullet",
+  "text": "Accesos directos del sidebar: Permite configurar qué accesos directos de las herramientas aparecen en el sidebar y en qué orden."
+ },
+ {
+  "i": 63,
+  "style": "List Bullet",
+  "text": "Actualizaciones: Permite comprobar si hay actualizaciones de la app y descargarlas."
+ },
+ {
+  "i": 64,
+  "style": "List Bullet",
+  "text": "Ajustes de cuenta: Permite cambiar la contraseña, eliminar la cuenta o cerrar sesión."
+ },
+ {
+  "i": 65,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 66,
+  "style": "Heading 1",
+  "text": "4. Pantallas secundarias: SKYLINE y MAPAS"
+ },
+ {
+  "i": 67,
+  "style": "Normal",
+  "text": "MasterHelp está diseñada para usar hasta 3 monitores simultáneamente. Desde la herramienta de Mapas puedes desplegar las dos ventanas secundarias: MAPAS y SKYLINE."
+ },
+ {
+  "i": 68,
+  "style": "Heading 2",
+  "text": "4.1 Pantalla MAPAS (Vista de jugadores)"
+ },
+ {
+  "i": 69,
+  "style": "Normal",
+  "text": "Muestra el mapa de batalla con los tokens, la niebla de guerra y la cuadrícula. Todo lo que el máster configura desde la vista previa de Mapas o Combate se refleja en esta pantalla en tiempo real."
+ },
+ {
+  "i": 70,
+  "style": "Normal",
+  "text": "Esta pantalla se controla desde la ventana principal; el máster no necesita ver físicamente esta pantalla para saber lo que se está mostrando."
+ },
+ {
+  "i": 71,
+  "style": "Heading 2",
+  "text": "4.2 Pantalla SKYLINE (Vista panorámica)"
+ },
+ {
+  "i": 72,
+  "style": "Normal",
+  "text": "Muestra contenido complementario para los jugadores:"
+ },
+ {
+  "i": 73,
+  "style": "List Bullet",
+  "text": "La escena/imagen asociada al mapa actual."
+ },
+ {
+  "i": 74,
+  "style": "List Bullet",
+  "text": "El día del calendario de la campaña."
+ },
+ {
+  "i": 75,
+  "style": "List Bullet",
+  "text": "El título de la canción que está sonando."
+ },
+ {
+  "i": 76,
+  "style": "List Bullet",
+  "text": "La barra de orden de iniciativa."
+ },
+ {
+  "i": 77,
+  "style": "List Bullet",
+  "text": "Imágenes de personajes o enemigos enviadas por el máster."
+ },
+ {
+  "i": 78,
+  "style": "List Bullet",
+  "text": "Imágenes de objetos de tienda."
+ },
+ {
+  "i": 79,
+  "style": "List Bullet",
+  "text": "Textos narrativos."
+ },
+ {
+  "i": 80,
+  "style": "Heading 2",
+  "text": "4.3 Configuración de dimensiones"
+ },
+ {
+  "i": 81,
+  "style": "Normal",
+  "text": "En los ajustes de Combate puedes configurar cómo se obtienen las dimensiones de las ventanas secundarias:"
+ },
+ {
+  "i": 82,
+  "style": "List Bullet",
+  "text": "Dinámica: Las dimensiones se obtienen automáticamente de las ventanas secundarias abiertas en la misma aplicación."
+ },
+ {
+  "i": 83,
+  "style": "List Bullet",
+  "text": "Personalizada: Introduce los valores manualmente. Útil cuando las ventanas secundarias se ejecutan en otro dispositivo o desde el navegador."
+ },
+ {
+  "i": 84,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 85,
+  "style": "Heading 1",
+  "text": "5. Sidebar: Accesos rápidos siempre visibles"
+ },
+ {
+  "i": 86,
+  "style": "Normal",
+  "text": "El sidebar es un elemento siempre visible en el lateral izquierdo de la pantalla principal. Está dividido en 3 zonas:"
+ },
+ {
+  "i": 87,
+  "style": "Normal",
+  "text": "Zona superior: Logo de la app"
+ },
+ {
+  "i": 88,
+  "style": "Normal",
+  "text": "Muestra el logo de MasterHelp. Cuando una campaña está activa, el logo cambia a la imagen de la campaña. Al hacer clic te lleva al HOME."
+ },
+ {
+  "i": 89,
+  "style": "Normal",
+  "text": "Zona central: Accesos directos"
+ },
+ {
+  "i": 90,
+  "style": "Normal",
+  "text": "Muestra iconos de acceso rápido a las distintas herramientas. Puedes personalizar qué herramientas mostrar y su orden desde los ajustes del HOME."
+ },
+ {
+  "i": 91,
+  "style": "Normal",
+  "text": "Zona inferior: Información rápida"
+ },
+ {
+  "i": 92,
+  "style": "Normal",
+  "text": "Contiene accesos directos para:"
+ },
+ {
+  "i": 93,
+  "style": "List Bullet",
+  "text": "Control de música y efectos de sonido (play/pausa, volumen)."
+ },
+ {
+  "i": 94,
+  "style": "List Bullet",
+  "text": "Momento del día (madrugada, mañana, tarde o noche)."
+ },
+ {
+  "i": 95,
+  "style": "List Bullet",
+  "text": "Día del calendario de la campaña (con opción de formato compacto DD/MM/YYYY o extendido)."
+ },
+ {
+  "i": 96,
+  "style": "List Bullet",
+  "text": "Avanzar/retroceder día de la campaña."
+ },
+ {
+  "i": 97,
+  "style": "List Bullet",
+  "text": "Alerta si no hay una sesión activa."
+ },
+ {
+  "i": 98,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 99,
+  "style": "Heading 1",
+  "text": "6. Herramientas"
+ },
+ {
+  "i": 100,
+  "style": "Heading 2",
+  "text": "6.1 Campañas"
+ },
+ {
+  "i": 101,
+  "style": "Normal",
+  "text": "Permite ver, crear, editar y eliminar campañas. También puedes establecer una campaña como activa, lo que afectará al resto de herramientas que dependen del contexto de campaña."
+ },
+ {
+  "i": 102,
+  "style": "Normal",
+  "text": "Cada campaña tiene:"
+ },
+ {
+  "i": 103,
+  "style": "List Bullet",
+  "text": "Nombre."
+ },
+ {
+  "i": 104,
+  "style": "List Bullet",
+  "text": "Imagen de miniatura (se usará como icono en el sidebar)."
+ },
+ {
+  "i": 105,
+  "style": "List Bullet",
+  "text": "Descripción."
+ },
+ {
+  "i": 106,
+  "style": "List Bullet",
+  "text": "Autor (por defecto, el usuario que la crea)."
+ },
+ {
+  "i": 107,
+  "style": "List Bullet",
+  "text": "Manuales asignados (ninguno, uno o varios; los manuales proporcionan bestiario, conjuros, clases, razas, dotes, rasgos y trasfondos)."
+ },
+ {
+  "i": 108,
+  "style": "List Bullet",
+  "text": "Jugadores invitados."
+ },
+ {
+  "i": 109,
+  "style": "Normal",
+  "text": "Si creas una campaña serás el máster de esa campaña. Si te invitan, te unirás como jugador. En función del rol que tengas en la campaña activa, podrás ver y hacer unas cosas u otras."
+ },
+ {
+  "i": 110,
+  "style": "Normal",
+  "text": "Desde esta herramienta puedes:"
+ },
+ {
+  "i": 111,
+  "style": "List Bullet",
+  "text": "Invitar jugadores a tus campañas (si eres máster)."
+ },
+ {
+  "i": 112,
+  "style": "List Bullet",
+  "text": "Ver y gestionar las invitaciones pendientes."
+ },
+ {
+  "i": 113,
+  "style": "List Bullet",
+  "text": "Importar/exportar la lista de campañas y sus datos a un archivo Excel."
+ },
+ {
+  "i": 114,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 115,
+  "style": "Heading 2",
+  "text": "6.2 Mapas"
+ },
+ {
+  "i": 116,
+  "style": "Normal",
+  "text": "Desde aquí podrás ver, crear, editar y eliminar los mapas de la campaña. También se despliegan las pantallas secundarias de MAPAS y SKYLINE."
+ },
+ {
+  "i": 117,
+  "style": "Heading 3",
+  "text": "Vista previa"
+ },
+ {
+  "i": 118,
+  "style": "Normal",
+  "text": "En la parte superior hay una vista previa dual que muestra tanto lo que se ve en la pantalla MAPAS como en la SKYLINE. Tienes controles para:"
+ },
+ {
+  "i": 119,
+  "style": "List Bullet",
+  "text": "Mover el escenario (izquierda, derecha, arriba y abajo)."
+ },
+ {
+  "i": 120,
+  "style": "List Bullet",
+  "text": "Rotar (+90° o -90°)."
+ },
+ {
+  "i": 121,
+  "style": "List Bullet",
+  "text": "Zoom in/out."
+ },
+ {
+  "i": 122,
+  "style": "List Bullet",
+  "text": "Resetear posición."
+ },
+ {
+  "i": 123,
+  "style": "List Bullet",
+  "text": "Activar/desactivar cuadrícula superpuesta al mapa."
+ },
+ {
+  "i": 124,
+  "style": "List Bullet",
+  "text": "Cambiar entre cuadrícula cuadrada o hexagonal."
+ },
+ {
+  "i": 125,
+  "style": "List Bullet",
+  "text": "Ajustar tamaño, color, opacidad y grosor de las líneas de la cuadrícula."
+ },
+ {
+  "i": 126,
+  "style": "Heading 3",
+  "text": "Cada mapa tiene"
+ },
+ {
+  "i": 127,
+  "style": "List Bullet",
+  "text": "Nombre."
+ },
+ {
+  "i": 128,
+  "style": "List Bullet",
+  "text": "Descripción (opcional)."
+ },
+ {
+  "i": 129,
+  "style": "List Bullet",
+  "text": "Grupo (opcional, se pueden poner varios)."
+ },
+ {
+  "i": 130,
+  "style": "List Bullet",
+  "text": "Imágenes del mapa por momento del día: Amanecer, Mañana, Tarde o Noche. Si solo tiene una imagen, se mostrará para los 4 momentos. Cada imagen se almacena en 3 resoluciones (baja, media y alta) para optimizar el rendimiento."
+ },
+ {
+  "i": 131,
+  "style": "List Bullet",
+  "text": "Imágenes de escena (Skyline) por momento del día (opcional)."
+ },
+ {
+  "i": 132,
+  "style": "List Bullet",
+  "text": "Música, playlist, efectos de sonido y presets asociados al mapa, configurables por momento del día y situación (sin combate, batalla fácil, media, difícil, letal, extrema)."
+ },
+ {
+  "i": 133,
+  "style": "List Bullet",
+  "text": "Por defecto, al poner la primera canción, automáticamente se asigna a todas las situaciones."
+ },
+ {
+  "i": 134,
+  "style": "Heading 3",
+  "text": "Modo Worldmap"
+ },
+ {
+  "i": 135,
+  "style": "Normal",
+  "text": "Cada mapa tiene un modo \"World Map\" que muestra el mapa en grande en la pantalla del máster. En este modo puedes:"
+ },
+ {
+  "i": 136,
+  "style": "List Bullet",
+  "text": "Hacer zoom, moverte y añadir marcadores."
+ },
+ {
+  "i": 137,
+  "style": "List Bullet",
+  "text": "Cada marcador tiene: nombre, icono (28 opciones), notas y enlaces a mapas, personajes, enemigos, encuentros, entradas de diario o Worldpedia."
+ },
+ {
+  "i": 138,
+  "style": "List Bullet",
+  "text": "Al pulsar un marcador, muestra su información. Al pulsar un enlace, muestra la información vinculada sin salir del modo Worldmap."
+ },
+ {
+  "i": 139,
+  "style": "List Bullet",
+  "text": "Desde los marcadores puedes enviar mapas/personajes/enemigos a las ventanas secundarias."
+ },
+ {
+  "i": 140,
+  "style": "Heading 3",
+  "text": "Funcionalidades adicionales"
+ },
+ {
+  "i": 141,
+  "style": "List Bullet",
+  "text": "Buscador con filtros para encontrar mapas rápidamente."
+ },
+ {
+  "i": 142,
+  "style": "List Bullet",
+  "text": "Los cambios de mapa activo actualizan automáticamente la música y la escena Skyline."
+ },
+ {
+  "i": 143,
+  "style": "List Bullet",
+  "text": "Importación/exportación de mapas a Excel."
+ },
+ {
+  "i": 144,
+  "style": "List Bullet",
+  "text": "Integración con domótica (Alexa, Google Home, Home Assistant, Govee, Hue): al seleccionar un mapa, las luces pueden cambiar de color/intensidad."
+ },
+ {
+  "i": 145,
+  "style": "Normal",
+  "text": "6.3 Combate"
+ },
+ {
+  "i": 146,
+  "style": "Normal",
+  "text": "Desde esta ventana se gestionan los combates. Tiene 3 apartados: ENCUENTROS, COMBATE y AJUSTES."
+ },
+ {
+  "i": 147,
+  "style": "Heading 3",
+  "text": "Encuentros"
+ },
+ {
+  "i": 148,
+  "style": "Normal",
+  "text": "Aquí puedes ver, crear, editar y eliminar encuentros. Cada encuentro tiene:"
+ },
+ {
+  "i": 149,
+  "style": "List Bullet",
+  "text": "Nombre."
+ },
+ {
+  "i": 150,
+  "style": "List Bullet",
+  "text": "Medidor de dificultad (también muestra la experiencia que obtendrían los jugadores)."
+ },
+ {
+  "i": 151,
+  "style": "List Bullet",
+  "text": "Música asociada."
+ },
+ {
+  "i": 152,
+  "style": "List Bullet",
+  "text": "Lista de participantes (personajes aliados, personajes enemigos y enemigos del bestiario)."
+ },
+ {
+  "i": 153,
+  "style": "Heading 3",
+  "text": "Combate"
+ },
+ {
+  "i": 154,
+  "style": "Normal",
+  "text": "En esta sección tienes:"
+ },
+ {
+  "i": 155,
+  "style": "List Bullet",
+  "text": "Ajustes rápidos: selector de mapa, selector de encuentro, switch para priorizar música del encuentro o del mapa, switch de niebla de guerra, switch de barra de iniciativa en SKYLINE."
+ },
+ {
+  "i": 156,
+  "style": "List Bullet",
+  "text": "Vista previa dual (MAPAS/SKYLINE) con todos los controles de mapa (mover, rotar, zoom, cuadrícula)."
+ },
+ {
+  "i": 157,
+  "style": "List Bullet",
+  "text": "Control de niebla de guerra: color y opacidad para el máster, editar niebla por casilla, poner/quitar toda la niebla, radio de disipación de tokens aliados."
+ },
+ {
+  "i": 158,
+  "style": "List Bullet",
+  "text": "Gestión de tokens: poner/quitar todos, solo aliados, solo enemigos, individualmente."
+ },
+ {
+  "i": 159,
+  "style": "List Bullet",
+  "text": "Modos de interacción con tokens: Ver/arrastrar/rotar, Añadir aliado genérico, Añadir enemigo genérico, Borrar token."
+ },
+ {
+  "i": 160,
+  "style": "List Bullet",
+  "text": "Al arrastrar tokens en la vista previa, se mueven en tiempo real en la pantalla MAPAS. Cada token tiene una flecha de orientación que apunta automáticamente al enemigo más cercano."
+ },
+ {
+  "i": 161,
+  "style": "List Bullet",
+  "text": "Al pulsar sobre un token puedes ver y modificar su vida (máxima, actual, temporal), poner notas y estados, y cambiar el tamaño."
+ },
+ {
+  "i": 162,
+  "style": "Heading 3",
+  "text": "Secciones inferiores"
+ },
+ {
+  "i": 163,
+  "style": "Normal",
+  "text": "1. Participantes: Preparas el combate. Muestra listas de aliados (iniciativa manual) y enemigos (iniciativa y vida manual o automática con dados de golpe o media)."
+ },
+ {
+  "i": 164,
+  "style": "Normal",
+  "text": "2. Orden por iniciativa: Lista ordenada de participantes con botones de EMPEZAR BATALLA (activa la música de batalla), TURNO SIGUIENTE y TURNO ANTERIOR, con contador de turnos y rondas. Muestra side-by-side la ficha del turno actual y la del seleccionado, con notas y estados (puedes poner duración en turnos a los estados alterados)."
+ },
+ {
+  "i": 165,
+  "style": "Normal",
+  "text": "3. Ajustes: Configuraciones de combate como prioridad de música, visualización de iniciativa en SKYLINE, imagen ampliada del turno activo, ayudas visuales para tokens grandes, y configuración de dimensiones de ventanas secundarias."
+ },
+ {
+  "i": 166,
+  "style": "Normal",
+  "text": "Botones importantes:"
+ },
+ {
+  "i": 167,
+  "style": "List Bullet",
+  "text": "Empezar batalla: Activa la música de batalla."
+ },
+ {
+  "i": 168,
+  "style": "List Bullet",
+  "text": "Escapar batalla: Vuelve a la música base."
+ },
+ {
+  "i": 169,
+  "style": "List Bullet",
+  "text": "Batalla ganada: Restaura la música base y asigna experiencia a los personajes."
+ },
+ {
+  "i": 170,
+  "style": "List Bullet",
+  "text": "Añadir a diario: Registra el enfrentamiento en el diario."
+ },
+ {
+  "i": 171,
+  "style": "Normal",
+  "text": "6.4 Escenas (Scenes)"
+ },
+ {
+  "i": 172,
+  "style": "Normal",
+  "text": "La herramienta de Escenas permite crear secuencias automatizadas de acciones que se ejecutan en las distintas ventanas (principal, MAPAS o SKYLINE). Es como crear \"cinemáticas\" o momentos narrativos programados para tu partida."
+ },
+ {
+  "i": 173,
+  "style": "Normal",
+  "text": "Cada escena tiene:"
+ },
+ {
+  "i": 174,
+  "style": "List Bullet",
+  "text": "Nombre y descripción."
+ },
+ {
+  "i": 175,
+  "style": "List Bullet",
+  "text": "Icono o imagen representativa."
+ },
+ {
+  "i": 176,
+  "style": "List Bullet",
+  "text": "Configuración de bucle: puede repetirse automáticamente con pausas configurables (fijas o aleatorias) y con ventana de bucle personalizada."
+ },
+ {
+  "i": 177,
+  "style": "List Bullet",
+  "text": "Opciones de música: tomar el control de la música al iniciar y restaurar la anterior al finalizar."
+ },
+ {
+  "i": 178,
+  "style": "Normal",
+  "text": "Tipos de acciones que puedes incluir en una escena:"
+ },
+ {
+  "i": 179,
+  "style": "List Bullet",
+  "text": "Enviar imagen a una ventana (MAPAS o SKYLINE)."
+ },
+ {
+  "i": 180,
+  "style": "List Bullet",
+  "text": "Enviar vídeo a una ventana, con opciones de recorte, bucle y ajustes de volumen."
+ },
+ {
+  "i": 181,
+  "style": "List Bullet",
+  "text": "Reproducir música o playlist."
+ },
+ {
+  "i": 182,
+  "style": "List Bullet",
+  "text": "Reproducir efectos de sonido o presets."
+ },
+ {
+  "i": 183,
+  "style": "List Bullet",
+  "text": "Detener música o efectos."
+ },
+ {
+  "i": 184,
+  "style": "List Bullet",
+  "text": "Ajustar volumen de efectos."
+ },
+ {
+  "i": 185,
+  "style": "List Bullet",
+  "text": "Cambiar el fondo de una ventana."
+ },
+ {
+  "i": 186,
+  "style": "List Bullet",
+  "text": "Aplicar filtros visuales a una ventana."
+ },
+ {
+  "i": 187,
+  "style": "List Bullet",
+  "text": "Mostrar texto narrativo en una ventana, con opción de narración por voz (Text-to-Speech)."
+ },
+ {
+  "i": 188,
+  "style": "List Bullet",
+  "text": "Cambiar la iluminación de la escena."
+ },
+ {
+  "i": 189,
+  "style": "Normal",
+  "text": "El editor de escenas incluye:"
+ },
+ {
+  "i": 190,
+  "style": "List Bullet",
+  "text": "Línea de tiempo (timeline) donde organizar y secuenciar las acciones."
+ },
+ {
+  "i": 191,
+  "style": "List Bullet",
+  "text": "Previsualización en tiempo real de la escena en la ventana seleccionada."
+ },
+ {
+  "i": 192,
+  "style": "List Bullet",
+  "text": "Biblioteca de vídeos: puedes subir, renombrar y eliminar vídeos, y crear clips derivados a partir de un vídeo existente."
+ },
+ {
+  "i": 193,
+  "style": "List Bullet",
+  "text": "Arrastrar y soltar elementos multimedia directamente sobre la línea de tiempo."
+ },
+ {
+  "i": 194,
+  "style": "List Bullet",
+  "text": "Trayectorias de movimiento (motion paths) para animar imágenes o vídeos con keyframes."
+ },
+ {
+  "i": 195,
+  "style": "List Bullet",
+  "text": "Editor de texto narrativo con formato (tamaño, color, alineación, negrita, cursiva, subrayado)."
+ },
+ {
+  "i": 196,
+  "style": "List Bullet",
+  "text": "Soporte para Chroma Key en imágenes y vídeos."
+ },
+ {
+  "i": 197,
+  "style": "Normal",
+  "text": "💡 Solo el máster tiene acceso a esta herramienta. Las escenas pueden ser globales o específicas de campaña."
+ },
+ {
+  "i": 198,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 199,
+  "style": "Heading 2",
+  "text": "6.5 Soundtrack"
+ },
+ {
+  "i": 200,
+  "style": "Normal",
+  "text": "Tiene dos secciones principales: CANCIONES y EFECTOS."
+ },
+ {
+  "i": 201,
+  "style": "Heading 3",
+  "text": "Sección de Canciones"
+ },
+ {
+  "i": 202,
+  "style": "List Bullet",
+  "text": "Ver listado de canciones, añadir nuevas (desde URL o archivo), editar info y eliminar."
+ },
+ {
+  "i": 203,
+  "style": "List Bullet",
+  "text": "Crear, editar y eliminar Playlists."
+ },
+ {
+  "i": 204,
+  "style": "List Bullet",
+  "text": "Reproducir canciones sueltas o playlists enteras."
+ },
+ {
+  "i": 205,
+  "style": "List Bullet",
+  "text": "Cada canción tiene: nombre, artista, grupo, álbum y atmósfera (opcionales)."
+ },
+ {
+  "i": 206,
+  "style": "List Bullet",
+  "text": "Dos listas: canciones asociadas a la campaña activa y no asociadas. Puedes asociar/desasociar con un clic para mantener organizadas las canciones por campaña."
+ },
+ {
+  "i": 207,
+  "style": "List Bullet",
+  "text": "Historial de reproducción."
+ },
+ {
+  "i": 208,
+  "style": "List Bullet",
+  "text": "Buscador con filtros."
+ },
+ {
+  "i": 209,
+  "style": "Heading 3",
+  "text": "Sección de Efectos de Sonido"
+ },
+ {
+  "i": 210,
+  "style": "List Bullet",
+  "text": "Ver listado de efectos, añadir (desde URL o archivo), editar info y eliminar."
+ },
+ {
+  "i": 211,
+  "style": "List Bullet",
+  "text": "Crear, editar y eliminar Presets con uno o varios efectos. Cada efecto en un preset puede tener ajustes individuales de:"
+ },
+ {
+  "i": 212,
+  "style": "List Bullet",
+  "text": "Volumen."
+ },
+ {
+  "i": 213,
+  "style": "List Bullet",
+  "text": "Tiempo de espera antes de la siguiente reproducción (fijo o aleatorio)."
+ },
+ {
+  "i": 214,
+  "style": "List Bullet",
+  "text": "Modo de bucle: continuo, con espera fija, con espera aleatoria o una sola vez."
+ },
+ {
+  "i": 215,
+  "style": "List Bullet",
+  "text": "Eco (con retardo y feedback)."
+ },
+ {
+  "i": 216,
+  "style": "List Bullet",
+  "text": "Tono (pitch)."
+ },
+ {
+  "i": 217,
+  "style": "List Bullet",
+  "text": "Filtro de audio (lowpass, highpass, bandpass)."
+ },
+ {
+  "i": 218,
+  "style": "List Bullet",
+  "text": "Reproducir efectos sueltos o presets completos."
+ },
+ {
+  "i": 219,
+  "style": "List Bullet",
+  "text": "Cada efecto tiene: nombre y categoría (opcional)."
+ },
+ {
+  "i": 220,
+  "style": "List Bullet",
+  "text": "Buscador con filtros."
+ },
+ {
+  "i": 221,
+  "style": "Heading 3",
+  "text": "Ajustes de Soundtrack"
+ },
+ {
+  "i": 222,
+  "style": "List Bullet",
+  "text": "Modo Automático o Manual (en modo manual no se aplican cambios automáticos de música/efectos al cambiar de mapa, encuentro o combate)."
+ },
+ {
+  "i": 223,
+  "style": "List Bullet",
+  "text": "Mostrar/ocultar título de la canción en la ventana SKYLINE."
+ },
+ {
+  "i": 224,
+  "style": "List Bullet",
+  "text": "Detener SFX al cambiar a un mapa sin efectos configurados."
+ },
+ {
+  "i": 225,
+  "style": "Normal",
+  "text": "💡 El máster tiene control total. Los jugadores pueden ver las canciones que el máster marque como visibles."
+ },
+ {
+  "i": 226,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 227,
+  "style": "Heading 2",
+  "text": "6.6 Personajes"
+ },
+ {
+  "i": 228,
+  "style": "Normal",
+  "text": "Este apartado tiene varias secciones para gestionar todo lo relacionado con los personajes y sus atributos de juego."
+ },
+ {
+  "i": 229,
+  "style": "Normal",
+  "text": "Secciones disponibles:"
+ },
+ {
+  "i": 230,
+  "style": "List Bullet",
+  "text": "Clases: Ver, editar, crear y eliminar clases. Por defecto se cargan las de los manuales asignados a la campaña. Puedes crear clases personalizadas con progresión por nivel."
+ },
+ {
+  "i": 231,
+  "style": "List Bullet",
+  "text": "Razas: Ver, editar, crear y eliminar razas."
+ },
+ {
+  "i": 232,
+  "style": "List Bullet",
+  "text": "Dotes (Feats): Ver, editar, crear y eliminar dotes."
+ },
+ {
+  "i": 233,
+  "style": "List Bullet",
+  "text": "Rasgos (Traits): Ver, editar, crear y eliminar rasgos."
+ },
+ {
+  "i": 234,
+  "style": "List Bullet",
+  "text": "Trasfondos (Backgrounds): Ver, editar, crear y eliminar trasfondos."
+ },
+ {
+  "i": 235,
+  "style": "List Bullet",
+  "text": "Personajes: Ver, editar, crear y eliminar personajes. Los personajes jugadores aparecen antes que los NPCs."
+ },
+ {
+  "i": 236,
+  "style": "List Bullet",
+  "text": "Afinigrama (Affinity Chart): Mapa visual de relaciones entre personajes."
+ },
+ {
+  "i": 237,
+  "style": "Normal",
+  "text": "Al crear/editar un personaje:"
+ },
+ {
+  "i": 238,
+  "style": "Normal",
+  "text": "Puedes poner raza, clase, dotes, rasgos y trasfondos de forma manual (escribiendo lo que quieras) o seleccionando de desplegables las opciones disponibles en la app. También puedes seleccionar hechizos de la herramienta de Conjuros o añadirlos manualmente."
+ },
+ {
+  "i": 239,
+  "style": "List Bullet",
+  "text": "Tiene un buscador con filtros."
+ },
+ {
+  "i": 240,
+  "style": "List Bullet",
+  "text": "Incluye un asistente que, si lo activas, te indica qué rasgos debería tener según clase, raza y nivel, cantidad de hechizos por nivel y cómo calcular la vida."
+ },
+ {
+  "i": 241,
+  "style": "List Bullet",
+  "text": "La ficha del personaje incluye toda la información típica de una ficha estándar más añadidos como aliados/organizaciones, historia, tesoro y un checkbox de \"conocido por los jugadores\"."
+ },
+ {
+  "i": 242,
+  "style": "List Bullet",
+  "text": "Al pulsar sobre elementos como hechizos, rasgos o dotes en la ficha, se muestra información detallada del elemento."
+ },
+ {
+  "i": 243,
+  "style": "List Bullet",
+  "text": "Puedes vincular mapas a un personaje para filtrar personajes por lugares."
+ },
+ {
+  "i": 244,
+  "style": "List Bullet",
+  "text": "Puedes enviar la imagen del personaje a la pantalla SKYLINE."
+ },
+ {
+  "i": 245,
+  "style": "List Bullet",
+  "text": "Sección de vínculos/relaciones entre personajes."
+ },
+ {
+  "i": 246,
+  "style": "Heading 3",
+  "text": "Afinigrama"
+ },
+ {
+  "i": 247,
+  "style": "Normal",
+  "text": "Mapa de puntos navegable que muestra visualmente las relaciones entre personajes. Cada personaje tiene su token y nombre, y líneas con iconos que representan el tipo de relación. Al pasar el ratón sobre un token, se destacan sus vínculos. Las secciones agrupan a los jugadores y a los personajes por lugar (mapa asociado)."
+ },
+ {
+  "i": 248,
+  "style": "List Bullet",
+  "text": "Ver, crear, editar y eliminar vínculos."
+ },
+ {
+  "i": 249,
+  "style": "List Bullet",
+  "text": "Ver ficha del personaje."
+ },
+ {
+  "i": 250,
+  "style": "List Bullet",
+  "text": "Enviar ilustración a SKYLINE."
+ },
+ {
+  "i": 251,
+  "style": "List Bullet",
+  "text": "Buscador para centrar el mapa sobre un personaje."
+ },
+ {
+  "i": 252,
+  "style": "Normal",
+  "text": "💡 El máster tiene control total. Los jugadores ven la lista de personajes \"conocidos\" y pueden editar su propio personaje."
+ },
+ {
+  "i": 253,
+  "style": "Normal",
+  "text": "6.7 Bestiario"
+ },
+ {
+  "i": 254,
+  "style": "Normal",
+  "text": "Aquí puedes ver, editar, crear y eliminar entradas del bestiario. Por defecto se cargan las entradas de los manuales asignados a la campaña, y puedes crear y editar nuevas entradas personalizadas."
+ },
+ {
+  "i": 255,
+  "style": "Normal",
+  "text": "Cada entrada del bestiario puede tener:"
+ },
+ {
+  "i": 256,
+  "style": "Normal",
+  "text": "Nombre / VD (Valor de Desafío) / Tipo / Alineamiento / Origen / Tamaño / PX / Armadura / Puntos de Golpe / Velocidad / FUE / DES / CONS / INT / SAB / CAR / Tiradas de Salvación / Habilidades / Sentidos / Idiomas / Resistencias al daño / Inmunidades al daño / Inmunidades al estado / Vulnerabilidades al daño / Rasgos / Acciones / Acciones legendarias / Reacciones / Descripción / Imagen / Token (color o imagen)."
+ },
+ {
+  "i": 257,
+  "style": "List Bullet",
+  "text": "Buscador con filtros avanzados."
+ },
+ {
+  "i": 258,
+  "style": "List Bullet",
+  "text": "Las imágenes se almacenan en 3 resoluciones para optimizar rendimiento."
+ },
+ {
+  "i": 259,
+  "style": "List Bullet",
+  "text": "Desde la ficha de un enemigo puedes enviar su imagen a SKYLINE."
+ },
+ {
+  "i": 260,
+  "style": "List Bullet",
+  "text": "Importación/exportación de entradas a Excel."
+ },
+ {
+  "i": 261,
+  "style": "Normal",
+  "text": "💡 Solo el máster tiene acceso a esta herramienta."
+ },
+ {
+  "i": 262,
+  "style": "Heading 2",
+  "text": "6.8 Conjuros (Spells)"
+ },
+ {
+  "i": 263,
+  "style": "Normal",
+  "text": "Aquí puedes ver, editar, crear y eliminar conjuros. Por defecto se cargan los de los manuales asignados a la campaña."
+ },
+ {
+  "i": 264,
+  "style": "Normal",
+  "text": "Cada conjuro puede tener:"
+ },
+ {
+  "i": 265,
+  "style": "Normal",
+  "text": "Nombre / Escuela / Nivel / Alcance / Duración / Coste / Ritual (checkbox) / Concentración (checkbox) / Material (checkbox) / Componentes / Clases / Descripción / Daño / Ataque / Área de Efecto / Clase de Dificultad / Lanzamiento a Nivel Superior."
+ },
+ {
+  "i": 266,
+  "style": "List Bullet",
+  "text": "Buscador con filtros."
+ },
+ {
+  "i": 267,
+  "style": "List Bullet",
+  "text": "Importación/exportación de la lista de conjuros a Excel."
+ },
+ {
+  "i": 268,
+  "style": "Normal",
+  "text": "💡 El máster tiene control total. Los jugadores pueden ver la lista y el detalle de los conjuros."
+ },
+ {
+  "i": 269,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 270,
+  "style": "Heading 2",
+  "text": "6.9 Manuales"
+ },
+ {
+  "i": 271,
+  "style": "Normal",
+  "text": "Actualmente incluye dos manuales de referencia: D&D 5e SRD 5.1 (2014) y D&D 5e SRD 5.2 (2024, en proceso de completar)."
+ },
+ {
+  "i": 272,
+  "style": "Normal",
+  "text": "Cada manual tiene un índice con secciones de consulta (no editables):"
+ },
+ {
+  "i": 273,
+  "style": "Normal",
+  "text": "Bestiary, Introduction, Basic Rules, Ability Scores, Equipment, Combat, Spellcasting, Adventuring, Conditions, Races, Classes, Spells."
+ },
+ {
+  "i": 274,
+  "style": "Normal",
+  "text": "El contenido está disponible tanto en inglés como en español (el índice está en inglés)."
+ },
+ {
+  "i": 275,
+  "style": "Normal",
+  "text": "El contenido de cada sección corresponde a la OGL (Open Game License)."
+ },
+ {
+  "i": 276,
+  "style": "Normal",
+  "text": "Puedes asignar manuales a cada campaña. Las campañas heredan automáticamente el bestiario, conjuros, clases, razas, dotes, rasgos y trasfondos de los manuales asignados."
+ },
+ {
+  "i": 277,
+  "style": "Heading 2",
+  "text": "6.10 Misiones (Quests)"
+ },
+ {
+  "i": 278,
+  "style": "Normal",
+  "text": "Aquí puedes ver, crear, editar y eliminar misiones."
+ },
+ {
+  "i": 279,
+  "style": "Normal",
+  "text": "Características:"
+ },
+ {
+  "i": 280,
+  "style": "List Bullet",
+  "text": "Cada misión tiene título y descripción."
+ },
+ {
+  "i": 281,
+  "style": "List Bullet",
+  "text": "Estados: Sin aceptar, Aceptada y Completada. Se organizan visualmente según su estado."
+ },
+ {
+  "i": 282,
+  "style": "List Bullet",
+  "text": "Al aceptar o completar una misión, se añade una entrada automática al diario."
+ },
+ {
+  "i": 283,
+  "style": "List Bullet",
+  "text": "Puedes configurar prerequisitos: una misión solo está disponible si se ha completado otra."
+ },
+ {
+  "i": 284,
+  "style": "List Bullet",
+  "text": "Buscador con filtros (por estado)."
+ },
+ {
+  "i": 285,
+  "style": "List Bullet",
+  "text": "Generador de misiones aleatorias basado en una lista de datos personalizable."
+ },
+ {
+  "i": 286,
+  "style": "List Bullet",
+  "text": "Importación/exportación a Excel."
+ },
+ {
+  "i": 287,
+  "style": "Normal",
+  "text": "💡 El máster tiene control total. Los jugadores ven las misiones aceptadas y completadas."
+ },
+ {
+  "i": 288,
+  "style": "Heading 2",
+  "text": "6.11 Tiendas (Shops)"
+ },
+ {
+  "i": 289,
+  "style": "Normal",
+  "text": "Aquí puedes ver, crear, editar y eliminar tiendas."
+ },
+ {
+  "i": 290,
+  "style": "Normal",
+  "text": "Cada tienda tiene:"
+ },
+ {
+  "i": 291,
+  "style": "List Bullet",
+  "text": "Nombre."
+ },
+ {
+  "i": 292,
+  "style": "List Bullet",
+  "text": "Descripción (opcional)."
+ },
+ {
+  "i": 293,
+  "style": "List Bullet",
+  "text": "Secciones configurables: cada sección es una tabla con las columnas que definas. Cada celda puede ser de texto o multimedia (imagen, vídeo, GIF, audio)."
+ },
+ {
+  "i": 294,
+  "style": "List Bullet",
+  "text": "Si una celda contiene una imagen, puedes enviarla a la pantalla SKYLINE."
+ },
+ {
+  "i": 295,
+  "style": "List Bullet",
+  "text": "Buscador global de tiendas y buscador dentro de cada sección."
+ },
+ {
+  "i": 296,
+  "style": "List Bullet",
+  "text": "Importación/exportación a Excel."
+ },
+ {
+  "i": 297,
+  "style": "Normal",
+  "text": "💡 Solo el máster tiene acceso a esta herramienta."
+ },
+ {
+  "i": 298,
+  "style": "Heading 2",
+  "text": "6.12 Diario (Journal)"
+ },
+ {
+  "i": 299,
+  "style": "Normal",
+  "text": "Tiene tres secciones: Calendario, Sesiones y Ajustes."
+ },
+ {
+  "i": 300,
+  "style": "Heading 3",
+  "text": "Calendario"
+ },
+ {
+  "i": 301,
+  "style": "Normal",
+  "text": "Calendario ficticio completamente personalizable para el mundo de tu campaña. Puedes configurar: año (con prefijos/sufijos como \"620 de la dinastía Kotagh\"), número de meses, nombre de cada mes, días por mes, días por semana y nombre de los días."
+ },
+ {
+  "i": 302,
+  "style": "Normal",
+  "text": "Cada día puede tener entradas de diario (públicas o privadas) que se pueden ver, crear, editar y eliminar."
+ },
+ {
+  "i": 303,
+  "style": "Heading 3",
+  "text": "Sesiones"
+ },
+ {
+  "i": 304,
+  "style": "Normal",
+  "text": "Registro de sesiones de juego. Al iniciar una sesión, la app registra automáticamente los días del calendario que transcurren durante la partida. Puedes ver, crear, editar y finalizar sesiones."
+ },
+ {
+  "i": 305,
+  "style": "Heading 3",
+  "text": "Ajustes"
+ },
+ {
+  "i": 306,
+  "style": "List Bullet",
+  "text": "Mostrar el día seleccionado en el sidebar."
+ },
+ {
+  "i": 307,
+  "style": "List Bullet",
+  "text": "Mostrar el día seleccionado en la ventana SKYLINE."
+ },
+ {
+  "i": 308,
+  "style": "List Bullet",
+  "text": "Avisar en el sidebar si no hay sesión activa."
+ },
+ {
+  "i": 309,
+  "style": "List Bullet",
+  "text": "Mostrar controles de navegación de día en el sidebar."
+ },
+ {
+  "i": 310,
+  "style": "List Bullet",
+  "text": "Formato de fecha: Extendido o Compacto (DD/MM/YYYY)."
+ },
+ {
+  "i": 311,
+  "style": "List Bullet",
+  "text": "Configurar el calendario completo (año, meses, días, semanas)."
+ },
+ {
+  "i": 312,
+  "style": "List Bullet",
+  "text": "Desde el diario se gestiona el momento del día (madrugada, mañana, tarde, noche)."
+ },
+ {
+  "i": 313,
+  "style": "List Bullet",
+  "text": "Importación/exportación a Excel."
+ },
+ {
+  "i": 314,
+  "style": "Normal",
+  "text": "💡 El máster tiene control total. Los jugadores pueden ver las notas del diario y las sesiones, pero no pueden editar."
+ },
+ {
+  "i": 315,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 316,
+  "style": "Heading 2",
+  "text": "6.13 Worldpedia"
+ },
+ {
+  "i": 317,
+  "style": "Normal",
+  "text": "Este componente está pensado para que el máster organice todas sus notas sobre la campaña, los personajes y el lore del mundo."
+ },
+ {
+  "i": 318,
+  "style": "Normal",
+  "text": "Características:"
+ },
+ {
+  "i": 319,
+  "style": "List Bullet",
+  "text": "Crear, editar y eliminar carpetas y notas, tanto dentro como fuera de carpetas."
+ },
+ {
+  "i": 320,
+  "style": "List Bullet",
+  "text": "Mover notas entre carpetas o sacarlas de ellas."
+ },
+ {
+  "i": 321,
+  "style": "List Bullet",
+  "text": "Buscador para encontrar notas rápidamente."
+ },
+ {
+  "i": 322,
+  "style": "List Bullet",
+  "text": "Añadir imágenes dentro de las notas."
+ },
+ {
+  "i": 323,
+  "style": "List Bullet",
+  "text": "Tres tipos de enlaces en una nota:"
+ },
+ {
+  "i": 324,
+  "style": "List Bullet",
+  "text": "Enlace a internet (URL): abre una ventana externa a esa página."
+ },
+ {
+  "i": 325,
+  "style": "List Bullet",
+  "text": "Enlace a otra nota de Worldpedia: navega a esa nota sin cerrar la actual."
+ },
+ {
+  "i": 326,
+  "style": "List Bullet",
+  "text": "Enlace a elementos de la app (personajes, mapas, hechizos, enemigos): abre la ficha del elemento desde Worldpedia sin cambiar de herramienta."
+ },
+ {
+  "i": 327,
+  "style": "List Bullet",
+  "text": "Cada carpeta y nota registra su fecha de creación y las relaciones de enlaces (qué enlaces tiene y qué notas la enlazan a ella)."
+ },
+ {
+  "i": 328,
+  "style": "List Bullet",
+  "text": "Desde las vistas de personajes, mapas y enemigos abiertas desde Worldpedia, puedes enviar elementos a las pantallas MAPAS o SKYLINE."
+ },
+ {
+  "i": 329,
+  "style": "List Bullet",
+  "text": "Importación/exportación de carpetas y notas."
+ },
+ {
+  "i": 330,
+  "style": "Normal",
+  "text": "💡 Solo el máster tiene acceso a esta herramienta."
+ },
+ {
+  "i": 331,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 332,
+  "style": "Heading 1",
+  "text": "7. Atajos (Shortcuts)"
+ },
+ {
+  "i": 333,
+  "style": "Normal",
+  "text": "La herramienta de Atajos permite al máster crear botones rápidos, macros sencillas y disparadores con teclado para automatizar acciones durante la partida."
+ },
+ {
+  "i": 334,
+  "style": "Normal",
+  "text": "Cada atajo tiene:"
+ },
+ {
+  "i": 335,
+  "style": "List Bullet",
+  "text": "Nombre y descripción."
+ },
+ {
+  "i": 336,
+  "style": "List Bullet",
+  "text": "Icono (emoji o imagen personalizada)."
+ },
+ {
+  "i": 337,
+  "style": "List Bullet",
+  "text": "Modo: Botón (toggle) o Temporal (se activa durante X segundos y se desactiva solo)."
+ },
+ {
+  "i": 338,
+  "style": "List Bullet",
+  "text": "Atajo de teclado (hotkey) opcional."
+ },
+ {
+  "i": 339,
+  "style": "List Bullet",
+  "text": "Color para estado activo e inactivo."
+ },
+ {
+  "i": 340,
+  "style": "List Bullet",
+  "text": "Configuración de visibilidad: en el HOME, en el sidebar, en la hotbar."
+ },
+ {
+  "i": 341,
+  "style": "List Bullet",
+  "text": "Paneles a los que pertenece."
+ },
+ {
+  "i": 342,
+  "style": "Normal",
+  "text": "Tipos de acciones que puede ejecutar un atajo:"
+ },
+ {
+  "i": 343,
+  "style": "List Bullet",
+  "text": "Toggle State: Activar/desactivar un estado personalizado."
+ },
+ {
+  "i": 344,
+  "style": "List Bullet",
+  "text": "Reproducir efecto de sonido."
+ },
+ {
+  "i": 345,
+  "style": "List Bullet",
+  "text": "Enviar contenido a las ventanas de proyección (MAPAS/SKYLINE)."
+ },
+ {
+  "i": 346,
+  "style": "List Bullet",
+  "text": "Mostrar texto narrativo en proyección."
+ },
+ {
+  "i": 347,
+  "style": "List Bullet",
+  "text": "Aplicar filtros visuales a las ventanas de proyección."
+ },
+ {
+  "i": 348,
+  "style": "Normal",
+  "text": "Los atajos pueden ser globales o específicos de campaña. Se ejecutan con un solo clic desde cualquier lugar de la app."
+ },
+ {
+  "i": 349,
+  "style": "Normal",
+  "text": "💡 Solo el máster tiene acceso a crear y gestionar atajos."
+ },
+ {
+  "i": 350,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 351,
+  "style": "Heading 1",
+  "text": "8. Iconos Skyline flotantes"
+ },
+ {
+  "i": 352,
+  "style": "Normal",
+  "text": "Desde el HOME puedes activar o desactivar la opción de mostrar unos pequeños iconos en la esquina inferior derecha de la pantalla principal. Estos iconos son visibles desde cualquier parte de la app y aparecen cuando hay contenido activo en la pantalla SKYLINE:"
+ },
+ {
+  "i": 353,
+  "style": "List Bullet",
+  "text": "Icono de personaje: Cuando la imagen de un personaje está proyectada en SKYLINE."
+ },
+ {
+  "i": 354,
+  "style": "List Bullet",
+  "text": "Icono de enemigo/aliado: Cuando la imagen del turno actual de combate está proyectada."
+ },
+ {
+  "i": 355,
+  "style": "List Bullet",
+  "text": "Icono de objeto de tienda: Cuando la imagen de un ítem de tienda está proyectada."
+ },
+ {
+  "i": 356,
+  "style": "Normal",
+  "text": "Pueden mostrarse hasta tres iconos simultáneamente. Cuando hay varios elementos activos, la ventana SKYLINE muestra solo uno (el más reciente), y los demás se muestran en los iconos con una ligera transparencia indicando que están en espera."
+ },
+ {
+  "i": 357,
+  "style": "Normal",
+  "text": "Al pulsar un icono puedes:"
+ },
+ {
+  "i": 358,
+  "style": "List Bullet",
+  "text": "Ir directamente a la sección correspondiente (personaje, bestiario, tienda)."
+ },
+ {
+  "i": 359,
+  "style": "List Bullet",
+  "text": "Quitar ese elemento de la pantalla SKYLINE."
+ },
+ {
+  "i": 360,
+  "style": "List Bullet",
+  "text": "Ver la ficha del personaje/enemigo."
+ },
+ {
+  "i": 361,
+  "style": "List Bullet",
+  "text": "Avanzar o retroceder turno del combate."
+ },
+ {
+  "i": 362,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 363,
+  "style": "Heading 1",
+  "text": "9. Funcionalidades adicionales"
+ },
+ {
+  "i": 364,
+  "style": "Heading 2",
+  "text": "9.1 Importación/Exportación"
+ },
+ {
+  "i": 365,
+  "style": "Normal",
+  "text": "Muchas herramientas permiten importar y exportar datos en formato Excel (.xlsx):"
+ },
+ {
+  "i": 366,
+  "style": "List Bullet",
+  "text": "Mapas: exportar/importar la lista completa con sus configuraciones."
+ },
+ {
+  "i": 367,
+  "style": "List Bullet",
+  "text": "Bestiario: exportar/importar entradas de enemigos."
+ },
+ {
+  "i": 368,
+  "style": "List Bullet",
+  "text": "Personajes: exportar/importar fichas de personajes."
+ },
+ {
+  "i": 369,
+  "style": "List Bullet",
+  "text": "Conjuros: exportar/importar la lista de hechizos."
+ },
+ {
+  "i": 370,
+  "style": "List Bullet",
+  "text": "Campañas: exportar/importar datos de campañas."
+ },
+ {
+  "i": 371,
+  "style": "List Bullet",
+  "text": "Diario: exportar/importar calendario, sesiones y entradas."
+ },
+ {
+  "i": 372,
+  "style": "List Bullet",
+  "text": "Misiones: exportar/importar misiones."
+ },
+ {
+  "i": 373,
+  "style": "List Bullet",
+  "text": "Tiendas: exportar/importar tiendas completas."
+ },
+ {
+  "i": 374,
+  "style": "List Bullet",
+  "text": "Worldpedia: exportar/importar carpetas y notas."
+ },
+ {
+  "i": 375,
+  "style": "Heading 2",
+  "text": "9.2 Integración con domótica"
+ },
+ {
+  "i": 376,
+  "style": "Normal",
+  "text": "Puedes configurar integraciones con sistemas de domótica para crear ambientación inmersiva durante tus partidas:"
+ },
+ {
+  "i": 377,
+  "style": "List Bullet",
+  "text": "Amazon Alexa."
+ },
+ {
+  "i": 378,
+  "style": "List Bullet",
+  "text": "Google Home."
+ },
+ {
+  "i": 379,
+  "style": "List Bullet",
+  "text": "Home Assistant."
+ },
+ {
+  "i": 380,
+  "style": "List Bullet",
+  "text": "Govee."
+ },
+ {
+  "i": 381,
+  "style": "List Bullet",
+  "text": "Philips Hue."
+ },
+ {
+  "i": 382,
+  "style": "Normal",
+  "text": "Por ejemplo, al seleccionar un mapa o al comenzar una batalla, puedes configurar que las luces cambien de color, intensidad o ejecuten una rutina específica."
+ },
+ {
+  "i": 383,
+  "style": "Heading 2",
+  "text": "9.3 Múltiples resoluciones de imagen"
+ },
+ {
+  "i": 384,
+  "style": "Normal",
+  "text": "La app procesa y almacena cada imagen subida en tres resoluciones (baja, media y alta). Esto optimiza el uso de recursos:"
+ },
+ {
+  "i": 385,
+  "style": "List Bullet",
+  "text": "Resolución baja: para listas y vistas previas."
+ },
+ {
+  "i": 386,
+  "style": "List Bullet",
+  "text": "Resolución media: para vista detallada en la ventana del máster."
+ },
+ {
+  "i": 387,
+  "style": "List Bullet",
+  "text": "Resolución alta: para las pantallas secundarias y proyecciones."
+ },
+ {
+  "i": 388,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 389,
+  "style": "Heading 1",
+  "text": "10. Acceso web y multi-dispositivo"
+ },
+ {
+  "i": 390,
+  "style": "Normal",
+  "text": "MasterHelp puede ejecutarse como aplicación de escritorio (Windows, Linux, Mac) o como aplicación web. En ambos casos, la base de datos es compartida."
+ },
+ {
+  "i": 391,
+  "style": "Normal",
+  "text": "Cuando se ejecuta como aplicación de escritorio:"
+ },
+ {
+  "i": 392,
+  "style": "List Bullet",
+  "text": "La app abre tres ventanas (principal, MAPAS y SKYLINE) que se sincronizan automáticamente."
+ },
+ {
+  "i": 393,
+  "style": "List Bullet",
+  "text": "Las ventanas secundarias se pueden arrastrar a monitores diferentes."
+ },
+ {
+  "i": 394,
+  "style": "List Bullet",
+  "text": "Usa Electron para la experiencia de escritorio nativa."
+ },
+ {
+  "i": 395,
+  "style": "Normal",
+  "text": "Cuando se usa la versión web:"
+ },
+ {
+  "i": 396,
+  "style": "List Bullet",
+  "text": "La ventana principal y las secundarias se abren en pestañas separadas del navegador."
+ },
+ {
+  "i": 397,
+  "style": "List Bullet",
+  "text": "Puedes controlar lo que se ve en las pestañas secundarias desde la principal."
+ },
+ {
+  "i": 398,
+  "style": "List Bullet",
+  "text": "Cualquier dispositivo en la misma red puede acceder a la webapp."
+ },
+ {
+  "i": 399,
+  "style": "List Bullet",
+  "text": "Ideal para usar con proyectores, Smart TVs, Chromecast o tablets en la mesa."
+ },
+ {
+  "i": 400,
+  "style": "List Bullet",
+  "text": "Los jugadores pueden acceder desde sus propios dispositivos (móvil, tablet, portátil)."
+ },
+ {
+  "i": 401,
+  "style": "Normal",
+  "text": "La URL de acceso web se muestra en los ajustes del HOME, con opción de generar un código QR para un acceso rápido."
+ },
+ {
+  "i": 402,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 403,
+  "style": "Heading 1",
+  "text": "11. Roles de usuario: Master vs Jugador"
+ },
+ {
+  "i": 404,
+  "style": "Normal",
+  "text": "MasterHelp distingue dos roles principales que determinan lo que cada usuario puede ver y hacer:"
+ },
+ {
+  "i": 405,
+  "style": "Heading 2",
+  "text": "Máster (DM)"
+ },
+ {
+  "i": 406,
+  "style": "Normal",
+  "text": "Tiene control total sobre todas las herramientas y la campaña:"
+ },
+ {
+  "i": 407,
+  "style": "List Bullet",
+  "text": "Acceso completo a todas las herramientas."
+ },
+ {
+  "i": 408,
+  "style": "List Bullet",
+  "text": "Puede crear, editar y eliminar contenido."
+ },
+ {
+  "i": 409,
+  "style": "List Bullet",
+  "text": "Gestiona las invitaciones de jugadores."
+ },
+ {
+  "i": 410,
+  "style": "List Bullet",
+  "text": "Controla las pantallas secundarias (MAPAS y SKYLINE)."
+ },
+ {
+  "i": 411,
+  "style": "List Bullet",
+  "text": "Acceso a todas las notas privadas y herramientas de gestión."
+ },
+ {
+  "i": 412,
+  "style": "Heading 2",
+  "text": "Jugador"
+ },
+ {
+  "i": 413,
+  "style": "Normal",
+  "text": "Tiene acceso limitado según lo que el máster comparta:"
+ },
+ {
+  "i": 414,
+  "style": "List Bullet",
+  "text": "Ve la lista de personajes \"conocidos\" por los jugadores."
+ },
+ {
+  "i": 415,
+  "style": "List Bullet",
+  "text": "Puede ver y editar su propio personaje."
+ },
+ {
+  "i": 416,
+  "style": "List Bullet",
+  "text": "Puede ver los conjuros y su detalle."
+ },
+ {
+  "i": 417,
+  "style": "List Bullet",
+  "text": "Ve las misiones aceptadas y completadas."
+ },
+ {
+  "i": 418,
+  "style": "List Bullet",
+  "text": "Ve las notas públicas del diario y las sesiones."
+ },
+ {
+  "i": 419,
+  "style": "List Bullet",
+  "text": "Puede ver las canciones que el máster marque como visibles."
+ },
+ {
+  "i": 420,
+  "style": "List Bullet",
+  "text": "Ve el seguimiento de turnos durante el combate."
+ },
+ {
+  "i": 421,
+  "style": "List Bullet",
+  "text": "No tiene acceso a: Mapas, Bestiario, Tiendas, Encuentros, Worldpedia, Escenas, Atajos."
+ },
+ {
+  "i": 422,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 423,
+  "style": "Heading 1",
+  "text": "¡Y eso es todo!"
+ },
+ {
+  "i": 424,
+  "style": "Normal",
+  "text": "MasterHelp está en constante desarrollo. Si encuentras algún problema, tienes sugerencias o quieres contribuir, no dudes en contactar con el equipo de desarrollo."
+ },
+ {
+  "i": 425,
+  "style": "Normal",
+  "text": "Recuerda que puedes comprobar si hay actualizaciones desde los ajustes del HOME para mantener siempre tu aplicación al día con las últimas mejoras y correcciones."
+ },
+ {
+  "i": 426,
+  "style": "Normal",
+  "text": ""
+ },
+ {
+  "i": 427,
+  "style": "Normal",
+  "text": "---"
+ },
+ {
+  "i": 428,
+  "style": "Normal",
+  "text": "MasterHelp — Guía de Usuario v1.0 — Mayo 2026"
+ }
+]

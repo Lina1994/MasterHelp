@@ -1,0 +1,62 @@
+{
+  "id": "chimera",
+  "slug": "chimera",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Quimera",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "caótica malvada",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 114,
+    "roll": "12d10 + 48"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 11,
+    "con": 19,
+    "int": 3,
+    "wis": 14,
+    "cha": 10
+  },
+  "skills": [
+    "Percepción +8"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "entiende dracónico, pero no puede hablar",
+  "challengeRating": "6",
+  "experiencePoints": 2300,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La quimera embiste una vez y realiza un ataque de mordisco y uno con sus garras. Puede sustituir el ataque con sus garras por un uso de su aliento de fuego, si está disponible."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 7 (1d6 + 4) de daño cortante."
+    },
+    {
+      "name": "Embestir",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 10 (1d12 + 4) de daño contundente. Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de derribada."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 11 (2d6 + 4) de daño perforante o 18 (4d6 + 4) de daño perforante si la quimera tenía ventaja en la tirada de ataque. Aliento de fuego (recarga 5–6). Tirada de salvación de Destreza: CD 15, todas las criaturas en un cono de 4,5 m. Fallo: 31 (7d8) de daño de fuego. Éxito: la mitad del daño. Rakshasa"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Quimera",
+  "srd_es_page": 362
+}

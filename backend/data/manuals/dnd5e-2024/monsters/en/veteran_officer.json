@@ -1,0 +1,61 @@
+{
+  "id": "veteran_officer",
+  "name": "Veteran Officer",
+  "slug": "veteran_officer",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "any lawful alignment",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 65,
+    "roll": "10d8 + 20"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 13,
+    "con": 14,
+    "int": 12,
+    "wis": 11,
+    "cha": 12
+  },
+  "saves": [
+    " STR +4 ",
+    " DEX +3 ",
+    " CON +4 "
+  ],
+  "skills": [
+    " Athletics +4 ",
+    " Intimidation +3 ",
+    " Perception +2 "
+  ],
+  "senses": "passive Perception 12",
+  "languages": "any two languages",
+  "challengeRating": "6",
+  "traits": [
+    {
+      "name": "Inspire (1/Day)",
+      "text": "Action: WIS save DC 13 or ally gains 11 (2d8 + 3) temp HP and one attack action."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two longsword attacks."
+    },
+    {
+      "name": "Longsword",
+      "text": "+5 to hit. Hit: 7 (1d8 + 3) slashing or 8 (1d10 + 3) two-handed."
+    },
+    {
+      "name": "Crossbow",
+      "text": "+3 to hit, range 100/400 ft. Hit: 6 (1d10 + 1) piercing."
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 2300,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

@@ -1,0 +1,106 @@
+{
+  "id": "tarrasque",
+  "name": "Tarrasque",
+  "slug": "tarrasque",
+  "size": "Gargantuan",
+  "type": "monstrosity (titan)",
+  "alignment": "unaligned",
+  "armorClass": 25,
+  "hitPoints": {
+    "average": 676,
+    "roll": "33d20 + 330"
+  },
+  "speed": {
+    "walk": 40,
+    "burrow": 40,
+    "swim": 40,
+    "fly": 0
+  },
+  "abilities": {
+    "str": 30,
+    "dex": 21,
+    "con": 30,
+    "int": 3,
+    "wis": 11,
+    "cha": 11
+  },
+  "saves": [
+    " STR +17 ",
+    " CON +17 ",
+    " WIS +7 "
+  ],
+  "skills": [
+    " Perception +7 "
+  ],
+  "damageImmunities": [
+    "fire",
+    "poison",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "poisoned",
+    "stunned"
+  ],
+  "senses": "truevision 120 ft., passive Perception 17",
+  "languages": "—",
+  "challengeRating": "30",
+  "traits": [
+    {
+      "name": "",
+      "text": "Legendary Resistance (6/Day). If the tarrasque fails a saving throw, it can choose to succeed instead."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The tarrasque has Advantage on sav- ing throws against spells and other magical effects."
+    },
+    {
+      "name": "Reflective Carapace",
+      "text": "If the tarrasque is targeted by a Magic Missile spell or a spell that requires a ranged attack roll, roll 1d6. On a 1–5, the tarrasque is unaf- fected. On a 6, the tarrasque is unaffected and reflects the spell, turning the caster into the target."
+    },
+    {
+      "name": "Siege Monster",
+      "text": "The tarrasque deals double damage to objects and structures."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The tarrasque makes one Bite attack and three other attacks, using Claw or Tail in any combination."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +19, reach 15 ft. Hit: 36 (4d12 + 10) Piercing damage, and the target has the Grappled"
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Attack (Cost 2)",
+      "text": "Make one attack: bite, claw, horns, or tail."
+    }
+  ],
+  "proficiencyBonus": 9,
+  "experiencePoints": 155000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "srd_en_match_name": "Tarrasque",
+  "srd_en_page": 328,
+  "subtype": "Titan",
+  "initiative": 18,
+  "savingThrows": {
+    "str": 10,
+    "dex": 9,
+    "con": 10,
+    "int": 5,
+    "wis": 9,
+    "cha": 9
+  },
+  "srd_en_soft_warnings": [
+    "soft: CR 30 but no legendaryActions[] (SRD v5.2 omits)"
+  ]
+}

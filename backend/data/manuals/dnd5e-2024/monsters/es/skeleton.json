@@ -1,0 +1,50 @@
+{
+  "id": "skeleton",
+  "slug": "skeleton",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Esqueleto",
+  "type": "Muerto viviente",
+  "size": "Mediano",
+  "alignment": "legal malvado",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 13,
+    "roll": "2d8 + 4"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 16,
+    "con": 15,
+    "int": 6,
+    "wis": 8,
+    "cha": 5
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción pasiva 9",
+  "languages": "entiende común y otro idioma, pero no puede",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Espada corta",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 6 (1d6 + 3) de daño perforante."
+    },
+    {
+      "name": "Arco corto",
+      "text": "Tirada de ataque a distancia: +5, alcance 24/96 m. Acierto: 6 (1d6 + 3) de daño perforante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Esqueleto",
+  "srd_es_page": 323
+}

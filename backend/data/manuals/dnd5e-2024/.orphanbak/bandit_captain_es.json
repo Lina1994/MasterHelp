@@ -1,0 +1,53 @@
+{
+  "id": "bandit_captain",
+  "name": "Capitán Bandido",
+  "slug": "bandit_captain",
+  "size": "Medium",
+  "type": "humanoide (cualquier raza)",
+  "alignment": "cualquier no legal",
+  "armorClass": 15,
+  "hitPoints": {
+    "average": 65,
+    "roll": "10d8 + 30"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 16,
+    "con": 14,
+    "int": 14,
+    "wis": 11,
+    "cha": 15
+  },
+  "saves": [
+    " FUE +4 ",
+    " DES +5 "
+  ],
+  "skills": [
+    " Atletismo +4 ",
+    " Engaño +4 "
+  ],
+  "senses": "Percepción pasiva 10",
+  "languages": "dos idiomas",
+  "challengeRating": "3",
+  "actions": [
+    {
+      "name": "Ataque Múltiple",
+      "text": "Tres ataques: dos cimitarra + una daga."
+    },
+    {
+      "name": "Cimitarra",
+      "text": "+5 al impacto. Impacto: 6 (1d6 + 3) cortante."
+    },
+    {
+      "name": "Daga",
+      "text": "+5 al impacto, alcance 6/18 m. Impacto: 5 (1d4 + 3) perforante."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 700,
+  "lang": "es",
+  "source": "SRD 5.2 (2024)"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "giant_wasp",
+  "slug": "giant_wasp",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Avispa gigante",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 22,
+    "roll": "5d8"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 14,
+    "con": 10,
+    "int": 1,
+    "wis": 10,
+    "cha": 3
+  },
+  "senses": "Percepción pasiva 10",
+  "languages": "ninguno",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pasar volando",
+      "text": "La avispa no provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Aguijón",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 5 (1d6 + 2) de daño perforante más 5 (2d4) de daño de veneno."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Avispa gigante",
+  "srd_es_page": 378
+}

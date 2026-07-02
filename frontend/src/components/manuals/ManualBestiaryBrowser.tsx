@@ -88,20 +88,20 @@ export default function ManualBestiaryBrowser({ manualId }: ManualBestiaryBrowse
               onChange={(e) => { setType(e.target.value); setPage(1); }}
             >
               <MenuItem value=""><em>{t('all', 'Todos')}</em></MenuItem>
-              <MenuItem value="aberration">Aberration</MenuItem>
-              <MenuItem value="beast">Beast</MenuItem>
-              <MenuItem value="celestial">Celestial</MenuItem>
-              <MenuItem value="construct">Construct</MenuItem>
-              <MenuItem value="dragon">Dragon</MenuItem>
-              <MenuItem value="elemental">Elemental</MenuItem>
-              <MenuItem value="fey">Fey</MenuItem>
-              <MenuItem value="fiend">Fiend</MenuItem>
-              <MenuItem value="giant">Giant</MenuItem>
-              <MenuItem value="humanoid">Humanoid</MenuItem>
-              <MenuItem value="monstrosity">Monstrosity</MenuItem>
-              <MenuItem value="ooze">Ooze</MenuItem>
-              <MenuItem value="plant">Plant</MenuItem>
-              <MenuItem value="undead">Undead</MenuItem>
+              <MenuItem value="aberration">{lang === 'es' ? 'Aberración' : 'Aberration'}</MenuItem>
+              <MenuItem value="beast">{lang === 'es' ? 'Bestia' : 'Beast'}</MenuItem>
+              <MenuItem value="celestial">{lang === 'es' ? 'Celestial' : 'Celestial'}</MenuItem>
+              <MenuItem value="construct">{lang === 'es' ? 'Constructo' : 'Construct'}</MenuItem>
+              <MenuItem value="dragon">{lang === 'es' ? 'Dragón' : 'Dragon'}</MenuItem>
+              <MenuItem value="elemental">{lang === 'es' ? 'Elemental' : 'Elemental'}</MenuItem>
+              <MenuItem value="fey">{lang === 'es' ? 'Feérico' : 'Fey'}</MenuItem>
+              <MenuItem value="fiend">{lang === 'es' ? 'Infernal' : 'Fiend'}</MenuItem>
+              <MenuItem value="giant">{lang === 'es' ? 'Gigante' : 'Giant'}</MenuItem>
+              <MenuItem value="humanoid">{lang === 'es' ? 'Humanoide' : 'Humanoid'}</MenuItem>
+              <MenuItem value="monstrosity">{lang === 'es' ? 'Monstruosidad' : 'Monstrosity'}</MenuItem>
+              <MenuItem value="ooze">{lang === 'es' ? 'Cieno' : 'Ooze'}</MenuItem>
+              <MenuItem value="plant">{lang === 'es' ? 'Planta' : 'Plant'}</MenuItem>
+              <MenuItem value="undead">{lang === 'es' ? 'Muerto viviente' : 'Undead'}</MenuItem>
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -113,12 +113,12 @@ export default function ManualBestiaryBrowser({ manualId }: ManualBestiaryBrowse
               onChange={(e) => { setSize(e.target.value); setPage(1); }}
             >
               <MenuItem value=""><em>{t('all', 'Todos')}</em></MenuItem>
-              <MenuItem value="Tiny">Tiny</MenuItem>
-              <MenuItem value="Small">Small</MenuItem>
-              <MenuItem value="Medium">Medium</MenuItem>
-              <MenuItem value="Large">Large</MenuItem>
-              <MenuItem value="Huge">Huge</MenuItem>
-              <MenuItem value="Gargantuan">Gargantuan</MenuItem>
+              <MenuItem value="Tiny">{lang === 'es' ? 'Diminuto' : 'Tiny'}</MenuItem>
+              <MenuItem value="Small">{lang === 'es' ? 'Pequeño' : 'Small'}</MenuItem>
+              <MenuItem value="Medium">{lang === 'es' ? 'Mediano' : 'Medium'}</MenuItem>
+              <MenuItem value="Large">{lang === 'es' ? 'Grande' : 'Large'}</MenuItem>
+              <MenuItem value="Huge">{lang === 'es' ? 'Enorme' : 'Huge'}</MenuItem>
+              <MenuItem value="Gargantuan">{lang === 'es' ? 'Gargantuesco' : 'Gargantuan'}</MenuItem>
             </Select>
           </FormControl>
         </Stack>
@@ -133,14 +133,22 @@ export default function ManualBestiaryBrowser({ manualId }: ManualBestiaryBrowse
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2 }}>
             {items.map((monster) => (
               <Card key={monster.slug} sx={{ display: 'flex', flexDirection: 'column' }}>
-                {monster.translated === false && (
-                  <Box sx={{ bgcolor: 'warning.main', color: 'warning.contrastText', px: 1, py: 0.5 }}>
-                    <Typography variant="caption">Not translated</Typography>
-                  </Box>
-                )}
+                {(monster.source && monster.source.includes('pendiente')
+                  ? (
+                    <Box sx={{ bgcolor: 'warning.main', color: 'warning.contrastText', px: 1, py: 0.5 }}>
+                      <Typography variant="caption">Pendiente de traducción</Typography>
+                    </Box>
+                  )
+                  : monster.translated === false
+                  ? (
+                    <Box sx={{ bgcolor: 'warning.main', color: 'warning.contrastText', px: 1, py: 0.5 }}>
+                      <Typography variant="caption">Not translated</Typography>
+                    </Box>
+                  )
+                  : null)}
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6" component="div" gutterBottom>
-                    {monster.name}
+                    {monster.name || monster.slug}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     CR {monster.challengeRating || '?'} • {monster.size} {monster.type}

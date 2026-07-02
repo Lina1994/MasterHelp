@@ -1,0 +1,52 @@
+{
+  "id": "giant_fire_beetle",
+  "slug": "giant_fire_beetle",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Escarabajo de fuego gigante",
+  "type": "Bestia",
+  "size": "Pequeña",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 4,
+    "roll": "1d6 + 1"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 10,
+    "con": 12,
+    "int": 1,
+    "wis": 7,
+    "cha": 3
+  },
+  "senses": "visión ciega 9 m; Percepción pasiva 8",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Iluminación",
+      "text": "El escarabajo emite luz brillante en un radio de 3 m y luz tenue 3 m más allá."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +1, alcance 1,5 m. Acierto: 1 de daño de fuego."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Escarabajo de fuego gigante",
+  "srd_es_page": 385
+}

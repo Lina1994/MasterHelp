@@ -1,0 +1,66 @@
+{
+  "id": "reef_shark",
+  "slug": "reef_shark",
+  "lang": "en",
+  "name": "Reef Shark",
+  "senses": {
+    "blindsight": "30 ft",
+    "passivePerception": 12
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d4 + 2) Piercing damage. Rhinoceros"
+    }
+  ],
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +2",
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The shark has Advantage on an attack roll against a creature if at least one of the shark’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    },
+    {
+      "name": "Water Breathing",
+      "text": "The shark can breathe only underwater."
+    }
+  ],
+  "srd_en_match_name": "Reef Shark",
+  "srd_en_page": 356,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "beast",
+  "subtype": "Dinosaur",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "abilities": {
+    "str": 12,
+    "dex": 15,
+    "con": 10,
+    "int": 2,
+    "wis": 9,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 1,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

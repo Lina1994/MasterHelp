@@ -36,7 +36,55 @@ export class MonstersRepository {
       this.indexCache[key] = { mtime, index: parsed };
       return parsed;
     } catch {
-      // Fallback: si no existe índice para ES, intentar EN
+      // Fallback A: auto-build an in-memory index by scanning the per-monster
+      // directory (e.g. file-based manuals like dnd5e-2024 that ship individual
+      // monster JSONs without a pre-baked index.<lang>.json). Cached by the
+      // directory's mtime so newly added files invalidate automatically.
+      const langDir = join(dir, lang);
+      try {
+        const dirMtime = statSync(langDir).mtimeMs;
+        const scanKey = `auto:${langDir}`;
+        const scanCache = this.indexCache[scanKey];
+        if (scanCache && scanCache.mtime === dirMtime) return scanCache.index;
+        const files = readdirSync(langDir).filter(
+          (f) => f.endsWith('.json') && !f.startsWith('index.'),
+        );
+        if (files.length === 0) throw new Error(`no per-monster files in ${langDir}`);
+        const items: MonsterIndexItem[] = [];
+        for (const f of files) {
+          const raw = JSON.parse(readFileSync(join(langDir, f), 'utf8')) as any;
+          const detail = this.normalizeFromSrd(raw, lang);
+          const itemLang: LanguageCode | undefined =
+            raw?.lang === 'es' || raw?.lang === 'en' ? raw.lang : undefined;
+          // translated=false ⇒ the per-file payload is a EN clone served under ES
+          const translated =
+            lang === 'es' && itemLang === 'en' ? false : undefined;
+          // Stub files written by extract_es_bestiary.py may have name:null
+          // for creatures pending translation. Fall back to the slug (always
+          // present) so the auto-build survives and the entry is visible to
+          // the user instead of crashing the sort below.
+          const safeName = detail.name ?? detail.slug ?? raw?.slug ?? '';
+          items.push({
+            id: detail.id,
+            slug: detail.slug,
+            name: safeName,
+            type: detail.type,
+            size: detail.size,
+            alignment: detail.alignment,
+            challengeRating: detail.challengeRating,
+            translated,
+            source: typeof raw?.source === 'string' ? raw.source : undefined,
+          });
+        }
+        items.sort((a, b) => (a?.name ?? '').localeCompare(b?.name ?? ''));
+        const autoIndex: MonsterIndexFile = { lang, items };
+        this.indexCache[scanKey] = { mtime: dirMtime, index: autoIndex };
+        return autoIndex;
+      } catch {
+        // no per-monster directory either → fall through to language/monolith fallback
+      }
+
+      // Fallback B: si no existe índice para ES, intentar EN
       if (lang === 'es') {
         try {
           const enIdx = join(dir, 'en', 'index.en.json');
@@ -132,6 +180,10 @@ export class MonstersRepository {
           alignment: detail.alignment,
           challengeRating: detail.challengeRating || it.challengeRating,
           translated,
+          // Preserve the source label that the auto-build path attached;
+          // without this, the rebuild drops `source` for any item whose
+          // needsEnrich branch fired, hiding the "pendiente" badge.
+          source: (detail as any).source ?? it.source,
         } as MonsterIndexItem;
       });
     }
@@ -210,8 +262,16 @@ export class MonstersRepository {
   }
 
   private normalizeFromSrd(raw: any, lang: LanguageCode): MonsterDetail {
-    // Si ya viene normalizado (sin "srd"), devolver tal cual
+    // Si ya viene normalizado (sin "srd"), devolver tal cual — pero aplicar
+    // safeName fallback aquí también para que stubs pendientes (con name:null)
+    // lleguen a través del path `get()` sin romper consumidores que asumen
+    // string. La lista principal lo hace al construir items.push; este es
+    // el path que cubre repo.get('es', slug, manualId) y el detail-dialog
+    // que abre el frontend cuando el usuario hace clic en una card.
     if (!raw?.srd) {
+      if (raw && (raw.name === null || raw.name === undefined)) {
+        raw.name = raw.slug ?? '';
+      }
       return raw as MonsterDetail;
     }
     const srd = raw.srd as Record<string, string>;

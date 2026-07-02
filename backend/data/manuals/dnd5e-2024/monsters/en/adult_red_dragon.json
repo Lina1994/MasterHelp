@@ -1,0 +1,88 @@
+{
+  "id": "adult_red_dragon",
+  "name": "Adult Red Dragon",
+  "slug": "adult_red_dragon",
+  "size": "Huge",
+  "type": "dragon",
+  "alignment": "chaotic evil",
+  "armorClass": 19,
+  "hitPoints": {
+    "average": 256,
+    "roll": "19d10 + 152"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 80,
+    "climb": 40
+  },
+  "abilities": {
+    "str": 27,
+    "dex": 10,
+    "con": 23,
+    "int": 16,
+    "wis": 13,
+    "cha": 23
+  },
+  "saves": [
+    " DEX +6 ",
+    " CON +12 ",
+    " WIS +7 ",
+    " CHA +12 "
+  ],
+  "skills": [
+    " Perception +13 ",
+    " Stealth +6 "
+  ],
+  "damageImmunities": [
+    "fire"
+  ],
+  "senses": "blindsight 60 ft., darkvision 120 ft., passive Perception 23",
+  "languages": "Common, Draconic",
+  "challengeRating": "17",
+  "traits": [
+    {
+      "name": "Legendary Resistance (3/Day)",
+      "text": "If fails save, can choose to succeed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Three attacks: one bite + two claws."
+    },
+    {
+      "name": "Bite",
+      "text": "+14 to hit, reach 10 ft. Hit: 19 (2d10 + 8) piercing + 3 (1d6) fire."
+    },
+    {
+      "name": "Claw",
+      "text": "+14 to hit, reach 5 ft. Hit: 15 (2d6 + 8) slashing."
+    },
+    {
+      "name": "Tail",
+      "text": "+14 to hit. Hit: 17 (2d8 + 8) bludgeoning."
+    },
+    {
+      "name": "Frightful Presence",
+      "text": "Each creature within 120 ft: WIS save DC 19 or frightened 1 min."
+    },
+    {
+      "name": "Fire Breath (Recharge 5-6)",
+      "text": "90-ft cone: 26 (9d6) fire. DC 21 DEX half; or 13 (3d8) fire ongoing."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Wing Attack (Cost 2)",
+      "text": "Flies up to half speed; each within 15 ft: 15 (2d6 + 8) bludgeoning. DC 20 STR or prone + pushed 20 ft."
+    },
+    {
+      "name": "Claw Attack",
+      "text": "One claw attack."
+    }
+  ],
+  "proficiencyBonus": 6,
+  "experiencePoints": 18000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

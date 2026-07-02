@@ -1,0 +1,91 @@
+{
+  "id": "invisible_stalker",
+  "slug": "invisible_stalker",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Invisible Stalker",
+  "size": "Large",
+  "type": "elemental",
+  "alignment": "neutral",
+  "armorClass": 14,
+  "hitPoints": {
+    "average": 75,
+    "roll": "10d10 + 20"
+  },
+  "speed": {
+    "walk": 50,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 19,
+    "con": 14,
+    "int": 10,
+    "wis": 15,
+    "cha": 11
+  },
+  "skills": [
+    " Perception +5 ",
+    " Stealth +7 "
+  ],
+  "damageResistances": [
+    "acid",
+    "cold",
+    "fire",
+    "lightning",
+    "thunder",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "exhaustion",
+    "grappled",
+    "paralyzed",
+    "petrified",
+    "poisoned",
+    "prone",
+    "restrained",
+    "unconscious"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 15",
+  "languages": "Auran, understands Common but doesn't speak",
+  "challengeRating": "6",
+  "traits": [
+    {
+      "name": "Air Form",
+      "text": "The stalker can enter an enemy’s space and stop there. It can move through a space as narrow as 1 inch without expending extra movement to do so."
+    },
+    {
+      "name": "Invisibility",
+      "text": "The stalker has the Invisible condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The stalker makes three Wind Swipe at- tacks. It can replace one attack with a use of Vortex."
+    },
+    {
+      "name": "Wind Swipe",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 11 (2d6 + 4) Force damage."
+    },
+    {
+      "name": "Vortex",
+      "text": "Constitution Saving Throw: DC 14, one Large or smaller creature in the stalker’s space. Failure: 7 (1d8 + 3) Thunder damage, and the target has the Grappled condition (escape DC 13). Until the grapple ends, the target can’t cast spells with a Verbal component and"
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 1800,
+  "srd_en_match_name": "Invisible Stalker",
+  "srd_en_page": 298,
+  "initiative": 3,
+  "savingThrows": {
+    "str": 0,
+    "dex": 3,
+    "con": 1,
+    "int": 2,
+    "wis": 1,
+    "cha": 5
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "id": "cockatrice",
+  "slug": "cockatrice",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Cockatrice",
+  "size": "Small",
+  "type": "Monstrosity",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 11,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 12,
+    "roll": "3d6+3"
+  },
+  "speed": {
+    "walk": 20,
+    "fly": 40
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 12,
+    "con": 12,
+    "int": 2,
+    "wis": 13,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 1,
+    "con": 1,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  },
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 60 ft., passive Perception 11",
+  "languages": "—",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Training",
+      "text": "The commoner has proficiency in one skill of the GM’s choice and has Advantage whenever it makes an ability check using that skill."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Petrifying Bite",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 3 (1d4 + 1) Piercing damage. If the target is a creature, it is subjected to the following effect. Constitution"
+    },
+    {
+      "name": "Saving Throw",
+      "text": "DC 11. First Failure: The target has the"
+    },
+    {
+      "name": "Restrained condition",
+      "text": "The target repeats the save at the end of its next turn if it is still Restrained, ending the effect on itself on a success. Second Failure: The target has the Petrified condition, instead of the Restrained condition, for 24 hours. Commoner Commoner Medium or Small Humanoid, Neutral AC 10 Initiative +0 (10) HP 4 (1d8) Speed 30 ft. MOD SAVE MOD SAVE MOD SAVE Str 10 +0 +0 Dex 10 +0 +0 Con 10 +0 +0 Int 10 +0 +0 WIS 10 +0 +0 Cha 10 +0 +0 Gear Club Senses Passive Perception 10 Languages Common CR 0 (XP 10; PB +2)"
+    },
+    {
+      "name": "Club",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 2 (1d4) Bludgeoning damage. Copper Dragons Copper Dragon Wyrmling"
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 1,
+  "srd_en_match_name": "Cockatrice",
+  "srd_en_page": 272
+}

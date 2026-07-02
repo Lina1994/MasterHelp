@@ -1,0 +1,77 @@
+{
+  "id": "steam_mephit",
+  "slug": "steam_mephit",
+  "lang": "en",
+  "name": "Steam Mephit",
+  "speed": {
+    "walk": 20
+  },
+  "skills": "Stealth +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Blurred Form",
+      "text": "Attack rolls against the mephit are made with Disadvantage unless the mephit has the Incapaci- tated condition."
+    },
+    {
+      "name": "Death Burst",
+      "text": "The mephit explodes when it dies. Dex- terity Saving Throw: DC 10, each creature in a 5-foot"
+    },
+    {
+      "name": "Emanation originating from the mephit",
+      "text": "Failure: 5 (2d4)"
+    },
+    {
+      "name": "Fire damage",
+      "text": "Success: Half damage."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 2 (1d4) Slashing damage plus 2 (1d4) Fire damage. Steam Breath (Recharge 6). Constitution Saving Throw: DC 10, each creature in a 15-foot Cone. Failure: 5 (2d4) Fire damage, and the target’s Speed decreases by 10 feet until the end of the mephit’s next turn. Success:"
+    },
+    {
+      "name": "Half damage only",
+      "text": "Failure or Success: Being underwater doesn’t grant Resistance to this Fire damage. Merfolk Merfolk Skirmisher"
+    }
+  ],
+  "srd_en_match_name": "Steam Mephit",
+  "srd_en_page": 305,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "elemental",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 10,
+    "type": "+0 (10)"
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 17,
+    "roll": "5d6"
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 11,
+    "con": 10,
+    "int": 11,
+    "wis": 10,
+    "cha": 12
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 1
+  }
+}

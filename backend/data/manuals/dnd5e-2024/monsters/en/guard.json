@@ -1,0 +1,69 @@
+{
+  "id": "guard",
+  "slug": "guard",
+  "lang": "en",
+  "source": "SRD 5.2 (pendiente)",
+  "name": "Guard",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Any alignment",
+  "armorClass": {
+    "value": 16,
+    "type": "chain shirt, shield"
+  },
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d8+2"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 12,
+    "con": 12,
+    "int": 10,
+    "wis": 11,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 1,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "skills": [
+    "Athletics +5",
+    "Perception +3",
+    "Stealth +5"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 10",
+  "languages": "Common",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "traits": [],
+  "actions": [
+    {
+      "name": "Bone Cudgel",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3) Bludgeoning damage plus 2 (1d4) Psy- chic damage. Guardian Naga Guardian Naga"
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 1,
+  "srd_en_match_name": "Guard",
+  "srd_en_page": 293,
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Guard' did not match any of 2 chunk heads; using chunk[0] as best-effort"
+  ]
+}

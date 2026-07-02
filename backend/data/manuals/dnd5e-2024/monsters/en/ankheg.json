@@ -1,0 +1,62 @@
+{
+  "id": "ankheg",
+  "slug": "ankheg",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Ankheg",
+  "size": "Large",
+  "type": "Monstrosity",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 14,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 39,
+    "roll": "6d10+6"
+  },
+  "speed": {
+    "walk": 30,
+    "burrow": 30
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 11,
+    "con": 13,
+    "int": 1,
+    "wis": 13,
+    "cha": 6
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 60 ft., tremorsense 60 ft., passive Perception 11",
+  "languages": "—",
+  "proficiencyBonus": 2,
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "traits": [
+    {
+      "name": "Damage Transfer.",
+      "text": "When the ankheg takes acid damage, it deals 7 (2d6) acid damage back to the attacker (reaction)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite.",
+      "text": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 7 (1d6 + 4) slashing damage plus 3 (1d6) acid damage."
+    },
+    {
+      "name": "Acid Spray (Recharges 5-6).",
+      "text": "The ankheg sprays acid in a 30-ft. cone. DC 13 DEX save or 21 (6d6) acid damage; success: half."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

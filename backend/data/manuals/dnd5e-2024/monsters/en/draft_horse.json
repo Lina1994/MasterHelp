@@ -1,0 +1,58 @@
+{
+  "id": "draft_horse",
+  "slug": "draft_horse",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Draft Horse",
+  "size": "Large",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 10,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d10 + 3"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 10,
+    "con": 12,
+    "int": 2,
+    "wis": 11,
+    "cha": 7
+  },
+  "senses": "passive Perception 10",
+  "languages": "—",
+  "challengeRating": "1/4",
+  "actions": [
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 1 Blud- geoning damage. Crocodile"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 50,
+  "skills": "Perception +5, Stealth +4",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The crab can breathe air and water."
+    }
+  ],
+  "srd_en_match_name": "Draft Horse",
+  "srd_en_page": 344,
+  "initiative": 0,
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

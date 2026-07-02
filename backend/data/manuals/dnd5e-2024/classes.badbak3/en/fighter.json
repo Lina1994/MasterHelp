@@ -1,0 +1,688 @@
+{
+  "id": "fighter",
+  "name": "Fighter",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 per fighter level",
+    "at1stLevel": "10 + your Constitution modifier",
+    "atHigherLevels": "1d10 (or 6) + your Constitution modifier per fighter level after 1st"
+  },
+  "primaryAbilities": [
+    "str",
+    "dex"
+  ],
+  "savingThrows": [
+    "str",
+    "con"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor",
+      "Medium Armor",
+      "Heavy Armor",
+      "Shields"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Martial Weapons"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Acrobatics",
+      "Animal Handling",
+      "Athletics",
+      "History",
+      "Insight",
+      "Intimidation",
+      "Perception",
+      "Survival"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "chain_mail",
+          "description": "Chain mail"
+        },
+        {
+          "id": "leather_longbow",
+          "description": "Leather armor, longbow, 20 arrows"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "martial_weapon_shield",
+          "description": "A martial weapon and a shield"
+        },
+        {
+          "id": "two_martial_weapons",
+          "description": "Two martial weapons"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "light_crossbow_bolts_x20",
+          "description": "A light crossbow with 20 bolts"
+        },
+        {
+          "id": "two_handaxes",
+          "description": "Two handaxes"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "dungeoneers_pack",
+          "description": "Dungeoneer's Pack"
+        },
+        {
+          "id": "explorers_pack",
+          "description": "Explorer's Pack"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "fighting_style",
+      "name": "Fighting Style",
+      "level": 1,
+      "description": "You adopt a particular style of fighting as your specialty: Archery (+2 to ranged attack rolls), Defense (+1 AC while wearing armor), Dueling (+2 damage with one-handed melee weapon and no other weapon), or Great Weapon Fighting (reroll 1s and 2s on damage with two-handed/versatile melee weapon).",
+      "effects": [
+        {
+          "type": "choose_fighting_style",
+          "options": [
+            "archery",
+            "defense",
+            "dueling",
+            "great_weapon_fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "second_wind",
+      "name": "Second Wind",
+      "level": 1,
+      "description": "On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level. Once you use this feature, you must finish a short or long rest before using it again.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Second Wind",
+          "per": "short_rest",
+          "scale": {
+            "1": "1d10 + level"
+          }
+        }
+      ]
+    },
+    {
+      "id": "action_surge",
+      "name": "Action Surge",
+      "level": 2,
+      "description": "On your turn, you can take one additional action. Once you use this feature, you must finish a short or long rest before using it again; at 17th level you can use it twice before a rest.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Action Surge",
+          "per": "short_rest",
+          "count": {
+            "2": 1,
+            "17": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "martial_archetype",
+      "name": "Martial Archetype",
+      "level": 3,
+      "description": "You choose an archetype: Champion or Battle Master.",
+      "effects": [
+        {
+          "type": "choose_subclass",
+          "atLevel": 3
+        }
+      ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "Increase one ability score by 2, or two by 1. Max 20.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "extra_attack",
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn. The number of attacks increases to three at level 11, and four at level 20.",
+      "effects": [
+        {
+          "type": "extra_attack",
+          "countByLevel": {
+            "5": 2,
+            "11": 3,
+            "20": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "indomitable",
+      "name": "Indomitable",
+      "level": 9,
+      "description": "You can reroll a saving throw you fail; you must use the new roll. Once you use this, you must finish a long rest. You gain additional uses at levels 13 and 17.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Indomitable",
+          "per": "long_rest",
+          "countByLevel": {
+            "9": 1,
+            "13": 2,
+            "17": 3
+          }
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "fighting_style",
+        "second_wind"
+      ]
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "action_surge"
+      ]
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "martial_archetype"
+      ]
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "extra_attack"
+      ],
+      "attacks": 2
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": []
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": []
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [
+        "indomitable"
+      ]
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": []
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [
+        "extra_attack_3"
+      ],
+      "attacks": 3
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "indomitable_use_2"
+      ]
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": []
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": []
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "action_surge_2",
+        "indomitable_use_3"
+      ]
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": []
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability_score_improvement"
+      ]
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "extra_attack_4"
+      ],
+      "attacks": 4
+    }
+  ],
+  "subclasses": [
+    {
+      "class_id": "fighter",
+      "id": "arcane_archer",
+      "name": "Arcane Archer",
+      "grantedAtLevel": 3,
+      "description_en": "You learn to infuse arrows with magical effects. Pull back your string and release.",
+      "description_es": "Aprendes a imbuir flechas con efectos mágicos. Tensa la cuerda y suelta.",
+      "features": [
+        {
+          "id": "arcane_archery",
+          "name": "Arcane Archer Lore",
+          "level": 3,
+          "description": "Gain proficiency in Nature or Arcana (your choice)."
+        },
+        {
+          "id": "arcane_shot",
+          "name": "Arcane Shot",
+          "level": 3,
+          "description": "Bonus action: spend Arcane Shot die, replace damage with magical arrow (Banishing, Beguiling, etc.)."
+        },
+        {
+          "id": "magic_arrow",
+          "name": "Magic Arrow",
+          "level": 3,
+          "description": "Shoot 3 arcane arrows at 7th; 4 at 11th; 5 at 15th; 6 at 18th level."
+        },
+        {
+          "id": "curving_shot",
+          "name": "Curving Shot",
+          "level": 7,
+          "description": "Arrow ricochets around cover to hit a target."
+        },
+        {
+          "id": "ever_ready_shot",
+          "name": "Ever-Ready Shot",
+          "level": 15,
+          "description": "Reaction to fire arcane shot even when surprised."
+        },
+        {
+          "id": "capstone",
+          "name": "Capstone",
+          "level": 18,
+          "description": "2 arcane shot uses per turn."
+        }
+      ]
+    },
+    {
+      "id": "battle_master",
+      "name": "Battle Master",
+      "grantedAtLevel": 3,
+      "description": "The Battle Master employs superior techniques and tactical cunning to bring their weapon mastery to bear in combat.",
+      "features": [
+        {
+          "id": "combat_superiority",
+          "name": "Combat Superiority (Superiority Dice)",
+          "level": 3,
+          "description": "You gain four superiority dice (d8). They are used to fuel special maneuvers. You regain expended dice on a short or long rest.",
+          "effects": [
+            {
+              "type": "resource",
+              "name": "Superiority Dice",
+              "per": "short_rest",
+              "countByLevel": {
+                "3": 4,
+                "7": 5,
+                "10": 6,
+                "15": 7,
+                "18": 8
+              },
+              "dieByLevel": {
+                "3": 8,
+                "10": 10,
+                "18": 12
+              }
+            }
+          ]
+        },
+        {
+          "id": "know_your_enemy",
+          "name": "Know Your Enemy",
+          "level": 3,
+          "description": "As a Study action (1 minute), inspect a creature you can see; learn if it has any special resistances, vulnerabilities, or condition immunities, what its current hit points are, and details of any spells affecting it.",
+          "effects": [
+            {
+              "type": "study_action",
+              "reveals": [
+                "resistances",
+                "vulnerabilities",
+                "immunities",
+                "current_hp",
+                "active_spell_effects"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "student_of_war",
+          "name": "Student of War",
+          "level": 3,
+          "description": "You gain proficiency with one tool of your choice (artisan's tools common to martial weapon crafting).",
+          "effects": [
+            {
+              "type": "gain_tool_proficiency",
+              "options": [
+                "any_one_martial_artisan"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "additional_fighting_style",
+          "name": "Additional Fighting Style (BM)",
+          "level": 7,
+          "description": "You gain a second Fighting Style feature.",
+          "effects": [
+            {
+              "type": "choose_fighting_style_again"
+            }
+          ]
+        },
+        {
+          "id": "superiority_dice_improvement",
+          "name": "Superiority Dice Improvement",
+          "level": 10,
+          "description": "Your superiority dice become d10s; at level 18, d12s.",
+          "effects": [
+            {
+              "type": "superiority_dice_die_step",
+              "byLevel": {
+                "10": 10,
+                "18": 12
+              }
+            }
+          ]
+        },
+        {
+          "id": "reload_maneuver",
+          "name": "Relentless Maneuvers",
+          "level": 15,
+          "description": "You regain one superiority die when you start a turn without any remaining (no action required).",
+          "effects": [
+            {
+              "type": "regain_one_superiority_die_at_start_of_turn",
+              "condition": "zero_remaining"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "champion",
+      "name": "Champion",
+      "grantedAtLevel": 3,
+      "description": "The Champion focuses on developing raw physical power, honing deadly skill and improved criticals.",
+      "features": [
+        {
+          "id": "improved_critical",
+          "name": "Improved Critical",
+          "level": 3,
+          "description": "Your weapon attacks score a critical hit on a roll of 19 or 20.",
+          "effects": [
+            {
+              "type": "critical_threshold_increase",
+              "value": 19
+            }
+          ]
+        },
+        {
+          "id": "remarkable_athlete",
+          "name": "Remarkable Athlete",
+          "level": 7,
+          "description": "You can add half your proficiency bonus (round up) to any Strength, Dexterity, or Constitution check you make that doesn't already add your proficiency bonus. In addition, your speed increases by 10 feet when you aren't wearing heavy armor.",
+          "effects": [
+            {
+              "type": "add_half_pb_to_check",
+              "abilities": [
+                "str",
+                "dex",
+                "con"
+              ]
+            },
+            {
+              "type": "speed_bonus",
+              "walk": 10,
+              "condition": "not wearing heavy armor"
+            }
+          ]
+        },
+        {
+          "id": "additional_fighting_style",
+          "name": "Additional Fighting Style",
+          "level": 10,
+          "description": "You gain a second Fighting Style feature.",
+          "effects": [
+            {
+              "type": "choose_fighting_style_again"
+            }
+          ]
+        },
+        {
+          "id": "superior_critical",
+          "name": "Superior Critical",
+          "level": 15,
+          "description": "Your weapon attacks score a critical hit on a roll of 18-20.",
+          "effects": [
+            {
+              "type": "critical_threshold_increase",
+              "value": 18
+            }
+          ]
+        },
+        {
+          "id": "survivor",
+          "name": "Survivor",
+          "level": 18,
+          "description": "At the start of each of your turns, you regain hit points equal to 5 + 5 × your Constitution modifier if you have no more than half your hit points remaining. You don't gain this benefit if you have 0 hit points.",
+          "effects": [
+            {
+              "type": "regain_hp_at_start_of_turn",
+              "formula": "5 + 5 * CON mod",
+              "condition": "hp <= max/2 and hp > 0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "fighter",
+      "id": "eldritch_knight",
+      "name": "Eldritch Knight",
+      "grantedAtLevel": 3,
+      "description_en": "You learn to cast spells alongside your martial training. Spell and sword in perfect harmony.",
+      "description_es": "Aprendes a lanzar conjuros junto a tu entrenamiento marcial. Conjuro y espada en perfecta armonía.",
+      "features": [
+        {
+          "id": "spellcasting",
+          "name": "Spellcasting",
+          "level": 3,
+          "description": "You learn wizard cantrips and spells of 1st level or higher. INT is your spellcasting ability."
+        },
+        {
+          "id": "eldritch_strike",
+          "name": "Eldritch Strike",
+          "level": 3,
+          "description": "When you hit with weapon attack, inflict disadvantage on target's next save vs your spells."
+        },
+        {
+          "id": "war_magic",
+          "name": "War Magic",
+          "level": 7,
+          "description": "Bonus action to cast a cantrip after weapon attack."
+        },
+        {
+          "id": "arcane_charge",
+          "name": "Arcane Charge",
+          "level": 10,
+          "description": "Bonus action teleport 30 ft to unoccupied space you can see."
+        },
+        {
+          "id": "improved_war_magic",
+          "name": "Improved War Magic",
+          "level": 15,
+          "description": "Action to cast a 1st level+ spell after weapon attack."
+        },
+        {
+          "id": "capstone",
+          "name": "Capstone",
+          "level": 18,
+          "description": "Cast bonus action spell of 4th level or lower after weapon attack."
+        }
+      ]
+    },
+    {
+      "class_id": "fighter",
+      "id": "psi_warrior",
+      "name": "Psi Warrior",
+      "grantedAtLevel": 3,
+      "description_en": "You learn psychic abilities from an ancient tradition of psionic study. Manifest telekinetic and telepathic powers.",
+      "description_es": "Aprendes habilidades psíquicas de una tradición antigua de estudio psiónico. Manifiesta poderes telequinéticos y telepáticos.",
+      "features": [
+        {
+          "id": "psionic_power",
+          "name": "Psionic Power",
+          "level": 3,
+          "description": "Gain 4 psionic energy dice (d6); learn 3 psionic disciplines. INT-based."
+        },
+        {
+          "id": "telekinetic",
+          "name": "Telekinetic",
+          "level": 3,
+          "description": "Manifest telekinetic force: bonus action to push, pull, or thrust."
+        },
+        {
+          "id": "protective_field",
+          "name": "Protective Field",
+          "level": 7,
+          "description": "When a creature is hit, use reaction to reduce damage by 1d6 + INT mod."
+        },
+        {
+          "id": "psi_strike",
+          "name": "Psi Strike",
+          "level": 10,
+          "description": "Telekinetic adds bonus force damage equal to psionic die."
+        },
+        {
+          "id": "bulwark_of_force",
+          "name": "Bulwark of Force",
+          "level": 15,
+          "description": "Reaction to redirect attack from you to an ally."
+        }
+      ]
+    }
+  ],
+  "spellcasting": null,
+  "maneuvers": {
+    "leadByLevel": {
+      "3": 3,
+      "7": 4,
+      "10": 5,
+      "15": 6,
+      "18": 7
+    },
+    "list": [
+      "ambush (Superiority: add superiority die to attack/damage and grant advantage to ally)",
+      "commanders_strike (bonus action, ally can use reaction to attack with weapon)",
+      "disarming_attack (attack, target makes STR save or drops one item)",
+      "distracting_strike (attack, target has disadvantage on next attack before your next turn)",
+      "evasion (when missed by attack, move half speed without provoking opportunity attacks)",
+      "feinting_attack (use bonus action; next attack this turn has advantage and adds superiority die damage)",
+      "goading_attack (attack, target has disadvantage on attacks against anyone but you)",
+      "lunge (attack action; +5 ft reach, add superiority die damage)",
+      "maneuvering_attack (attack; ally within 30 ft can move half speed without opportunity attacks)",
+      "menacing_attack (attack, target is frightened until your next turn)",
+      "parry (reaction; reduce damage of attack against you by superiority die + DEX mod)",
+      "precision_attack (attack or attack roll; add superiority die to attack roll)",
+      "pushing_attack (attack, target makes STR save or is pushed 15 ft)",
+      "rally (bonus action; ally within 30 ft adds superiority die to next attack or saving throw)",
+      "riposte (reaction; when missed by melee, make melee attack against attacker with superiority die)",
+      "trip_attack (attack, target makes STR save or knocked prone; advantage within 5 ft)",
+      "evasive_footwork (move speed without opportunity; + superiority die to AC until next turn start)"
+    ]
+  }
+}

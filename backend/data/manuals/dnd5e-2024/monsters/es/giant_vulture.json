@@ -1,0 +1,55 @@
+{
+  "id": "giant_vulture",
+  "slug": "giant_vulture",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Buitre gigante",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "neutral malvada",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 25,
+    "roll": "3d10 + 9"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 10,
+    "con": 16,
+    "int": 6,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "entiende común, pero no puede hablar",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Atacar en manada",
+      "text": "El buitre tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del buitre se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Picotazo",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 9 (2d6 + 2) de daño perforante y el objetivo tendrá el estado de envenenado hasta el final de su siguiente turno."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Buitre gigante",
+  "srd_es_page": 379
+}

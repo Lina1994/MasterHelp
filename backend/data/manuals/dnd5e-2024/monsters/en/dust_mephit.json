@@ -1,0 +1,70 @@
+{
+  "id": "dust_mephit",
+  "slug": "dust_mephit",
+  "lang": "en",
+  "name": "Dust Mephit",
+  "actions": [
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 4 (1d4 + 2) Slashing damage. Blinding Breath (Recharge 6). Dexterity Saving Throw: DC 10, each creature in a 15-foot Cone. Failure: The target has the Blinded condition until the end of the mephit’s next turn. Sleep (1/Day). The mephit casts the Sleep spell, requir- ing no spell components and using Charisma as the spellcasting ability (spell save DC 10). Ice Mephit"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "fly": 30
+  },
+  "skills": "Stealth +3",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 10
+  },
+  "languages": "Primordial (Ignan, Terran)",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Death Burst",
+      "text": "The mephit explodes when it dies. Dex- terity Saving Throw: DC 10, each creature in a 5-foot"
+    },
+    {
+      "name": "Emanation originating from the mephit",
+      "text": "Failure: 5 (2d4)"
+    },
+    {
+      "name": "Bludgeoning damage",
+      "text": "Success: Half damage."
+    }
+  ],
+  "srd_en_match_name": "Dust Mephit",
+  "srd_en_page": 304,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "elemental",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 17,
+    "roll": "5d6"
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 14,
+    "con": 10,
+    "int": 9,
+    "wis": 11,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

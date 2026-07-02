@@ -1,0 +1,6 @@
+{
+  "id": "spells",
+  "title": "Conjuros",
+  "format": "markdown",
+  "markdown": "# Conjuros\n\nLos **conjuros** son las fórmulas mágicas usadas por las clases lanzadoras. El SRD 5.2 cataloga cientos de conjuros a través de **8 escuelas de magia** y **9 niveles de poder** (más trucos a nivel 0).\n\n## Escuela de magia\n\n- **Abjuración** — magia protectora y destierro.\n- **Conjuración** — summoning y creación.\n- **Adivinación** — magia de obtención de información.\n- **Encantamiento** — magia que afecta a la mente.\n- **Evocación** — daño elemental puro.\n- **Ilusión** — engaño y disfraz.\n- **Nigromancia** — muerte, fuerza vital y no-muertos.\n- **Transmutación** — alteración de propiedades y formas.\n\n## Nivel del conjuro\n\n- **Trucos** (nivel 0) — conjuros menores que se lanzan a voluntad.\n- **1.er — 9.º nivel** — conjuros que consumen una casilla de conjuro del nivel correspondiente.\n\n## Etiquetas de conjuro\n\nEl SRD 5.2 introduce el concepto de **etiquetas de conjuro** — metadatos breves asociados a cada conjuro (por ejemplo *Daño Fuego*, *Control*, *Detección*, *Sanación*) — para ayudar a los jugadores a encontrar conjuros que se ajusten a una situación.\n\nConsulta la página **Conjuros** de esta aplicación para filtrar por clase, nivel, escuela o estado de concentración/ritual, y ver la descripción completa de cualquier conjuro."
+}

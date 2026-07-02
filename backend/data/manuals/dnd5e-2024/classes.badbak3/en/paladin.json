@@ -1,0 +1,862 @@
+{
+  "id": "paladin",
+  "name": "Paladin",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 per paladin level",
+    "at1stLevel": "10 + your Constitution modifier",
+    "atHigherLevels": "1d10 (or 6) + your Constitution modifier per paladin level after 1st"
+  },
+  "primaryAbilities": [
+    "str",
+    "cha"
+  ],
+  "savingThrows": [
+    "wis",
+    "cha"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor",
+      "Medium Armor",
+      "Heavy Armor",
+      "Shields"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Martial Weapons"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Athletics",
+      "Insight",
+      "Intimidation",
+      "Medicine",
+      "Persuasion",
+      "Religion"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "martial_weapon_shield",
+          "description": "A martial weapon and a shield"
+        },
+        {
+          "id": "two_martial_weapons",
+          "description": "Two martial weapons"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "five_javelins",
+          "description": "Five javelins"
+        },
+        {
+          "id": "simple_melee",
+          "description": "Any simple melee weapon"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "priests_pack",
+          "description": "Priest's Pack"
+        },
+        {
+          "id": "explorers_pack",
+          "description": "Explorer's Pack"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "chain_mail_holy_symbol",
+          "description": "Chain mail and a holy symbol"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "divine_sense",
+      "name": "Divine Sense",
+      "level": 1,
+      "description": "As an action, you can sense the presence of celestials, fiends, and undead within 60 feet that are not behind total cover. You also sense the location of consecrated or desecrated ground. The number of uses is 1 + CHA mod per long rest.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Divine Sense",
+          "per": "long_rest",
+          "count": "1 + CHA mod",
+          "detects": [
+            "celestial",
+            "fiend",
+            "undead"
+          ],
+          "range": 60
+        }
+      ]
+    },
+    {
+      "id": "lay_on_hands",
+      "name": "Lay on Hands",
+      "level": 1,
+      "description": "You have a pool of healing equal to 5 × paladin level. As an action, you can touch a creature and restore a number of HP from your pool (no Hit Die restrictions). Alternatively, expend 5 HP from the pool to cure one disease or neutralize one poison.",
+      "effects": [
+        {
+          "type": "pool",
+          "name": "Lay on Hands",
+          "capacity_formula": "5 * paladin_level",
+          "per": "long_rest"
+        }
+      ]
+    },
+    {
+      "id": "fighting_style",
+      "name": "Fighting Style",
+      "level": 2,
+      "description": "You adopt a fighting style: Defense, Dueling, Great Weapon Fighting, or Protection (reactionally impose disadvantage on an attack against an adjacent ally).",
+      "effects": [
+        {
+          "type": "choose_fighting_style",
+          "options": [
+            "defense",
+            "dueling",
+            "great_weapon_fighting",
+            "protection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spellcasting",
+      "name": "Spellcasting",
+      "level": 2,
+      "description": "By 2nd level, you can cast Paladin spells using Charisma as your spellcasting ability. You prepare the list of paladin spells available to cast each day.",
+      "effects": [
+        {
+          "type": "half_caster",
+          "ability": "cha",
+          "list": "paladin",
+          "preparedCasting": true
+        }
+      ]
+    },
+    {
+      "id": "divine_smite",
+      "name": "Divine Smite",
+      "level": 2,
+      "description": "When you hit a creature with a melee weapon attack, you can expend a spell slot to deal radiant damage to the target, in addition to the weapon's damage. +1d8 per slot level; +1d8 vs undead and fiends; +2d8 if on a crit.",
+      "effects": [
+        {
+          "type": "smite_option",
+          "on": "melee_weapon_hit",
+          "spends": "spell_slot",
+          "damage_dice": "slot_level_d8",
+          "bonus_undead_fiend_d8": 1,
+          "crit_bonus_d8": 2
+        }
+      ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "You can increase one ability score by 2, or two by 1.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "extra_attack",
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "Attack twice when you take the Attack action.",
+      "effects": [
+        {
+          "type": "extra_attack",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "aura_of_protection",
+      "name": "Aura of Protection",
+      "level": 6,
+      "description": "You and friendly creatures within 10 feet (30 feet at 18th level) gain a bonus to saving throws equal to your Charisma modifier (minimum +1), as long as you are conscious.",
+      "effects": [
+        {
+          "type": "aura",
+          "radius": 10,
+          "scalesAt18": 30,
+          "grants": {
+            "type": "save_bonus",
+            "formula": "CHA mod"
+          }
+        }
+      ]
+    },
+    {
+      "id": "subclass_feature",
+      "name": "Sacred Oath Feature",
+      "level": 3,
+      "description": "You bind yourself to a Sacred Oath: Devotion or the Ancients.",
+      "effects": [
+        {
+          "type": "choose_subclass",
+          "atLevel": 3
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "divine_sense",
+        "lay_on_hands"
+      ],
+      "spellSlots": {}
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "fighting_style",
+        "spellcasting",
+        "divine_smite"
+      ],
+      "spellSlots": {
+        "1": 2
+      }
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "subclass_feature"
+      ],
+      "spellSlots": {
+        "1": 3
+      }
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 3
+      }
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "extra_attack"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      }
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "aura_of_protection"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      }
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "subclass_feature_7"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      }
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      }
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      }
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "subclass_feature_10"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      }
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [
+        "subclass_feature_11"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      }
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      }
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "subclass_feature_15"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "subclass_feature_17"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      }
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "aura_improvements"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      }
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      }
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "subclass_feature_20"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "ancients",
+      "name": "Oath of the Ancients",
+      "grantedAtLevel": 3,
+      "description": "The Oath of the Ancients is as old as the race of elves and the rites of druids. Many of these paladins were members of the Green Faith or served the Elders that dwell in sacred groves.",
+      "oathSpells": {
+        "3": [
+          "ensnaring_strike",
+          "speak_with_animals"
+        ],
+        "5": [
+          "moonbeam",
+          "misty_step"
+        ],
+        "9": [
+          "conjure_barbs",
+          "plant_growth"
+        ],
+        "13": [
+          "ice_storm",
+          "stoneskin"
+        ],
+        "17": [
+          "commune_with_nature",
+          "tree_stride"
+        ]
+      },
+      "tenet": "Kindle the Light. Through acts of mercy, kindness, and forgiveness, kindle the light of hope in the world, beating back despair. (and others: Shelter, Preserve, Conserve, Protect the Weak)",
+      "features": [
+        {
+          "id": "tenets_of_ancients",
+          "name": "Tenets of the Ancients",
+          "level": 3,
+          "description": "Kindle the Light; Shelter the Light; Preserve the Light; Conscience before Convenience; Protect the Light.",
+          "effects": [
+            {
+              "type": "roleplay",
+              "value": "ideals"
+            }
+          ]
+        },
+        {
+          "id": "nature_wrath",
+          "name": "Nature's Wrath (Channel Divinity)",
+          "level": 3,
+          "description": "As a magic action, you conjure spectral vines; each creature of your choice in a 15-foot cube within 30 feet makes a STR save or takes 1d6 damage and is restrained until the end of your next turn.",
+          "effects": [
+            {
+              "type": "channel_divinity_option",
+              "aoe": {
+                "shape": "cube",
+                "radius": 4.5,
+                "max_range": 9
+              },
+              "save": "str",
+              "on_fail": {
+                "damage_dice": "1d6",
+                "condition": "restrained"
+              }
+            }
+          ]
+        },
+        {
+          "id": "turn_the_faithless",
+          "name": "Turn the Faithless (Channel Divinity)",
+          "level": 3,
+          "description": "As a magic action, present your holy symbol: each fey or fiend within 30 ft makes a WIS save or is turned for 1 minute. (Alternative: fey and undead, per 5.2.)",
+          "effects": [
+            {
+              "type": "channel_divinity_option",
+              "target_filter": [
+                "fey",
+                "fiend",
+                "undead"
+              ],
+              "aoe": 30,
+              "save": "wis",
+              "effect": "turned"
+            }
+          ]
+        },
+        {
+          "id": "aura_of_warding",
+          "name": "Aura of Warding",
+          "level": 7,
+          "description": "You and friendly creatures within 10 ft (30 ft at 18th) have resistance to damage from spells.",
+          "effects": [
+            {
+              "type": "aura_resistance",
+              "radius": 10,
+              "scalesAt18": 30,
+              "damage_source": "spells"
+            }
+          ]
+        },
+        {
+          "id": "undying_sentinel",
+          "name": "Undying Sentinel",
+          "level": 15,
+          "description": "When you are reduced to 0 HP and not killed outright, you drop to 1 HP instead (once per long rest). Additionally, you age 4 years for every year that passes.",
+          "effects": [
+            {
+              "type": "survival_to_1_hp",
+              "per": "long_rest"
+            },
+            {
+              "type": "age_factor",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "elder_champion",
+          "name": "Elder Champion",
+          "level": 20,
+          "description": "As a bonus action, you transform for 1 minute: gain 10 HP per paladin level, shed bright/dim light 30 ft, deal +2d8 radiant damage with weapon attacks, hostile creatures in the bright light have disadvantage on saves against your Channel Divinity and spell save DC.",
+          "effects": [
+            {
+              "type": "channel_oath_option",
+              "action_cost": "bonus",
+              "duration": "1 min",
+              "recharge": "long_rest",
+              "temp_hp_formula": "10 * level",
+              "weapon_radiant_bonus_dice": "2d8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "devotion",
+      "name": "Oath of Devotion",
+      "grantedAtLevel": 3,
+      "description": "The Oath of Devotion binds a paladin to the loftiest ideals of justice, virtue, and order. Sometimes called cavaliers, white knights, or holy warriors, these paladins meet the ideal of the knight in shining armor.",
+      "oathSpells": {
+        "3": [
+          "protection_from_evil_and_good",
+          "sanctuary"
+        ],
+        "5": [
+          "lesser_restoration",
+          "zone_of_truth"
+        ],
+        "9": [
+          "beacon_of_hope",
+          "dispel_magic"
+        ],
+        "13": [
+          "freedom_of_movement",
+          "guardian_of_faith"
+        ],
+        "17": [
+          "commune",
+          "flame_strike"
+        ]
+      },
+      "tenet": "Honesty. Don't lie or cheat. Let your word be your promise. (and others: Courage, Compassion, Honor, Duty, Loyalty, etc.)",
+      "features": [
+        {
+          "id": "tenets_of_devotion",
+          "name": "Tenets of Devotion",
+          "level": 3,
+          "description": "Honesty, Courage, Compassion, Honor, Duty, Loyalty. Adherence to these tenets is how a paladin of the Devotion Oath demonstrates their commitment.",
+          "effects": [
+            {
+              "type": "roleplay",
+              "value": "ideals"
+            }
+          ]
+        },
+        {
+          "id": "sacred_weapon",
+          "name": "Sacred Weapon",
+          "level": 3,
+          "description": "As an action, for 1 minute you add your Charisma modifier to attack rolls made with one weapon. The weapon emits bright light in 30 ft and dim light 30 ft. Expires early if you are incapacitated. Recharges on a short rest.",
+          "effects": [
+            {
+              "type": "channel_oath_option",
+              "action_cost": "action",
+              "duration": "1 min",
+              "grants": "add_CHA_to_attack_rolls_one_weapon",
+              "light_bright_radius": 30,
+              "light_dim_radius": 30,
+              "recharge": "short_rest"
+            }
+          ]
+        },
+        {
+          "id": "turn_the_unholy",
+          "name": "Turn the Unholy (Channel Divinity)",
+          "level": 3,
+          "description": "As a magic action, present your holy symbol: each fiend or undead you can see within 30 ft makes a WIS save or is turned.",
+          "effects": [
+            {
+              "type": "channel_divinity_option",
+              "target_filter": [
+                "fiend",
+                "undead"
+              ],
+              "aoe": 30,
+              "save": "wis",
+              "effect": "turned"
+            }
+          ]
+        },
+        {
+          "id": "aura_of_devotion",
+          "name": "Aura of Devotion",
+          "level": 7,
+          "description": "You and friendly creatures within 10 ft (30 ft at 18th level) can't be charmed while you are conscious.",
+          "effects": [
+            {
+              "type": "aura_immunity",
+              "radius": 10,
+              "scalesAt18": 30,
+              "condition": "charmed"
+            }
+          ]
+        },
+        {
+          "id": "purity_of_spirit",
+          "name": "Purity of Spirit",
+          "level": 15,
+          "description": "You are always under the effects of Protection from Evil and Good.",
+          "effects": [
+            {
+              "type": "permanent_effect",
+              "spell": "protection_from_evil_and_good"
+            }
+          ]
+        },
+        {
+          "id": "holy_nimbus",
+          "name": "Holy Nimbus",
+          "level": 20,
+          "description": "As a bonus action, you emanate an aura of sunlight for 1 minute. You shed bright light 30 ft, dim light 30 ft; any hostile creature that starts its turn in the bright light takes 10 radiant damage; you have resistance to radiant damage, and your weapon attacks deal an extra 2d8 radiant damage on hit.",
+          "effects": [
+            {
+              "type": "channel_oath_option",
+              "action_cost": "bonus",
+              "duration": "1 min",
+              "recharge": "long_rest",
+              "light_bright_radius": 30,
+              "dim_radius": 30,
+              "damage_on_turn_start": "10 radiant",
+              "self_resistance": "radiant",
+              "weapon_radiant_bonus_dice": "2d8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "paladin",
+      "id": "oath_of_conquest",
+      "name": "Oath of Conquest",
+      "grantedAtLevel": 3,
+      "description_en": "You seek to rule through martial dominance and strength over the weak.",
+      "description_es": "Buscas reinar a través de la dominancia marcial y fortaleza sobre los débiles.",
+      "features": [
+        {
+          "id": "oath_spells_conquest",
+          "name": "Oath Spells",
+          "level": 3,
+          "description": "Cast Command, Hold Person, etc."
+        },
+        {
+          "id": "conquering_presence",
+          "name": "Conquering Presence",
+          "level": 3,
+          "description": "Channel Divinity: Wis save or frightened 1 min (10 ft radius).",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "guided_strike",
+          "name": "Guided Strike",
+          "level": 3,
+          "description": "Channel Divinity: +10 to attack roll (must hit)."
+        },
+        {
+          "id": "scornful_rebuttal",
+          "name": "Scornful Rebuke",
+          "level": 7,
+          "description": "Reaction to deal 2d8+CHA mod Psychic damage."
+        },
+        {
+          "id": "eternal_warrior",
+          "name": "Eternal Warrior",
+          "level": 15,
+          "description": "Advantage on CON checks; temp HP at start of each turn."
+        },
+        {
+          "id": "conquering_victory",
+          "name": "Conquering Victory",
+          "level": 20,
+          "description": "When you reduce creature to 0 HP, target another creature within 30 ft — Wis save or frightened."
+        }
+      ]
+    },
+    {
+      "class_id": "paladin",
+      "id": "oath_of_glory",
+      "name": "Oath of Glory",
+      "grantedAtLevel": 3,
+      "description_en": "You seek to spread glory across the land and prove yourself as a paragon of honor and excellence.",
+      "description_es": "Buscas difundir gloria por la tierra y demostrarte como modelo de honor y excelencia.",
+      "features": [
+        {
+          "id": "oath_of_glory_features",
+          "name": "Oath Spells",
+          "level": 3,
+          "description": "Cast Guiding Bolt, Enhance Ability, etc. (5e official list)."
+        },
+        {
+          "id": "channel_divinity_peerless_athlete",
+          "name": "Peerless Athlete",
+          "level": 3,
+          "description": "Channel Divinity: advantage on STR/DEX/CON checks, +10 walking speed for 1 min."
+        },
+        {
+          "id": "inspiring_smite",
+          "name": "Inspiring Smite",
+          "level": 6,
+          "description": "Expend spell slot on Divine Smite: 1d8+slvl temp HP and inspire 3 allies."
+        },
+        {
+          "id": "living_legend",
+          "name": "Living Legend",
+          "level": 15,
+          "description": "Advantage on Charisma checks; Charisma max becomes 22."
+        },
+        {
+          "id": "oath_of_archery_inner",
+          "name": "Famous Champion",
+          "level": 20,
+          "description": "When a creature misses you, use reaction for an attack against it."
+        }
+      ]
+    },
+    {
+      "class_id": "paladin",
+      "id": "oath_of_redemption",
+      "name": "Oath of Redemption",
+      "grantedAtLevel": 3,
+      "description_en": "A knight who has seen too much violence, sworn to peace and atonement.",
+      "description_es": "Un caballero que ha visto demasiada violencia, jurando paz y reparación.",
+      "features": [
+        {
+          "id": "oath_spells_redemption",
+          "name": "Oath Spells",
+          "level": 3,
+          "description": "Cast Sleep, Calm Emotions, Hold Person."
+        },
+        {
+          "id": "rebuke_the_violent",
+          "name": "Rebuke the Violent",
+          "level": 3,
+          "description": "Channel Divinity: Reaction 2d8+CHA mod force damage to attacker."
+        },
+        {
+          "id": "protective_spirit",
+          "name": "Protective Spirit",
+          "level": 7,
+          "description": "Channel Divinity (1 min): 10-ft radius. Damage taken halved; transfer to you."
+        },
+        {
+          "id": "aura_of_the_guardian",
+          "name": "Aura of the Guardian",
+          "level": 7,
+          "description": "Reaction: take damage instead of a creature within 30 ft."
+        },
+        {
+          "id": "protective_spirit_improved",
+          "name": "Protective Spirit Improved",
+          "level": 15,
+          "description": "You don't take the transferred damage; ally takes 50%, you take 50%."
+        },
+        {
+          "id": "champion_of_redemption",
+          "name": "Champion of Redemption",
+          "level": 20,
+          "description": "Aura to absorb damage; allies take 0 damage from your redirected hit."
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "cha",
+    "list": "paladin",
+    "spellbook": false,
+    "preparedCasting": true,
+    "ritualCasting": false,
+    "halfCaster": true
+  }
+}

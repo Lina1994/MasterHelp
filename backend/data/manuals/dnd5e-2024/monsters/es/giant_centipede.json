@@ -1,0 +1,47 @@
+{
+  "id": "giant_centipede",
+  "slug": "giant_centipede",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Ciempiés gigante",
+  "type": "Bestia",
+  "size": "Pequeña",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 9,
+    "roll": "2d6 + 2"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 14,
+    "con": 12,
+    "int": 1,
+    "wis": 7,
+    "cha": 3
+  },
+  "senses": "visión ciega 9 m; Percepción pasiva 8",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 4 (1d4 + 2) de daño perforante y el objetivo tendrá el estado de envenenado hasta el principio del siguiente turno del ciempiés."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Ciempiés gigante",
+  "srd_es_page": 382
+}

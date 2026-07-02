@@ -1,0 +1,28 @@
+{
+  "id": "elk",
+  "slug": "elk",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Alce",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d10"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Alce",
+  "srd_es_page": 376
+}

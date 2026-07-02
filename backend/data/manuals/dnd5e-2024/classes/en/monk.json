@@ -1,0 +1,958 @@
+{
+  "id": "monk",
+  "name": "Monk",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 per monk level",
+    "at1stLevel": "8 + your Constitution modifier",
+    "atHigherLevels": "1d8 (or 5) + your Constitution modifier per monk level after 1st"
+  },
+  "primaryAbilities": [
+    "dex",
+    "wis"
+  ],
+  "savingThrows": [
+    "str",
+    "dex"
+  ],
+  "proficiencies": {
+    "armor": [],
+    "weapons": [
+      "Simple Weapons",
+      "Shortswords"
+    ],
+    "tools": [
+      "Choose one artisan's tool or one musical instrument"
+    ]
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Acrobatics",
+      "Athletics",
+      "History",
+      "Insight",
+      "Religion",
+      "Stealth"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "shortsword",
+          "description": "A shortsword"
+        },
+        {
+          "id": "simple_weapon",
+          "description": "Any simple weapon"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "dungeoneers_pack",
+          "description": "Dungeoneer's Pack"
+        },
+        {
+          "id": "explorers_pack",
+          "description": "Explorer's Pack"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "10_darts",
+          "description": "10 darts"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "unarmored_defense",
+      "name": "Unarmored Defense",
+      "level": 1,
+      "description": "While you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier.",
+      "effects": [
+        {
+          "type": "ac_formula",
+          "formula": "10 + DEX + WIS",
+          "requires": "no_armor_no_shield"
+        }
+      ]
+    },
+    {
+      "id": "martial_arts",
+      "name": "Martial Arts",
+      "level": 1,
+      "description": "Your practice of martial arts gives you mastery of combat styles that use your Unarmed Strike or monk weapons. You can use Dexterity instead of Strength for attack and damage rolls, roll a d4 instead of normal damage for Unarmed Strike, and make an Unarmed Strike as a bonus action after taking the Attack action.",
+      "effects": [
+        {
+          "type": "unarmed_strike_die",
+          "dieByLevel": {
+            "1": 4,
+            "5": 6,
+            "11": 8,
+            "17": 10
+          }
+        },
+        {
+          "type": "weapon_attack_use_dex"
+        },
+        {
+          "type": "unarmed_strike_as_bonus_action_when_attack_action"
+        }
+      ]
+    },
+    {
+      "id": "ki",
+      "name": "Ki",
+      "level": 2,
+      "description": "Your training allows you to harness the mystic energy of ki. Your access to this energy is represented by a number of Ki Points equal to your monk level. You regain all expended Ki Points on a short or long rest. You can spend Ki to fuel special actions (Flurry of Blows, Patient Defense, Step of the Wind).",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Ki Points",
+          "per": "short_rest",
+          "count": {
+            "2": 2,
+            "3": 3
+          },
+          "scalesWithLevel": true
+        }
+      ]
+    },
+    {
+      "id": "flurry_of_blows",
+      "name": "Flurry of Blows (Ki option)",
+      "level": 2,
+      "description": "Immediately after taking the Attack action, you can spend 1 Ki Point to make two Unarmed Strikes as a bonus action.",
+      "effects": [
+        {
+          "type": "ki_option",
+          "cost": 1,
+          "name": "Flurry of Blows",
+          "action_cost": "bonus",
+          "unarmed_strikes": 2
+        }
+      ]
+    },
+    {
+      "id": "patient_defense",
+      "name": "Patient Defense (Ki option)",
+      "level": 2,
+      "description": "You can spend 1 Ki Point to take the Dodge action as a bonus action.",
+      "effects": [
+        {
+          "type": "ki_option",
+          "cost": 1,
+          "name": "Patient Defense",
+          "action_cost": "bonus",
+          "grants": "Dodge action"
+        }
+      ]
+    },
+    {
+      "id": "step_of_the_wind",
+      "name": "Step of the Wind (Ki option)",
+      "level": 2,
+      "description": "You can spend 1 Ki Point to take the Disengage or Dash action as a bonus action, and your jump distance is doubled for the turn.",
+      "effects": [
+        {
+          "type": "ki_option",
+          "cost": 1,
+          "name": "Step of the Wind",
+          "action_cost": "bonus",
+          "grants": [
+            "Disengage",
+            "Dash"
+          ],
+          "jump_distance_doubled": true
+        }
+      ]
+    },
+    {
+      "id": "unarmored_movement",
+      "name": "Unarmored Movement",
+      "level": 2,
+      "description": "Your speed increases by 10 feet while you are not wearing armor or wielding a shield. This bonus scales at levels 6 (+15), 10 (+20 with vertical surfaces and water), 14 (+25), 18 (+30).",
+      "effects": [
+        {
+          "type": "speed_bonus",
+          "walk": 10,
+          "scalesByLevel": {
+            "6": 15,
+            "10": 20,
+            "14": 25,
+            "18": 30
+          },
+          "condition": "no_armor_no_shield"
+        },
+        {
+          "type": "walk_on_vertical_surfaces_at_level_10",
+          "value": true
+        },
+        {
+          "type": "walk_on_water_at_level_10",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "monastic_tradition",
+      "name": "Monastic Tradition",
+      "level": 3,
+      "description": "Choose a monastic tradition: Way of the Open Hand or Way of Mercy.",
+      "effects": [
+        {
+          "type": "choose_subclass",
+          "atLevel": 3
+        }
+      ]
+    },
+    {
+      "id": "deflect_missiles",
+      "name": "Deflect Missiles",
+      "level": 3,
+      "description": "When you are hit by a ranged weapon attack, you can use your reaction to reduce the damage by 1d10 + DEX mod + monk level. If you reduce damage to 0, you can catch the missile.",
+      "effects": [
+        {
+          "type": "reaction_reduce_damage",
+          "trigger": "ranged_weapon_attack_hit",
+          "formula": "1d10 + DEX mod + monk level",
+          "catch_if_zero": true
+        }
+      ]
+    },
+    {
+      "id": "slow_fall",
+      "name": "Slow Fall",
+      "level": 4,
+      "description": "You can use your reaction when you fall to reduce falling damage by an amount equal to 5 × your monk level.",
+      "effects": [
+        {
+          "type": "reaction_reduce_fall_damage",
+          "formula": "5 * monk level"
+        }
+      ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "Increase one score by 2, or two scores by 1. Max 20.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "extra_attack",
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice instead of once when you take the Attack action on your turn.",
+      "effects": [
+        {
+          "type": "extra_attack",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "stunning_strike",
+      "name": "Stunning Strike",
+      "level": 5,
+      "description": "When you hit with a melee weapon attack, you can spend 1 Ki Point to attempt to stun the target. The target makes a CON save (DC 8 + PB + WIS mod) or is stunned until the end of your next turn.",
+      "effects": [
+        {
+          "type": "ki_option_on_hit",
+          "cost": 1,
+          "save": {
+            "ability": "con",
+            "dcFormula": "8 + PB + WIS"
+          },
+          "condition": "stunned_until_end_of_next_turn"
+        }
+      ]
+    },
+    {
+      "id": "ki_empowered_strikes",
+      "name": "Ki-Empowered Strikes",
+      "level": 6,
+      "description": "Your unarmed strikes count as magical for overcoming resistances and immunities.",
+      "effects": [
+        {
+          "type": "unarmed_strike_is_magical"
+        }
+      ]
+    },
+    {
+      "id": "stillness_of_mind",
+      "name": "Stillness of Mind",
+      "level": 7,
+      "description": "You can use your action to end one effect on yourself that causes you to be charmed or frightened.",
+      "effects": [
+        {
+          "type": "action_end_effect",
+          "conditions": [
+            "charmed",
+            "frightened"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "purity_of_body",
+      "name": "Purity of Body",
+      "level": 10,
+      "description": "You are immune to poison and the diseased condition.",
+      "effects": [
+        {
+          "type": "immunity_condition_disease"
+        },
+        {
+          "type": "immunity_poison"
+        }
+      ]
+    },
+    {
+      "id": "tongue_of_sun_and_moon",
+      "name": "Tongue of the Sun and Moon",
+      "level": 13,
+      "description": "You understand all spoken languages, and any creature that can understand a language can understand what you say.",
+      "effects": [
+        {
+          "type": "comprehend_all_languages"
+        },
+        {
+          "type": "be_understood_by_all"
+        }
+      ]
+    },
+    {
+      "id": "diamond_soul",
+      "name": "Diamond Soul",
+      "level": 14,
+      "description": "Your proficiency bonus applies to saving throws you make against spells and magical effects. You can spend 1 Ki Point as a reaction to reroll a failed saving throw, taking the new result.",
+      "effects": [
+        {
+          "type": "add_pb_to_save_vs_spell",
+          "value": true
+        },
+        {
+          "type": "ki_option_reaction_reroll_save",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "id": "timeless_body",
+      "name": "Timeless Body",
+      "level": 15,
+      "description": "For every 10 years that pass, your body ages only 1 year.",
+      "effects": [
+        {
+          "type": "envejecimiento_detenido",
+          "factor": 0.1
+        }
+      ]
+    },
+    {
+      "id": "empty_body",
+      "name": "Empty Body",
+      "level": 18,
+      "description": "You can spend 4 Ki Points as an action to become invisible and gain resistance to all damage except force. Spend 8 Ki Points to cast astral projection on yourself without material components.",
+      "effects": [
+        {
+          "type": "ki_option",
+          "cost": 4,
+          "name": "Empty Body",
+          "grants": [
+            "invisibility",
+            "resistance_all_damage_except_force"
+          ]
+        },
+        {
+          "type": "ki_option",
+          "cost": 8,
+          "name": "Perfect Empty Body",
+          "casts": "astral_projection"
+        }
+      ]
+    },
+    {
+      "id": "perfect_self",
+      "name": "Perfect Self",
+      "level": 20,
+      "description": "When you roll initiative on a turn when you have no Ki Points remaining, you regain 4 Ki Points.",
+      "effects": [
+        {
+          "type": "regain_ki_on_initiative_zero_ki",
+          "amount": 4
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "unarmored_defense",
+        "martial_arts"
+      ],
+      "martialArtsDie": 4,
+      "kiPoints": 0,
+      "unarmoredMovement": 0
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "ki",
+        "flurry_of_blows",
+        "patient_defense",
+        "step_of_the_wind",
+        "unarmored_movement"
+      ],
+      "kiPoints": 2,
+      "unarmoredMovement": 10
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "monastic_tradition",
+        "deflect_missiles"
+      ],
+      "kiPoints": 3,
+      "unarmoredMovement": 10
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability_score_improvement",
+        "slow_fall"
+      ],
+      "kiPoints": 4,
+      "unarmoredMovement": 10
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "extra_attack",
+        "stunning_strike"
+      ],
+      "martialArtsDie": 6,
+      "kiPoints": 5,
+      "unarmoredMovement": 10,
+      "attacks": 2
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "ki_empowered_strikes"
+      ],
+      "kiPoints": 6,
+      "unarmoredMovement": 15
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "stillness_of_mind"
+      ],
+      "kiPoints": 7,
+      "unarmoredMovement": 15
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "kiPoints": 8,
+      "unarmoredMovement": 15
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [],
+      "kiPoints": 9,
+      "unarmoredMovement": 15
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "purity_of_body"
+      ],
+      "kiPoints": 10,
+      "unarmoredMovement": 20,
+      "wallWalk": true,
+      "waterWalk": true
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "martialArtsDie": 8,
+      "kiPoints": 11,
+      "unarmoredMovement": 20
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "kiPoints": 12,
+      "unarmoredMovement": 20
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "tongue_of_sun_and_moon"
+      ],
+      "kiPoints": 13,
+      "unarmoredMovement": 20
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "diamond_soul"
+      ],
+      "kiPoints": 14,
+      "unarmoredMovement": 25
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "timeless_body"
+      ],
+      "kiPoints": 15,
+      "unarmoredMovement": 25
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "kiPoints": 16,
+      "unarmoredMovement": 25
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [],
+      "martialArtsDie": 10,
+      "kiPoints": 17,
+      "unarmoredMovement": 25,
+      "attacks": 2
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "empty_body"
+      ],
+      "kiPoints": 18,
+      "unarmoredMovement": 30
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "kiPoints": 19,
+      "unarmoredMovement": 30
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "perfect_self"
+      ],
+      "kiPoints": 20,
+      "unarmoredMovement": 30
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "mercy",
+      "name": "Way of Mercy",
+      "grantedAtLevel": 3,
+      "description": "Way of Mercy monks follow a path of compassion. Their hands heal wounds as easily as they cause them.",
+      "features": [
+        {
+          "id": "hands_of_healing",
+          "name": "Hands of Healing",
+          "level": 3,
+          "description": "As an action, you can spend 1 Ki Point to heal a creature you touch. The creature regains hit points equal to one roll of your Martial Arts die + Wisdom modifier. You can use this feature a number of times equal to your Wisdom modifier (minimum 1) before a rest.",
+          "effects": [
+            {
+              "type": "ki_option_action",
+              "cost": 1,
+              "name": "Hands of Healing",
+              "heal_formula": "martial_arts_die + WIS mod",
+              "uses_per_rest": "WIS mod (min 1)"
+            }
+          ]
+        },
+        {
+          "id": "hands_of_harm",
+          "name": "Hands of Harm",
+          "level": 3,
+          "description": "When you hit a creature with an Unarmed Strike, you can spend 1 Ki Point to deal extra necrotic damage equal to one roll of your Martial Arts die + Wisdom modifier.",
+          "effects": [
+            {
+              "type": "ki_option_on_hit",
+              "cost": 1,
+              "name": "Hands of Harm",
+              "extra_damage": "martial_arts_die + WIS mod",
+              "damage_type": "necrotic"
+            }
+          ]
+        },
+        {
+          "id": "physician_touch",
+          "name": "Physician's Touch",
+          "level": 6,
+          "description": "When you use Hands of Healing on a creature, you can also end one disease or neutralize one poison affecting it.",
+          "effects": [
+            {
+              "type": "hands_of_healing_extra",
+              "removes": [
+                "disease",
+                "poison"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "flurry_of_healing",
+          "name": "Flurry of Healing",
+          "level": 11,
+          "description": "When you use Flurry of Blows, you can replace one or both unarmed strikes with Hands of Healing (no Ki cost).",
+          "effects": [
+            {
+              "type": "flurry_substitute_option",
+              "without_ki_cost": "hands_of_healing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "open_hand",
+      "name": "Way of the Open Hand",
+      "grantedAtLevel": 3,
+      "description": "Monks of the Way of the Open Hand are the ultimate masters of unarmed combat. Their strikes bypass resistance and cripple foes with precise trauma.",
+      "features": [
+        {
+          "id": "open_hand_technique",
+          "name": "Open Hand Technique",
+          "level": 3,
+          "description": "Whenever you hit with a Flurry of Blows, you can impose one of these effects: target makes DEX save or be knocked prone, target makes STR save or be pushed 15 feet, target cannot take reactions until end of its next turn.",
+          "effects": [
+            {
+              "type": "flurry_effects_choice",
+              "options": [
+                "prone",
+                "push_15",
+                "no_reactions"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "wholeness_of_body",
+          "name": "Wholeness of Body",
+          "level": 6,
+          "description": "You can use your action to heal yourself for 3 × your monk level.",
+          "effects": [
+            {
+              "type": "action_self_heal",
+              "formula": "3 * monk level"
+            }
+          ]
+        },
+        {
+          "id": "tranquility",
+          "name": "Tranquility",
+          "level": 11,
+          "description": "At the end of a long rest, you spend 1 Ki Point to enter a state of Tranquility until the start of your next long rest; you have immunity to being charmed or frightened, and any ally within 30 feet gains resistance to being charmed or frightened.",
+          "effects": [
+            {
+              "type": "toggle_state_self_and_allies_30",
+              "condition": "long_rest_with_1_ki",
+              "grants_immunity_to": [
+                "charmed",
+                "frightened"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "monk",
+      "id": "way_of_mercy",
+      "name": "Way of Mercy",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "hands_of_healing",
+          "name": "Hands of Healing",
+          "level": 3,
+          "description": "Cost 1 ki: heal creature for 1d6 + monk level HP; bonus action."
+        },
+        {
+          "id": "flurry_of_healing",
+          "name": "Flurry of Healing",
+          "level": 3,
+          "description": "Cost 2 ki: bonus action to add 1d6 to two healed creatures."
+        },
+        {
+          "id": "font_of_vitality",
+          "name": "Font of Vitality",
+          "level": 6,
+          "description": "Healing hands restore HP equal to 2×rolled (instead of equal)."
+        },
+        {
+          "id": "hand_of_excruciating_pain",
+          "name": "Hand of Excruciating Pain",
+          "level": 6,
+          "description": "Replace Flurry of Blows with striking stun creature 1 min. Wis save.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "physicians_touch",
+          "name": "Physician's Touch",
+          "level": 11,
+          "description": "Cast Greater Restoration once per long rest without a slot costing 4 ki."
+        },
+        {
+          "id": "hand_of_saintly_renewal",
+          "name": "Hand of Saintly Renewal",
+          "level": 17,
+          "description": "1 ki: heal 5×monk level HP to yourself; self-cleanse poisoned/blinded/deafened/paralysis."
+        }
+      ],
+      "description": "Your hands can both hurt and heal. You harness a mix of medicine and ki energy."
+    },
+    {
+      "class_id": "monk",
+      "id": "way_of_shadow",
+      "name": "Way of Shadow",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "shadow_arts",
+          "name": "Shadow Arts",
+          "level": 3,
+          "description": "Cast Darkness, Darkvision, Pass Without Trace, Silence, or Minor Illusion for 2 ki."
+        },
+        {
+          "id": "cunning_action",
+          "name": "Deflect Missiles",
+          "level": 3,
+          "description": "Reaction to reduce missile damage by 1d10 + Dex mod + monk level."
+        },
+        {
+          "id": "extra_attack",
+          "name": "Opportunist",
+          "level": 6,
+          "description": "Reaction attack when an ally's enemy is within 5 ft."
+        },
+        {
+          "id": "shadow_step",
+          "name": "Shadow Step",
+          "level": 11,
+          "description": "Bonus action teleport from shadow to shadow up to 60 ft."
+        },
+        {
+          "id": "dark_methodist",
+          "name": "Deflect Energy",
+          "level": 11,
+          "description": "You can Deflect Missiles vs. any attack roll."
+        },
+        {
+          "id": "capstone",
+          "name": "Capstone",
+          "level": 17,
+          "description": "Cast Cloak of Shadows for 8 ki = invisibility for 24 hours or until you attack."
+        }
+      ],
+      "description": "You gain the ability to walk through shadows and strike from darkness."
+    },
+    {
+      "class_id": "monk",
+      "id": "way_of_the_four_elements",
+      "name": "Way of the Four Elements",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "elemental_attunement",
+          "name": "Elemental Attunement",
+          "level": 3,
+          "description": "Cast Detect Magic and Gust at will."
+        },
+        {
+          "id": "fangs_of_the_fire_snake",
+          "name": "Fangs of the Fire Snake",
+          "level": 3,
+          "description": "3 ki: unarmed attacks deal 1d6 fire. Reach 10 ft."
+        },
+        {
+          "id": "water_whip",
+          "name": "Water Whip",
+          "level": 6,
+          "description": "2 ki: 30-ft whip pulls and damages creature."
+        },
+        {
+          "id": "gong_of_the_thunder",
+          "name": "Gong of the Thunder",
+          "level": 11,
+          "description": "4 ki: knock-back thunder attack."
+        },
+        {
+          "id": "river_of_hungry_flame",
+          "name": "River of Hungry Flame",
+          "level": 11,
+          "description": "6 ki: 6d6 fire sustained AOE."
+        },
+        {
+          "id": "breathe_of_winter",
+          "name": "Breath of Winter",
+          "level": 17,
+          "description": "8 ki: 6d6 cold cone AOE."
+        }
+      ],
+      "description": "You study the elements, becoming a conduit for elemental power."
+    },
+    {
+      "id": "mano_abierta",
+      "name": "Camino de la Mano Abierta",
+      "grantedAtLevel": 3,
+      "description": "Los monjes del Camino de la Mano Abierta son los máximos maestros del combate sin armas. Sus golpes evitan resistencia y dejan a los enemigos indefensos con un trauma preciso.",
+      "features": [
+        {
+          "id": "tecnica_mano_abierta",
+          "name": "Técnica de la mano abierta",
+          "level": 3,
+          "description": "Con Ráfaga de golpes eliges: salvar DES o tirado, salvar FUE o empujado 4,5 m, o no reacciones hasta fin del siguiente turno.",
+          "effects": [
+            {
+              "type": "efectos_rafaga_opcion",
+              "opciones": [
+                "tumbado",
+                "empujado_4.5m",
+                "sin_reaccion"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "plenitud_cuerpo",
+          "name": "Plenitud del cuerpo",
+          "level": 6,
+          "description": "Acción: te curas 3 × nivel de monje.",
+          "effects": [
+            {
+              "type": "accion_auto_curacion",
+              "formula": "3 * nivel"
+            }
+          ]
+        },
+        {
+          "id": "tranquilidad",
+          "name": "Tranquilidad",
+          "level": 11,
+          "description": "Al final de descanso largo, gastas 1 ki y entras en Tranquilidad; tú y aliados a 9 m sois inmunes a hechizado y asustado.",
+          "effects": [
+            {
+              "type": "estado_toggle_self_alies_9m",
+              "costo": "1 ki largo_descanso",
+              "inmunidad": [
+                "hechizado",
+                "asustado"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "misericordia",
+      "name": "Camino de la Misericordia",
+      "grantedAtLevel": 3,
+      "description": "Los monjes del Camino de la Misericordia siguen un sendero de compasión. Sus manos curan heridas tan fácilmente como las causan.",
+      "features": [
+        {
+          "id": "manos_curativas",
+          "name": "Manos curativas",
+          "level": 3,
+          "description": "Acción, 1 ki: tocas y curas una vez tu dado de Artes marciales + SAB. Usos = mod SAB (mín 1) por descanso.",
+          "effects": [
+            {
+              "type": "opcion_ki_accion",
+              "costo": 1,
+              "name": "Manos curativas",
+              "formula_curacion": "dado_artes + mod_SAB"
+            }
+          ]
+        },
+        {
+          "id": "manos_daninas",
+          "name": "Manos dañinas",
+          "level": 3,
+          "description": "Al impactar desarmado, gastas 1 ki: añades igual a tu dado de Artes marciales + SAB como daño necrótico.",
+          "effects": [
+            {
+              "type": "opcion_ki_en_impacto",
+              "costo": 1,
+              "name": "Manos dañinas",
+              "danho_adicional": "dado_artes + mod_SAB",
+              "tipo_danho": "necrótico"
+            }
+          ]
+        },
+        {
+          "id": "toque_medico",
+          "name": "Toque del médico",
+          "level": 6,
+          "description": "Con Manos curativas también puedes terminar una enfermedad o neutralizar un veneno.",
+          "effects": [
+            {
+              "type": "manos_curativas_extra",
+              "elimina": [
+                "enfermedad",
+                "veneno"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spellcasting": null
+}

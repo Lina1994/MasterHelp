@@ -1,0 +1,104 @@
+{
+  "id": "sphinx_of_valor",
+  "slug": "sphinx_of_valor",
+  "lang": "en",
+  "name": "Sphinx of Valor",
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The sphinx makes two Claw attacks and uses Roar."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +12, reach 5 ft. Hit: 20 (4d6 + 6) Slashing damage. Roar (3/Day). The sphinx emits a magical roar. When- ever it roars, the roar has a different effect, as detailed below (the sequence resets when it takes a Long Rest):"
+    },
+    {
+      "name": "First Roar",
+      "text": "Wisdom Saving Throw: DC 20, each enemy in a 500-foot Emanation originating from the sphinx."
+    },
+    {
+      "name": "Failure",
+      "text": "The target has the Frightened condition for 1 minute."
+    },
+    {
+      "name": "Second Roar",
+      "text": "Wisdom Saving Throw: DC 20, each enemy in a 500-foot Emanation originating from the sphinx. Failure: The target has the Paralyzed condi- tion, and it repeats the save at the end of each of its turns, ending the effect on itself on a success. After 1 minute, it succeeds automatically."
+    },
+    {
+      "name": "Third Roar",
+      "text": "Constitution Saving Throw: DC 20, each enemy in a 500-foot Emanation originating from the sphinx. Failure: 44 (8d10) Thunder damage, and the target has the Prone condition. Success: Half damage only."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The sphinx casts one of the following spells, requiring no Material components and using Wisdom as the spellcasting ability (spell save DC 20):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Evil and Good, Thaumaturgy 1/Day Each: Detect Magic, Dispel Magic, Greater Res- toration, Heroes’ Feast, Zone of Truth"
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the sphinx can expend a use to take one of the following actions. The sphinx regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Arcane Prowl",
+      "text": "The sphinx can teleport up to 30 feet to an unoccupied space it can see, and it makes one Claw attack."
+    },
+    {
+      "name": "Weight of Years",
+      "text": "Constitution Saving Throw: DC 16, one creature the sphinx can see within 120 feet. Failure: The target gains 1 Exhaustion level. While the target has any Exhaustion levels, it appears 3d10 years older. Fail- ure or Success: The sphinx can’t take this action again until the start of its next turn."
+    }
+  ],
+  "speed": {
+    "walk": 40,
+    "fly": 60
+  },
+  "skills": "Arcana +9, Perception +12, Religion +15",
+  "senses": {
+    "truesight": "120 ft",
+    "passivePerception": 22
+  },
+  "languages": "Celestial, Common",
+  "challengeRating": "17",
+  "experiencePoints": 18000,
+  "proficiencyBonus": 6,
+  "traits": [
+    {
+      "name": "Inscrutable",
+      "text": "No magic can observe the sphinx remotely or detect its thoughts without its permission. Wisdom (Insight) checks made to ascertain its intentions or sin- cerity are made with Disadvantage. Legendary Resistance (3/Day, or 4/Day in Lair). If the sphinx fails a saving throw, it can choose to suc- ceed instead."
+    }
+  ],
+  "srd_en_match_name": "Sphinx of Valor",
+  "srd_en_page": 325,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "celestial",
+  "alignment": "Lawful Neutral",
+  "armorClass": {
+    "value": 17,
+    "type": "+12 (22)"
+  },
+  "initiative": 12,
+  "hitPoints": {
+    "average": 199,
+    "roll": "19d10 + 95"
+  },
+  "abilities": {
+    "str": 22,
+    "dex": 10,
+    "con": 20,
+    "int": 16,
+    "wis": 23,
+    "cha": 18
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 6,
+    "con": 11,
+    "int": 9,
+    "wis": 12,
+    "cha": 4
+  }
+}

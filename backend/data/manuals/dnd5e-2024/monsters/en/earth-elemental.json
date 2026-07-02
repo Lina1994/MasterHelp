@@ -1,0 +1,87 @@
+{
+  "id": "earth-elemental",
+  "slug": "earth-elemental",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Earth Elemental",
+  "size": "Large",
+  "type": "Elemental",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 17,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 126,
+    "roll": "12d10+60"
+  },
+  "speed": {
+    "walk": 30,
+    "burrow": 30
+  },
+  "abilities": {
+    "str": 20,
+    "dex": 8,
+    "con": 20,
+    "int": 5,
+    "wis": 10,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 5,
+    "dex": 0,
+    "con": 5,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "thunder"
+  ],
+  "damageImmunities": [],
+  "conditionImmunities": [
+    "exhaustion",
+    "grappled",
+    "paralyzed",
+    "petrified",
+    "poisoned",
+    "prone",
+    "restrained",
+    "unconscious"
+  ],
+  "senses": "darkvision 60 ft., tremorsense 60 ft., passive Perception 10",
+  "languages": "Terran",
+  "proficiencyBonus": 3,
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "traits": [
+    {
+      "name": "Earth Glide",
+      "text": "The elemental can burrow through nonmagical, unworked earth and stone. While do- ing so, the elemental doesn’t disturb the material it moves through."
+    },
+    {
+      "name": "Siege Monster",
+      "text": "The elemental deals double damage to objects and structures."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The elemental makes two attacks, using Slam or Rock Launch in any combination."
+    },
+    {
+      "name": "Slam",
+      "text": "Melee Attack Roll: +8, reach 10 ft. Hit: 14 (2d8 + 5) Bludgeoning damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 1,
+  "srd_en_match_name": "Earth-Elemental",
+  "srd_en_page": 279
+}

@@ -1,0 +1,49 @@
+{
+  "id": "giant_hyena",
+  "slug": "giant_hyena",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Hiena gigante",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 14,
+    "con": 14,
+    "int": 2,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 10 (2d6 + 3) de daño perforante. Acciones adicionales Rabia (1/día). Inmediatamente después de hacer daño a una criatura que ya estuviera maltrecha, la hiena se podrá mover hasta la mitad de su velocidad y realizará un ataque de mordisco."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Hiena gigante",
+  "srd_es_page": 387
+}

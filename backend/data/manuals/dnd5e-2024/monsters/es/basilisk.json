@@ -1,0 +1,94 @@
+{
+  "id": "basilisk",
+  "slug": "basilisk",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Basilisco",
+  "type": "Monstruosidad",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": -1,
+  "hitPoints": {
+    "average": 52,
+    "roll": "8d8 + 16"
+  },
+  "speed": {
+    "walk": 20
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 8,
+    "con": 15,
+    "int": 2,
+    "wis": 8,
+    "cha": 7
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción pasiva 9",
+  "languages": "ninguno",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 10 (2d6 + 3) de daño perforante más 7 (2d6) de daño de veneno. Acciones adicionales Mirada petrificadora (recarga 4–6). Tirada de salvación de Constitución: CD 12, todas las criaturas en un cono de 9 m. Si el basilisco ve su reflejo en alguna parte del cono, deberá hacer esta tirada. Primer fallo: el objetivo tendrá el estado de apresado. Si al final de su siguiente turno sigue apresado, repetirá la tirada de salvación y se librará del efecto si la supera. Segundo fallo: el objetivo tendrá el estado de petrificado en vez del de apresado. Batidor Batidor Humanoide Mediano o Pequeño, neutral"
+    },
+    {
+      "name": "CA",
+      "text": "13 Iniciativa: +2 (12)"
+    },
+    {
+      "name": "PG",
+      "text": "16 (3d8 + 3)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 11 +0 +0 Des 14 +2 +2 Con 12 +1 +1 Int 11 +0 +0 sab 13 +1 +1 Car 11 +0 +0"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Naturaleza +4, Percepción +5, Sigilo +6, Supervivencia +5"
+    },
+    {
+      "name": "Equipo",
+      "text": "arco largo, armadura de cuero, espada corta"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 15"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común y otro cualquiera"
+    },
+    {
+      "name": "VD",
+      "text": "1/2 (100 PX; BC +2) Acciones"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El batidor realiza dos ataques con su arco largo o su espada corta en cualquier combinación."
+    },
+    {
+      "name": "Espada corta",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 5 (1d6 + 2) de daño perforante."
+    },
+    {
+      "name": "Arco largo",
+      "text": "Tirada de ataque a distancia: +4, alcance 45/180 m. Acierto: 6 (1d8 + 2) de daño perforante. Behir"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Basilisco",
+  "srd_es_page": 287
+}

@@ -1,0 +1,61 @@
+{
+  "id": "vulture",
+  "slug": "vulture",
+  "lang": "en",
+  "name": "Vulture",
+  "speed": {
+    "walk": 60
+  },
+  "senses": {
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Beak",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 2 (1d4) Piercing damage. Warhorse"
+    }
+  ],
+  "skills": "Perception +3",
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The vulture has Advantage on an attack roll against a creature if at least one of the vulture’s al- lies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "srd_en_match_name": "Vulture",
+  "srd_en_page": 360,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "beast",
+  "subtype": "Dinosaur",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 14,
+    "type": "−1 (9)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 114,
+    "roll": "12d12 + 36"
+  },
+  "abilities": {
+    "str": 22,
+    "dex": 9,
+    "con": 17,
+    "int": 2,
+    "wis": 11,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

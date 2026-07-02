@@ -1,0 +1,29 @@
+{
+  "id": "giant_shark",
+  "slug": "giant_shark",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Tiburón gigante",
+  "type": "Bestia",
+  "size": "Enorme",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 92,
+    "roll": "8d12 + 40"
+  },
+  "speed": {
+    "walk": 15,
+    "swim": 60
+  },
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Tiburón gigante",
+  "srd_es_page": 396
+}

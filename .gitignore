@@ -104,6 +104,11 @@ dist
 
 # Project-specific ignores
 /backend/data/dm_app.db
+# Ignore raw SRD PDFs downloaded for the bestiary parser; large binaries.
+# Re-download with `curl -L -o raw-sources/SP_SRD_CC_v5.2.1.pdf <URL>` per docs/DEV_GUIDE.md.
+/backend/data/manuals/*/raw-sources/
+/backend/data/manuals/*/scripts/*.json
+
 # Ignorar el contenido de release (binarios grandes) pero trackear los manifiestos
 # de actualización que electron-updater necesita leer de GitHub Releases.
 /release/**

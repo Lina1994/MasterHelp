@@ -1,0 +1,64 @@
+{
+  "id": "half_dragon",
+  "slug": "half_dragon",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Semidragón",
+  "type": "Dragón",
+  "size": "Mediano",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 18
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 105,
+    "roll": "14d8 + 42"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 16,
+    "int": 10,
+    "wis": 15,
+    "cha": 14
+  },
+  "skills": [
+    "Atletismo +7",
+    "Percepción +5",
+    "Sigilo +5"
+  ],
+  "senses": "visión ciega 3 m, visión en la oscuridad 18 m;",
+  "languages": "común, dracónico",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Origen dracónico",
+      "text": "El semidragón está relacionado con un tipo de dragón asociado con uno de los siguientes tipos de daño (a elección de cada GM): ácido, frío, fuego, relámpago o veneno. Esta elección afecta a otros aspectos del perfil."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El semidragón realiza dos ataques con sus garras."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 3 m. Acierto: 6 (1d4 + 4) de daño cortante más 7 (2d6) de daño del tipo elegido para el atributo Origen dracónico. Aliento de dragón (recarga 5–6). Tirada de salvación de Destreza: CD 14, todas las criaturas en un cono de 9 m. Fallo: 28 (8d6) de daño del tipo elegido para el atributo Origen dracónico. Éxito: la mitad del daño. Acciones adicionales"
+    },
+    {
+      "name": "Salto",
+      "text": "El semidragón gasta 3 m de movimiento para saltar hasta 9 m. Sirénido"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Semidragón",
+  "srd_es_page": 368
+}

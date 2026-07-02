@@ -1,0 +1,67 @@
+{
+  "id": "chuul",
+  "slug": "chuul",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Chuul",
+  "type": "Aberración",
+  "size": "Grande",
+  "alignment": "caótica malvada",
+  "armorClass": {
+    "value": 16
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 76,
+    "roll": "9d10 + 27"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 10,
+    "con": 16,
+    "int": 5,
+    "wis": 11,
+    "cha": 5
+  },
+  "skills": [
+    "Percepción +4"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "entiende habla de las profundidades, pero no",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Anfibio",
+      "text": "El chuul puede respirar tanto dentro como fuera del agua."
+    },
+    {
+      "name": "Sentir magia",
+      "text": "El chuul percibe la magia en un radio de 36 m. Este atributo funciona, en todos los demás aspectos, igual que el conjuro detectar magia, pero no es mágico en sí mismo."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El chuul realiza dos ataques con sus tenazas y utiliza sus tentáculos paralizadores."
+    },
+    {
+      "name": "Tenaza",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 3 m. Acierto: 9 (1d10 + 4) de daño contundente. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 14 para escapar) por una de las dos tenazas."
+    },
+    {
+      "name": "Tentáculos paralizadores",
+      "text": "Tirada de salvación de Constitución: CD 13, una criatura agarrada por el chuul. Fallo: el objetivo tendrá el estado de envenenado y repetirá la tirada de salvación al final de cada uno de sus turnos. Si tiene éxito, se librará del efecto. Tras 1 minuto, tendrá éxito automáticamente. Mientras esté envenenado, tendrá el estado de paralizado. Cieno gris"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Chuul",
+  "srd_es_page": 290
+}

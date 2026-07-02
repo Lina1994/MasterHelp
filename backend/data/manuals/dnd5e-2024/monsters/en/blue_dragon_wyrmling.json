@@ -1,0 +1,71 @@
+{
+  "id": "blue_dragon_wyrmling",
+  "slug": "blue_dragon_wyrmling",
+  "lang": "en",
+  "name": "Blue Dragon Wyrmling",
+  "speed": {
+    "walk": 40,
+    "burrow": 30,
+    "fly": 80
+  },
+  "skills": "Perception +12, Stealth +5",
+  "senses": {
+    "blindsight": "60 ft."
+  },
+  "languages": "Common, Draconic",
+  "challengeRating": "16",
+  "experiencePoints": 15000,
+  "proficiencyBonus": 5,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes two Rend attacks."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 8 (1d10 + 3) Slashing damage plus 3 (1d6) Lightning damage. Lightning Breath (Recharge 5–6). Dexterity Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 12, each creature in a 30-foot-long, 5-foot- wide Line. Failure: 21 (6d6) Lightning damage. Success: Half damage. Young Blue Dragon"
+    }
+  ],
+  "traits": [
+    {
+      "name": "",
+      "text": "Legendary Resistance (3/Day, or 4/Day in Lair). If the dragon fails a saving throw, it can choose to suc- ceed instead."
+    }
+  ],
+  "srd_en_match_name": "Blue Dragon Wyrmling",
+  "srd_en_page": 263,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "dragon",
+  "subtype": "Chromatic",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 17,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 65,
+    "roll": "10d8 + 20"
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 10,
+    "con": 15,
+    "int": 12,
+    "wis": 11,
+    "cha": 15
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 2,
+    "con": 2,
+    "int": 1,
+    "wis": 2,
+    "cha": 2
+  }
+}

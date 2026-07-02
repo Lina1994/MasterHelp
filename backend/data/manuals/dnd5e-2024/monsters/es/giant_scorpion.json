@@ -1,0 +1,54 @@
+{
+  "id": "giant_scorpion",
+  "slug": "giant_scorpion",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Escorpión gigante",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 52,
+    "roll": "7d10 + 14"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 13,
+    "con": 15,
+    "int": 1,
+    "wis": 9,
+    "cha": 3
+  },
+  "senses": "visión ciega 18 m; Percepción pasiva 9",
+  "languages": "ninguno",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El escorpión realiza dos ataques con sus pinzas y uno con su aguijón."
+    },
+    {
+      "name": "Aguijón",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 7 (1d8 + 3) de daño perforante más 11 (2d10) de daño de veneno."
+    },
+    {
+      "name": "Pinza",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 6 (1d6 + 3) de daño contundente. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 13 para escapar) por una de las dos pinzas."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Escorpión gigante",
+  "srd_es_page": 386
+}

@@ -1,0 +1,60 @@
+{
+  "id": "frog",
+  "slug": "frog",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Rana",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 1,
+    "roll": "1d4 − 1"
+  },
+  "speed": {
+    "walk": 20,
+    "swim": 20
+  },
+  "abilities": {
+    "str": 1,
+    "dex": 13,
+    "con": 8,
+    "int": 1,
+    "wis": 8,
+    "cha": 3
+  },
+  "skills": [
+    "Percepción +1",
+    "Sigilo +3"
+  ],
+  "senses": "visión en la oscuridad 9 m; Percepción pasiva 11",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Anfibia",
+      "text": "La rana puede respirar tanto dentro como fuera del agua."
+    },
+    {
+      "name": "Saltar sin carrera",
+      "text": "La rana puede hacer un salto de longitud de hasta 3 m o un salto de altura de hasta 1,5 m, tanto si ha cogido carrerilla como si no."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +3, alcance 1,5 m. Acierto: 1 de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Rana",
+  "srd_es_page": 392
+}

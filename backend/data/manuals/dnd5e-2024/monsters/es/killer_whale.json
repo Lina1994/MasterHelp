@@ -1,0 +1,56 @@
+{
+  "id": "killer_whale",
+  "slug": "killer_whale",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Orca",
+  "type": "Bestia",
+  "size": "Enorme",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 90,
+    "roll": "12d12 + 12"
+  },
+  "speed": {
+    "walk": 15,
+    "swim": 60
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 13,
+    "int": 3,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +3",
+    "Sigilo +4"
+  ],
+  "senses": "visión ciega 36 m; Percepción pasiva 13",
+  "languages": "ninguno",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Aguantar la respiración",
+      "text": "La orca puede aguantar la respiración durante 30 minutos."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 21 (5d6 + 4) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Orca",
+  "srd_es_page": 390
+}

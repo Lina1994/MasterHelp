@@ -1,0 +1,65 @@
+{
+  "id": "thug",
+  "slug": "thug",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Thug",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Any non-good alignment",
+  "armorClass": {
+    "value": 11,
+    "type": "leather armor"
+  },
+  "hitPoints": {
+    "average": 32,
+    "roll": "5d10+5"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 10,
+    "con": 14,
+    "int": 10,
+    "wis": 11,
+    "cha": 9
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 10",
+  "languages": "Common",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Pack Tactics.",
+      "text": "The thug has advantage on attack rolls against a creature if at least one of the thug's allies is within 5 ft. of the creature and the ally isn't incapacitated."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack.",
+      "text": "The thug makes two melee attacks."
+    },
+    {
+      "name": "Mace.",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) bludgeoning damage."
+    },
+    {
+      "name": "Heavy Crossbow.",
+      "text": "Ranged Weapon Attack: +2 to hit, range 100/400 ft., one target. Hit: 5 (1d10) piercing damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

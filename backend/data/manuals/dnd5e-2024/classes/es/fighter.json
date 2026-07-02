@@ -1,0 +1,710 @@
+{
+  "id": "fighter",
+  "name": "Luchador",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 por nivel de luchador",
+    "at1stLevel": "10 + tu modificador de Constitución",
+    "atHigherLevels": "1d10 (o 6) + tu modificador de Constitución por cada nivel de luchador por encima del primero"
+  },
+  "primaryAbilities": [
+    "str",
+    "dex"
+  ],
+  "savingThrows": [
+    "str",
+    "con"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Armadura ligera",
+      "Armadura media",
+      "Armadura pesada",
+      "Escudos"
+    ],
+    "weapons": [
+      "Armas simples",
+      "Armas marciales"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Acrobacias",
+      "Trato con animales",
+      "Atletismo",
+      "Historia",
+      "Perspicacia",
+      "Intimidación",
+      "Percepción",
+      "Supervivencia"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "cota_malla",
+          "description": "Cota de malla"
+        },
+        {
+          "id": "cuero_arco_largo",
+          "description": "Armadura de cuero, arco largo, 20 flechas"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "arma_marcial_escudo",
+          "description": "Un arma marcial y un escudo"
+        },
+        {
+          "id": "dos_armas_marciales",
+          "description": "Dos armas marciales"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "ballesta_mano_virotes_x20",
+          "description": "Ballesta de mano con 20 virotes"
+        },
+        {
+          "id": "dos_hachas_mano",
+          "description": "Dos hachas de mano"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "paquete_explorador",
+          "description": "Paquete de explorador"
+        },
+        {
+          "id": "paquete_calabozo",
+          "description": "Paquete de calabozo"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "estilo_combate",
+      "name": "Estilo de combate",
+      "level": 1,
+      "description": "Adoptas un estilo particular de combate como especialidad: Arquería (+2 a tiradas de ataque a distancia), Defensa (+1 de CA con armadura), Duelo (+2 de daño con arma cuerpo a cuerpo de una mano y sin otra arma) o Combate con dos armas (repite 1s y 2s de daño con arma de dos manos o versátil).",
+      "effects": [
+        {
+          "type": "eleguir_estilo_combate",
+          "options": [
+            "arquería",
+            "defensa",
+            "duelo",
+            "combate_dos_armas"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "segundo_aliento",
+      "name": "Segundo aliento",
+      "level": 1,
+      "description": "En tu turno, puedes usar una acción adicional para recuperar puntos de golpe iguales a 1d10 + tu nivel de luchador. Una vez usado, debes terminar un descanso corto o largo antes de volver a usarlo.",
+      "effects": [
+        {
+          "type": "recurso",
+          "name": "Segundo aliento",
+          "per": "descanso_corto",
+          "scale": {
+            "1": "1d10 + nivel"
+          }
+        }
+      ]
+    },
+    {
+      "id": "oleada_de_accion",
+      "name": "Oleada de acción",
+      "level": 2,
+      "description": "En tu turno, puedes realizar una acción adicional. Una vez usada, debes terminar un descanso corto o largo antes de volver a usarla; en el nivel 17 puedes usarla dos veces antes de un descanso.",
+      "effects": [
+        {
+          "type": "recurso",
+          "name": "Oleada de acción",
+          "per": "descanso_corto",
+          "count": {
+            "2": 1,
+            "17": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "arquetipo_marcial",
+      "name": "Arquetipo marcial",
+      "level": 3,
+      "description": "Elige un arquetipo: Campeón o Maestro de batalla.",
+      "effects": [
+        {
+          "type": "eleguir_subclase",
+          "atLevel": 3
+        }
+      ]
+    },
+    {
+      "id": "mejora_puntuacion_caracteristica",
+      "name": "Mejora de puntuación de característica",
+      "level": 4,
+      "description": "Aumentas una característica en 2 o dos en 1. Máximo 20.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "ataque_adicional",
+      "name": "Ataque adicional",
+      "level": 5,
+      "description": "Puedes atacar dos veces, en lugar de una, con la acción de Atacar. Aumenta a tres en nivel 11 y cuatro en nivel 20.",
+      "effects": [
+        {
+          "type": "ataque_adicional",
+          "countByLevel": {
+            "5": 2,
+            "11": 3,
+            "20": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "indomable",
+      "name": "Indomable",
+      "level": 9,
+      "description": "Puedes repetir una salvación fallida; debes usar la nueva tirada. Una vez usada, necesitas un descanso largo. Obtienes usos adicionales en niveles 13 y 17.",
+      "effects": [
+        {
+          "type": "recurso",
+          "name": "Indomable",
+          "per": "descanso_largo",
+          "countByLevel": {
+            "9": 1,
+            "13": 2,
+            "17": 3
+          }
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "estilo_combate",
+        "segundo_aliento"
+      ]
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "oleada_de_accion"
+      ]
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "arquetipo_marcial"
+      ]
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ]
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "ataque_adicional"
+      ],
+      "attacks": 2
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": []
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": []
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ]
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [
+        "indomable"
+      ]
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": []
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [
+        "ataque_adicional_3"
+      ],
+      "attacks": 3
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ]
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "indomable_uso_2"
+      ]
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": []
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": []
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ]
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "oleada_accion_2",
+        "indomable_uso_3"
+      ]
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": []
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ]
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "ataque_adicional_4"
+      ],
+      "attacks": 4
+    }
+  ],
+  "subclasses": [
+    {
+      "class_id": "fighter",
+      "id": "arcane_archer",
+      "name": "Arquero Arcano",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "arcane_archery",
+          "name": "Saber de Arquero Arcano",
+          "level": 3,
+          "description": "Ganas competencia en Naturaleza o Arcana (eliges)."
+        },
+        {
+          "id": "arcane_shot",
+          "name": "Tiro Arcano",
+          "level": 3,
+          "description": "Acción adicional: gasta dado de Tiro Arcano, sustituye daño con flecha mágica."
+        },
+        {
+          "id": "magic_arrow",
+          "name": "Flecha Mágica",
+          "level": 3,
+          "description": "Dispara 3 flechas arcanas al 7; 4 al 11; 5 al 15; 6 al 18 nivel."
+        },
+        {
+          "id": "curving_shot",
+          "name": "Tiro Curvado",
+          "level": 7,
+          "description": "La flecha rebota alrededor de cobertura hacia el objetivo."
+        },
+        {
+          "id": "ever_ready_shot",
+          "name": "Tiro Siempre Listo",
+          "level": 15,
+          "description": "Reacción para disparar tiro arcano incluso sorprendido."
+        },
+        {
+          "id": "capstone",
+          "name": "Culminación",
+          "level": 18,
+          "description": "2 usos de Tiro Arcano por turno."
+        }
+      ],
+      "description": "Aprendes a imbuir flechas con efectos mágicos. Tensa la cuerda y suelta."
+    },
+    {
+      "class_id": "fighter",
+      "id": "battle_master",
+      "name": "Maestro de Batalla",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "combat_superiority",
+          "name": "Superioridad de Combate",
+          "level": 3,
+          "description": "Ganas 4 dados (d8); aprende 3 maniobras. +d8 al 7/10/15/18 (máx d12)."
+        },
+        {
+          "id": "student_of_war",
+          "name": "Estudiante de Guerra",
+          "level": 3,
+          "description": "Ganas competencia con una herramienta artesanal."
+        },
+        {
+          "id": "know_your_enemy",
+          "name": "Conoce a tu Enemigo",
+          "level": 7,
+          "description": "Tras 1 min de observación, sabes si una criatura es peor que tú en CA/Destreza/velocidad."
+        },
+        {
+          "id": "improved_combat_superiority",
+          "name": "Superioridad Mejorada",
+          "level": 10,
+          "description": "Dados = d10 (15o: d12)."
+        },
+        {
+          "id": "relentless",
+          "name": "Implacable",
+          "level": 15,
+          "description": "Una vez por turno, si fallas, gasta un dado de superioridad y añade su tirada."
+        },
+        {
+          "id": "capstone",
+          "name": "Culminación",
+          "level": 18,
+          "description": "5 dados por descanso; solo cortos los reponen."
+        }
+      ],
+      "description": "Un guerrero lleno de trucos marciales. Aprendes maniobras alimentadas por dados especiales de superioridad."
+    },
+    {
+      "id": "campeon",
+      "name": "Campeón",
+      "grantedAtLevel": 3,
+      "description": "El Campeón se centra en el desarrollo del poder físico bruto, perfeccionando su habilidad mortífera y maximizando sus golpes críticos.",
+      "features": [
+        {
+          "id": "critico_mejorado",
+          "name": "Crítico mejorado",
+          "level": 3,
+          "description": "Tus ataques con arma impactan críticamente con 19 o 20.",
+          "effects": [
+            {
+              "type": "umbral_critico_incremento",
+              "value": 19
+            }
+          ]
+        },
+        {
+          "id": "atleta_notable",
+          "name": "Atleta notable",
+          "level": 7,
+          "description": "Añades mitad de tu bonificador de competencia (redondeado arriba) a cualquier prueba de FUE, DES o CON. Además, tu velocidad aumenta en 3 m (10 ft) cuando no llevas armadura pesada.",
+          "effects": [
+            {
+              "type": "add_half_pb_to_check",
+              "abilities": [
+                "str",
+                "dex",
+                "con"
+              ]
+            },
+            {
+              "type": "bonus_velocidad",
+              "caminar": 3,
+              "condition": "sin_armadura_pesada"
+            }
+          ]
+        },
+        {
+          "id": "estilo_combate_adicional",
+          "name": "Estilo de combate adicional",
+          "level": 10,
+          "description": "Obtienes un segundo Estilo de combate.",
+          "effects": [
+            {
+              "type": "eleguir_estilo_combate_otra_vez"
+            }
+          ]
+        },
+        {
+          "id": "critico_superior",
+          "name": "Crítico superior",
+          "level": 15,
+          "description": "Tus ataques con arma impactan críticamente con 18, 19 o 20.",
+          "effects": [
+            {
+              "type": "umbral_critico_incremento",
+              "value": 18
+            }
+          ]
+        },
+        {
+          "id": "superviviente",
+          "name": "Superviviente",
+          "level": 18,
+          "description": "Al inicio de cada uno de tus turnos, recuperas puntos de golpe iguales a 5 + 5 × tu modificador de CON si no te quedan más de la mitad de tus PG. Esto no funciona con 0 PG.",
+          "effects": [
+            {
+              "type": "recuperar_pg_inicio_turno",
+              "formula": "5 + 5 * mod_CON",
+              "condition": "pg <= max/2 and pg > 0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "fighter",
+      "id": "eldritch_knight",
+      "name": "Caballero Sobrenatural",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "spellcasting",
+          "name": "Lanzamiento de Conjuros",
+          "level": 3,
+          "description": "Aprendes trucos y conjuros de nivel 1+ del mago. INT es tu habilidad de lanzamiento."
+        },
+        {
+          "id": "eldritch_strike",
+          "name": "Golpe Sobrenatural",
+          "level": 3,
+          "description": "Cuando impactas con arma, infliges desventaja en próxima salvación contra tus conjuros."
+        },
+        {
+          "id": "war_magic",
+          "name": "Magia de Guerra",
+          "level": 7,
+          "description": "Acción adicional para lanzar truco después de ataque con arma."
+        },
+        {
+          "id": "arcane_charge",
+          "name": "Carga Arcana",
+          "level": 10,
+          "description": "Acción adicional: teletransporte 9 m a un espacio libre visible."
+        },
+        {
+          "id": "improved_war_magic",
+          "name": "Magia de Guerra Mejorada",
+          "level": 15,
+          "description": "Acción para lanzar conjuro de nivel 1+ después de un ataque con arma."
+        },
+        {
+          "id": "capstone",
+          "name": "Culminación",
+          "level": 18,
+          "description": "Acción adicional: conjuro de nivel 4 o menor después de ataque con arma."
+        }
+      ],
+      "description": "Aprendes a lanzar conjuros junto a tu entrenamiento marcial. Conjuro y espada en perfecta armonía."
+    },
+    {
+      "id": "maestro_batalla",
+      "name": "Maestro de batalla",
+      "grantedAtLevel": 3,
+      "description": "El Maestro de batalla emplea técnicas superiores y astucia táctica para desplegar su dominio de las armas en combate.",
+      "features": [
+        {
+          "id": "superioridad_combate",
+          "name": "Superioridad en combate (dados de superioridad)",
+          "level": 3,
+          "description": "Obtienes cuatro dados de superioridad (d8) que sirven para maniobras. Recuperas los dados gastados con un descanso corto o largo.",
+          "effects": [
+            {
+              "type": "recurso",
+              "name": "Dados de superioridad",
+              "per": "descanso_corto",
+              "countByLevel": {
+                "3": 4,
+                "7": 5,
+                "10": 6,
+                "15": 7,
+                "18": 8
+              },
+              "dieByLevel": {
+                "3": 8,
+                "10": 10,
+                "18": 12
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "fighter",
+      "id": "psi_warrior",
+      "name": "Guerrero Psi",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "psionic_power",
+          "name": "Poder Psiónico",
+          "level": 3,
+          "description": "Ganas 4 dados psiónicos (d6); aprende 3 disciplinas. INT como base."
+        },
+        {
+          "id": "telekinetic",
+          "name": "Telequinético",
+          "level": 3,
+          "description": "Manifiesta telequinesis: acción adicional para empujar, atraer o lanzar."
+        },
+        {
+          "id": "protective_field",
+          "name": "Campo Protector",
+          "level": 7,
+          "description": "Cuando una criatura es impactada, reacción para reducir el daño por 1d6 + INT mod."
+        },
+        {
+          "id": "psi_strike",
+          "name": "Golpe Psi",
+          "level": 10,
+          "description": "Telequinesis añade daño de fuerza extra igual al dado psiónico."
+        },
+        {
+          "id": "bulwark_of_force",
+          "name": "Baluarte de Fuerza",
+          "level": 15,
+          "description": "Reacción: redirige un ataque contra ti hacia un aliado."
+        }
+      ],
+      "description": "Aprendes habilidades psíquicas de una tradición antigua de estudio psiónico. Manifiesta poderes telequinéticos y telepáticos."
+    },
+    {
+      "id": "champion",
+      "name": "Champion",
+      "grantedAtLevel": 3,
+      "description": "The Champion focuses on developing raw physical power, honing deadly skill and improved criticals.",
+      "features": [
+        {
+          "id": "improved_critical",
+          "name": "Improved Critical",
+          "level": 3,
+          "description": "Your weapon attacks score a critical hit on a roll of 19 or 20.",
+          "effects": [
+            {
+              "type": "critical_threshold_increase",
+              "value": 19
+            }
+          ]
+        },
+        {
+          "id": "remarkable_athlete",
+          "name": "Remarkable Athlete",
+          "level": 7,
+          "description": "You can add half your proficiency bonus (round up) to any Strength, Dexterity, or Constitution check you make that doesn't already add your proficiency bonus. In addition, your speed increases by 10 feet when you aren't wearing heavy armor.",
+          "effects": [
+            {
+              "type": "add_half_pb_to_check",
+              "abilities": [
+                "str",
+                "dex",
+                "con"
+              ]
+            },
+            {
+              "type": "speed_bonus",
+              "walk": 10,
+              "condition": "not wearing heavy armor"
+            }
+          ]
+        },
+        {
+          "id": "additional_fighting_style",
+          "name": "Additional Fighting Style",
+          "level": 10,
+          "description": "You gain a second Fighting Style feature.",
+          "effects": [
+            {
+              "type": "choose_fighting_style_again"
+            }
+          ]
+        },
+        {
+          "id": "superior_critical",
+          "name": "Superior Critical",
+          "level": 15,
+          "description": "Your weapon attacks score a critical hit on a roll of 18-20.",
+          "effects": [
+            {
+              "type": "critical_threshold_increase",
+              "value": 18
+            }
+          ]
+        },
+        {
+          "id": "survivor",
+          "name": "Survivor",
+          "level": 18,
+          "description": "At the start of each of your turns, you regain hit points equal to 5 + 5 × your Constitution modifier if you have no more than half your hit points remaining. You don't gain this benefit if you have 0 hit points.",
+          "effects": [
+            {
+              "type": "regain_hp_at_start_of_turn",
+              "formula": "5 + 5 * CON mod",
+              "condition": "hp <= max/2 and hp > 0"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spellcasting": null,
+  "maneuvers": null
+}

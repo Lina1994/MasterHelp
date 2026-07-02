@@ -1,0 +1,46 @@
+{
+  "id": "warhorse",
+  "slug": "warhorse",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Caballo de guerra",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d10 + 3"
+  },
+  "speed": {
+    "walk": 60
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 12,
+    "con": 13,
+    "int": 2,
+    "wis": 12,
+    "cha": 7
+  },
+  "senses": "Percepción pasiva 11",
+  "languages": "ninguno",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Cascos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 9 (2d4 + 4) de daño contundente. Si el objetivo es una criatura Grande o más pequeña y el caballo recorre al menos 6 m en línea recta hacia ella justo antes de acertarle, esta recibirá 5 (2d4) de daño contundente adicional y tendrá el estado de derribada."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Caballo de guerra",
+  "srd_es_page": 380
+}

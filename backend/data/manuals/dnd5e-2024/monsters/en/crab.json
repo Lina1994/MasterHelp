@@ -1,0 +1,61 @@
+{
+  "id": "crab",
+  "slug": "crab",
+  "lang": "en",
+  "name": "Crab",
+  "actions": [
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 1 Blud- geoning damage. Crocodile"
+    }
+  ],
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +5, Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 15
+  },
+  "languages": "None",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The crab can breathe air and water."
+    }
+  ],
+  "srd_en_match_name": "Crab",
+  "srd_en_page": 344,
+  "source": "SRD 5.2 (2024)",
+  "size": "tiny",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 11,
+    "type": "+0 (10)"
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 3,
+    "roll": "1d4 + 1"
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 11,
+    "con": 12,
+    "int": 1,
+    "wis": 8,
+    "cha": 2
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

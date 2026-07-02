@@ -1,0 +1,61 @@
+{
+  "id": "jackal",
+  "slug": "jackal",
+  "lang": "en",
+  "name": "Jackal",
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +1, reach 5 ft. Hit: 1 (1d4 – 1) Piercing damage. Killer Whale"
+    }
+  ],
+  "speed": {
+    "walk": 50
+  },
+  "skills": "Perception +3, Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Water Breathing",
+      "text": "The shark can breathe only underwater."
+    }
+  ],
+  "srd_en_match_name": "Jackal",
+  "srd_en_page": 353,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 15,
+    "int": 1,
+    "wis": 10,
+    "cha": 4
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 2,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

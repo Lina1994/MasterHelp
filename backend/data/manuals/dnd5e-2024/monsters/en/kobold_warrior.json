@@ -1,0 +1,70 @@
+{
+  "id": "kobold_warrior",
+  "slug": "kobold_warrior",
+  "lang": "en",
+  "name": "Kobold Warrior",
+  "speed": {
+    "walk": 30
+  },
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 8
+  },
+  "languages": "Common, Draconic",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The kobold has Advantage on an attack roll against a creature if at least one of the kobold’s al- lies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    },
+    {
+      "name": "Sunlight Sensitivity",
+      "text": "While in sunlight, the kobold has Disadvantage on ability checks and attack rolls."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Dagger",
+      "text": "Melee or Ranged Attack Roll: +4, reach 5 ft. or range 20/60 ft. Hit: 4 (1d4 + 2) Piercing damage."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "Parry",
+      "text": "Trigger: The knight is hit by a melee attack roll while holding a weapon. Response: The knight adds 2 to its AC against that attack, possibly causing it to miss. Kobold Kobold Warrior"
+    }
+  ],
+  "srd_en_match_name": "Kobold Warrior",
+  "srd_en_page": 299,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "construct",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 20,
+    "type": "+9 (19)"
+  },
+  "initiative": 9,
+  "hitPoints": {
+    "average": 252,
+    "roll": "24d10 + 120"
+  },
+  "abilities": {
+    "str": 24,
+    "dex": 9,
+    "con": 20,
+    "int": 3,
+    "wis": 11,
+    "cha": 1
+  },
+  "savingThrows": {
+    "str": 7,
+    "dex": 0,
+    "con": 5,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

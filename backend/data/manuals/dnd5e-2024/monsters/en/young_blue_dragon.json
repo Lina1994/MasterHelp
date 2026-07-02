@@ -1,0 +1,71 @@
+{
+  "id": "young_blue_dragon",
+  "slug": "young_blue_dragon",
+  "lang": "en",
+  "name": "Young Blue Dragon",
+  "speed": {
+    "walk": 40,
+    "burrow": 30,
+    "fly": 80
+  },
+  "skills": "Perception +12, Stealth +5",
+  "senses": {
+    "blindsight": "60 ft."
+  },
+  "languages": "Common, Draconic",
+  "challengeRating": "16",
+  "experiencePoints": 15000,
+  "proficiencyBonus": 5,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes three Rend attacks."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +9, reach 10 ft. Hit: 12 (2d6 + 5) Slashing damage plus 5 (1d10) Lightning damage. Lightning Breath (Recharge 5–6). Dexterity Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 16, each creature in a 60-foot-long, 5-foot- wide Line. Failure: 55 (10d10) Lightning damage. Suc- cess: Half damage. Adult Blue Dragon"
+    }
+  ],
+  "traits": [
+    {
+      "name": "",
+      "text": "Legendary Resistance (3/Day, or 4/Day in Lair). If the dragon fails a saving throw, it can choose to suc- ceed instead."
+    }
+  ],
+  "srd_en_match_name": "Young Blue Dragon",
+  "srd_en_page": 263,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "dragon",
+  "subtype": "Chromatic",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 18,
+    "type": "+4 (14)"
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 152,
+    "roll": "16d10 + 64"
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 10,
+    "con": 19,
+    "int": 14,
+    "wis": 13,
+    "cha": 17
+  },
+  "savingThrows": {
+    "str": 5,
+    "dex": 4,
+    "con": 4,
+    "int": 2,
+    "wis": 5,
+    "cha": 3
+  }
+}

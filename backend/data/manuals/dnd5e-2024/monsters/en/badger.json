@@ -1,0 +1,61 @@
+{
+  "id": "badger",
+  "slug": "badger",
+  "lang": "en",
+  "name": "Badger",
+  "skills": "Perception +6",
+  "senses": {
+    "passivePerception": 16
+  },
+  "languages": "None",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The baboon has Advantage on an attack roll against a creature if at least one of the baboon’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 1 Piercing damage. Bat"
+    }
+  ],
+  "speed": {
+    "walk": 10,
+    "fly": 60
+  },
+  "srd_en_match_name": "Badger",
+  "srd_en_page": 342,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 3,
+    "roll": "1d6"
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 14,
+    "con": 11,
+    "int": 4,
+    "wis": 12,
+    "cha": 6
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

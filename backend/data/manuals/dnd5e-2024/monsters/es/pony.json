@@ -1,0 +1,78 @@
+{
+  "id": "pony",
+  "slug": "pony",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Poni",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d8 + 2"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 10,
+    "con": 13,
+    "int": 2,
+    "wis": 11,
+    "cha": 7
+  },
+  "senses": "Percepción pasiva 10",
+  "languages": "ninguno",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Cascos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 4 (1d4 + 2) de daño contundente. Pteranodon Bestia Mediana (dinosaurio), sin alineamiento"
+    },
+    {
+      "name": "CA",
+      "text": "13 Iniciativa: +2 (12)"
+    },
+    {
+      "name": "PG",
+      "text": "13 (3d8)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "3 m, volar 18 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 12 +1 +1 Des 15 +2 +2 Con 10 +0 +0 Int 2 −4 −4 sab 9 −1 −1 Car 5 −3 −3"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Percepción +1"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 11"
+    },
+    {
+      "name": "Idiomas",
+      "text": "ninguno"
+    },
+    {
+      "name": "VD",
+      "text": "1/4 (50 PX; BC +2)"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Poni",
+  "srd_es_page": 391
+}

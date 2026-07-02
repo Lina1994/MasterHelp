@@ -1,0 +1,65 @@
+{
+  "id": "triceratops",
+  "slug": "triceratops",
+  "lang": "en",
+  "name": "Triceratops",
+  "speed": {
+    "walk": 60
+  },
+  "senses": {
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The triceratops makes two Gore attacks."
+    },
+    {
+      "name": "Gore",
+      "text": "Melee Attack Roll: +9, reach 5 ft. Hit: 19 (2d12 + 6) Piercing damage. If the target is Huge or smaller and the triceratops moved 20+ feet straight toward it immediately before the hit, the target takes an extra 9 (2d8) Piercing damage and has the Prone condition. Tyrannosaurus Rex"
+    }
+  ],
+  "skills": "Perception +3",
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The vulture has Advantage on an attack roll against a creature if at least one of the vulture’s al- lies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "srd_en_match_name": "Triceratops",
+  "srd_en_page": 360,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "beast",
+  "subtype": "Dinosaur",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 14,
+    "type": "−1 (9)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 114,
+    "roll": "12d12 + 36"
+  },
+  "abilities": {
+    "str": 22,
+    "dex": 9,
+    "con": 17,
+    "int": 2,
+    "wis": 11,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

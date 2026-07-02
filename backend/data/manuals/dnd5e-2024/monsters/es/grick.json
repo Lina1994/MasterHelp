@@ -1,0 +1,58 @@
+{
+  "id": "grick",
+  "slug": "grick",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Grick",
+  "type": "Aberración",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 54,
+    "roll": "12d8"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 14,
+    "con": 11,
+    "int": 3,
+    "wis": 14,
+    "cha": 5
+  },
+  "skills": [
+    "Sigilo +4"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El grick realiza un ataque con su pico y uno con sus tentáculos."
+    },
+    {
+      "name": "Pico",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 9 (2d6 + 2) de daño perforante."
+    },
+    {
+      "name": "Tentáculos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 7 (1d10 + 2) de daño cortante. Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de agarrada (CD 12 para escapar) por los cuatro tentáculos. Grifo"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Grick",
+  "srd_es_page": 334
+}

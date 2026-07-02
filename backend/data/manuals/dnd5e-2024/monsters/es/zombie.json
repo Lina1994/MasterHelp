@@ -1,0 +1,51 @@
+{
+  "id": "zombie",
+  "slug": "zombie",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Zombi",
+  "type": "Muerto viviente",
+  "size": "Mediano",
+  "alignment": "neutral malvado",
+  "armorClass": {
+    "value": 8
+  },
+  "initiative": -2,
+  "hitPoints": {
+    "average": 15,
+    "roll": "2d8 + 6"
+  },
+  "speed": {
+    "walk": 20
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 6,
+    "con": 16,
+    "int": 3,
+    "wis": 6,
+    "cha": 5
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción pasiva 8",
+  "languages": "entiende común y otro idioma, pero no puede",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Fortaleza de muerto viviente",
+      "text": "Si el daño reduce a 0 los puntos de golpe del zombi, hará una tirada de salvación de Constitución (CD 5 más el daño sufrido), siempre que el daño no sea radiante o proceda de un crítico. Si la supera, el zombi se queda con 1 punto de golpe."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Golpe",
+      "text": "Tirada de ataque cuerpo a cuerpo: +3, alcance 1,5 m. Acierto: 5 (1d8 + 1) de daño contundente."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Zombi",
+  "srd_es_page": 376
+}

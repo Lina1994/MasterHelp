@@ -1,0 +1,51 @@
+{
+  "id": "purple_worm",
+  "slug": "purple_worm",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Gusano púrpura",
+  "type": "Monstruosidad",
+  "size": "Gargantuesca",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 18
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 247,
+    "roll": "15d20 + 90"
+  },
+  "speed": {
+    "walk": 50,
+    "burrow": 50
+  },
+  "abilities": {
+    "str": 28,
+    "dex": 7,
+    "con": 22,
+    "int": 1,
+    "wis": 8,
+    "cha": 4
+  },
+  "senses": "sentir vibraciones 18 m, visión ciega 9 m;",
+  "languages": "ninguno",
+  "challengeRating": "15",
+  "proficiencyBonus": 5,
+  "traits": [
+    {
+      "name": "Excavador",
+      "text": "El gusano puede excavar a través de roca sólida a la mitad de su velocidad excavando y deja a su paso un túnel de 3 m de diámetro."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El gusano realiza un ataque de mordisco y uno con su aguijón de la cola."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Gusano púrpura",
+  "srd_es_page": 336
+}

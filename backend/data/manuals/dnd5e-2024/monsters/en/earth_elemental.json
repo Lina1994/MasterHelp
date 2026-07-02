@@ -1,0 +1,69 @@
+{
+  "id": "earth_elemental",
+  "slug": "earth_elemental",
+  "lang": "en",
+  "name": "Earth Elemental",
+  "speed": {
+    "walk": 30,
+    "burrow": 30
+  },
+  "skills": "Perception +4, Stealth +5",
+  "senses": {
+    "darkvision": "60 ft."
+  },
+  "languages": "Primordial (Terran)",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The elemental makes two attacks, using Slam or Rock Launch in any combination."
+    },
+    {
+      "name": "Slam",
+      "text": "Melee Attack Roll: +8, reach 10 ft. Hit: 14 (2d8 + 5) Bludgeoning damage."
+    }
+  ],
+  "traits": [
+    {
+      "name": "Earth Glide",
+      "text": "The elemental can burrow through nonmagical, unworked earth and stone. While do- ing so, the elemental doesn’t disturb the material it moves through."
+    },
+    {
+      "name": "Siege Monster",
+      "text": "The elemental deals double damage to objects and structures."
+    }
+  ],
+  "srd_en_match_name": "Earth Elemental",
+  "srd_en_page": 279,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fey",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 16,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 22,
+    "roll": "5d8"
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 12,
+    "con": 11,
+    "int": 14,
+    "wis": 15,
+    "cha": 18
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 1,
+    "con": 0,
+    "int": 2,
+    "wis": 2,
+    "cha": 4
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "phase_spider",
+  "slug": "phase_spider",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Araña de fase",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 45,
+    "roll": "7d10 + 7"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Araña de fase",
+  "srd_es_page": 284
+}

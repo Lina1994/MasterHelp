@@ -1,0 +1,64 @@
+{
+  "id": "salamander",
+  "slug": "salamander",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Salamandra",
+  "type": "Elemental",
+  "size": "Grande",
+  "alignment": "neutral malvado",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 90,
+    "roll": "12d10 + 24"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 15,
+    "int": 11,
+    "wis": 10,
+    "cha": 12
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "primordial (ígneo)",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Aura de fuego",
+      "text": "Al final de cada turno de la salamandra, todas las criaturas a su elección en una emanación de 1,5 m que se origina en ella reciben 7 (2d6) de daño de fuego."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La salamandra realiza dos ataques con su lanza de llamas. Puede sustituir un ataque por una acción de constreñir."
+    },
+    {
+      "name": "Lanza de llamas",
+      "text": "Tirada de ataque cuerpo a cuerpo o a distancia: +7, alcance 1,5 m o 6/18 m a distancia."
+    },
+    {
+      "name": "Acierto",
+      "text": "13 (2d8 + 4) de daño perforante más 7 (2d6) de daño de fuego. Acierto o fallo: la lanza regresa mágicamente a la mano de la salamandra inmediatamente después de un ataque a distancia."
+    },
+    {
+      "name": "Constreñir",
+      "text": "Tirada de salvación de Fuerza: CD 15, una criatura Grande o más pequeña que la salamandra pueda ver a 3 m o menos. Fallo: 11 (2d6 + 4) de daño contundente más 7 (2d6) de daño de fuego. El objetivo tendrá el estado de agarrado (CD 14 para escapar) y el de apresado hasta que el agarre termine. Sátiro"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Salamandra",
+  "srd_es_page": 367
+}

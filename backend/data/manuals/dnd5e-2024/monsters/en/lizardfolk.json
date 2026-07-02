@@ -1,0 +1,71 @@
+{
+  "id": "lizardfolk",
+  "slug": "lizardfolk",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Lizardfolk",
+  "size": "Medium",
+  "type": "humanoid (lizardfolk)",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 15,
+    "type": "hide armor, shield"
+  },
+  "hitPoints": {
+    "average": 22,
+    "roll": "4d8 + 4"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 0,
+    "climb": 0,
+    "swim": 30,
+    "burrow": 0
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 10,
+    "con": 13,
+    "int": 7,
+    "wis": 12,
+    "cha": 7
+  },
+  "savingThrows": [],
+  "skills": [
+    "Perception +3",
+    "Stealth +4",
+    "Survival +3"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 13",
+  "languages": "Draconic",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Hold Breath",
+      "text": "The lizardfolk can hold its breath for 15 minutes."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The lizardfolk makes two attacks: one with its bite and one with its claws."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
+    },
+    {
+      "name": "Claws",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 4 (1d4 + 2) slashing damage."
+    },
+    {
+      "name": "Heavy Club",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 6 (1d8 + 2) bludgeoning damage."
+    }
+  ]
+}

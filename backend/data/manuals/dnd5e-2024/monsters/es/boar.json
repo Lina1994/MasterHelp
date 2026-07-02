@@ -1,0 +1,51 @@
+{
+  "id": "boar",
+  "slug": "boar",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Jabalí",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 13,
+    "roll": "2d8 + 4"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 11,
+    "con": 14,
+    "int": 2,
+    "wis": 9,
+    "cha": 5
+  },
+  "senses": "Percepción pasiva 9",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Furia maltrecha",
+      "text": "Mientras esté maltrecho, el jabalí tiene ventaja en las tiradas de ataque."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Colmillos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +3, alcance 1,5 m. Acierto: 4 (1d6 + 1) de daño perforante. Si el objetivo es una criatura Mediana o más pequeña y el jabalí recorre al menos 6 m en línea recta hacia ella justo antes de acertarle, esta recibirá 3 (1d6) de daño perforante adicional y tendrá el estado de derribada."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Jabalí",
+  "srd_es_page": 387
+}

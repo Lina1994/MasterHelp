@@ -1,0 +1,69 @@
+{
+  "id": "minotaur",
+  "slug": "minotaur",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Minotaur",
+  "size": "Large",
+  "type": "monstrosity",
+  "alignment": "chaotic evil",
+  "armorClass": {
+    "value": 14,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 85,
+    "roll": "10d10 + 30"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 0,
+    "climb": 0,
+    "swim": 0,
+    "burrow": 0
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 11,
+    "con": 16,
+    "int": 6,
+    "wis": 16,
+    "cha": 9
+  },
+  "savingThrows": [],
+  "skills": [
+    "Perception +6"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 60 ft., passive Perception 16",
+  "languages": "Abyssal",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "traits": [
+    {
+      "name": "Charge",
+      "text": "If the minotaur moves at least 30 feet straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) piercing damage. If the target is a creature, it must succeed on a DC 14 Strength saving throw or be pushed up to 10 feet away and knocked prone."
+    },
+    {
+      "name": "Labyrinthine Recall",
+      "text": "The minotaur can perfectly recall any path it has traveled."
+    },
+    {
+      "name": "Reckless",
+      "text": "At the start of each turn, the minotaur can gain advantage on all melee weapon attack rolls during that turn, but attack rolls against it have advantage until the start of its next turn."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Greataxe",
+      "text": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 15 (2d12 + 3) slashing damage."
+    },
+    {
+      "name": "Gore",
+      "text": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 10 (2d8 + 3) piercing damage."
+    }
+  ]
+}

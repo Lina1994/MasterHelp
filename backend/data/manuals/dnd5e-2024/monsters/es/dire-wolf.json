@@ -1,0 +1,55 @@
+{
+  "id": "dire-wolf",
+  "slug": "dire-wolf",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Lobo terrible",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 22,
+    "roll": "3d10 + 6"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 15,
+    "con": 15,
+    "int": 3,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +5",
+    "Sigilo +4"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Atacar en manada",
+      "text": "El lobo tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del lobo se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 8 (1d10 + 3) de daño perforante. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de derribada."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Lobo terrible",
+  "srd_es_page": 389
+}

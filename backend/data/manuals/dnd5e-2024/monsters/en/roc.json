@@ -1,0 +1,73 @@
+{
+  "id": "roc",
+  "slug": "roc",
+  "lang": "en",
+  "name": "Roc",
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +6, Stealth +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The roc makes two Beak attacks. It can replace one attack with a Talons attack."
+    },
+    {
+      "name": "Beak",
+      "text": "Melee Attack Roll: +13, reach 10 ft. Hit: 28 (3d12 + 9) Piercing damage."
+    },
+    {
+      "name": "Talons",
+      "text": "Melee Attack Roll: +13, reach 5 ft. Hit: 23 (4d6 + 9) Slashing damage. If the target is a Huge or smaller creature, it has the Grappled condition (escape DC 19) from both talons, and it has the Restrained condition until the grapple ends. Bonus Actions Swoop (Recharge 5–6). If the roc has a creature Grap- pled, the roc flies up to half its Fly Speed without pro- voking Opportunity Attacks and drops that creature. Roper Roper"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The roper can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    },
+    {
+      "name": "Iron Scent",
+      "text": "The rust monster can pinpoint the location of ferrous metal within 30 feet of itself."
+    }
+  ],
+  "srd_en_match_name": "Roc",
+  "srd_en_page": 317,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "monstrosity",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 15,
+    "type": "+8 (18)"
+  },
+  "initiative": 8,
+  "hitPoints": {
+    "average": 248,
+    "roll": "16d20 + 80"
+  },
+  "abilities": {
+    "str": 28,
+    "dex": 10,
+    "con": 20,
+    "int": 3,
+    "wis": 10,
+    "cha": 9
+  },
+  "savingThrows": {
+    "str": 9,
+    "dex": 4,
+    "con": 5,
+    "int": 0,
+    "wis": 4,
+    "cha": 0
+  }
+}

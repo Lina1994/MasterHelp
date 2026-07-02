@@ -1,0 +1,86 @@
+{
+  "id": "swarm_of_insects",
+  "slug": "swarm_of_insects",
+  "lang": "en",
+  "name": "Swarm of Insects",
+  "skills": "Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 8
+  },
+  "languages": "None",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The spider can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    },
+    {
+      "name": "Web Walker",
+      "text": "The spider ignores movement restrictions caused by webs, and the spider knows the location of any other creature in contact with the same web."
+    },
+    {
+      "name": "Swarm",
+      "text": "The swarm can occupy another creature’s space and vice versa, and the swarm can move through any opening large enough for a Tiny bat. The swarm can’t regain Hit Points or gain Temporary Hit Points."
+    },
+    {
+      "name": "Spider Climb",
+      "text": "If the swarm has a Climb Speed, the swarm can climb difficult surfaces, including along ceil- ings, without needing to make an ability check."
+    },
+    {
+      "name": "Swarm",
+      "text": "The swarm can occupy another creature’s space and vice versa, and the swarm can move through any opening large enough for a Tiny insect. The swarm can’t regain Hit Points or gain Temporary Hit Points."
+    },
+    {
+      "name": "Swarm",
+      "text": "The swarm can occupy another creature’s space and vice versa, and the swarm can move through any opening large enough for a Tiny piranha. The swarm can’t regain Hit Points or gain Temporary Hit Points."
+    },
+    {
+      "name": "Water Breathing",
+      "text": "The swarm can breathe only underwater."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 1 Piercing damage plus 2 (1d4) Poison damage. Swarm of Bats Large Swarm of Tiny Beasts, Unaligned AC 12 Initiative +2 (12) HP 11 (2d10) Speed 5 ft., Fly 30 ft. MOD SAVE MOD SAVE MOD SAVE Str 5 −3 −3 Dex 15 +2 +2 Con 10 +0 +0 Int 2 −4 −4 WIS 12 +1 +1 Cha 4 −3 −3 Resistances Bludgeoning, Piercing, Slashing Immunities Charmed, Frightened, Grappled, Paralyzed, Petrified, Prone, Restrained, Stunned Senses Blindsight 60 ft.; Passive Perception 11 Languages None CR 1/4 (XP 50; PB +2)"
+    },
+    {
+      "name": "Bites",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 5 (2d4) Piercing damage, or 2 (1d4) Piercing damage if the swarm is Bloodied. Swarm of Insects Medium Swarm of Tiny Beasts, Unaligned AC 11 Initiative +1 (11) HP 19 (3d8 + 6) Speed 20 ft., Climb or Fly 20 ft. (GM’s choice) MOD SAVE MOD SAVE MOD SAVE Str 3 −4 −4 Dex 13 +1 +1 Con 14 +2 +2 Int 1 −5 −5 WIS 7 −2 −2 Cha 1 −5 −5 Resistances Bludgeoning, Piercing, Slashing Immunities Charmed, Frightened, Grappled, Paralyzed, Petrified, Prone, Restrained, Stunned Senses Blindsight 30 ft.; Passive Perception 8 Languages None CR 1/2 (XP 100; PB +2)"
+    },
+    {
+      "name": "Bites",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 6 (2d4 + 1) Poison damage, or 3 (1d4 + 1) Poison damage if the swarm is Bloodied. Swarm of Piranhas Medium Swarm of Tiny Beasts, Unaligned AC 13 Initiative +3 (13) HP 28 (8d8 − 8) Speed 5 ft., Swim 40 ft. MOD SAVE MOD SAVE MOD SAVE Str 13 +1 +1 Dex 16 +3 +3 Con 9 −1 −1 Int 1 −5 −5 WIS 7 −2 −2 Cha 2 −4 −4 Resistances Bludgeoning, Piercing, Slashing Immunities Charmed, Frightened, Grappled, Paralyzed, Petrified, Prone, Restrained, Stunned Senses Darkvision 60 ft.; Passive Perception 8 Languages None CR 1 (XP 200; PB +2)"
+    },
+    {
+      "name": "Bites",
+      "text": "Melee Attack Roll: +5 (with Advantage if the target doesn’t have all its Hit Points), reach 5 ft. Hit: 8 (2d4 + 3) Piercing damage, or 5 (1d4 + 3) Piercing dam- age if the swarm is Bloodied."
+    }
+  ],
+  "speed": {
+    "walk": 5,
+    "swim": 40
+  },
+  "srd_en_match_name": "Swarm of Insects",
+  "srd_en_page": 358,
+  "source": "SRD 5.2 (2024)",
+  "abilities": {
+    "str": 2,
+    "dex": 14,
+    "con": 8,
+    "int": 1,
+    "wis": 10,
+    "cha": 2
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

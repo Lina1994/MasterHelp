@@ -1,0 +1,104 @@
+{
+  "id": "specter",
+  "slug": "specter",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Espectro",
+  "type": "Muerto viviente",
+  "size": "Mediano",
+  "alignment": "caótico malvado",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 22,
+    "roll": "5d8"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 1,
+    "dex": 14,
+    "con": 11,
+    "int": 10,
+    "wis": 10,
+    "cha": 11
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "entiende común y otro idioma, pero no puede",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Movimiento incorpóreo",
+      "text": "El espectro puede moverse a través de otras criaturas y objetos como si fueran terreno difícil. Recibe 5 (1d10) de daño de fuerza si acaba su turno dentro de un objeto."
+    },
+    {
+      "name": "Sensibilidad a la luz solar",
+      "text": "Bajo la luz del sol, el espectro tiene desventaja en las pruebas de característica y las tiradas de ataque."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Consumir vida",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 7 (2d6) de daño necrótico. Si el objetivo es una criatura, sus puntos de golpe máximos se reducen en una cantidad igual al daño sufrido. Espía Espía Humanoide Mediano o Pequeño, neutral"
+    },
+    {
+      "name": "CA",
+      "text": "12 Iniciativa: +4 (14)"
+    },
+    {
+      "name": "PG",
+      "text": "27 (6d8)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m, trepar 9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 10 +0 +0 Des 15 +2 +2 Con 10 +0 +0 Int 12 +1 +1 sab 14 +2 +2 Car 16 +3 +3"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Engaño +5, Investigación +5, Juego de manos +4, Percepción +6, Perspicacia +4, Sigilo +6"
+    },
+    {
+      "name": "Equipo",
+      "text": "ballesta de mano, espada corta, herramientas de ladrón"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 16"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común y otro cualquiera"
+    },
+    {
+      "name": "VD",
+      "text": "1 (200 PX; BC +2) Acciones"
+    },
+    {
+      "name": "Espada corta",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 5 (1d6 + 2) de daño perforante más 7 (2d6) de daño de veneno."
+    },
+    {
+      "name": "Ballesta de mano",
+      "text": "Tirada de ataque a distancia: +4, alcance 9/36 m. Acierto: 5 (1d6 + 2) de daño perforante más 7 (2d6) de daño de veneno. Acciones adicionales"
+    },
+    {
+      "name": "Acción astuta",
+      "text": "El espía realiza las acciones de correr, destrabarse o esconderse. Esqueletos"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Espectro",
+  "srd_es_page": 323
+}

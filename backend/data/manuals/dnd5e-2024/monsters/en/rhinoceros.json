@@ -1,0 +1,59 @@
+{
+  "id": "rhinoceros",
+  "slug": "rhinoceros",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Rhinoceros",
+  "size": "Large",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 8,
+    "con": 15,
+    "int": 2,
+    "wis": 12,
+    "cha": 6
+  },
+  "senses": "passive Perception 11",
+  "languages": "—",
+  "challengeRating": "2",
+  "traits": [
+    {
+      "name": "Flyby",
+      "text": "The pteranodon doesn’t provoke an Opportunity Attack when it flies out of an enemy’s reach."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8 + 2) Piercing damage. Rat"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 450,
+  "skills": "Perception +2",
+  "srd_en_match_name": "Rhinoceros",
+  "srd_en_page": 356,
+  "subtype": "Dinosaur",
+  "initiative": 2,
+  "savingThrows": {
+    "str": 1,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

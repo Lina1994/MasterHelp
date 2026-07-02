@@ -1,0 +1,70 @@
+{
+  "id": "gold_dragon_wyrmling",
+  "slug": "gold_dragon_wyrmling",
+  "lang": "en",
+  "name": "Gold Dragon Wyrmling",
+  "speed": {
+    "walk": 30,
+    "fly": 60,
+    "swim": 30
+  },
+  "skills": "Perception +4, Stealth +4",
+  "senses": {
+    "blindsight": "10 ft."
+  },
+  "languages": "Draconic",
+  "challengeRating": "3",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Dagger",
+      "text": "Melee or Ranged Attack Roll: +4, reach 5 ft. or range 20/60 ft. Hit: 4 (1d4 + 2) Piercing damage. Bonus Actions"
+    },
+    {
+      "name": "Nimble Escape",
+      "text": "The goblin takes the Disengage or Hide action. Goblin Warrior"
+    }
+  ],
+  "reactions": [
+    {
+      "name": "Redirect Attack",
+      "text": "Trigger: A creature the goblin can see makes an attack roll against it. Response: The goblin chooses a Small or Medium ally within 5 feet of itself. The goblin and that ally swap places, and the ally be- comes the target of the attack instead. Gold Dragons Gold Dragon Wyrmling"
+    }
+  ],
+  "srd_en_match_name": "Gold Dragon Wyrmling",
+  "srd_en_page": 287,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "fey",
+  "subtype": "Goblinoid",
+  "alignment": "Chaotic Neutral",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 7,
+    "roll": "2d6"
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 15,
+    "con": 10,
+    "int": 10,
+    "wis": 8,
+    "cha": 8
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

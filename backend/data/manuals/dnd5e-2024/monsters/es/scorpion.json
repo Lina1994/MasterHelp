@@ -1,0 +1,28 @@
+{
+  "id": "scorpion",
+  "slug": "scorpion",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Escorpión",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 1,
+    "roll": "1d4 − 1"
+  },
+  "speed": {
+    "walk": 10
+  },
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Escorpión",
+  "srd_es_page": 385
+}

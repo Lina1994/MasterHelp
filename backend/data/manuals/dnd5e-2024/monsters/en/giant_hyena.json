@@ -1,0 +1,76 @@
+{
+  "id": "giant_hyena",
+  "slug": "giant_hyena",
+  "lang": "en",
+  "name": "Giant Hyena",
+  "speed": {
+    "walk": 5,
+    "fly": 60
+  },
+  "skills": "Perception +6, Stealth +6",
+  "senses": {
+    "darkvision": "120 ft",
+    "passivePerception": 16
+  },
+  "languages": "Celestial; understands Common, Elvish, and",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 10 (2d6 + 3) Piercing damage. Bonus Actions Rampage (1/Day). Immediately after dealing damage to a creature that was already Bloodied, the hyena can move up to half its Speed, and it makes one Bite attack. Giant Lizard"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The lizard can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    },
+    {
+      "name": "Water Breathing",
+      "text": "The octopus can breathe only under- water. It can hold its breath for 1 hour outside water."
+    },
+    {
+      "name": "Flyby",
+      "text": "The owl doesn’t provoke an Opportunity Attack when it flies out of an enemy’s reach."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "",
+      "text": "Ink Cloud (1/Day). Trigger: The octopus takes damage while underwater. Response: The octopus releases ink that fills a 10-foot Cube centered on itself, and the oc- topus moves up to its Swim Speed. The Cube is Heavily Obscured for 1 minute or until a strong current or simi- lar effect disperses the ink. Giant Owl"
+    }
+  ],
+  "srd_en_match_name": "Giant Hyena",
+  "srd_en_page": 349,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 14,
+    "con": 14,
+    "int": 2,
+    "wis": 12,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 2,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

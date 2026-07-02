@@ -1,0 +1,65 @@
+{
+  "id": "dire_wolf",
+  "slug": "dire_wolf",
+  "lang": "en",
+  "name": "Dire Wolf",
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 8 (1d10 + 3)"
+    },
+    {
+      "name": "Piercing damage",
+      "text": "If the target is a Large or smaller crea- ture, it has the Prone condition. Draft Horse"
+    }
+  ],
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +5, Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 15
+  },
+  "languages": "None",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The wolf has Advantage on an attack roll against a creature if at least one of the wolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "srd_en_match_name": "Dire Wolf",
+  "srd_en_page": 344,
+  "source": "SRD 5.2 (2024)",
+  "size": "tiny",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 11,
+    "type": "+0 (10)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 3,
+    "roll": "1d4 + 1"
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 11,
+    "con": 12,
+    "int": 1,
+    "wis": 8,
+    "cha": 2
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "id": "shield_guardian",
+  "slug": "shield_guardian",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Shield Guardian",
+  "size": "Large",
+  "type": "construct",
+  "alignment": "unaligned",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 142,
+    "roll": "15d10 + 60"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 8,
+    "con": 18,
+    "int": 7,
+    "wis": 12,
+    "cha": 3
+  },
+  "saves": {
+    "en": " CON +9 "
+  },
+  "skills": [
+    " Perception +6 "
+  ],
+  "damageImmunities": [
+    "poison"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 16",
+  "languages": "understands commands of its master",
+  "challengeRating": "7",
+  "traits": [
+    {
+      "name": "Bound",
+      "text": "The guardian is magically bound to an amulet. While the guardian and its amulet are on the same plane of existence, the amulet’s wearer can telepathi- cally call the guardian to travel to it, and the guardian knows the distance and direction to the amulet. If the guardian is within 60 feet of the amulet’s wearer, half of any damage the wearer takes (round up) is transferred to the guardian."
+    },
+    {
+      "name": "Regeneration",
+      "text": "The guardian regains 10 Hit Points at the start of each of its turns if it has at least 1 Hit Point."
+    },
+    {
+      "name": "Spell Storing",
+      "text": "A spellcaster who wears the guardian’s amulet can cause the guardian to store one spell of level 4 or lower. To do so, the wearer must cast the spell on the guardian while within 5 feet of it. The spell has no effect but is stored within the guardian. Any previously stored spell is lost when a new spell is stored. The guardian can cast the spell stored with any parameters set by the original caster, requiring no spell components and using the caster’s spellcasting ability. The stored spell is then lost."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The guardian makes two Fist attacks."
+    },
+    {
+      "name": "Fist",
+      "text": "Melee Attack Roll: +7, reach 10 ft. Hit: 11 (2d6 + 4) Bludgeoning damage plus 7 (2d6) Force damage."
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 1800,
+  "reactions": [
+    {
+      "name": "Protection",
+      "text": "Trigger: An attack roll hits the wearer of the guardian’s amulet while the wearer is within 5 feet of the guardian. Response: The wearer gains a +5 bonus to AC, including against the triggering attack and pos- sibly causing it to miss, until the start of the guardian’s next turn."
+    }
+  ],
+  "srd_en_match_name": "Shield Guardian",
+  "srd_en_page": 320,
+  "initiative": 1,
+  "savingThrows": {
+    "str": 4,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

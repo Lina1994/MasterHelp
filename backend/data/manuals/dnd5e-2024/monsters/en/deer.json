@@ -1,0 +1,61 @@
+{
+  "id": "deer",
+  "slug": "deer",
+  "lang": "en",
+  "name": "Deer",
+  "actions": [
+    {
+      "name": "Ram",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 2 (1d4) Bludgeoning damage. Dire Wolf"
+    }
+  ],
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +5, Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 15
+  },
+  "languages": "None",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Agile",
+      "text": "The deer doesn’t provoke an Opportunity Attack when it moves out of an enemy’s reach."
+    }
+  ],
+  "srd_en_match_name": "Deer",
+  "srd_en_page": 344,
+  "source": "SRD 5.2 (2024)",
+  "size": "tiny",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 11,
+    "type": "+0 (10)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 3,
+    "roll": "1d4 + 1"
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 11,
+    "con": 12,
+    "int": 1,
+    "wis": 8,
+    "cha": 2
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

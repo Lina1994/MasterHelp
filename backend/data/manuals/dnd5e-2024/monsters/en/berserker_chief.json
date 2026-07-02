@@ -1,0 +1,51 @@
+{
+  "id": "berserker_chief",
+  "name": "Berserker Chief",
+  "slug": "berserker_chief",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "chaotic neutral",
+  "armorClass": 14,
+  "hitPoints": {
+    "average": 65,
+    "roll": "10d8 + 30"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 12,
+    "con": 16,
+    "int": 9,
+    "wis": 11,
+    "cha": 14
+  },
+  "skills": [
+    " Athletics +7 ",
+    " Intimidation +4 "
+  ],
+  "senses": "passive Perception 10",
+  "languages": "any one language",
+  "challengeRating": "6",
+  "traits": [
+    {
+      "name": "Rage",
+      "text": "Bonus to attack, damage, resistance to physical damage. Cannot cast spells."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Three attacks: two greataxe + one handaxe."
+    },
+    {
+      "name": "Greataxe",
+      "text": "+7 to hit. Hit: 12 (1d12 + 4) slashing, +6 damage when raging."
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 2300,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

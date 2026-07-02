@@ -1,0 +1,94 @@
+{
+  "id": "wyvern",
+  "slug": "wyvern",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Wyvern",
+  "size": "Large",
+  "type": "dragon",
+  "alignment": "unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 110,
+    "roll": "13d10 + 39"
+  },
+  "speed": {
+    "walk": 20,
+    "fly": 80,
+    "climb": 0,
+    "swim": 0,
+    "burrow": 0
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 10,
+    "con": 16,
+    "int": 5,
+    "wis": 12,
+    "cha": 6
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  },
+  "skills": "Perception +6, Stealth +6",
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 60 ft., passive Perception 11",
+  "languages": "Understands Common plus one other language",
+  "challengeRating": "6",
+  "experiencePoints": 2300,
+  "traits": [
+    {
+      "name": "Incorporeal Movement",
+      "text": "The wraith can move through other creatures and objects as if they were Difficult"
+    },
+    {
+      "name": "Terrain",
+      "text": "It takes 5 (1d10) Force damage if it ends its turn inside an object."
+    },
+    {
+      "name": "Sunlight Sensitivity",
+      "text": "While in sunlight, the wraith has Disadvantage on ability checks and attack rolls."
+    },
+    {
+      "name": "Earth Glide",
+      "text": "The xorn can burrow through nonmagical, unworked earth and stone. While doing so, the xorn doesn’t disturb the material it moves through."
+    },
+    {
+      "name": "Treasure Sense",
+      "text": "The xorn can pinpoint the location of precious metals and stones within 60 feet of itself."
+    },
+    {
+      "name": "Undead Fortitude",
+      "text": "If damage reduces the zombie to 0 Hit Points, it makes a Constitution saving throw (DC 5 plus the damage taken) unless the damage is Radiant or from a Critical Hit. On a successful save, the zombie drops to 1 Hit Point instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The wyvern makes one Bite attack and one Sting attack."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 13 (2d8 + 4) Piercing damage."
+    },
+    {
+      "name": "Sting",
+      "text": "Melee Attack Roll: +7, reach 10 ft. Hit: 11 (2d6 + 4) Piercing damage plus 24 (7d6) Poison damage, and the target has the Poisoned condition until the start of the wyvern’s next turn. Xorn Xorn"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "srd_en_match_name": "Wyvern",
+  "srd_en_page": 340,
+  "initiative": 0
+}

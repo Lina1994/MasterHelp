@@ -1,0 +1,69 @@
+{
+  "id": "ettercap",
+  "slug": "ettercap",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Ettercap",
+  "type": "Monstruosidad",
+  "size": "Mediana",
+  "alignment": "neutral malvada",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 44,
+    "roll": "8d8 + 8"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 15,
+    "con": 13,
+    "int": 7,
+    "wis": 12,
+    "cha": 8
+  },
+  "skills": [
+    "Percepción +3",
+    "Sigilo +4",
+    "Supervivencia +3"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Caminar por telarañas",
+      "text": "El ettercap ignora todas las restricciones de movimiento causadas por las telarañas y conoce la ubicación de cualquier otra criatura que esté en contacto con la misma telaraña."
+    },
+    {
+      "name": "Trepar cual arácnido",
+      "text": "El ettercap puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El ettercap realiza un ataque de mordisco y uno con sus garras."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 7 (2d4 + 2) de daño cortante."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 5 (1d6 + 2) de daño perforante más 2 (1d4) de daño de veneno y el objetivo tendrá el estado de envenenado hasta el principio del siguiente turno del ettercap."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Ettercap",
+  "srd_es_page": 324
+}

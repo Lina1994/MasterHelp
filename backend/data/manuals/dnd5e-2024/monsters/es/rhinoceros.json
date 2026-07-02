@@ -1,0 +1,46 @@
+{
+  "id": "rhinoceros",
+  "slug": "rhinoceros",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Rinoceronte",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": -1,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 8,
+    "con": 15,
+    "int": 2,
+    "wis": 12,
+    "cha": 6
+  },
+  "senses": "Percepción pasiva 11",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Cornada",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 14 (2d8 + 5) de daño perforante. Si el objetivo es una criatura Grande o más pequeña y el rinoceronte recorre al menos 6 m en línea recta hacia ella justo antes de acertarle, esta recibirá 9 (2d8) de daño perforante adicional y tendrá el estado de derribada."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Rinoceronte",
+  "srd_es_page": 393
+}

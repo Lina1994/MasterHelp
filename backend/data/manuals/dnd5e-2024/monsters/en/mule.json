@@ -1,0 +1,61 @@
+{
+  "id": "mule",
+  "slug": "mule",
+  "lang": "en",
+  "name": "Mule",
+  "traits": [
+    {
+      "name": "Beast of Burden",
+      "text": "The mule counts as one size larger for the purpose of determining its carrying capacity."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Hooves",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 4 (1d4 + 2) Bludgeoning damage. Owl"
+    }
+  ],
+  "speed": {
+    "walk": 5,
+    "fly": 60
+  },
+  "senses": {
+    "passivePerception": 10
+  },
+  "languages": "None",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "skills": "Perception +5",
+  "srd_en_match_name": "Mule",
+  "srd_en_page": 354,
+  "source": "SRD 5.2 (2024)",
+  "size": "tiny",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 10,
+    "type": "+0 (10)"
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 2,
+    "roll": "1d4"
+  },
+  "abilities": {
+    "str": 2,
+    "dex": 11,
+    "con": 10,
+    "int": 1,
+    "wis": 8,
+    "cha": 3
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

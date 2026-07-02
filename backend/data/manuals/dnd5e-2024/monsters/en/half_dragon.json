@@ -1,0 +1,77 @@
+{
+  "id": "half_dragon",
+  "slug": "half_dragon",
+  "lang": "en",
+  "name": "Half-Dragon",
+  "speed": {
+    "walk": 50
+  },
+  "skills": "Perception +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 15
+  },
+  "languages": "Understands Infernal but can’t speak",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Draconic Origin",
+      "text": "The half-dragon is related to a type of dragon associated with one of the following damage types (GM’s choice): Acid, Cold, Fire, Lightning, or Poi- son. This choice affects other aspects of the stat block."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The half-dragon makes two Claw attacks."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +7, reach 10 ft. Hit: 6 (1d4 + 4) Slashing damage plus 7 (2d6) damage of the type chosen for the Draconic Origin trait. Dragon’s Breath (Recharge 5–6). Dexterity Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 14, each creature in a 30-foot Cone. Failure: 28 (8d6) damage of the type chosen for the Draconic"
+    },
+    {
+      "name": "Origin trait",
+      "text": "Success: Half damage. Bonus Actions"
+    },
+    {
+      "name": "Leap",
+      "text": "The half-dragon jumps up to 30 feet by spending 10 feet of movement. Harpy Harpy"
+    }
+  ],
+  "srd_en_match_name": "Half-Dragon",
+  "srd_en_page": 294,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "dragon",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 18,
+    "type": "+5 (15)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 105,
+    "roll": "14d8 + 42"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 16,
+    "int": 10,
+    "wis": 15,
+    "cha": 14
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 5,
+    "con": 3,
+    "int": 0,
+    "wis": 5,
+    "cha": 2
+  }
+}

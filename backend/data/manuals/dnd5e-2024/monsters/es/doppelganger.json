@@ -1,0 +1,62 @@
+{
+  "id": "doppelganger",
+  "slug": "doppelganger",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Doppelganger",
+  "type": "Monstruosidad",
+  "size": "Mediana",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 52,
+    "roll": "8d8 + 16"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 18,
+    "con": 14,
+    "int": 11,
+    "wis": 12,
+    "cha": 14
+  },
+  "skills": [
+    "Engaño +6",
+    "Perspicacia +3"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "común y otros tres idiomas",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El doppelganger realiza dos ataques con su golpe y usa su acción de rostro inquietante si está disponible."
+    },
+    {
+      "name": "Golpe",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6 (con ventaja durante el primer asalto de cada combate), alcance 1,5 m. Acierto: 11 (2d6 + 4) de daño contundente."
+    },
+    {
+      "name": "Leer pensamientos",
+      "text": "El doppelganger lanza detectar pensamientos, que no requiere componentes y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 12). Rostro inquietante (recarga 6). Tirada de salvación de Sabiduría: CD 12, todas las criaturas en una emanación de 4,5 m que se origina en el doppelganger que puedan verlo. Fallo: el objetivo tendrá el estado de asustado y repetirá la tirada de salvación al final de cada uno de sus turnos. Si tiene éxito, se librará del efecto. Tras 1 minuto, tendrá éxito automáticamente. Acciones adicionales"
+    },
+    {
+      "name": "Cambio de forma",
+      "text": "El doppelganger adopta la forma de un humanoide Mediano o Pequeño, o recupera su verdadera forma. Su perfil, salvo por el tamaño, es el mismo en todas las formas. Cualquier equipo que vista o lleve no se transformará."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Doppelganger",
+  "srd_es_page": 297
+}

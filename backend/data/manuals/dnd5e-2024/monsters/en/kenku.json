@@ -1,0 +1,66 @@
+{
+  "id": "kenku",
+  "slug": "kenku",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Kenku",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Chaotic Neutral",
+  "armorClass": {
+    "value": 13,
+    "type": "leather armor"
+  },
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 13,
+    "con": 10,
+    "int": 10,
+    "wis": 12,
+    "cha": 10
+  },
+  "savingThrows": {
+    "dex": 3
+  },
+  "skills": {
+    "deception": 4,
+    "stealth": 5
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 11",
+  "languages": "Common (understands but can't speak)",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "traits": [
+    {
+      "name": "Mimicry.",
+      "text": "The kenku can mimic any sounds it has heard, including voices. A creature that hears the sounds can tell they are imitations only with a successful DC 14 Investigation check."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Shortsword.",
+      "text": "Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 4 (1d6 + 1) piercing damage."
+    },
+    {
+      "name": "Shortbow.",
+      "text": "Ranged Weapon Attack: +3 to hit, range 80/320 ft. Hit: 5 (1d6 + 1) piercing damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

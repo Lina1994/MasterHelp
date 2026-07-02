@@ -1,0 +1,69 @@
+{
+  "id": "hobgoblin_captain",
+  "slug": "hobgoblin_captain",
+  "lang": "en",
+  "name": "Hobgoblin Captain",
+  "traits": [
+    {
+      "name": "Aura of Authority",
+      "text": "While in a 10-foot Emanation origi- nating from the hobgoblin, the hobgoblin and its allies have Advantage on attack rolls and saving throws, provided the hobgoblin doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The hobgoblin makes two attacks, using Greatsword or Longbow in any combination."
+    },
+    {
+      "name": "Greatsword",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 9 (2d6 + 2) Slashing damage plus 3 (1d6) Poison damage."
+    },
+    {
+      "name": "Longbow",
+      "text": "Ranged Attack Roll: +4, range 150/600 ft. Hit: 6 (1d8 + 2) Piercing damage plus 5 (2d4) Poi- son damage. Homunculus Homunculus"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "fly": 60
+  },
+  "senses": {
+    "darkvision": "150 ft."
+  },
+  "languages": "Infernal; telepathy 120 ft.",
+  "challengeRating": "11",
+  "experiencePoints": 7200,
+  "proficiencyBonus": 4,
+  "srd_en_match_name": "Hobgoblin Captain",
+  "srd_en_page": 296,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fey",
+  "subtype": "Goblinoid",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 17,
+    "type": "+4 (14)"
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 58,
+    "roll": "9d8 + 18"
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 14,
+    "con": 14,
+    "int": 12,
+    "wis": 10,
+    "cha": 13
+  },
+  "savingThrows": {
+    "str": 2,
+    "dex": 2,
+    "con": 2,
+    "int": 1,
+    "wis": 0,
+    "cha": 1
+  }
+}

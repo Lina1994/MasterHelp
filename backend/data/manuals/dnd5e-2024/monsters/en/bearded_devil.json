@@ -1,0 +1,90 @@
+{
+  "id": "bearded_devil",
+  "slug": "bearded_devil",
+  "lang": "en",
+  "name": "Bearded Devil",
+  "skills": "Deception +5, Insight +5, Perception +8",
+  "senses": {
+    "darkvision": "120 ft."
+  },
+  "languages": "Infernal; telepathy 120 ft.",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The devil makes one Claws attack and one Tail attack, or it makes two Hurl Flame attacks."
+    },
+    {
+      "name": "Claws",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 10 (2d6 + 3) Piercing damage. If the target is a Large or smaller creature, it has the Grappled condition (escape DC 13) from both claws."
+    },
+    {
+      "name": "Tail",
+      "text": "Melee Attack Roll: +6, reach 10 ft. Hit: 14 (2d10 + 3) Slashing damage."
+    },
+    {
+      "name": "Hurl Flame",
+      "text": "Ranged Attack Roll: +5, range 150 ft. Hit: 17 (5d6) Fire damage. If the target is a flammable object that isn’t being worn or carried, it starts burning. Basilisk Basilisk"
+    }
+  ],
+  "reactions": [
+    {
+      "name": "Parry",
+      "text": "Trigger: The bandit is hit by a melee attack roll while holding a weapon. Response: The bandit adds 2 to its AC against that attack, possibly causing it to miss. Barbed Devil Barbed Devil"
+    }
+  ],
+  "speed": {
+    "walk": 30
+  },
+  "traits": [
+    {
+      "name": "Barbed Hide",
+      "text": "At the start of each of its turns, the devil deals 5 (1d10) Piercing damage to any creature it is grappling or any creature grappling it."
+    },
+    {
+      "name": "Diabolical Restoration",
+      "text": "If the devil dies outside the Nine Hells, its body disappears in sulfurous smoke, and it gains a new body instantly, reviving with all its Hit Points somewhere in the Nine Hells."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The devil has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "srd_en_match_name": "Bearded Devil",
+  "srd_en_page": 259,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fiend",
+  "subtype": "Devil",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 15,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 110,
+    "roll": "13d8 + 52"
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 17,
+    "con": 18,
+    "int": 12,
+    "wis": 14,
+    "cha": 14
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 3,
+    "con": 7,
+    "int": 1,
+    "wis": 5,
+    "cha": 5
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

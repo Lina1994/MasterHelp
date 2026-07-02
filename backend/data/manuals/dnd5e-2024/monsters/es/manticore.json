@@ -1,0 +1,55 @@
+{
+  "id": "manticore",
+  "slug": "manticore",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Mantícora",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "legal malvada",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 68,
+    "roll": "8d10 + 24"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 16,
+    "con": 17,
+    "int": 7,
+    "wis": 12,
+    "cha": 8
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "común",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La mantícora realiza tres ataques de desgarro o con sus púas de cola en cualquier combinación."
+    },
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 7 (1d8 + 3) de daño cortante."
+    },
+    {
+      "name": "Púas de cola",
+      "text": "Tirada de ataque a distancia: +5, alcance 30/60 m. Acierto: 7 (1d8 + 3) de daño perforante. Manto"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Mantícora",
+  "srd_es_page": 347
+}

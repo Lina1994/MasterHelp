@@ -1,0 +1,50 @@
+{
+  "id": "eagle",
+  "slug": "eagle",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Águila",
+  "type": "Bestia",
+  "size": "Pequeña",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 4,
+    "roll": "1d6 + 1"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 15,
+    "con": 12,
+    "int": 2,
+    "wis": 14,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +6"
+  ],
+  "senses": "Percepción pasiva 16",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Garras",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 4 (1d4 + 2) de daño cortante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Águila",
+  "srd_es_page": 376
+}

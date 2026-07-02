@@ -1,0 +1,55 @@
+{
+  "id": "raven",
+  "slug": "raven",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Cuervo",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 2,
+    "roll": "1d4"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 2,
+    "dex": 14,
+    "con": 10,
+    "int": 5,
+    "wis": 13,
+    "cha": 6
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "Percepción pasiva 13",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Imitación",
+      "text": "El cuervo puede imitar sonidos sencillos que haya escuchado, como un susurro o un trino. Alguien que lo escuche podrá darse cuenta de que son imitaciones si supera una prueba de Sabiduría (Perspicacia) con CD 10."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pico",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 1 de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Cuervo",
+  "srd_es_page": 383
+}

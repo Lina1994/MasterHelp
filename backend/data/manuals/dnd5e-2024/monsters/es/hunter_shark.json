@@ -1,0 +1,55 @@
+{
+  "id": "hunter_shark",
+  "slug": "hunter_shark",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Tiburón cazador",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "speed": {
+    "walk": 15,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 15,
+    "int": 1,
+    "wis": 10,
+    "cha": 4
+  },
+  "skills": [
+    "Percepción +2"
+  ],
+  "senses": "visión ciega 18 m; Percepción pasiva 12",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Respirar en el agua",
+      "text": "El tiburón solo puede respirar bajo el agua."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6 (con ventaja si el objetivo no tiene todos sus puntos de golpe), alcance 1,5 m. Acierto: 14 (3d6 + 4) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Tiburón cazador",
+  "srd_es_page": 396
+}

@@ -1,0 +1,95 @@
+{
+  "id": "pirate_captain",
+  "slug": "pirate_captain",
+  "lang": "en",
+  "name": "Pirate Captain",
+  "skills": "Acrobatics +7, Perception +5",
+  "senses": {
+    "passivePerception": 15
+  },
+  "languages": "Common plus one other language",
+  "challengeRating": "6",
+  "experiencePoints": 2300,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Ethereal Sight",
+      "text": "The spider can see 60 feet into the Ethe- real Plane while on the Material Plane and vice versa."
+    },
+    {
+      "name": "Spider Climb",
+      "text": "The spider can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    },
+    {
+      "name": "Web Walker",
+      "text": "The spider ignores movement restrictions caused by webs, and the spider knows the location of any other creature in contact with the same web."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The spider makes two Bite attacks."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 8 (1d10 + 3) Piercing damage plus 9 (2d8) Poison damage. If this damage reduces the target to 0 Hit Points, the target becomes Stable, and it has the Poisoned condition for 1 hour. While Poisoned, the target also has the Paralyzed condition. Bonus Actions"
+    },
+    {
+      "name": "Ethereal Jaunt",
+      "text": "The spider teleports from the Material Plane to the Ethereal Plane or vice versa. Pirates Pirate Medium or Small Humanoid, Neutral"
+    },
+    {
+      "name": "Multiattack",
+      "text": "The pirate makes two Dagger attacks. It can replace one attack with a use of Enthrall- ing Panache."
+    },
+    {
+      "name": "Dagger",
+      "text": "Melee or Ranged Attack Roll: +5, reach 5 ft. or range 20/60 ft. Hit: 5 (1d4 + 3) Piercing damage."
+    },
+    {
+      "name": "Enthralling Panache",
+      "text": "Wisdom Saving Throw: DC 12, one creature the pirate can see within 30 feet. Failure: The target has the Charmed condition until the start of the pirate’s next turn. Pirate Captain Medium or Small Humanoid, Neutral"
+    },
+    {
+      "name": "Multiattack",
+      "text": "The pirate makes three attacks, using Rapier or Pistol in any combination."
+    },
+    {
+      "name": "Rapier",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 13 (2d8 + 4) Piercing damage, and the pirate has Advantage on the next attack roll it makes before the end of this turn."
+    },
+    {
+      "name": "Pistol",
+      "text": "Ranged Attack Roll: +7, range 30/90 ft. Hit: 15 (2d10 + 4) Piercing damage. Bonus Actions Captain’s Charm. Wisdom Saving Throw: DC 14, one creature the pirate can see within 30 feet. Failure: The target has the Charmed condition until the start of the pirate’s next turn."
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "fly": 60
+  },
+  "reactions": [
+    {
+      "name": "Riposte",
+      "text": "Trigger: The pirate is hit by a melee attack roll while holding a weapon. Response: The pirate adds 3 to its AC against that attack, possibly causing it to miss. On a miss, the pirate makes one Rapier attack against the triggering creature if within range. Pit Fiend Pit Fiend"
+    }
+  ],
+  "srd_en_match_name": "Pirate Captain",
+  "srd_en_page": 311,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "fiend",
+  "subtype": "Devil",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 21,
+    "type": "+14 (24)"
+  },
+  "initiative": 14,
+  "hitPoints": {
+    "average": 337,
+    "roll": "27d10 + 189"
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

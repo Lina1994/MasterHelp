@@ -1,0 +1,117 @@
+{
+  "id": "glabrezu",
+  "name": "Glabrezu",
+  "slug": "glabrezu",
+  "size": "Large",
+  "type": "fiend (demon)",
+  "alignment": "chaotic evil",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 157,
+    "roll": "15d10 + 75"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 20,
+    "dex": 15,
+    "con": 21,
+    "int": 19,
+    "wis": 17,
+    "cha": 16
+  },
+  "saves": [
+    " STR +9 ",
+    " CON +10 ",
+    " WIS +8 "
+  ],
+  "skills": [
+    " Deception +8 ",
+    " Persuasion +8 "
+  ],
+  "damageResistances": [
+    "cold",
+    "fire",
+    "lightning",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "poisoned"
+  ],
+  "senses": "truevision 120 ft., passive Perception 14",
+  "languages": "Abyssal, Common, telepathy 120 ft.",
+  "challengeRating": "9",
+  "traits": [
+    {
+      "name": "Demonic Restoration",
+      "text": "If the glabrezu dies outside the Abyss, its body dissolves into ichor, and it gains a new body instantly, reviving with all its Hit Points some- where in the Abyss."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The glabrezu has Advantage on sav- ing throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The glabrezu makes two Pincer attacks and uses Pummel or Spellcasting."
+    },
+    {
+      "name": "Pincer",
+      "text": "Melee Attack Roll: +9, reach 10 ft. Hit: 16 (2d10 + 5) Slashing damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 15) from one of two pincers."
+    },
+    {
+      "name": "Pummel",
+      "text": "Dexterity Saving Throw: DC 17, one creature"
+    },
+    {
+      "name": "Grappled by the glabrezu",
+      "text": "Failure: 15 (3d6 + 5) Blud- geoning damage. Success: Half damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The glabrezu casts one of the following spells, requiring no Material components and using In- telligence as the spellcasting ability (spell save DC 16):"
+    },
+    {
+      "name": "At Will",
+      "text": "Darkness, Detect Magic, Dispel Magic 1/Day Each: Confusion, Fly, Power Word Stun Gladiator Gladiator Medium or Small Humanoid, Neutral AC 16 Initiative +5 (15) HP 112 (15d8 + 45) Speed 30 ft. MOD SAVE MOD SAVE MOD SAVE Str 18 +4 +7 Dex 15 +2 +5 Con 16 +3 +6 Int 10 +0 +0 WIS 12 +1 +4 Cha 15 +2 +2 Skills Athletics +10, Performance +5 Gear Shield, Spears (3), Studded Leather Armor Senses Passive Perception 11 Languages Common CR 5 (XP 1,800; PB +3) Actions"
+    },
+    {
+      "name": "Multiattack",
+      "text": "The gladiator makes three Spear attacks. It can replace one attack with a use of Shield Bash."
+    },
+    {
+      "name": "Spear",
+      "text": "Melee or Ranged Attack Roll: +7, reach 5 ft. or range 20/60 ft. Hit: 11 (2d6 + 4) Piercing damage."
+    },
+    {
+      "name": "Shield Bash",
+      "text": "Strength Saving Throw: DC 15, one crea- ture within 5 feet that the gladiator can see. Failure: 9 (2d4 + 4) Bludgeoning damage. If the target is a Me- dium or smaller creature, it has the Prone condition."
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 5000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "reactions": [
+    {
+      "name": "Parry",
+      "text": "Trigger: The gladiator is hit by a melee attack roll while holding a weapon. Response: The gladiator adds 3 to its AC against that attack, possibly causing it to miss. Gnoll Gnoll Warrior"
+    }
+  ],
+  "srd_en_match_name": "Glabrezu",
+  "srd_en_page": 286,
+  "subtype": "Demon",
+  "initiative": 6,
+  "savingThrows": {
+    "str": 9,
+    "dex": 2,
+    "con": 9,
+    "int": 4,
+    "wis": 7,
+    "cha": 7
+  }
+}

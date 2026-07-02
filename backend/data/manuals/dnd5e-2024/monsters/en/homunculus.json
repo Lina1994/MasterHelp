@@ -1,0 +1,67 @@
+{
+  "id": "homunculus",
+  "slug": "homunculus",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Homunculus",
+  "size": "Tiny",
+  "type": "construct",
+  "alignment": "neutral",
+  "armorClass": 13,
+  "hitPoints": {
+    "average": 2,
+    "roll": "1d4"
+  },
+  "speed": {
+    "walk": 20,
+    "fly": 40
+  },
+  "abilities": {
+    "str": 4,
+    "dex": 15,
+    "con": 10,
+    "int": 6,
+    "wis": 10,
+    "cha": 7
+  },
+  "skills": [
+    " Perception +4 "
+  ],
+  "damageImmunities": [
+    "poison"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 14",
+  "languages": "understands the language of its creator but can't speak",
+  "challengeRating": "0",
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 1 Piercing damage, and the target is subjected to the following effect. Constitution Saving Throw: DC 12. Failure: The target has the Poisoned condition until the end of the homunculus’s next turn. Failure by 5 or More: The tar- get has the Poisoned condition for 1 minute. While Poi- soned, the target has the Unconscious condition, which ends early if the target takes any damage. Horned Devil Horned Devil"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 10,
+  "traits": [
+    {
+      "name": "Telepathic Bond",
+      "text": "While the homunculus is on the same plane of existence as its master, the two of them can communicate telepathically with each other."
+    }
+  ],
+  "srd_en_match_name": "Homunculus",
+  "srd_en_page": 296,
+  "subtype": "Goblinoid",
+  "initiative": 4,
+  "savingThrows": {
+    "str": 2,
+    "dex": 2,
+    "con": 2,
+    "int": 1,
+    "wis": 0,
+    "cha": 1
+  }
+}

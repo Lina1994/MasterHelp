@@ -1,0 +1,95 @@
+{
+  "id": "gargoyle",
+  "slug": "gargoyle",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Gárgola",
+  "type": "Elemental",
+  "size": "Mediano",
+  "alignment": "caótico malvado",
+  "armorClass": {
+    "value": 15
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 67,
+    "roll": "9d8 + 27"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 11,
+    "con": 16,
+    "int": 6,
+    "wis": 11,
+    "cha": 7
+  },
+  "skills": [
+    "Sigilo +4"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "primordial (terrano)",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pasar volando",
+      "text": "La gárgola no provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La gárgola realiza dos ataques con sus garras."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 7 (2d4 + 2) de daño cortante. Garra reptante Enjambre de garras reptantes Enjambre Mediano de muertos vivientes Diminutos, neutral malvado"
+    },
+    {
+      "name": "CA",
+      "text": "12 Iniciativa: +2 (12)"
+    },
+    {
+      "name": "PG",
+      "text": "49 (11d8)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m, trepar 9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 14 +2 +2 Des 14 +2 +2 Con 11 +0 +0 Int 5 −3 −3 sab 10 +0 +0 Car 4 −3 −3"
+    },
+    {
+      "name": "Resistencias",
+      "text": "contundente, cortante, perforante"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "necrótico, veneno; agarrado, apresado, asustado, aturdido, cansancio, derribado, envenenado, hechizado, incapacitado, paralizado, petrificado"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión ciega 9 m; Percepción pasiva 10"
+    },
+    {
+      "name": "Idiomas",
+      "text": "entiende común, pero no puede hablar"
+    },
+    {
+      "name": "VD",
+      "text": "3 (700 PX; BC +2)"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Gárgola",
+  "srd_es_page": 326
+}

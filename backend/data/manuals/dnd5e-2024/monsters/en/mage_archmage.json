@@ -1,0 +1,62 @@
+{
+  "id": "mage_archmage",
+  "name": "Archmage",
+  "slug": "mage_archmage",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "any alignment",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 84,
+    "roll": "13d8 + 26"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 14,
+    "con": 12,
+    "int": 20,
+    "wis": 16,
+    "cha": 16
+  },
+  "saves": [
+    " INT +9 ",
+    " WIS +7 "
+  ],
+  "skills": [
+    " Arcana +13 ",
+    " History +13 "
+  ],
+  "damageResistances": [
+    "damage from spells",
+    "nonmagical bludgeoning",
+    "piercing",
+    "slashing"
+  ],
+  "senses": "truesight 60 ft., passive Perception 13",
+  "senses_dup": "passive Perception 13",
+  "languages": "any six languages; usually Common + Draconic",
+  "challengeRating": "12",
+  "traits": [
+    {
+      "name": "Magic Resistance",
+      "text": "Advantage on saves vs. spells and magical effects."
+    },
+    {
+      "name": "Spellcasting (Archmage)",
+      "text": "INT save DC 17. Spells: Cantrips + 1st–8th (wizard)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Dagger",
+      "text": "+5 to hit, range 20/60 ft. Hit: 4 (1d4 + 2) piercing."
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 8400,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

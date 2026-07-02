@@ -1,0 +1,69 @@
+{
+  "id": "constrictor_snake",
+  "slug": "constrictor_snake",
+  "lang": "en",
+  "name": "Constrictor Snake",
+  "traits": [
+    {
+      "name": "Bloodied Fury",
+      "text": "While Bloodied, the boar has Advan- tage on attack rolls."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Gore",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1)"
+    },
+    {
+      "name": "Piercing damage",
+      "text": "If the target is a Medium or smaller creature and the boar moved 20+ feet straight toward it immediately before the hit, the target takes an extra 3 (1d6) Piercing damage and has the Prone condition. Brown Bear"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "senses": {
+    "blindsight": "10 ft",
+    "passivePerception": 12
+  },
+  "languages": "None",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "skills": "Perception +2, Stealth +4",
+  "srd_en_match_name": "Constrictor Snake",
+  "srd_en_page": 343,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 11,
+    "type": "+0 (10)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 13,
+    "roll": "2d8 + 4"
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 11,
+    "con": 14,
+    "int": 2,
+    "wis": 9,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 1,
+    "dex": 0,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

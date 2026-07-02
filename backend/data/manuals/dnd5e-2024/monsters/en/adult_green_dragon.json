@@ -1,0 +1,96 @@
+{
+  "id": "adult_green_dragon",
+  "name": "Adult Green Dragon",
+  "slug": "adult_green_dragon",
+  "size": "Huge",
+  "type": "dragon",
+  "alignment": "lawful evil",
+  "armorClass": 19,
+  "hitPoints": {
+    "average": 207,
+    "roll": "18d10 + 108"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 80,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 19,
+    "con": 21,
+    "int": 18,
+    "wis": 15,
+    "cha": 17
+  },
+  "saves": [
+    " DEX +9 ",
+    " CON +11 ",
+    " WIS +7 ",
+    " CHA +8 "
+  ],
+  "skills": [
+    " Deception +8 ",
+    " Perception +12 ",
+    " Stealth +12 "
+  ],
+  "damageImmunities": [
+    "poison"
+  ],
+  "conditionImmunities": [
+    "poisoned"
+  ],
+  "senses": "blindsight 60 ft., darkvision 120 ft., passive Perception 22",
+  "languages": "Common, Draconic",
+  "challengeRating": "15",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "Can breathe air and water."
+    },
+    {
+      "name": "Legendary Resistance (3/Day)",
+      "text": "If fails save, can choose to succeed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two attacks: one bite + two claws OR one poison breath as bonus."
+    },
+    {
+      "name": "Bite",
+      "text": "+10 to hit. Hit: 15 (2d10 + 5) piercing + 7 (2d6) poison."
+    },
+    {
+      "name": "Claw",
+      "text": "+10 to hit. Hit: 11 (2d6 + 5) slashing."
+    },
+    {
+      "name": "Tail",
+      "text": "+10 to hit. Hit: 13 (2d8 + 5) bludgeoning."
+    },
+    {
+      "name": "Frightful Presence",
+      "text": "Each creature within 120 ft: WIS save DC 14 or frightened 1 min."
+    },
+    {
+      "name": "Poison Breath (Recharge 5-6)",
+      "text": "90-ft × 15-ft cone: 16 (4d8) + 21 (6d6) poison. CON DC 18 = 21 (6d6) extra poison; or poisoned for 24 hr (no save)."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Wing Attack (Cost 2)",
+      "text": "Flies up to half speed; each within 15 ft: 11 (2d6 + 5) bludgeoning. DC 16 STR or prone."
+    },
+    {
+      "name": "Claw Attack",
+      "text": "One claw attack."
+    }
+  ],
+  "proficiencyBonus": 5,
+  "experiencePoints": 13000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

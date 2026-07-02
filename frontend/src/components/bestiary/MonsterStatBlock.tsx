@@ -11,7 +11,20 @@ export const MonsterStatBlock: React.FC<{ monster: MonsterLike }> = ({ monster }
   const savingThrows = monster.savingThrows || {};
   const skills = monster.skills || {};
   const senses = monster.senses || {};
-  const joinList = (arr?: string[]) => (arr && arr.length ? arr.join(', ') : undefined);
+  // Defensive join: the SRD/manual source data for
+  // `damage{Vulnerabilities,Resistances,Immunities}` and
+  // `conditionImmunities` is currently a MIX of arrays (correct
+  // schema) and raw strings like "fire, cold; bludgeoning…". Both
+  // shapes render fine on screen; we just need to avoid crashing on
+  // `.join` when a string slipped through. Keeps backwards compat
+  // with already-stamped array files (e.g., the Spanish SRD parsed
+  // by `parse_es_srd.py`).
+  const joinList = (val?: string[] | string | null): string | undefined => {
+    if (val == null) return undefined;
+    if (Array.isArray(val)) return val.length ? val.join(', ') : undefined;
+    if (typeof val === 'string') return val.trim() || undefined;
+    return undefined;
+  };
   const fmtSavingThrows = () => {
     const order: Array<keyof typeof savingThrows> = ['str','dex','con','int','wis','cha'];
     const parts: string[] = [];

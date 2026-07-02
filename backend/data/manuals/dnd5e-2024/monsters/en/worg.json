@@ -1,0 +1,62 @@
+{
+  "id": "worg",
+  "slug": "worg",
+  "lang": "en",
+  "name": "Worg",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 12
+  },
+  "languages": "Common plus two other languages",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The wolf has Advantage on an attack roll against a creature if at least one of the wolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 7 (1d8 + 3) Piercing damage, and the next attack roll made against the target before the start of the worg’s next turn has Advantage. Wraith Wraith Medium or Small Undead, Neutral Evil AC 13 Initiative +3 (13) HP 67 (9d8 + 27) Speed 5 ft., Fly 60 ft. (hover) MOD SAVE MOD SAVE MOD SAVE Str 6 −2 −2 Dex 16 +3 +3 Con 16 +3 +3 Int 12 +1 +1 WIS 14 +2 +2 Cha 15 +2 +2 Resistances Acid, Bludgeoning, Cold, Fire, Piercing, Slashing Immunities Necrotic, Poison; Charmed, Exhaustion, Grappled, Paralyzed, Petrified, Poisoned, Prone, Restrained, Unconscious Senses Darkvision 60 ft.; Passive Perception 12 Languages Common plus two other languages CR 5 (XP 1,800; PB +3)"
+    }
+  ],
+  "speed": {
+    "walk": 5,
+    "fly": 60
+  },
+  "skills": "Perception +4",
+  "srd_en_match_name": "Worg",
+  "srd_en_page": 339,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "monstrosity",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 13,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 75,
+    "roll": "10d10 + 20"
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 13,
+    "con": 14,
+    "int": 7,
+    "wis": 12,
+    "cha": 8
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 1,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

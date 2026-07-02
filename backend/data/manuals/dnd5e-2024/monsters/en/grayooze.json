@@ -1,0 +1,69 @@
+{
+  "id": "grayooze",
+  "slug": "grayooze",
+  "lang": "en",
+  "name": "GrayOoze",
+  "actions": [
+    {
+      "name": "Pseudopod",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 10 (2d8 + 1) Acid damage. Nonmagical armor worn by the target takes a −1 penalty to the AC it offers. The armor is destroyed if the penalty reduces its AC to 10. The penalty can be removed by casting the Mending spell on the armor. Green Dragons Green Dragon Wyrmling"
+    }
+  ],
+  "speed": {
+    "walk": 40,
+    "fly": 80,
+    "swim": 40
+  },
+  "skills": "Deception +5, Perception +7, Stealth +4",
+  "senses": {
+    "blindsight": "30 ft."
+  },
+  "languages": "Common, Draconic",
+  "challengeRating": "8",
+  "experiencePoints": 3900,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Amorphous",
+      "text": "The ooze can move through a space as narrow as 1 inch without expending extra move- ment to do so."
+    },
+    {
+      "name": "Corrosive Form",
+      "text": "Nonmagical ammunition is destroyed immediately after hitting the ooze and dealing any damage. Any nonmagical weapon takes a cumulative −1 penalty to attack rolls immediately after dealing damage to the ooze and coming into contact with it. The weapon is destroyed if the penalty reaches −5. The penalty can be removed by casting the Mending spell on the weapon. The ooze can eat through 2-inch-thick, nonmagical metal or wood in 1 round."
+    }
+  ],
+  "srd_en_match_name": "GrayOoze",
+  "srd_en_page": 290,
+  "source": "SRD 5.2 (pendiente)",
+  "size": "medium",
+  "type": "ooze",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 9,
+    "type": "−2 (13)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 22,
+    "roll": "3d8 + 9"
+  },
+  "abilities": {
+    "str": 12,
+    "dex": 6,
+    "con": 16,
+    "int": 1,
+    "wis": 6,
+    "cha": 2
+  },
+  "savingThrows": {
+    "str": 1,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'GrayOoze' did not match any of 3 chunk heads; using chunk[0] as best-effort"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "id": "hippopotamus",
+  "slug": "hippopotamus",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Hipopótamo",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": -2,
+  "hitPoints": {
+    "average": 82,
+    "roll": "11d10 + 22"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 7,
+    "con": 15,
+    "int": 2,
+    "wis": 12,
+    "cha": 4
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "Percepción pasiva 13",
+  "languages": "ninguno",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Aguantar la respiración",
+      "text": "El hipopótamo puede aguantar la respiración durante 10 minutos."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El hipopótamo realiza dos ataques de mordisco."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 16 (2d10 + 5) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Hipopótamo",
+  "srd_es_page": 387
+}

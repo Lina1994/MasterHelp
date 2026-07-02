@@ -1,0 +1,100 @@
+{
+  "id": "bronze_dragon_wyrmling",
+  "slug": "bronze_dragon_wyrmling",
+  "lang": "en",
+  "name": "Bronze Dragon Wyrmling",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Blazing Light",
+      "text": "The dragon uses Spellcasting to cast Scorching Ray (level 3 version)."
+    },
+    {
+      "name": "Pounce",
+      "text": "The dragon moves up to half its Speed, and it makes one Rend attack."
+    },
+    {
+      "name": "Scorching Sands",
+      "text": "Dexterity Saving Throw: DC 20, one creature the dragon can see within 120 feet. Failure: 36 (8d8) Fire damage, and the target’s Speed is halved until the end of its next turn. Failure or Success: The dragon can’t take this action again until the start of its next turn. Bronze Dragons Bronze Dragon Wyrmling"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "fly": 60,
+    "swim": 30
+  },
+  "skills": "Perception +4, Stealth +2",
+  "senses": {
+    "blindsight": "10 ft."
+  },
+  "languages": "Draconic",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "",
+      "text": "Legendary Resistance (4/Day, or 5/Day in Lair). If the dragon fails a saving throw, it can choose to suc- ceed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes three Rend attacks. It can replace one attack with a use of (A) Sleep Breath or (B) Spellcasting to cast Scorching Ray (level 3 version)."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +14, reach 15 ft. Hit: 19 (2d10 + 8) Slashing damage plus 7 (2d6) Fire damage. Fire Breath (Recharge 5–6). Dexterity Saving Throw: DC 21, each creature in a 90-foot-long, 5-foot- wide Line. Failure: 58 (13d8) Fire damage. Success: Half damage."
+    },
+    {
+      "name": "Sleep Breath",
+      "text": "Constitution Saving Throw: DC 21, each creature in a 90-foot Cone. Failure: The target has the Incapacitated condition until the end of its next turn, at which point it repeats the save. Second Failure: The tar- get has the Unconscious condition for 10 minutes. This effect ends for the target if it takes damage or a creature within 5 feet of it takes an action to wake it."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The dragon casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 20):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Magic, Minor Illusion, Scorching Ray (level 3 version), Shapechange (Beast or Humanoid form only, no Temporary Hit Points gained from the spell, and no Concentration or Temporary Hit Points required to maintain the spell), Speak with Animals 1/Day Each: Control Weather, Detect Thoughts"
+    }
+  ],
+  "srd_en_match_name": "Bronze Dragon Wyrmling",
+  "srd_en_page": 266,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "dragon",
+  "subtype": "Metallic",
+  "alignment": "Chaotic Good",
+  "armorClass": {
+    "value": 20,
+    "type": "+12 (22)"
+  },
+  "initiative": 12,
+  "hitPoints": {
+    "average": 332,
+    "roll": "19d20 + 133"
+  },
+  "abilities": {
+    "str": 27,
+    "dex": 10,
+    "con": 25,
+    "int": 16,
+    "wis": 15,
+    "cha": 22
+  },
+  "savingThrows": {
+    "str": 8,
+    "dex": 6,
+    "con": 7,
+    "int": 3,
+    "wis": 8,
+    "cha": 6
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "giant_venomous_snake",
+  "slug": "giant_venomous_snake",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Serpiente venenosa gigante",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d8 + 2"
+  },
+  "speed": {
+    "walk": 40,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 18,
+    "con": 13,
+    "int": 2,
+    "wis": 10,
+    "cha": 3
+  },
+  "skills": [
+    "Percepción +2"
+  ],
+  "senses": "visión ciega 3 m; Percepción pasiva 12",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 3 m. Acierto: 6 (1d4 + 4) de daño perforante más 4 (1d8) de daño de veneno."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Serpiente venenosa gigante",
+  "srd_es_page": 395
+}

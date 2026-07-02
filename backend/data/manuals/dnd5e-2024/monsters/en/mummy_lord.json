@@ -1,0 +1,100 @@
+{
+  "id": "mummy_lord",
+  "name": "Mummy Lord",
+  "slug": "mummy_lord",
+  "size": "Medium",
+  "type": "undead",
+  "alignment": "lawful evil",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 210,
+    "roll": "20d8 + 100"
+  },
+  "speed": {
+    "walk": 20
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 10,
+    "con": 20,
+    "int": 17,
+    "wis": 18,
+    "cha": 17
+  },
+  "saves": [
+    " WIS +8 ",
+    " CHA +7 "
+  ],
+  "damageVulnerabilities": [
+    "fire"
+  ],
+  "damageImmunities": [
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "poisoned"
+  ],
+  "senses": "truesight 60 ft., passive Perception 13",
+  "languages": "the languages it knew in life, plus one of choice",
+  "challengeRating": "15",
+  "traits": [
+    {
+      "name": "",
+      "text": "Adhesive (Object Form Only). The mimic adheres to anything that touches it. A Huge or smaller creature ad- hered to the mimic has the Grappled condition (escape DC 13). Ability checks made to escape this grapple have Disadvantage."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Abyssal Glaive",
+      "text": "Melee Attack Roll: +6, reach 10 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "10 (1d12 + 4) Slashing damage plus 10 (3d6) Ne- crotic damage. Gore (Recharge 5–6). Melee Attack Roll: +6, reach 5 ft. Hit: 18 (4d6 + 4) Piercing damage. If the target is a Large or smaller creature and the minotaur moved 10+ feet straight toward it immediately before the hit, the target takes an extra 10 (3d6) Piercing damage and has the Prone condition. Mummies Mummy Medium or Small Undead, Lawful Evil AC 11 Initiative −1 (9) HP 58 (9d8 + 18) Speed 20 ft. MOD SAVE MOD SAVE MOD SAVE Str 16 +3 +3 Dex 8 −1 −1 Con 15 +2 +2 Int 6 −2 −2 WIS 12 +1 +3 Cha 12 +1 +1 Vulnerabilities Fire Immunities Necrotic, Poison; Charmed, Exhaustion, Frightened, Paralyzed, Poisoned Senses Darkvision 60 ft.; Passive Perception 11 Languages Common plus two other languages CR 3 (XP 700; PB +2) Actions"
+    },
+    {
+      "name": "Multiattack",
+      "text": "The mummy makes two Rotting Fist at- tacks and uses Dreadful Glare."
+    },
+    {
+      "name": "Rotting Fist",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 8 (1d10 + 3) Bludgeoning damage plus 10 (3d6) Necrotic damage. If the target is a creature, it is cursed. While cursed, the target can’t regain Hit Points, its Hit Point maximum doesn’t return to normal when finishing a Long Rest, and its Hit Point maximum decreases by 10 (3d6) every 24 hours that elapse. A creature dies and turns to dust if reduced to 0 Hit Points by this attack."
+    },
+    {
+      "name": "Dreadful Glare",
+      "text": "Wisdom Saving Throw: DC 11, one creature the mummy can see within 60 feet. Failure: The target has the Frightened condition until the end of the mummy’s next turn. Success: The target is immune to this mummy’s Dreadful Glare for 24 hours. Mummy Lord Medium or Small Undead (Cleric), Lawful Evil AC 17 Initiative +10 (20) HP 187 (25d8 + 75) Speed 30 ft. MOD SAVE MOD SAVE MOD SAVE Str 18 +4 +4 Dex 10 +0 +0 Con 17 +3 +3 Int 11 +0 +5 WIS 19 +4 +9 Cha 16 +3 +3 Skills History +5, Perception +9, Religion +5 Vulnerabilities Fire Immunities Necrotic, Poison; Charmed, Exhaustion, Frightened, Paralyzed, Poisoned Senses Truesight 60 ft.; Passive Perception 19 Languages Common plus three other languages CR 15 (XP 13,000, or 15,000 in lair; PB +5)"
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Slam Attack",
+      "text": "One rotting fist attack."
+    },
+    {
+      "name": "Blinding Dust (2)",
+      "text": "Nearby enemies: DC 15 CON or blinded until end of next turn."
+    }
+  ],
+  "proficiencyBonus": 5,
+  "experiencePoints": 13000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "skills": "History +5, Perception +9, Religion +5",
+  "srd_en_match_name": "Mummy Lord",
+  "srd_en_page": 306,
+  "initiative": 0,
+  "savingThrows": {
+    "str": 4,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 3,
+    "cha": 0
+  }
+}

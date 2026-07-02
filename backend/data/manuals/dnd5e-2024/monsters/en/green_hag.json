@@ -1,0 +1,102 @@
+{
+  "id": "green_hag",
+  "name": "Green Hag",
+  "slug": "green_hag",
+  "size": "Medium",
+  "type": "fey",
+  "alignment": "neutral evil",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 82,
+    "roll": "15d8 + 15"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 12,
+    "con": 16,
+    "int": 13,
+    "wis": 14,
+    "cha": 14
+  },
+  "saves": [
+    " STR +5 ",
+    " WIS +4 "
+  ],
+  "skills": [
+    " Arcana +3 ",
+    " Deception +4 ",
+    " Perception +4 ",
+    " Stealth +4 "
+  ],
+  "senses": "darkvision 60 ft., passive Perception 14",
+  "languages": "Common, Sylvan, plus one other language",
+  "challengeRating": "3",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The hag can breathe air and water."
+    },
+    {
+      "name": "Coven Magic",
+      "text": "While within 30 feet of at least two hag allies, the hag can cast one of the following spells, requiring no Material components, using the spell’s normal casting time, and using Intelligence as the spell- casting ability (spell save DC 11): Augury, Find Familiar, Identify, Locate Object, Scrying, or Unseen Servant. The hag must finish a Long Rest before using this trait to cast that spell again."
+    },
+    {
+      "name": "Mimicry",
+      "text": "The hag can mimic animal sounds and hu- manoid voices. A creature that hears the sounds can tell they are imitations only with a successful DC 14 Wisdom (Insight) check."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The hag makes two Claw attacks."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 8 (1d8 + 4) Slashing damage plus 3 (1d6) Poison damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The hag casts one of the following spells, requiring no Material components and using Wisdom as the spellcasting ability (spell save DC 12, +4 to hit with spell attacks):"
+    },
+    {
+      "name": "At Will",
+      "text": "Dancing Lights, Disguise Self (24-hour du- ration), Invisibility (self only, and the hag leaves no tracks while Invisible), Minor Illusion, Ray of Sickness (level 3 version) Grick Grick"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 700,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Mind Invasion",
+      "text": "The dragon uses Spellcasting to cast Mind Spike (level 5 version)."
+    },
+    {
+      "name": "Noxious Miasma",
+      "text": "Constitution Saving Throw: DC 21, each creature in a 30-foot-radius Sphere centered on a point the dragon can see within 90 feet. Failure: 17 (5d6) Poison damage, and the target takes a −2 penalty to AC until the end of its next turn. Failure or Success: The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Pounce",
+      "text": "The dragon moves up to half its Speed, and it makes one Rend attack. Green Hag Green Hag"
+    }
+  ],
+  "srd_en_match_name": "Green Hag",
+  "srd_en_page": 292,
+  "initiative": 1,
+  "savingThrows": {
+    "str": 4,
+    "dex": 1,
+    "con": 3,
+    "int": 1,
+    "wis": 2,
+    "cha": 2
+  }
+}

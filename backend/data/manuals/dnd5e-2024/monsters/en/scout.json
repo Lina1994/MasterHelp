@@ -1,0 +1,85 @@
+{
+  "id": "scout",
+  "slug": "scout",
+  "lang": "en",
+  "source": "SRD 5.2 (pendiente)",
+  "name": "Scout",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Any alignment",
+  "armorClass": {
+    "value": 13,
+    "type": "leather armor"
+  },
+  "hitPoints": {
+    "average": 16,
+    "roll": "3d8+3"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 14,
+    "con": 12,
+    "int": 13,
+    "wis": 15,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 1,
+    "con": 3,
+    "int": 1,
+    "wis": 1,
+    "cha": 1
+  },
+  "skills": {
+    "perception": 6,
+    "stealth": 4
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 16",
+  "languages": "Common, Elvish",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The hag can breathe air and water."
+    },
+    {
+      "name": "Coven Magic",
+      "text": "While within 30 feet of at least two hag allies, the hag can cast one of the following spells, requiring no Material components, using the spell’s normal casting time, and using Intelligence as the spell- casting ability (spell save DC 11): Augury, Find Familiar, Identify, Locate Object, Scrying, or Unseen Servant. The hag must finish a Long Rest before using this trait to cast that spell again."
+    },
+    {
+      "name": "Vile Appearance",
+      "text": "Wisdom Saving Throw: DC 11, any Beast or Humanoid that starts its turn within 30 feet of the hag and can see the hag’s true form. Failure: The target has the Frightened condition until the start of its next turn. Success: The target is immune to this hag’s Vile Appearance for 24 hours."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 10 (2d6 + 3) Slashing damage. Death Glare (Recharge 5–6). Wisdom Saving Throw: DC 11, one Frightened creature the hag can see within 30 feet. Failure: If the target has 20 Hit Points or fewer, it drops to 0 Hit Points. Otherwise, the target takes 13 (3d8) Psychic damage."
+    },
+    {
+      "name": "Illusory Appearance",
+      "text": "The hag casts Disguise Self, using Constitution as the spellcasting ability (spell save DC 13). The spell’s duration is 24 hours. Shadow Shadow"
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 1,
+  "srd_en_match_name": "Scout",
+  "srd_en_page": 319,
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Scout' did not match any of 2 chunk heads; using chunk[0] as best-effort"
+  ]
+}

@@ -7,6 +7,12 @@ export interface MonsterIndexItem {
   alignment?: string;
   challengeRating?: string;
   translated?: boolean;
+  /**
+   * Etiqueta de origen (p.ej. 'SRD 5.2 castellano (Wizards)' o
+   * 'SRD 5.2 castellano (pendiente)' para stubs pendientes de traducir).
+   * El frontend lo usa para mostrar la insignia "Pendiente".
+   */
+  source?: string;
 }
 
 export interface ArmorClass { value: number; type?: string }

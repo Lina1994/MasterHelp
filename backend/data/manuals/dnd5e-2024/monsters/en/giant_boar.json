@@ -1,0 +1,61 @@
+{
+  "id": "giant_boar",
+  "slug": "giant_boar",
+  "lang": "en",
+  "name": "Giant Boar",
+  "traits": [
+    {
+      "name": "Bloodied Fury",
+      "text": "The boar has Advantage on melee at- tack rolls while it is Bloodied."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Gore",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 10 (2d6 + 3) Piercing damage. If the target is a Large or smaller creature and the boar moved 20+ feet straight toward it immediately before the hit, the target takes an extra 7 (2d6) Piercing damage and has the Prone condition. Giant Centipede"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "skills": "Perception +3",
+  "senses": {
+    "passivePerception": 8
+  },
+  "languages": "None",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "srd_en_match_name": "Giant Boar",
+  "srd_en_page": 346,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+5 (15)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 168,
+    "roll": "16d12 + 64"
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 14,
+    "con": 18,
+    "int": 5,
+    "wis": 12,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 2,
+    "con": 4,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

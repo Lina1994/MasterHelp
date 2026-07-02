@@ -1,0 +1,65 @@
+{
+  "id": "ochre_jelly",
+  "slug": "ochre_jelly",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Gelatina ocre",
+  "type": "Cieno",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 8
+  },
+  "initiative": -2,
+  "hitPoints": {
+    "average": 52,
+    "roll": "7d10 + 14"
+  },
+  "speed": {
+    "walk": 20,
+    "climb": 20
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 6,
+    "con": 14,
+    "int": 2,
+    "wis": 6,
+    "cha": 1
+  },
+  "senses": "visión ciega 18 m; Percepción pasiva 8",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Amorfa",
+      "text": "La gelatina puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+    },
+    {
+      "name": "Trepar cual arácnido",
+      "text": "La gelatina puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pseudópodo",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 12 (3d6 + 2) de daño de ácido."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "Dividirse",
+      "text": "Detonante: mientras sea Grande o Mediana y tenga 10 o más puntos de golpe, la gelatina pasa a estar maltrecha o recibe daño cortante o de relámpago."
+    },
+    {
+      "name": "Respuesta",
+      "text": "la gelatina se divide en dos nuevas gelatinas ocres. Cada nueva gelatina tiene un tamaño inferior al de la gelatina original y actúa en su orden de iniciativa. Los puntos de golpe de la gelatina original se dividen a partes iguales entre las nuevas gelatinas (redondeados hacia abajo). Ghast"
+    }
+  ],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Gelatina ocre",
+  "srd_es_page": 327
+}

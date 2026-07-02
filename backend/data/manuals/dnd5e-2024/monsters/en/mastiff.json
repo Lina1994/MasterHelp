@@ -1,0 +1,62 @@
+{
+  "id": "mastiff",
+  "slug": "mastiff",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Mastiff",
+  "size": "Medium",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 5,
+    "roll": "1d8 + 1"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 11,
+    "con": 12,
+    "int": 3,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    " Perception +3 ",
+    " Stealth +2 "
+  ],
+  "senses": "passive Perception 13",
+  "languages": "—",
+  "challengeRating": "1/8",
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The lizard can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1)"
+    },
+    {
+      "name": "Piercing damage",
+      "text": "If the target is a Medium or smaller creature, it has the Prone condition. Mule"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 25,
+  "srd_en_match_name": "Mastiff",
+  "srd_en_page": 354,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

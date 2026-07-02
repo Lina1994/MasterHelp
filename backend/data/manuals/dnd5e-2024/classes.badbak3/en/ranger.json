@@ -1,0 +1,797 @@
+{
+  "id": "ranger",
+  "name": "Ranger",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 10,
+  "hitPoints": {
+    "hitDice": "1d10 per ranger level",
+    "at1stLevel": "10 + your Constitution modifier",
+    "atHigherLevels": "1d10 (or 6) + your Constitution modifier per ranger level after 1st"
+  },
+  "primaryAbilities": [
+    "dex",
+    "wis"
+  ],
+  "savingThrows": [
+    "str",
+    "dex"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor",
+      "Medium Armor",
+      "Shields"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Martial Weapons"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 3,
+    "from": [
+      "Animal Handling",
+      "Athletics",
+      "Insight",
+      "Investigation",
+      "Nature",
+      "Perception",
+      "Stealth",
+      "Survival"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "scale_mail",
+          "description": "Scale mail"
+        },
+        {
+          "id": "leather_armor",
+          "description": "Leather armor"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "two_shortswords",
+          "description": "Two shortswords"
+        },
+        {
+          "id": "two_simple_melee",
+          "description": "Two simple melee weapons"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "dungeoneers_pack",
+          "description": "Dungeoneer's Pack"
+        },
+        {
+          "id": "explorers_pack",
+          "description": "Explorer's Pack"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "longbow_20_arrows",
+          "description": "Longbow and 20 arrows"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "favored_enemy",
+      "name": "Favored Enemy",
+      "level": 1,
+      "description": "You have significant experience studying, tracking, and hunting a particular type of creature common in your home region. Choose one type of favored enemy from the SRD 5.2 list (Aberrations, Beasts, Celestials, Constructs, Dragons, Elementals, Fey, Fiends, Giants, Monstrosities, Oozes, Plants, Undead). You have advantage on Survival checks to track them, and on INT checks to recall information about them.",
+      "effects": [
+        {
+          "type": "advantage_on_checks",
+          "categories": [
+            "Survival_tracking",
+            "INT_info"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "natural_explorer",
+      "name": "Natural Explorer",
+      "level": 1,
+      "description": "You are adept at traveling and surviving in your favored terrain (Arctic, Coast, Desert, Forest, Grassland, Mountain, Swamp, or Underdark). You gain benefits: difficult terrain doesn't slow your group, your group can't get lost except by magical means, you are always alert, you can find food/water for your group, and you learn an additional language.",
+      "effects": [
+        {
+          "type": "group_travel_benefits",
+          "terrain": "chosen_terrain",
+          "benefits": [
+            "ignore_difficult_terrain",
+            "no_lost",
+            "always_alert",
+            "find_food_and_water",
+            "extra_language"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fighting_style",
+      "name": "Fighting Style",
+      "level": 2,
+      "description": "You adopt a fighting style: Archery, Defense, Dueling, or Two-Weapon Fighting.",
+      "effects": [
+        {
+          "type": "choose_fighting_style",
+          "options": [
+            "archery",
+            "defense",
+            "dueling",
+            "two_weapon_fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spellcasting",
+      "name": "Spellcasting",
+      "level": 2,
+      "description": "By 2nd level, you can cast Ranger spells (Wisdom).",
+      "effects": [
+        {
+          "type": "half_caster",
+          "ability": "wis",
+          "list": "ranger",
+          "preparedCasting": false,
+          "knownCasting": false,
+          "spells_known_type": "always_known"
+        }
+      ]
+    },
+    {
+      "id": "ranger_archetype",
+      "name": "Ranger Archetype",
+      "level": 3,
+      "description": "You choose an archetype: Hunter or Beast Master.",
+      "effects": [
+        {
+          "type": "choose_subclass",
+          "atLevel": 3
+        }
+      ]
+    },
+    {
+      "id": "primeval_awareness",
+      "name": "Primeval Awareness",
+      "level": 3,
+      "description": "You can use your action to magically sense the presence of aberrations, celestials, dragons, elementals, fey, fiends, and undead within 1 mile (6 miles if outdoors) and learn whether they are stronger/equal/weaker than you, plus the relative number. You can use this a number of times equal to WIS mod (min 1) per long rest.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Primeval Awareness",
+          "per": "long_rest",
+          "count": "WIS mod (min 1)",
+          "range": {
+            "indoors": 1,
+            "outdoors": 6,
+            "unit": "miles"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "Increase one score by 2 or two by 1.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "extra_attack",
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice instead of once when you take the Attack action.",
+      "effects": [
+        {
+          "type": "extra_attack",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "favored_enemy_improvement",
+      "name": "Favored Enemy Improvement",
+      "level": 6,
+      "description": "You learn an additional favored enemy, and you gain an additional language.",
+      "effects": [
+        {
+          "type": "add_favored_enemy",
+          "count": 1
+        },
+        {
+          "type": "add_language",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "natural_explorer_improvement",
+      "name": "Natural Explorer Improvement",
+      "level": 7,
+      "description": "You choose an additional favored terrain.",
+      "effects": [
+        {
+          "type": "add_natural_explorer_terrain",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "lands_stride",
+      "name": "Land's Stride",
+      "level": 8,
+      "description": "Moving through nonmagical difficult terrain costs no extra movement. You also have advantage on saving throws against plants that are magically created or manipulated to impede movement.",
+      "effects": [
+        {
+          "type": "ignore_difficult_terrain_plant_magical"
+        },
+        {
+          "type": "advantage_save_vs_plant_magical_control"
+        }
+      ]
+    },
+    {
+      "id": "natures_veil",
+      "name": "Nature's Veil (Optional 9th-level feature)",
+      "level": 9,
+      "description": "You can use a bonus action to become magically invisible to your favored enemies for 1 minute (recharges on short/long rest).",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Nature's Veil",
+          "per": "short_rest",
+          "duration": "1 min",
+          "grants": "invisibility_to_favored_enemies"
+        }
+      ]
+    },
+    {
+      "id": "natures_veil_v2",
+      "name": "Nature's Veil (Optional, useable at 10+)",
+      "level": 10,
+      "description": "You can use this feature an additional time per rest, both uses don't need to be expended in the same rest.",
+      "effects": [
+        {
+          "type": "additional_use_natures_veil",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "hide_in_plain_sight",
+      "name": "Hide in Plain Sight",
+      "level": 10,
+      "description": "You can spend 1 minute creating camouflage for yourself. You have advantage on Stealth checks, and remain hidden even if you have low cover, until you move or take an action/bonus/reaction (other than Hide).",
+      "effects": [
+        {
+          "type": "camouflage",
+          "advantage_stealth": true
+        }
+      ]
+    },
+    {
+      "id": "favored_enemy_improvement_14",
+      "name": "Favored Enemy Improvement (14th)",
+      "level": 14,
+      "description": "You also gain advantage on attack rolls against your favored enemies.",
+      "effects": [
+        {
+          "type": "advantage_attack_rolls_against_favored_enemies"
+        }
+      ]
+    },
+    {
+      "id": "favored_enemy_improvement_18",
+      "name": "Favored Enemy Improvement (18th)",
+      "level": 18,
+      "description": "Favored enemies have disadvantage on attack rolls against you.",
+      "effects": [
+        {
+          "type": "favored_enemies_disadvantage_attacks_against_you"
+        }
+      ]
+    },
+    {
+      "id": "foe_slayer",
+      "name": "Foe Slayer",
+      "level": 20,
+      "description": "Once per turn, when you hit a favored enemy with an attack, you can add 1d6 + WIS mod to damage (or to attack).",
+      "effects": [
+        {
+          "type": "extra_damage_or_attack_to_favored_enemy",
+          "formula": "1d6 + WIS mod",
+          "per_turn": 1
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "favored_enemy",
+        "natural_explorer"
+      ]
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "fighting_style",
+        "spellcasting"
+      ],
+      "spellSlots": {
+        "1": 2
+      }
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "ranger_archetype",
+        "primeval_awareness"
+      ],
+      "spellSlots": {
+        "1": 3
+      }
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 3
+      }
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "extra_attack"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      },
+      "attacks": 2
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "favored_enemy_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      }
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "natural_explorer_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      }
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "lands_stride"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      }
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [
+        "natures_veil"
+      ]
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "hide_in_plain_sight",
+        "natures_veil_v2"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      }
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      }
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      }
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "favored_enemy_improvement_14"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      }
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "favored_enemy_improvement_18"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      }
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      }
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "foe_slayer"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "beast_master",
+      "name": "Beast Master",
+      "grantedAtLevel": 3,
+      "description": "Few Rangers can match the Beast Master for skill in training and bonding with the natural world. Many Rangers devote themselves to caring for a single companion animal.",
+      "features": [
+        {
+          "id": "primal_companion",
+          "name": "Primal Companion",
+          "level": 3,
+          "description": "You gain a beast companion from the SRD companion list (CR up to 1/4, no flying/swim). It uses its own stats but obeys commands. As an action, you can have it attack on its turn. If you spend an attack, you can have it make one attack of its own. It shares your initiative count.",
+          "effects": [
+            {
+              "type": "summon_companion",
+              "max_cr": 0.25,
+              "no_flying_or_swim_initially": true,
+              "shares_initiative": true,
+              "allow_command_one_attack_per_attack_action": true
+            }
+          ]
+        },
+        {
+          "id": "combar_training",
+          "name": "Exceptional Training",
+          "level": 3,
+          "description": "Your companion can use your proficiency bonus instead of its own for attack rolls, ability checks, and saving throws on rolls it is proficient in. It gains proficiency in any two skills of your choice.",
+          "effects": [
+            {
+              "type": "companion_uses_your_pb",
+              "skills_to_add": 2
+            }
+          ]
+        },
+        {
+          "id": "beast_of_the_land",
+          "name": "Beast of the Land (7th)",
+          "level": 7,
+          "description": "Your companion gains additional movement (swim 40 ft becomes part of it; also climbs), gains a +2 bonus to AC, DEX save, and CON save, and proficiency in all saving throws. Its attacks count as magical.",
+          "effects": [
+            {
+              "type": "companion_improvement",
+              "ac_bonus": 2,
+              "save_bonus_dex_con": 2,
+              "proficiency_in_saves": true,
+              "attacks_magical": true
+            }
+          ]
+        },
+        {
+          "id": "beast_of_the_air",
+          "name": "Beast of the Air (11th)",
+          "level": 11,
+          "description": "Your companion gains a flying speed of 60 feet. (Prerequisite: primate companion or other air-capable companion post-7th rest.)",
+          "effects": [
+            {
+              "type": "companion_gain_flying_speed",
+              "value": 60
+            }
+          ]
+        },
+        {
+          "id": "wild_companion_improvement",
+          "name": "Wild Companion (Bonus Action)",
+          "level": 15,
+          "description": "You can summon a different primal companion as a bonus action, lasting 1 hour. Once the summoned companion drops to 0 HP, you cannot use this feature for a short rest.",
+          "effects": [
+            {
+              "type": "bonus_action_resummon_companion",
+              "duration": "1 hour"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "ranger",
+      "id": "gloom_stalker",
+      "name": "Gloom Stalker",
+      "grantedAtLevel": 3,
+      "description_en": "You learned to fight in darkness, an ambush predator lurking in the longest shadows.",
+      "description_es": "Aprendiste a luchar en la oscuridad, un depredador de emboscada que acecha en las sombras más largas.",
+      "features": [
+        {
+          "id": "dreadful_strike_gloom",
+          "name": "Dreadful Strike",
+          "level": 3,
+          "description": "First attack each combat: +1d8 damage."
+        },
+        {
+          "id": "umbral_sight",
+          "name": "Umbral Sight",
+          "level": 3,
+          "description": "Darkvision 60 ft; invisible to darkvision alone when in darkness."
+        },
+        {
+          "id": "steel_will_shadow",
+          "name": "Iron Mind",
+          "level": 7,
+          "description": "Advantage on saves vs. fear."
+        },
+        {
+          "id": "strides_of_starlight",
+          "name": "Stalker's Flurry",
+          "level": 11,
+          "description": "Bonus action to attack twice once per short rest."
+        },
+        {
+          "id": "shadowy_dodge",
+          "name": "Shadowy Dodge",
+          "level": 15,
+          "description": "Reaction when missed: attack the attacker."
+        }
+      ]
+    },
+    {
+      "class_id": "ranger",
+      "id": "horizon_walker",
+      "name": "Horizon Walker",
+      "grantedAtLevel": 3,
+      "description_en": "You guard the borders between worlds, hunting aberrations that threaten them.",
+      "description_es": "Guardas las fronteras entre mundos, cazando aberraciones que las amenazan.",
+      "features": [
+        {
+          "id": "planar_warden",
+          "name": "Planar Warrior",
+          "level": 3,
+          "description": "Bonus: deal +1d8 force damage to aberration / fey / elemental targets until turn end."
+        },
+        {
+          "id": "ethereal_step",
+          "name": "Ethereal Step",
+          "level": 7,
+          "description": "Cast Etherealness on self and allies."
+        },
+        {
+          "id": "distant_strike",
+          "name": "Distant Strike",
+          "level": 11,
+          "description": "Bonus action teleport 10 ft before attack."
+        },
+        {
+          "id": "ranger_of_the_sinkhole",
+          "name": "Spectral Defense",
+          "level": 15,
+          "description": "Reaction to give ally resistance to BPS from attack."
+        }
+      ]
+    },
+    {
+      "id": "hunter",
+      "name": "Hunter",
+      "grantedAtLevel": 3,
+      "description": "Emulating the Ranger of the Woods, you become an unparalleled predator. Through study and practice, you master fighting techniques that allow you to fell even the fiercest quarry.",
+      "features": [
+        {
+          "id": "hunters_prey",
+          "name": "Hunter's Prey",
+          "level": 3,
+          "description": "Choose Colossus Slayer (1d8 damage once per turn to injured targets), Giant Killer (reaction attack vs Large or bigger creature that ends its turn within 5 ft of you and that's at least 10 ft away), or Horde Breaker (one extra attack against a different target within 5 ft of your first target).",
+          "effects": [
+            {
+              "type": "elige_tecnica",
+              "opciones": [
+                "colossus_slayer",
+                "giant_killer",
+                "horde_breaker"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "defensive_tactics",
+          "name": "Defensive Tactics",
+          "level": 7,
+          "description": "Choose Escape the Horde (opportunity attacks against you have disadvantage), Multiattack Defense (adjacent enemies have disadvantage on attack rolls beyond the first), or Steel Will (advantage on saves vs frightened).",
+          "effects": [
+            {
+              "type": "elige_tactica",
+              "opciones": [
+                "escape_horde",
+                "multiattack_defense",
+                "steel_will"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "multiattack",
+          "name": "Multiattack",
+          "level": 11,
+          "description": "Choose Volley (attack each creature of your choice in a 15-ft radius with ranged attack) or Whirlwind Attack (attack each creature of your choice in melee reach). Cast both at the start of your turn if you have movement remaining.",
+          "effects": [
+            {
+              "type": "elige_multiataque",
+              "opciones": [
+                "volley",
+                "whirlwind_attack"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "superiors_hunters_defense",
+          "name": "Superior Hunter's Defense",
+          "level": 15,
+          "description": "Choose Evasion (DEX save halves damage and avoids on save success), Stand Against the Tide (reaction attack vs Large+ that attacks you with advantage on the original roll), or Uncanny Dodge (reaction reduce damage from a creature you can see by half).",
+          "effects": [
+            {
+              "type": "elige_defensa_superior",
+              "opciones": [
+                "evasion",
+                "stand_against_tide",
+                "uncanny_dodge"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "wis",
+    "list": "ranger",
+    "spellbook": false,
+    "preparedCasting": false,
+    "ritualCasting": false,
+    "halfCaster": true,
+    "knownCasting": false,
+    "spellsKnownStyle": "always_prepared"
+  }
+}

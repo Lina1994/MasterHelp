@@ -1,0 +1,92 @@
+{
+  "id": "bugbear_stalker",
+  "slug": "bugbear_stalker",
+  "lang": "en",
+  "name": "Bugbear Stalker",
+  "speed": {
+    "walk": 30
+  },
+  "skills": "Stealth +6, Survival +3",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 11
+  },
+  "languages": "Common, Goblin",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Abduct",
+      "text": "The bugbear needn’t spend extra movement to move a creature it is grappling."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The bugbear makes two Javelin or Morn- ingstar attacks."
+    },
+    {
+      "name": "Javelin",
+      "text": "Melee or Ranged Attack Roll: +5, reach 10 ft. or range 30/120 ft. Hit: 13 (3d6 + 3) Piercing damage."
+    },
+    {
+      "name": "Morningstar",
+      "text": "Melee Attack Roll: +5 (with Advantage if the target is Grappled by the bugbear), reach 10 ft. Hit: 12 (2d8 + 3) Piercing damage. Bonus Actions"
+    },
+    {
+      "name": "Quick Grapple",
+      "text": "Dexterity Saving Throw: DC 13, one Medium or smaller creature the bugbear can see within 10 feet. Failure: The target has the Grappled condition (escape DC 13)."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Guiding Light",
+      "text": "The dragon uses Spellcasting to cast Guiding Bolt (level 2 version)."
+    },
+    {
+      "name": "Pounce",
+      "text": "The dragon moves up to half its Speed, and it makes one Rend attack."
+    },
+    {
+      "name": "Thunderclap",
+      "text": "Constitution Saving Throw: DC 22, each creature in a 20-foot-radius Sphere centered on a point the dragon can see within 120 feet. Failure: 13 (3d8) Thunder damage, and the target has the Deafened con- dition until the end of its next turn. Bugbears Bugbear Stalker"
+    }
+  ],
+  "srd_en_match_name": "Bugbear Stalker",
+  "srd_en_page": 268,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "dragon",
+  "subtype": "Metallic",
+  "alignment": "Lawful Good",
+  "armorClass": {
+    "value": 22,
+    "type": "+14 (24)"
+  },
+  "initiative": 14,
+  "hitPoints": {
+    "average": 444,
+    "roll": "24d20 + 192"
+  },
+  "abilities": {
+    "str": 29,
+    "dex": 10,
+    "con": 27,
+    "int": 18,
+    "wis": 17,
+    "cha": 25
+  },
+  "savingThrows": {
+    "str": 9,
+    "dex": 7,
+    "con": 8,
+    "int": 4,
+    "wis": 10,
+    "cha": 7
+  }
+}

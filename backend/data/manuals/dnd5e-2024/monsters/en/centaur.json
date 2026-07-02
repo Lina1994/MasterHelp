@@ -1,0 +1,70 @@
+{
+  "id": "centaur",
+  "slug": "centaur",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Centaur",
+  "size": "Large",
+  "type": "Monstrosity",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 12,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10+12"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 14,
+    "int": 9,
+    "wis": 13,
+    "cha": 11
+  },
+  "savingThrows": {
+    "dex": 4
+  },
+  "skills": {
+    "perception": 3,
+    "survival": 3
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 13",
+  "languages": "Elvish, Sylvan",
+  "proficiencyBonus": 2,
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "traits": [
+    {
+      "name": "Charge.",
+      "text": "If the centaur moves at least 30 ft. straight toward a target and then hits with a hooves attack in the same turn, the target takes an extra 9 (2d8) bludgeoning damage and must succeed on a DC 13 STR save or be knocked prone."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack.",
+      "text": "The centaur makes two attacks: one with its hooves and one with its longbow."
+    },
+    {
+      "name": "Hooves.",
+      "text": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 11 (2d6 + 4) bludgeoning damage."
+    },
+    {
+      "name": "Longbow.",
+      "text": "Ranged Weapon Attack: +4 to hit, range 150/600 ft. Hit: 6 (1d8 + 2) piercing damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

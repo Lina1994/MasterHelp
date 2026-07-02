@@ -1,0 +1,73 @@
+{
+  "id": "treant",
+  "slug": "treant",
+  "lang": "en",
+  "name": "Treant",
+  "speed": {
+    "walk": 20
+  },
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 9
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Siege Monster",
+      "text": "The treant deals double damage to ob- jects and structures."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The treant makes two Slam attacks."
+    },
+    {
+      "name": "Slam",
+      "text": "Melee Attack Roll: +10, reach 5 ft. Hit: 16 (3d6 + 6) Bludgeoning damage."
+    },
+    {
+      "name": "Hail of Bark",
+      "text": "Ranged Attack Roll: +10, range 180 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "28 (4d10 + 6) Piercing damage. Animate Trees (1/Day). The treant magically animates up to two trees it can see within 60 feet of itself. Each tree uses the Treant stat block, except it has Intelligence and Charisma scores of 1, it can’t speak, and it lacks this action. The tree takes its turn immediately after the treant on the same Initiative count, and it obeys the tre- ant. A tree remains animate for 1 day or until it dies, the treant dies, or it is more than 120 feet from the treant. The tree then takes root if possible. Troll Troll"
+    }
+  ],
+  "skills": "Perception +5",
+  "srd_en_match_name": "Treant",
+  "srd_en_page": 330,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "plant",
+  "alignment": "Chaotic Good",
+  "armorClass": {
+    "value": 16,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 138,
+    "roll": "12d12 + 60"
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 8,
+    "con": 21,
+    "int": 12,
+    "wis": 16,
+    "cha": 12
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 0,
+    "con": 5,
+    "int": 1,
+    "wis": 3,
+    "cha": 1
+  }
+}

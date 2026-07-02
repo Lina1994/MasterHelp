@@ -1,0 +1,56 @@
+{
+  "id": "pegasus",
+  "name": "Pegasus",
+  "slug": "pegasus",
+  "size": "Large",
+  "type": "celestial",
+  "alignment": "chaotic good",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 59,
+    "roll": "7d10 + 14"
+  },
+  "speed": {
+    "walk": 60,
+    "fly": 90
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 15,
+    "con": 14,
+    "int": 10,
+    "wis": 15,
+    "cha": 13
+  },
+  "saves": [
+    " DEX +4 ",
+    " WIS +4 "
+  ],
+  "skills": [
+    " Perception +5 "
+  ],
+  "senses": "passive Perception 15",
+  "languages": "understands Celestial, Elvish, Sylvan; can't speak",
+  "challengeRating": "2",
+  "actions": [
+    {
+      "name": "Hooves",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 7 (1d6 + 4) Bludgeoning damage plus 5 (2d4) Radiant damage. Phase Spider Phase Spider"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 450,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "srd_en_match_name": "Pegasus",
+  "srd_en_page": 310,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 3,
+    "dex": 0,
+    "con": 7,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

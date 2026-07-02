@@ -1,0 +1,80 @@
+{
+  "id": "remorhaz",
+  "name": "Remorhaz",
+  "slug": "remorhaz",
+  "size": "Huge",
+  "type": "monstrosity",
+  "alignment": "unaligned",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 195,
+    "roll": "17d12 + 85"
+  },
+  "speed": {
+    "walk": 40,
+    "burrow": 30,
+    "snow": 30
+  },
+  "abilities": {
+    "str": 24,
+    "dex": 13,
+    "con": 21,
+    "int": 4,
+    "wis": 11,
+    "cha": 6
+  },
+  "senses": "darkvision 60 ft., passive Perception 10",
+  "languages": "—",
+  "challengeRating": "11",
+  "traits": [
+    {
+      "name": "Heat Aura",
+      "text": "At the end of each of the remorhaz’s turns, each creature in a 5-foot Emanation originating from the remorhaz takes 16 (3d10) Fire damage."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +11, reach 10 ft. Hit: 18 (2d10 + 7) Piercing damage plus 14 (4d6) Fire damage. If the target is a Large or smaller creature, it has the Grappled condition (escape DC 17), and it has the Restrained condition until the grapple ends. Bonus Actions"
+    },
+    {
+      "name": "Swallow",
+      "text": "Strength Saving Throw: DC 19, one Large or smaller creature Grappled by the remorhaz (it can have up to two creatures swallowed at a time). Failure: The target is swallowed by the remorhaz, and the Grappled condition ends. A swallowed creature has the Blinded"
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 7200,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Commanding Presence",
+      "text": "The dragon uses Spellcasting to cast Command (level 2 version). The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Fiery Rays",
+      "text": "The dragon uses Spellcasting to cast Scorch- ing Ray (level 3 version). The dragon can’t take this ac- tion again until the start of its next turn."
+    },
+    {
+      "name": "Pounce",
+      "text": "The dragon moves up to half its Speed, and it makes one Rend attack. Remorhaz Remorhaz"
+    }
+  ],
+  "skills": "Perception +16, Stealth +7",
+  "srd_en_match_name": "Remorhaz",
+  "srd_en_page": 316,
+  "subtype": "Chromatic",
+  "initiative": 14,
+  "savingThrows": {
+    "str": 10,
+    "dex": 7,
+    "con": 9,
+    "int": 4,
+    "wis": 9,
+    "cha": 8
+  }
+}

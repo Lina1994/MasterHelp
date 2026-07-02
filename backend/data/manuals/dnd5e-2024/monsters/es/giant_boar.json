@@ -1,0 +1,46 @@
+{
+  "id": "giant_boar",
+  "slug": "giant_boar",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Jabalí gigante",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 42,
+    "roll": "5d10 + 15"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 10,
+    "con": 16,
+    "int": 2,
+    "wis": 7,
+    "cha": 5
+  },
+  "senses": "Percepción pasiva 8",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Furia maltrecha",
+      "text": "El jabalí tendrá ventaja en las tiradas de ataque cuerpo a cuerpo mientras esté maltrecho."
+    }
+  ],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Jabalí gigante",
+  "srd_es_page": 387
+}

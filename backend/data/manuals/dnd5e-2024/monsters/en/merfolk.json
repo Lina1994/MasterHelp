@@ -1,0 +1,52 @@
+{
+  "id": "merfolk",
+  "slug": "merfolk",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Merfolk",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Any alignment",
+  "armorClass": {
+    "value": 11
+  },
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d8+2"
+  },
+  "speed": {
+    "walk": 10,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 13,
+    "con": 12,
+    "int": 11,
+    "wis": 11,
+    "cha": 12
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 10",
+  "languages": "Aquan, Common",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "traits": [],
+  "actions": [
+    {
+      "name": "Spear.",
+      "text": "Melee or Ranged Weapon Attack: +3 to hit, reach 5 ft. or range 20/60 ft., one target. Hit: 4 (1d6 + 1) piercing damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

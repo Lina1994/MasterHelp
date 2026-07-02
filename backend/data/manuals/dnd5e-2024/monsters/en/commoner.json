@@ -1,0 +1,87 @@
+{
+  "id": "commoner",
+  "slug": "commoner",
+  "lang": "en",
+  "source": "SRD 5.2 (pendiente)",
+  "name": "Commoner",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Any alignment",
+  "armorClass": {
+    "value": 10
+  },
+  "hitPoints": {
+    "average": 4,
+    "roll": "1d8"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 10,
+    "con": 10,
+    "int": 10,
+    "wis": 10,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 8,
+    "dex": 0,
+    "con": 10,
+    "int": 1,
+    "wis": 7,
+    "cha": 3
+  },
+  "skills": [
+    "Insight +7",
+    "Perception +11"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "passive Perception 10",
+  "languages": "Common",
+  "proficiencyBonus": 5,
+  "challengeRating": "0",
+  "experiencePoints": 5000,
+  "traits": [],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The giant makes two attacks, using Thun- derous Mace or Thundercloud in any combination. It can replace one attack with a use of Spellcasting to cast Fog Cloud."
+    },
+    {
+      "name": "Thunderous Mace",
+      "text": "Melee Attack Roll: +12, reach 10 ft. Hit: 21 (3d8 + 8) Bludgeoning damage plus 7 (2d6) Thunder damage."
+    },
+    {
+      "name": "Thundercloud",
+      "text": "Ranged Attack Roll: +12, range 240 ft. Hit: 18 (3d6 + 8) Thunder damage, and the target has the Incapacitated condition until the end of its next turn."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The giant casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 15):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Magic, Fog Cloud, Light 1/Day Each: Control Weather, Gaseous Form, Telekinesis Bonus Actions"
+    },
+    {
+      "name": "Misty Step",
+      "text": "The giant casts the Misty Step spell, using the same spellcasting ability as Spellcasting. Cockatrice Cockatrice"
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 4,
+  "srd_en_match_name": "Commoner",
+  "srd_en_page": 272,
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Commoner' did not match any of 3 chunk heads; using chunk[0] as best-effort"
+  ]
+}

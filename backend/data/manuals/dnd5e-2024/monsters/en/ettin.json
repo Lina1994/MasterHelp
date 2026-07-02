@@ -1,0 +1,73 @@
+{
+  "id": "ettin",
+  "slug": "ettin",
+  "lang": "en",
+  "name": "Ettin",
+  "speed": {
+    "walk": 50
+  },
+  "skills": "Perception +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 10
+  },
+  "languages": "Primordial (Ignan)",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The ettercap can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    },
+    {
+      "name": "Web Walker",
+      "text": "The ettercap ignores movement re- strictions caused by webs, and the ettercap knows the location of any other creature in contact with the same web."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The ettin makes one Battleaxe attack and one Morningstar attack."
+    },
+    {
+      "name": "Battleaxe",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 14 (2d8 + 5) Slashing damage. If the target is a Large or smaller creature, it has the Prone condition."
+    },
+    {
+      "name": "Morningstar",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 14 (2d8 + 5) Piercing damage, and the target has Disad- vantage on the next attack roll it makes before the end of its next turn. Fire Elemental Fire Elemental"
+    }
+  ],
+  "srd_en_match_name": "Ettin",
+  "srd_en_page": 281,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "monstrosity",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 13,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 44,
+    "roll": "8d8 + 8"
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 15,
+    "con": 13,
+    "int": 7,
+    "wis": 12,
+    "cha": 8
+  },
+  "savingThrows": {
+    "str": 2,
+    "dex": 2,
+    "con": 1,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

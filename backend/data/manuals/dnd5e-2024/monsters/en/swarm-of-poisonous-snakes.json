@@ -1,0 +1,71 @@
+{
+  "id": "swarm_of_poisonous_snakes",
+  "slug": "swarm-of-poisonous-snakes",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Swarm of Poisonous Snakes",
+  "size": "Medium",
+  "type": "Beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12
+  },
+  "hitPoints": {
+    "average": 36,
+    "roll": "12d8"
+  },
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 16,
+    "con": 13,
+    "int": 1,
+    "wis": 10,
+    "cha": 3
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "bludgeoning",
+    "piercing",
+    "slashing"
+  ],
+  "damageImmunities": [],
+  "conditionImmunities": [
+    "charmed",
+    "frightened",
+    "grappled",
+    "paralyzed",
+    "petrified",
+    "prone",
+    "restrained",
+    "stunned",
+    "unconscious"
+  ],
+  "senses": "blindsight 10 ft., passive Perception 10",
+  "languages": "—",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Swarm.",
+      "text": "The swarm can occupy another creature's space and vice versa. The swarm can't regain HP or be temporarily immune to damage. It can fit through a 1-inch-wide opening."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bites.",
+      "text": "Melee Weapon Attack: +5 to hit, reach 0 ft., one creature in the swarm's space. Hit: 14 (4d6) piercing damage, or 7 (2d6) piercing if the target has resistance or immunity. DC 10 CON save or 14 (4d6) poison damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

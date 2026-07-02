@@ -1,0 +1,6 @@
+{
+  "id": "bestiary",
+  "title": "Bestiary",
+  "format": "markdown",
+  "markdown": "# Bestiary\n\nThe **Bestiary** is the catalog of creatures adversaries, NPCs, and monsters available in the SRD 5.2. Each entry is described in a standard stat-block format:\n\n- **Armor Class (AC)** and **Hit Points (HP)**\n- **Speed**, **Ability Scores** (STR, DEX, CON, INT, WIS, CHA)\n- **Saving Throws**, **Skills**, **Damage Resistances/Immunities**, **Condition Immunities**\n- **Senses**, **Languages**, **Challenge Rating (CR)**, and **Proficiency Bonus**\n- **Traits**, **Actions**, **Reactions**, and (for legendary creatures) **Legendary Actions**\n- **Spellcasting** blocks when applicable\n\n## Monster types\n\nThe SRD 5.2 bestiary covers a broad range of creature types: *aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, humanoids, monstrosities, oozes, plants, undead*, and *fungus*-themed creatures added in the 2024 revision.\n\nUse the **Bestiary** page of this application to filter by type, size, or Challenge Rating and view the full details of any creature."
+}

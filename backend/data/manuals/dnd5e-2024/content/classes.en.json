@@ -1,0 +1,6 @@
+{
+  "id": "classes",
+  "title": "Classes",
+  "format": "markdown",
+  "markdown": "# Classes\n\nA character's **class** is their profession — the core of who they are as an adventurer. The SRD 5.2 contains **12 character classes**:\n\n- **Barbarian**, **Bard**, **Cleric**, **Druid**, **Fighter**, **Monk**, **Paladin**, **Ranger**, **Rogue**, **Sorcerer**, **Warlock**, and **Wizard**.\n\nEach class defines:\n\n- **Hit Die** — the die you roll for hit points at each level.\n- **Primary Ability** — the ability score you rely on most.\n- **Saving Throws** — two abilities in which you become proficient.\n- **Proficiencies** — armor, weapons, tools, and skills.\n- **Class Features** — features gained at certain levels (e.g. Rage, Spellcasting, Sneak Attack).\n- **Subclass** — chosen at level 1, 2, or 3 depending on the class.\n\n## Spellcasting\n\nOf the 12 classes, **8** are spellcasters: Bard, Cleric, Druid, Paladin, Ranger, Sorcerer, Warlock, and Wizard. Each spellcaster uses a different progression — full, half, third, or pact magic.\n\nUse the **Classes** page to view a class's full progression, level-by-level features, and subclasses."
+}

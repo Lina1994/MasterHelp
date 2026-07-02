@@ -1,0 +1,88 @@
+{
+  "id": "piranha",
+  "slug": "piranha",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Piraña",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 1,
+    "roll": "1d4 − 1"
+  },
+  "speed": {
+    "walk": 15,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 2,
+    "dex": 16,
+    "con": 9,
+    "int": 1,
+    "wis": 7,
+    "cha": 2
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción pasiva 8",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Respirar en el agua",
+      "text": "La piraña solo puede respirar bajo el agua."
+    },
+    {
+      "name": "Aguantar la respiración",
+      "text": "El plesiosaurio puede aguantar la respiración durante 1 hora."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5 (con ventaja si el objetivo no tiene todos sus puntos de golpe), alcance 1,5 m. Acierto: 1 de daño perforante. Plesiosaurio Bestia Grande (dinosaurio), sin alineamiento"
+    },
+    {
+      "name": "CA",
+      "text": "13 Iniciativa: +2 (12)"
+    },
+    {
+      "name": "PG",
+      "text": "68 (8d10 + 24)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "6 m, nadar 12 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 18 +4 +4 Des 15 +2 +2 Con 16 +3 +3 Int 2 −4 −4 sab 12 +1 +1 Car 5 −3 −3"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Percepción +3, Sigilo +4"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 13"
+    },
+    {
+      "name": "Idiomas",
+      "text": "ninguno"
+    },
+    {
+      "name": "VD",
+      "text": "2 (450 PX; BC +2) cance 3 m. Acierto: 11 (2d6 + 4) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Piraña",
+  "srd_es_page": 391
+}

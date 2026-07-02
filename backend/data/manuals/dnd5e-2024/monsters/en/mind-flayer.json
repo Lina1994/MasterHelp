@@ -1,0 +1,70 @@
+{
+  "id": "mind-flayer",
+  "slug": "mind-flayer",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Mind Flayer",
+  "size": "Medium",
+  "type": "aberration",
+  "alignment": "lawful evil",
+  "armorClass": {
+    "value": 15,
+    "type": "breastplate"
+  },
+  "hitPoints": {
+    "average": 71,
+    "roll": "13d8 + 26"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 0,
+    "climb": 0,
+    "swim": 0,
+    "burrow": 0
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 12,
+    "con": 17,
+    "int": 19,
+    "wis": 12,
+    "cha": 17
+  },
+  "savingThrows": [],
+  "skills": [
+    "Arcana +7",
+    "Deception +5",
+    "Insight +6",
+    "Perception +6",
+    "Persuasion +5",
+    "Stealth +4"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "blindsight 120 ft., darkvision 120 ft., passive Perception 16",
+  "languages": "Deep Speech, Undercommon, telepathy 120 ft.",
+  "challengeRating": "7",
+  "experiencePoints": 2900,
+  "traits": [
+    {
+      "name": "Magic Resistance",
+      "text": "The mind flayer has advantage on saving throws against spells and other magical effects."
+    },
+    {
+      "name": "Psionics",
+      "text": "The mind flayer has a swimming speed of 20 feet, can hover, and speaks Telepathy 120 ft. (described under Languages)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Tentacles",
+      "text": "Melee Weapon Attack: +7 to hit, reach 10 ft., one creature. Hit: 15 (2d10 + 4) psychic damage. The target must succeed on a DC 15 Intelligence saving throw or have its Intelligence score reduced by 1 (to a minimum of 1). Whenever the target's Intelligence is reduced to 0 by this damage, the target is stunned and immediately aware of its surroundings."
+    },
+    {
+      "name": "Extract Brain",
+      "text": "The mind flayer kills one creature stunned by its tentacles by extracting and devouring its brain. The target must have an Intelligence of 5 or higher, and the mind flayer must be adjacent to it."
+    }
+  ]
+}

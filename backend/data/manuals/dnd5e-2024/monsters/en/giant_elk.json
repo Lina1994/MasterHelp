@@ -1,0 +1,70 @@
+{
+  "id": "giant_elk",
+  "slug": "giant_elk",
+  "lang": "en",
+  "name": "Giant Elk",
+  "speed": {
+    "walk": 40,
+    "climb": 30
+  },
+  "skills": "Perception +3",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ram",
+      "text": "Melee Attack Roll: +6, reach 10 ft. Hit: 11 (2d6 + 4) Bludgeoning damage plus 5 (2d4) Radiant damage. If the target is a Huge or smaller creature and the elk moved 20+ feet straight toward it immediately before the hit, the target takes an extra 5 (2d4) Bludgeoning damage and has the Prone condition. Giant Fire Beetle"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Illumination",
+      "text": "The beetle sheds Bright Light in a 10-foot radius and Dim Light for an additional 10 feet."
+    },
+    {
+      "name": "Amphibious",
+      "text": "The frog can breathe air and water."
+    },
+    {
+      "name": "Standing Leap",
+      "text": "The frog’s Long Jump is up to 20 feet and its High Jump is up to 10 feet with or without a running start."
+    }
+  ],
+  "srd_en_match_name": "Giant Elk",
+  "srd_en_page": 348,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "celestial",
+  "alignment": "Neutral Good",
+  "armorClass": {
+    "value": 14,
+    "type": "+6 (16)"
+  },
+  "initiative": 6,
+  "hitPoints": {
+    "average": 42,
+    "roll": "5d12 + 10"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 18,
+    "con": 14,
+    "int": 7,
+    "wis": 14,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 6,
+    "con": 2,
+    "int": 0,
+    "wis": 2,
+    "cha": 0
+  }
+}

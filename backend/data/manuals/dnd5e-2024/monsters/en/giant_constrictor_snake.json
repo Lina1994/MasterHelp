@@ -1,0 +1,73 @@
+{
+  "id": "giant_constrictor_snake",
+  "slug": "giant_constrictor_snake",
+  "lang": "en",
+  "name": "Giant Constrictor Snake",
+  "senses": {
+    "passivePerception": 16
+  },
+  "languages": "Celestial; understands Common and Primordial",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The snake makes one Bite attack and uses Constrict."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +6, reach 10 ft. Hit: 11 (2d6 + 4) Piercing damage."
+    },
+    {
+      "name": "Constrict",
+      "text": "Strength Saving Throw: DC 14, one Large or smaller creature the snake can see within 10 feet. Fail- ure: 13 (2d8 + 4) Bludgeoning damage, and the target has the Grappled condition (escape DC 14). Giant Crab"
+    }
+  ],
+  "speed": {
+    "walk": 10,
+    "fly": 80
+  },
+  "skills": "Perception +6",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The crab can breathe air and water."
+    },
+    {
+      "name": "Hold Breath",
+      "text": "The crocodile can hold its breath for 1 hour."
+    }
+  ],
+  "srd_en_match_name": "Giant Constrictor Snake",
+  "srd_en_page": 347,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 60,
+    "roll": "8d12 + 8"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 12,
+    "int": 1,
+    "wis": 10,
+    "cha": 3
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 2,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

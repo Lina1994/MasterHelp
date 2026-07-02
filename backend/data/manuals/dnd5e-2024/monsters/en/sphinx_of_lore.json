@@ -1,0 +1,97 @@
+{
+  "id": "sphinx_of_lore",
+  "slug": "sphinx_of_lore",
+  "lang": "en",
+  "name": "Sphinx of Lore",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3. Immediately after another creature’s turn, the solar can expend a use to take one of the following actions. The solar regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Blinding Gaze",
+      "text": "Constitution Saving Throw: DC 25, one creature the solar can see within 120 feet. Failure: The target has the Blinded condition for 1 minute. Failure or"
+    },
+    {
+      "name": "Success",
+      "text": "The solar can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Radiant Teleport",
+      "text": "The solar teleports up to 60 feet to an unoccupied space it can see. Dexterity Saving Throw: DC 25, each creature in a 10-foot Emanation originat- ing from the solar at its destination space. Failure: 11 (2d10) Radiant damage. Success: Half damage. Specter Specter"
+    }
+  ],
+  "speed": {
+    "walk": 40,
+    "fly": 60
+  },
+  "senses": {
+    "truesight": "120 ft",
+    "passivePerception": 18
+  },
+  "languages": "Celestial, Common",
+  "challengeRating": "11",
+  "experiencePoints": 7200,
+  "proficiencyBonus": 4,
+  "traits": [
+    {
+      "name": "Incorporeal Movement",
+      "text": "The specter can move through other creatures and objects as if they were Difficult"
+    },
+    {
+      "name": "Terrain",
+      "text": "It takes 5 (1d10) Force damage if it ends its turn inside an object."
+    },
+    {
+      "name": "Sunlight Sensitivity",
+      "text": "While in sunlight, the specter has Disadvantage on ability checks and attack rolls."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Life Drain",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d6) Necrotic damage. If the target is a creature, its Hit Point maximum decreases by an amount equal to the damage taken. Sphinxes Sphinx of Wonder"
+    }
+  ],
+  "skills": "Arcana +12, History +12, Perception +8,",
+  "reactions": [
+    {
+      "name": "",
+      "text": "Burst of Ingenuity (2/Day). Trigger: The sphinx or an- other creature within 30 feet makes an ability check or a saving throw. Response: The sphinx adds 2 to the roll. Sphinx of Lore"
+    }
+  ],
+  "srd_en_match_name": "Sphinx of Lore",
+  "srd_en_page": 324,
+  "source": "SRD 5.2 (pendiente)",
+  "size": "medium",
+  "type": "undead",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 22,
+    "roll": "5d8"
+  },
+  "abilities": {
+    "str": 1,
+    "dex": 14,
+    "con": 11,
+    "int": 10,
+    "wis": 10,
+    "cha": 11
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Sphinx of Lore' did not match any of 3 chunk heads; using chunk[0] as best-effort"
+  ]
+}

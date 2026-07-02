@@ -1,0 +1,98 @@
+{
+  "id": "wraith",
+  "slug": "wraith",
+  "lang": "en",
+  "source": "SRD 5.2 (pendiente)",
+  "name": "Wraith",
+  "size": "Medium",
+  "type": "Undead",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 13
+  },
+  "hitPoints": {
+    "average": 67,
+    "roll": "9d8+27"
+  },
+  "speed": {
+    "walk": 0,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 16,
+    "con": 16,
+    "int": 12,
+    "wis": 14,
+    "cha": 15
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 1,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  },
+  "skills": [
+    "Perception +5",
+    "Stealth +5"
+  ],
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "acid",
+    "cold",
+    "fire",
+    "lightning",
+    "thunder"
+  ],
+  "damageImmunities": [],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "grappled",
+    "paralyzed",
+    "petrified",
+    "poisoned",
+    "prone",
+    "restrained",
+    "unconscious"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 12",
+  "languages": "Common + 2 others",
+  "proficiencyBonus": 3,
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The wolf has Advantage on an attack roll against a creature if at least one of the wolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 11 (2d6 + 4)"
+    },
+    {
+      "name": "Piercing damage",
+      "text": "If the target is a Large or smaller crea- ture, it has the Prone condition. Cold Breath (Recharge 5–6). Constitution Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 12, each creature in a 15-foot Cone. Failure: 18 (4d8) Cold damage. Success: Half damage. Worg Worg"
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 1,
+  "srd_en_match_name": "Wraith",
+  "srd_en_page": 339,
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Wraith' did not match any of 2 chunk heads; using chunk[0] as best-effort"
+  ]
+}

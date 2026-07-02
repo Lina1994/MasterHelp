@@ -1,0 +1,856 @@
+{
+  "id": "wizard",
+  "name": "Mago",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 6,
+  "hitPoints": {
+    "hitDice": "1d6 por nivel de mago",
+    "at1stLevel": "6 + tu modificador de Constitución",
+    "atHigherLevels": "1d6 (o 4) + tu modificador de Constitución por cada nivel de mago por encima del primero"
+  },
+  "primaryAbilities": [
+    "int"
+  ],
+  "savingThrows": [
+    "int",
+    "wis"
+  ],
+  "proficiencies": {
+    "armor": [],
+    "weapons": [
+      "Dagas",
+      "Dardos",
+      "Hondas",
+      "Bastones",
+      "Ballestas ligeras"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Arcanos",
+      "Historia",
+      "Perspicacia",
+      "Investigación",
+      "Medicina",
+      "Religión"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "baston",
+          "description": "Un bastón"
+        },
+        {
+          "id": "daga",
+          "description": "Una daga"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "bolsa_componentes",
+          "description": "Bolsa de componentes"
+        },
+        {
+          "id": "foco_arcano",
+          "description": "Foco arcano"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "paquete_erudito",
+          "description": "Paquete de erudito"
+        },
+        {
+          "id": "paquete_explorador",
+          "description": "Paquete de explorador"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "libro_conjuros",
+          "description": "Un libro de conjuros"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "conjuros",
+      "name": "Lanzamiento de conjuros",
+      "level": 1,
+      "description": "Inteligencia es tu habilidad de lanzamiento. Lanzas conjuros del libro.",
+      "effects": [
+        {
+          "type": "lanzamiento_ritual",
+          "value": true
+        },
+        {
+          "type": "lanzamiento_preparado",
+          "ability": "int",
+          "list": "mago",
+          "libro": true
+        }
+      ]
+    },
+    {
+      "id": "recuperacion_arcana",
+      "name": "Recuperación arcana",
+      "level": 1,
+      "description": "Una vez al día en descanso corto, recuperas espacios cuyos niveles sumados sean la mitad de tu nivel de mago (red. arriba), sin nivel 6+.",
+      "effects": [
+        {
+          "type": "recurso_recuperar_espacios_descanso_corto",
+          "maxCombinado": "1/2 nivel",
+          "maxSlotLevel": 5
+        }
+      ]
+    },
+    {
+      "id": "trucos",
+      "name": "Trucos (Mago)",
+      "level": 1,
+      "description": "Conoces 3 trucos; aprendes 1 adicional en niveles 4, 8, 12, 16 y 20.",
+      "effects": [
+        {
+          "type": "trucos_conocidos",
+          "count": 3,
+          "scalesAt": [
+            4,
+            8,
+            12,
+            16,
+            20
+          ],
+          "perLevelStep": 1
+        }
+      ]
+    },
+    {
+      "id": "libro_conjuros",
+      "name": "Libro de conjuros",
+      "level": 1,
+      "description": "Comienzas con 6 conjuros de nivel 1. Cada nivel aprendes 2 conjuros nuevos. Cada descanso largo puedes cambiar mod SAB (min 1) conjuros.",
+      "effects": [
+        {
+          "type": "libro_conjuros_inicial",
+          "starting": {
+            "1": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "tradicion_arcana",
+      "name": "Tradición arcana",
+      "level": 2,
+      "description": "Elige la escuela: Evocación o Abjuración.",
+      "effects": [
+        {
+          "type": "eleguir_subclase",
+          "atLevel": 2
+        }
+      ]
+    },
+    {
+      "id": "mejora_puntuacion_caracteristica",
+      "name": "Mejora de puntuación de característica",
+      "level": 4,
+      "description": "Una en 2 o dos en 1. Máx 20.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "conjuros",
+        "recuperacion_arcana",
+        "trucos",
+        "libro_conjuros"
+      ],
+      "spellSlots": {
+        "1": 2
+      },
+      "preparados": 4,
+      "cantrips_known": 3
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "tradicion_arcana"
+      ],
+      "spellSlots": {
+        "1": 3
+      },
+      "preparados": 5,
+      "cantrips_known": 3
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      },
+      "preparados": 6,
+      "cantrips_known": 3
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      },
+      "preparados": 7,
+      "cantrips_known": 4
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      },
+      "preparados": 9,
+      "cantrips_known": 4
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      },
+      "preparados": 10,
+      "cantrips_known": 4
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      },
+      "preparados": 11,
+      "cantrips_known": 4
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      },
+      "preparados": 12,
+      "cantrips_known": 5
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      },
+      "preparados": 14,
+      "cantrips_known": 5
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      },
+      "preparados": 15,
+      "cantrips_known": 5
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      },
+      "preparados": 16,
+      "cantrips_known": 5
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      },
+      "preparados": 16,
+      "cantrips_known": 6
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      },
+      "preparados": 17,
+      "cantrips_known": 6
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      },
+      "preparados": 18,
+      "cantrips_known": 6
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      },
+      "preparados": 19,
+      "cantrips_known": 6
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      },
+      "preparados": 19,
+      "cantrips_known": 7
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "preparados": 20,
+      "cantrips_known": 7
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "preparados": 22,
+      "cantrips_known": 7
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "preparados": 24,
+      "cantrips_known": 7
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "conjuro_firma"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 2,
+        "8": 1,
+        "9": 1
+      },
+      "preparados": 25,
+      "cantrips_known": 8
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "abjuración",
+      "name": "Escuela de Abjuración",
+      "grantedAtLevel": 2,
+      "description": "Los abjuradores se especializan en magia protectora, deshaciendo conjuros y defendiendo aliados.",
+      "features": [
+        {
+          "id": "sabio_abjuracion",
+          "name": "Sabio de la Abjuración",
+          "level": 2,
+          "description": "Coste y tiempo de copiar conjuros de abjuración a la mitad.",
+          "effects": [
+            {
+              "type": "coste_copiar_escuela",
+              "escuela": "abjuración",
+              "factor": 0.5
+            }
+          ]
+        },
+        {
+          "id": "guardia_arcana",
+          "name": "Guardia arcana",
+          "level": 2,
+          "description": "Lanzas conjuro de abjuración de nivel 1+: creas barrera con PG máximos = 2 × nivel. Recargas 2 × nivel de conjuro como PG de guardia temporales.",
+          "effects": [
+            {
+              "type": "barrera_protectora",
+              "capacidad": "2 * nivel_mago",
+              "recarga": "2 × nivel_conjuro"
+            }
+          ]
+        },
+        {
+          "id": "mejora_guardia_arcana",
+          "name": "Mejora de Guardia arcana",
+          "level": 6,
+          "description": "La guardia absorbe daño automáticamente.",
+          "effects": [
+            {
+              "type": "barrera_absorbe_danho_automatico"
+            }
+          ]
+        },
+        {
+          "id": "resistencia_conjuros",
+          "name": "Resistencia a conjuros",
+          "level": 14,
+          "description": "Ventaja en salvaciones contra conjuros y resistencia al daño de conjuros.",
+          "effects": [
+            {
+              "type": "ventaja_salv_conjuros"
+            },
+            {
+              "type": "resistencia_danho_conjuros"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "conjuration",
+      "name": "Escuela de Conjuración",
+      "grantedAtLevel": 2,
+      "description_en": "You specialize in instant summons, teleportation, and binding beings from other dimensions.",
+      "description_es": "Te especializas en invocaciones instantáneas, teletransporte y ataduras de seres de otras dimensiones.",
+      "features": [
+        {
+          "id": "conjuration_savant",
+          "name": "Sabio de Conjuración",
+          "level": 2,
+          "description": "Reduce a la mitad el oro y tiempo para copiar conjuros de conjuración."
+        },
+        {
+          "id": "minor_conjuration",
+          "name": "Conjuración Menor",
+          "level": 2,
+          "description": "Acción: conjura un objeto no mágico (cubo ≤1,5 m, ≤5 kg) 1 hora."
+        },
+        {
+          "id": "benign_transposition",
+          "name": "Transposición Benigna",
+          "level": 6,
+          "description": "Reacción al lanzar conjuro nivel 1+: teletransporte 9 m."
+        },
+        {
+          "id": "focused_conjuration",
+          "name": "Conjuración Concentrada",
+          "level": 10,
+          "description": "Concentrando conjuro de conjuración, sin desventaja en salvación de concentración."
+        },
+        {
+          "id": "durable_summons",
+          "name": "Invocaciones Durables",
+          "level": 14,
+          "description": "Criaturas convocadas tienen 30 pg temp y ventaja contra destierro."
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "divination",
+      "name": "Escuela de Adivinación",
+      "grantedAtLevel": 2,
+      "description_en": "You seek information, expertise, foresight, and the truth of magic.",
+      "description_es": "Buscas información, pericia, previsión y la verdad de la magia.",
+      "features": [
+        {
+          "id": "divination_savant",
+          "name": "Sabio de Adivinación",
+          "level": 2,
+          "description": "Reduce a la mitad el oro y tiempo para copiar conjuros de adivinación."
+        },
+        {
+          "id": "portent",
+          "name": "Presagio",
+          "level": 2,
+          "description": "Al descanso prolongado: tira 2 d20; sustituye cualquier ataque/salvación/prueba."
+        },
+        {
+          "id": "expert_divination",
+          "name": "Experto en Adivinación",
+          "level": 6,
+          "description": "Lanzar conjuro adivinación de 2+ recupera un slot de nivel 3."
+        },
+        {
+          "id": "third_eye",
+          "name": "Tercer Ojo",
+          "level": 10,
+          "description": "Acción: visión 18 m, ver invisibles o detectar magia (a elección)."
+        },
+        {
+          "id": "capstone",
+          "name": "Presagio Mayor",
+          "level": 14,
+          "description": "Tira 4 d20 para Presagio al descanso prolongado."
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "enchantment",
+      "name": "Escuela de Encantamiento",
+      "grantedAtLevel": 2,
+      "description_en": "You wield arcane influence over minds and emotions.",
+      "description_es": "Empuñas influencia arcana sobre mentes y emociones.",
+      "features": [
+        {
+          "id": "enchantment_savant",
+          "name": "Sabio de Encantamiento",
+          "level": 2,
+          "description": "Reduce a la mitad el oro y tiempo para copiar conjuros de encantamiento."
+        },
+        {
+          "id": "hypnotic_gaze",
+          "name": "Mirada Hipnótica",
+          "level": 2,
+          "description": "Acción: Carisma mod cargas/día; Sabiduría save o encantado 1 min.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "instinctive_enchantment",
+          "name": "Encantamiento Instintivo",
+          "level": 6,
+          "description": "Conjuros encantamiento con Sabiduría: salvación del objetivo es -1."
+        },
+        {
+          "id": "split_enchantment",
+          "name": "Encantamiento Dividido",
+          "level": 10,
+          "description": "Lanza encantamiento de un objetivo a 2 criaturas a costa de un slot mayor."
+        },
+        {
+          "id": "modify_memory",
+          "name": "Alterar Memorias",
+          "level": 14,
+          "description": "Lanza Modificar memoria similar a Disipar magia; sobrescribe memorias."
+        }
+      ]
+    },
+    {
+      "id": "evocación",
+      "name": "Escuela de Evocación",
+      "grantedAtLevel": 2,
+      "description": "Los evocadores se especializan en conjuros que crean o modifican energía elemental.",
+      "features": [
+        {
+          "id": "sabio_evocacion",
+          "name": "Sabio de la Evocación",
+          "level": 2,
+          "description": "Coste y tiempo de copiar conjuros de evocación a la mitad.",
+          "effects": [
+            {
+              "type": "coste_copiar_escuela",
+              "escuela": "evocación",
+              "factor": 0.5
+            }
+          ]
+        },
+        {
+          "id": "esculpir_conjuros",
+          "name": "Esculpir conjuros",
+          "level": 2,
+          "description": "Al lanzar conjuro de evocación de nivel 1+ puedes elegir tantas criaturas como 1 + nivel del conjuro; sus salvaciones son éxito automático y no daño.",
+          "effects": [
+            {
+              "type": "excluir_aliados_area",
+              "cantidad_a_excluir": "nivel_conjuro + 1"
+            }
+          ]
+        },
+        {
+          "id": "truco_potente",
+          "name": "Truco potente",
+          "level": 10,
+          "description": "Tus trucos de daño afectan a quienes salven con éxito (mitad de daño).",
+          "effects": [
+            {
+              "type": "trucos_danho_mitad_en_exito"
+            }
+          ]
+        },
+        {
+          "id": "sobrecanalizar",
+          "name": "Sobrecanalizar",
+          "level": 14,
+          "description": "Una vez por turno maximizas daño de un truco de mago o de un conjuro de evocación de nivel 5 o inferior; reduces tu PG máximo en 12.",
+          "effects": [
+            {
+              "type": "maximizar_danho_conjuro_nivel_5_o_menor_o_truco",
+              "coste_pg_max": 12
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "illusion",
+      "name": "Escuela de Ilusión",
+      "grantedAtLevel": 2,
+      "description_en": "You focus your studies on the magic of phantasms, deception, and make-believe.",
+      "description_es": "Enfocás tus estudios en la magia de fantasmas, engaños y la ilusión.",
+      "features": [
+        {
+          "id": "illusion_savant",
+          "name": "Sabio de Ilusión",
+          "level": 2,
+          "description": "Reduce a la mitad el oro y tiempo para copiar conjuros de ilusión."
+        },
+        {
+          "id": "improved_minor_illusion",
+          "name": "Ilusión menor mejorada",
+          "level": 2,
+          "description": "Ilusión menor acción gratuita; cubo de 1,5 m."
+        },
+        {
+          "id": "malleable_illusions",
+          "name": "Ilusiones Maleables",
+          "level": 6,
+          "description": "Acción: cambia la apariencia, terreno o rasgos de la ilusión."
+        },
+        {
+          "id": "illusory_self",
+          "name": "Yo Ilusorio",
+          "level": 10,
+          "description": "Reacción al ser golpeado: duplicado ilusorio e intercambia posiciones."
+        },
+        {
+          "id": "illusory_reality",
+          "name": "Realidad Ilusoria",
+          "level": 14,
+          "description": "Elige un objeto ilusorio y hazlo real por 1 min."
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "necromancy",
+      "name": "Escuela de Nigromancia",
+      "grantedAtLevel": 2,
+      "description_en": "Your study focuses on animating the dead and corrupting life force.",
+      "description_es": "Tu estudio se enfoca en animar muertos y corromper fuerza vital.",
+      "features": [
+        {
+          "id": "necromancy_savant",
+          "name": "Sabio de Nigromancia",
+          "level": 2,
+          "description": "Reduce a la mitad el oro y tiempo para copiar conjuros de nigromancia."
+        },
+        {
+          "id": "grim_harvest",
+          "name": "Cosecha Siniestra",
+          "level": 2,
+          "description": "Al dañar a enemigo con necromancia, recuperas pg igual a 1/3 del daño."
+        },
+        {
+          "id": "undead_thralls",
+          "name": "Esbirros No-Muertos",
+          "level": 6,
+          "description": "Animar muertos crea esqueletos adicionales y añade 1d4 necromántico."
+        },
+        {
+          "id": "inured_to_undeath",
+          "name": "Insensibilidad a Muerte",
+          "level": 6,
+          "description": "Resistencia necrótica; inmune a miedo."
+        },
+        {
+          "id": "capstone",
+          "name": "Comandar No-Muertos",
+          "level": 14,
+          "description": "Lanza Animar muertos a voluntad (sin slot); 24 h de control."
+        }
+      ]
+    },
+    {
+      "class_id": "wizard",
+      "id": "transmutation",
+      "name": "Escuela de Transmutación",
+      "grantedAtLevel": 2,
+      "description_en": "You study the magic of changing forms, altering reality, and transforming creatures.",
+      "description_es": "Estudiás la magia de cambiar formas, alterar realidad y transformar criaturas.",
+      "features": [
+        {
+          "id": "transmutation_savant",
+          "name": "Sabio de Transmutación",
+          "level": 2,
+          "description": "Reduce a la mitad el oro y tiempo para copiar conjuros de transmutación."
+        },
+        {
+          "id": "minor_alchemy",
+          "name": "Alquimia Menor",
+          "level": 2,
+          "description": "Acción: transmuta un objeto no mágico; dura 1 hora."
+        },
+        {
+          "id": "shapechanger_aura",
+          "name": "Detección de Cambiaformas",
+          "level": 6,
+          "description": "Detecta cambiaformas a 18 m (1 hora de meditación)."
+        },
+        {
+          "id": "master_transmuter",
+          "name": "Maestro Transmutador",
+          "level": 10,
+          "description": "Acción: resistencia/dureza/poder de transmutación; 1 hora."
+        },
+        {
+          "id": "capstone",
+          "name": "Señor Cambiaformas",
+          "level": 14,
+          "description": "Una vez por descanso prolongado, lanza Polimorfismo verdadero mayor."
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "int",
+    "list": "mago",
+    "libro": true,
+    "preparar": true,
+    "ritual": true
+  }
+}

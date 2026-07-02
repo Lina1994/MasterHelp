@@ -1,0 +1,115 @@
+{
+  "id": "kobold_warrior",
+  "slug": "kobold_warrior",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Guerrero kobold",
+  "type": "Dragón",
+  "size": "Pequeño",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 7,
+    "roll": "3d6 − 3"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 7,
+    "dex": 15,
+    "con": 9,
+    "int": 8,
+    "wis": 7,
+    "cha": 8
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción pasiva 8",
+  "languages": "común, dracónico",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Atacar en manada",
+      "text": "El kobold tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del kobold se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    },
+    {
+      "name": "Sensibilidad a la luz solar",
+      "text": "Bajo la luz del sol, el kobold tiene desventaja en las pruebas de característica y las tiradas de ataque."
+    },
+    {
+      "name": "Anfibio",
+      "text": "El kraken puede respirar tanto dentro como fuera del agua."
+    },
+    {
+      "name": "Monstruo de asedio",
+      "text": "El kraken inflige el doble de daño a objetos y estructuras. Resistencia legendaria (4/día o 5/día en la guarida). El kraken puede elegir tener éxito en una tirada de salvación que haya fallado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Daga",
+      "text": "Tirada de ataque cuerpo a cuerpo o a distancia: +4, alcance 1,5 m o 6/18 m a distancia. Acierto: 4 (1d4 + 2) de daño perforante. Kraken Kraken Monstruosidad Gargantuesca (titán), caótica malvada"
+    },
+    {
+      "name": "CA",
+      "text": "18 Iniciativa: +14 (24)"
+    },
+    {
+      "name": "PG",
+      "text": "481 (26d20 + 208)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m, nadar 36 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 30 +10 +17 Des 11 +0 +7 Con 26 +8 +15 Int 22 +6 +6 sab 18 +4 +11 Car 20 +5 +5"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Historia +13, Percepción +11"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "frío, relámpago; agarrado, apresado, asustado, paralizado"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión verdadera 36 m; Percepción pasiva 21"
+    },
+    {
+      "name": "Idiomas",
+      "text": "entiende abisal, celestial, infernal y primordial, pero no puede hablar; telepatía 36 m"
+    },
+    {
+      "name": "VD",
+      "text": "23 (50 000 PX o 62 000 en la guarida; BC +7)"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El kraken realiza dos ataques con sus tentáculos y lleva a cabo una acción de engullir, lanzar o relámpago."
+    },
+    {
+      "name": "Tentáculo",
+      "text": "Tirada de ataque cuerpo a cuerpo: +17, alcance 9 m. Acierto: 24 (4d6 + 10) de daño contundente. El objetivo tendrá el estado de agarrado (CD 20 para escapar) por uno de los diez tentáculos y el de apresado hasta que el agarre termine."
+    },
+    {
+      "name": "Engullir",
+      "text": "Tirada de salvación de Destreza: CD 25, una criatura agarrada por el kraken (puede tener hasta cuatro criaturas engullidas a la vez). Fallo: 23 (3d8 + 10) de daño perforante. Si el objetivo es Grande o más pequeño, será engullido y dejará de estar agarrado. Una criatura engullida tendrá el estado de apresada, tendrá cobertura completa contra los ataques y otros efectos fuera del kraken y recibirá 24 (7d6) de daño de ácido al principio de cada uno de sus propios turnos. Si el kraken sufre 50 o más de daño en un solo turno por parte de una criatura que esté dentro de él, deberá superar una tirada de salvación de Constitución con CD 25 al final de ese turno o regurgitará a todas las criaturas engullidas, que caerán en espacios a 3 m o menos del kraken y tendrán el estado de derribadas. Si el kraken muere, cualquier criatura engullida dejará de tener el estado de apresada y podrá gastar 4,5 m de movimiento para escapar del cadáver, del que saldrá con el estado de derribada."
+    },
+    {
+      "name": "Lanzar",
+      "text": "El kraken lanza una criatura Grande o más pequeña que tenga agarrada a un espacio que pueda ver a 18 m o menos de él que no esté en el aire. Tirada de salvación de Destreza: CD 25, la criatura lanzada y todas las criaturas en el espacio de destino. Fallo: 18 (4d8) de daño contundente y el objetivo tiene el estado de derribado. Éxito: solo la mitad del daño."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Guerrero kobold",
+  "srd_es_page": 343
+}

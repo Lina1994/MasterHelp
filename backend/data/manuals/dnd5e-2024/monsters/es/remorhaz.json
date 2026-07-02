@@ -1,0 +1,56 @@
+{
+  "id": "remorhaz",
+  "slug": "remorhaz",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Remorhaz",
+  "type": "Monstruosidad",
+  "size": "Enorme",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 17
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 195,
+    "roll": "17d12 + 85"
+  },
+  "speed": {
+    "walk": 40,
+    "burrow": 30
+  },
+  "abilities": {
+    "str": 24,
+    "dex": 13,
+    "con": 21,
+    "int": 4,
+    "wis": 10,
+    "cha": 5
+  },
+  "senses": "sentir vibraciones 18 m, visión en la oscuridad",
+  "languages": "ninguno",
+  "challengeRating": "11",
+  "experiencePoints": 7200,
+  "proficiencyBonus": 4,
+  "traits": [
+    {
+      "name": "Aura de calor",
+      "text": "Al final de cada turno del remorhaz, todas las criaturas en una emanación de 1,5 m que se origina en él reciben 16 (3d10) de daño de fuego."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +11, alcance 3 m. Acierto: 18 (2d10 + 7) de daño perforante más 14 (4d6) de daño de fuego. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 17 para escapar) y el de apresada hasta que el agarre termine. Acciones adicionales"
+    },
+    {
+      "name": "Engullir",
+      "text": "Tirada de salvación de Fuerza: CD 19, una criatura Grande o más pequeña agarrada por el remorhaz (puede tener hasta dos criaturas engullidas a la vez). Fallo: el objetivo será engullido por el remorhaz y se pondrá fin al estado de agarrado. Una criatura engullida tendrá los estados de apresada y cegada, tendrá cobertura completa contra los ataques y otros efectos fuera del remorhaz y recibirá 10 (3d6) de daño de ácido más 10 (3d6) de daño de fuego al principio de cada turno del remorhaz. Si el remorhaz sufre 30 o más de daño en un solo turno por parte de una criatura que esté dentro de él, deberá superar una tirada de salvación de Constitución con CD 15 al final de ese turno o regurgitará a todas las criaturas engullidas, que caerán en espacios a 1,5 m o menos del remorhaz y tendrán el estado de derribadas. Si el remorhaz muere, cualquier criatura engullida dejará de tener el estado de apresada y podrá gastar 4,5 m de movimiento para escapar del cadáver, del que saldrá con el estado de derribada."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Remorhaz",
+  "srd_es_page": 363
+}

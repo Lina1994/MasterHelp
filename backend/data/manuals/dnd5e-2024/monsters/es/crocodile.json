@@ -1,0 +1,55 @@
+{
+  "id": "crocodile",
+  "slug": "crocodile",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Cocodrilo",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 13,
+    "roll": "2d10 + 2"
+  },
+  "speed": {
+    "walk": 20,
+    "swim": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 10,
+    "con": 13,
+    "int": 2,
+    "wis": 10,
+    "cha": 5
+  },
+  "skills": [
+    "Sigilo +2"
+  ],
+  "senses": "Percepción pasiva 10",
+  "languages": "ninguno",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Aguantar la respiración",
+      "text": "El cocodrilo puede aguantar la respiración durante 1 hora."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 6 (1d8 + 2) de daño perforante. Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de agarrada (CD 12 para escapar). Mientras esté agarrada, tendrá el estado de apresada."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Cocodrilo",
+  "srd_es_page": 382
+}

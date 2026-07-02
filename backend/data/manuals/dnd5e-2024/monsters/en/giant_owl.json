@@ -1,0 +1,73 @@
+{
+  "id": "giant_owl",
+  "slug": "giant_owl",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Giant Owl",
+  "size": "Large",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d10 + 3"
+  },
+  "speed": {
+    "walk": 5,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 15,
+    "con": 12,
+    "int": 8,
+    "wis": 13,
+    "cha": 10
+  },
+  "skills": [
+    " Perception +5 ",
+    " Stealth +4 "
+  ],
+  "senses": "darkvision 120 ft., passive Perception 15",
+  "languages": "—",
+  "challengeRating": "1/4",
+  "traits": [
+    {
+      "name": "Flyby",
+      "text": "The owl doesn’t provoke an Opportunity Attack when it flies out of an enemy’s reach."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Talons",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 7 (1d10 + 2) Slashing damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The owl casts one of the following spells, requiring no spell components and using Wisdom as the spellcasting ability:"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Evil and Good, Detect Magic 1/Day: Clairvoyance"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 50,
+  "reactions": [
+    {
+      "name": "",
+      "text": "Ink Cloud (1/Day). Trigger: The octopus takes damage while underwater. Response: The octopus releases ink that fills a 10-foot Cube centered on itself, and the oc- topus moves up to its Swim Speed. The Cube is Heavily Obscured for 1 minute or until a strong current or simi- lar effect disperses the ink. Giant Owl"
+    }
+  ],
+  "srd_en_match_name": "Giant Owl",
+  "srd_en_page": 349,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 3,
+    "dex": 2,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

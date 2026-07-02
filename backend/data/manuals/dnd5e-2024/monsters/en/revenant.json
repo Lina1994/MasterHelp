@@ -1,0 +1,68 @@
+{
+  "id": "revenant",
+  "name": "Revenant",
+  "slug": "revenant",
+  "size": "Medium",
+  "type": "undead",
+  "alignment": "neutral",
+  "armorClass": 13,
+  "hitPoints": {
+    "average": 67,
+    "roll": "9d8 + 27"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 16,
+    "int": 5,
+    "wis": 11,
+    "cha": 6
+  },
+  "skills": [
+    " Athletics +7 ",
+    " Intimidation +3 "
+  ],
+  "damageResistances": [
+    "cold",
+    "bludgeoning",
+    "piercing",
+    "slashing from nonmagical attacks"
+  ],
+  "conditionImmunities": [
+    "charmed",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 10",
+  "languages": "the one it knew in life",
+  "challengeRating": "5",
+  "traits": [
+    {
+      "name": "Relentless Pursuer",
+      "text": "Knows direction/distance to its target; ignores difficult terrain and exhaustion from travel."
+    },
+    {
+      "name": "Vengeful Rejuvenation (1/Day)",
+      "text": "If reduced to 0 HP and target alive, returns to life 24 hrs later at full HP within 5 ft of target."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two longsword attacks."
+    },
+    {
+      "name": "Longsword",
+      "text": "+7 to hit. Hit: 8 (1d8 + 4) slashing or 9 (1d10 + 4) two-handed."
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 1800,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

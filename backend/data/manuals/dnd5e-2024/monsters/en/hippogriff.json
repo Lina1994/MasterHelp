@@ -1,0 +1,64 @@
+{
+  "id": "hippogriff",
+  "name": "Hippogriff",
+  "slug": "hippogriff",
+  "size": "Large",
+  "type": "monstrosity",
+  "alignment": "unaligned",
+  "armorClass": 11,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d10 + 3"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 13,
+    "con": 13,
+    "int": 2,
+    "wis": 11,
+    "cha": 8
+  },
+  "skills": [
+    " Perception +4 ",
+    " Survival +2 "
+  ],
+  "senses": "passive Perception 14",
+  "languages": "—",
+  "challengeRating": "1",
+  "traits": [
+    {
+      "name": "Flyby",
+      "text": "The hippogriff doesn’t provoke an Opportunity Attack when it flies out of an enemy’s reach."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The hippogriff makes two Rend attacks."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 7 (1d8 + 3) Slashing damage. Hobgoblins Hobgoblin Warrior"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 200,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "srd_en_match_name": "Hippogriff",
+  "srd_en_page": 295,
+  "subtype": "Demon",
+  "initiative": 6,
+  "savingThrows": {
+    "str": 7,
+    "dex": 3,
+    "con": 8,
+    "int": 0,
+    "wis": 4,
+    "cha": 1
+  }
+}

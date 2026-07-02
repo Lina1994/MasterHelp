@@ -1,0 +1,60 @@
+{
+  "id": "giant_ape",
+  "slug": "giant_ape",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Simio gigante",
+  "type": "Bestia",
+  "size": "Enorme",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 168,
+    "roll": "16d12 + 64"
+  },
+  "speed": {
+    "walk": 40,
+    "climb": 40
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 14,
+    "con": 18,
+    "int": 5,
+    "wis": 12,
+    "cha": 7
+  },
+  "skills": [
+    "Atletismo +9",
+    "Percepción +4",
+    "Supervivencia"
+  ],
+  "senses": "Percepción pasiva 14",
+  "languages": "ninguno",
+  "challengeRating": "7",
+  "experiencePoints": 2900,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El simio realiza dos ataques de puñetazo."
+    },
+    {
+      "name": "Puñetazo",
+      "text": "Tirada de ataque cuerpo a cuerpo: +9, alcance 3 m. Acierto: 22 (3d10 + 6) de daño contundente. Lanzamiento de pedrusco (recarga 6). El simio arroja un pedrusco a un punto que pueda ver a 27 m o menos. Tirada de salvación de Destreza: CD 17, todas las criaturas en una esfera de 1,5 m de radio centrada en ese punto. Fallo: 24 (7d6) de daño contundente. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de derribada. Éxito: solo la mitad del daño. Acciones adicionales"
+    },
+    {
+      "name": "Salto",
+      "text": "El simio gasta 3 m de movimiento para saltar hasta 9 m."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Simio gigante",
+  "srd_es_page": 395
+}

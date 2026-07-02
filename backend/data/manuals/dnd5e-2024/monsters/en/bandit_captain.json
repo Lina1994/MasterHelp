@@ -1,0 +1,71 @@
+{
+  "id": "bandit_captain",
+  "slug": "bandit_captain",
+  "lang": "en",
+  "name": "Bandit Captain",
+  "speed": {
+    "walk": 30
+  },
+  "senses": {
+    "passivePerception": 10
+  },
+  "languages": "Common, Thieves’ Cant",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Fire Aura",
+      "text": "At the end of each of the azer’s turns, each creature of the azer’s choice in a 5-foot Emanation orig- inating from the azer takes 5 (1d10) Fire damage unless the azer has the Incapacitated condition."
+    },
+    {
+      "name": "Illumination",
+      "text": "The azer sheds Bright Light in a 10-foot radius and Dim Light for an additional 10 feet."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Burning Hammer",
+      "text": "Melee Attack Roll: +5, reach 5 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "8 (1d10 + 3) Bludgeoning damage plus 3 (1d6) Fire damage. Balor Balor"
+    }
+  ],
+  "skills": "Perception +9",
+  "srd_en_match_name": "Bandit Captain",
+  "srd_en_page": 258,
+  "source": "SRD 5.2 (pendiente)",
+  "size": "medium",
+  "type": "elemental",
+  "alignment": "Lawful Neutral",
+  "armorClass": {
+    "value": 17,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 39,
+    "roll": "6d8 + 12"
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 12,
+    "con": 15,
+    "int": 12,
+    "wis": 13,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 1,
+    "con": 4,
+    "int": 1,
+    "wis": 1,
+    "cha": 0
+  },
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Bandit Captain' did not match any of 2 chunk heads; using chunk[0] as best-effort"
+  ]
+}

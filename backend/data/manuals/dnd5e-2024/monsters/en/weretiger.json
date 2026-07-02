@@ -1,0 +1,92 @@
+{
+  "id": "weretiger",
+  "slug": "weretiger",
+  "lang": "en",
+  "name": "Weretiger",
+  "speed": {
+    "walk": 30,
+    "burrow": 15,
+    "fly": 60,
+    "swim": 30
+  },
+  "skills": "Perception +4, Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 14
+  },
+  "languages": "Common (can’t speak in wolf form)",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The weretiger makes two attacks, using"
+    },
+    {
+      "name": "Scratch or Longbow in any combination",
+      "text": "It can replace one attack with a Bite attack. Bite (Tiger or Hybrid Form Only). Melee Attack Roll: +5, reach 5 ft. Hit: 12 (2d8 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the follow- ing effect. Constitution Saving Throw: DC 13. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Weretiger under the GM’s control and has 10 Hit Points. Success: The target is im- mune to this weretiger’s curse for 24 hours."
+    },
+    {
+      "name": "Scratch",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 10 (2d6 + 3) Slashing damage. Longbow (Humanoid or Hybrid Form Only). Ranged"
+    },
+    {
+      "name": "Attack Roll",
+      "text": "+4, range 150/600 ft. Hit: 11 (2d8 + 2) Piercing damage. Bonus Actions Prowl (Tiger or Hybrid Form Only). The weretiger moves up to its Speed without provoking Opportunity"
+    },
+    {
+      "name": "Attacks",
+      "text": "At the end of this movement, the weretiger can take the Hide action."
+    },
+    {
+      "name": "Shape-Shift",
+      "text": "The weretiger shape-shifts into a Large tiger-humanoid hybrid or a Large tiger, or it returns to its true humanoid form. Its game statistics, other than its size, are the same in each form. Any equipment it is wearing or carrying isn’t transformed. Werewolf Werewolf Medium or Small Monstrosity (Lycanthrope), Chaotic Evil"
+    },
+    {
+      "name": "Multiattack",
+      "text": "The werewolf makes two attacks, using"
+    },
+    {
+      "name": "Scratch or Longbow in any combination",
+      "text": "It can replace one attack with a Bite attack. Bite (Wolf or Hybrid Form Only). Melee Attack Roll: +5, reach 5 ft. Hit: 12 (2d8 + 3) Piercing damage. If the target is a Humanoid, it is subjected to the follow- ing effect. Constitution Saving Throw: DC 12. Failure: The target is cursed. If the cursed target drops to 0 Hit Points, it instead becomes a Werewolf under the GM’s control and has 10 Hit Points. Success: The target is im- mune to this werewolf’s curse for 24 hours."
+    },
+    {
+      "name": "Scratch",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 10 (2d6 + 3) Slashing damage. Longbow (Humanoid or Hybrid Form Only). Ranged"
+    },
+    {
+      "name": "Attack Roll",
+      "text": "+4, range 150/600 ft. Hit: 11 (2d8 + 2) Piercing damage. Bonus Actions"
+    },
+    {
+      "name": "Shape-Shift",
+      "text": "The werewolf shape-shifts into a Large wolf-humanoid hybrid or a Medium wolf, or it returns to its true humanoid form. Its game statistics, other than its size, are the same in each form. Any equipment it is wearing or carrying isn’t transformed. White Dragons White Dragon Wyrmling"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The werewolf has Advantage on an attack roll against a creature if at least one of the werewolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "srd_en_match_name": "Weretiger",
+  "srd_en_page": 336,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "dragon",
+  "subtype": "Chromatic",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 16,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 32,
+    "roll": "5d8 + 10"
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

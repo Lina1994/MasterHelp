@@ -1,0 +1,58 @@
+{
+  "id": "brown-bear",
+  "slug": "brown-bear",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Oso pardo",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 22,
+    "roll": "3d10 + 6"
+  },
+  "speed": {
+    "walk": 40,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 12,
+    "con": 15,
+    "int": 2,
+    "wis": 13,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El oso realiza un ataque de mordisco y uno con sus garras."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 5 (1d4 + 3) de daño cortante. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de derribada."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 7 (1d8 + 3) de daño perforante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Oso pardo",
+  "srd_es_page": 390
+}

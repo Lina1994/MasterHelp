@@ -1,0 +1,77 @@
+Relámpago. Tirada de salvación de Destreza: CD 23, culo no daña al lacero y un tentáculo destruido vuelve
+una criatura que el kraken pueda ver a 36 m o menos. a crecer al principio del siguiente turno del lacero.
+Fallo: 33 (6d10) de daño de relámpago. Éxito: la mitad
+Atraer. El lacero arrastra a todas las criaturas que tenga
+del daño.
+agarradas hasta 9 m en línea recta hacia él.
+Acciones legendarias
+Lamia
+Usos de acciones legendarias: 3 (4 en la guarida). Justo
+después del turno de otra criatura, el kraken puede
+Lamia
+emplear un uso para llevar a cabo una de las siguientes
+acciones. El kraken recupera todos los usos al principio de
+Infernal Grande, caótico malvado
+cada uno de sus turnos.
+CA: 13 Iniciativa: +1 (11)
+Golpe de tormenta. El kraken utiliza su relámpago.
+PG: 97 (13d10 + 26)
+Tinta tóxica. Tirada de salvación de Constitución: Velocidad: 12 m
+CD 23, todas las criaturas en una emanación de 4,5 m
+MOD. SALV. MOD. SALV. MOD. SALV.
+que se origina en el kraken mientras esté bajo el agua. Fue 16 +3 +3 Des 13 +1 +1 Con 15 +2 +2
+Fallo: el objetivo tendrá los estados de cegado y en-
+Int 14 +2 +2 sab 15 +2 +2 Car 16 +3 +3
+venenado hasta el final del siguiente turno del kraken.
+Después, el kraken se mueve hasta su velocidad. Fallo Habilidades: Engaño +7, Perspicacia +4, Sigilo +5
+o éxito: el kraken no puede volver a realizar esta acción Sentidos: visión en la oscuridad 18 m; Percepción
+hasta el principio de su siguiente turno. pasiva 12
+Idiomas: abisal, común
+Lacero
+VD: 4 (1100 PX; BC +2)
+Lacero Acciones
+Aberración Grande, neutral malvada Ataque múltiple. La lamia realiza dos ataques con sus
+garras. Puede sustituir un ataque por un uso de su to-
+CA: 20 Iniciativa: +5 (15)
+que corruptor.
+PG: 93 (11d10 + 33)
+Velocidad: 3 m, trepar 6 m Garra. Tirada de ataque cuerpo a cuerpo: +5, alcance
+MOD. SALV. MOD. SALV. MOD. SALV. 1,5 m. Acierto: 7 (1d8 + 3) de daño cortante más
+Fue 18 +4 +4 Des 8 −1 −1 Con 17 +3 +3 7 (2d6) de daño psíquico.
+Int 7 −2 −2 sab 16 +3 +3 Car 6 −2 −2
+Lanzamiento de conjuros. La lamia lanza uno de los
+siguientes conjuros, que no requiere componentes ma-
+Habilidades: Percepción +6, Sigilo +5
+teriales y utiliza el Carisma como aptitud mágica (CD
+Sentidos: visión en la oscuridad 18 m; Percepción
+de salvación de conjuros 13):
+pasiva 16
+Idiomas: ninguno A voluntad: disfrazarse (puede presentarse como
+VD: 5 (1800 PX; BC +3) un b ípedo Grande o Mediano), ilusión menor
+1/día cada uno: escudriñar, geas, imagen mayor
+Atributos
+Toque corruptor. Tirada de salvación de Sabiduría:
+Trepar cual arácnido. El lacero puede trepar por super-
+CD 13, una criatura que la lamia pueda ver a 1,5 m
+ficies difíciles e incluso recorrer techos sin tener que
+o menos. Fallo: 13 (3d8) de daño psíquico y el objetivo
+realizar pruebas de característica.
+estará maldito durante 1 hora. Hasta que se levante
+Acciones la maldición, el objetivo tendrá los estados de envene-
+nado y hechizado.
+Ataque múltiple. El lacero realiza dos ataques con sus
+tentáculos, usa la acción de atraer y hace dos ataques Acciones adicionales
+de mordisco.
+Salto. La lamia gasta 3 m de movimiento para saltar
+Mordisco. Tirada de ataque cuerpo a cuerpo: +7, al- hasta 9 m.
+cance 1,5 m. Acierto: 17 (3d8 + 4) de daño perforante.
+Lémur
+Tentáculo. Tirada de ataque cuerpo a cuerpo: +7, al-
+cance 18 m. Acierto: el objetivo tendrá el estado de Lémur
+agarrado (CD 14 para escapar) por uno de los seis ten-
+Infernal Mediano (diablo), legal malvado
+táculos y el de envenenado hasta que el agarre termine.
+El tentáculo se puede dañar y soltará a una criatura CA: 9 Iniciativa: −3 (7)
+agarrada cuando se destruya (CA de 20, 10 pg e inmu- PG: 9 (2d8)
+nidad al daño psíquico y de veneno). Dañar el tentá- Velocidad: 6 m
+344 Documento de referencia del sistema 5.2.1

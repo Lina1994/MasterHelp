@@ -1,0 +1,85 @@
+{
+  "id": "cloud_giant",
+  "slug": "cloud_giant",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Cloud Giant",
+  "size": "Huge",
+  "type": "giant",
+  "alignment": "neutral good (50%) or chaotic good (50%)",
+  "armorClass": 14,
+  "hitPoints": {
+    "average": 200,
+    "roll": "16d12 + 96"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 27,
+    "dex": 10,
+    "con": 22,
+    "int": 12,
+    "wis": 16,
+    "cha": 16
+  },
+  "saves": [
+    " STR +14 ",
+    " CON +11 ",
+    " WIS +9 ",
+    " CHA +9 "
+  ],
+  "skills": [
+    " Athletics +14 ",
+    " Insight +9 ",
+    " Perception +9 "
+  ],
+  "senses": "passive Perception 19",
+  "languages": "Common, Giant",
+  "challengeRating": "9",
+  "traits": [
+    {
+      "name": "Training",
+      "text": "The commoner has proficiency in one skill of the GM’s choice and has Advantage whenever it makes an ability check using that skill."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The giant makes two attacks, using Thun- derous Mace or Thundercloud in any combination. It can replace one attack with a use of Spellcasting to cast Fog Cloud."
+    },
+    {
+      "name": "Thunderous Mace",
+      "text": "Melee Attack Roll: +12, reach 10 ft. Hit: 21 (3d8 + 8) Bludgeoning damage plus 7 (2d6) Thunder damage."
+    },
+    {
+      "name": "Thundercloud",
+      "text": "Ranged Attack Roll: +12, range 240 ft. Hit: 18 (3d6 + 8) Thunder damage, and the target has the Incapacitated condition until the end of its next turn."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The giant casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 15):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Magic, Fog Cloud, Light 1/Day Each: Control Weather, Gaseous Form, Telekinesis Bonus Actions"
+    },
+    {
+      "name": "Misty Step",
+      "text": "The giant casts the Misty Step spell, using the same spellcasting ability as Spellcasting. Cockatrice Cockatrice"
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 1800,
+  "srd_en_match_name": "Cloud Giant",
+  "srd_en_page": 272,
+  "initiative": 4,
+  "savingThrows": {
+    "str": 8,
+    "dex": 0,
+    "con": 10,
+    "int": 1,
+    "wis": 7,
+    "cha": 3
+  }
+}

@@ -1,0 +1,926 @@
+{
+  "id": "warlock",
+  "name": "Warlock",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 per warlock level",
+    "at1stLevel": "8 + your Constitution modifier",
+    "atHigherLevels": "1d8 (or 5) + your Constitution modifier per warlock level after 1st"
+  },
+  "primaryAbilities": [
+    "cha"
+  ],
+  "savingThrows": [
+    "wis",
+    "cha"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor"
+    ],
+    "weapons": [
+      "Simple Weapons"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Arcana",
+      "Deception",
+      "History",
+      "Intimidation",
+      "Investigation",
+      "Nature",
+      "Religion"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "light_crossbow_20_bolts",
+          "description": "A light crossbow with 20 bolts"
+        },
+        {
+          "id": "simple_weapon",
+          "description": "Any simple weapon"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "component_pouch",
+          "description": "Component pouch"
+        },
+        {
+          "id": "arcane_focus",
+          "description": "Arcane focus"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "scholar_pack",
+          "description": "Scholar's Pack"
+        },
+        {
+          "id": "dungeoneers_pack",
+          "description": "Dungeoneer's Pack"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "leather_armor_simple_weapon",
+          "description": "Leather armor and any simple weapon"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "otherworldly_patron",
+      "name": "Otherworldly Patron",
+      "level": 1,
+      "description": "You have made a pact with an Otherworldly Patron: The Archfey or The Fiend.",
+      "effects": [
+        {
+          "type": "choose_subclass",
+          "atLevel": 1
+        }
+      ]
+    },
+    {
+      "id": "pact_magic",
+      "name": "Pact Magic",
+      "level": 1,
+      "description": "Your arcane research and the magic bestowed on you by your patron have given you facility with spells. Charisma is your spellcasting ability. You have a number of spell slots equal to your Pact Magic level, but they are all the same level. They recharge on a short or long rest.",
+      "effects": [
+        {
+          "type": "pact_magic",
+          "ability": "cha",
+          "list": "warlock",
+          "slotCount": {
+            "1": 1,
+            "2": 2,
+            "3-4": 2,
+            "5-6": 3,
+            "7-8": 3,
+            "9-10": 3,
+            "11-13": 3,
+            "14-16": 4,
+            "17-20": 4
+          },
+          "slotLevelByWarlockLevel": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 3,
+            "6": 3,
+            "7": 4,
+            "8": 4,
+            "9": 5,
+            "10": 5,
+            "11": 5,
+            "12": 5,
+            "13": 5,
+            "14": 5,
+            "15": 5,
+            "16": 5,
+            "17": 5,
+            "18": 5,
+            "19": 5,
+            "20": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "eldritch_invocations",
+      "name": "Eldritch Invocations",
+      "level": 2,
+      "description": "You learn invocations (special magical abilities). You gain 2 at 2nd level, 1 more at 5th, 7th, and 9th level, and another one at 11th, 13th, 15th, 17th, and 19th.",
+      "effects": [
+        {
+          "type": "invocations_chosen",
+          "limits": {
+            "2": 2,
+            "5": 3,
+            "7": 4,
+            "9": 5,
+            "11": 6,
+            "13": 7,
+            "15": 8,
+            "17": 9,
+            "19": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "pact_boon",
+      "name": "Pact Boon",
+      "level": 3,
+      "description": "Choose Pact of the Blade (use an action to summon a magical weapon), Pact of the Chain (gain a familiar with extra abilities), or Pact of the Tome (gain a Book of Shadows with three extra cantrips you can cast and additional 1st-level spell slots from recharging them on a short rest).",
+      "effects": [
+        {
+          "type": "choose_pact_boon",
+          "options": [
+            "blade",
+            "chain",
+            "tome"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "Increase one score by 2, or two by 1. Max 20.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "mystic_arcanum",
+      "name": "Mystic Arcanum",
+      "level": 11,
+      "description": "You choose one 6th-level spell from the warlock list; you can cast it once per long rest without expending a spell slot. At 13th, 15th, 17th, and 19th level, you learn another (7th, 8th, 9th, 9th respectively).",
+      "effects": [
+        {
+          "type": "mystic_arcanum",
+          "level_by_class_level": {
+            "11": 6,
+            "13": 7,
+            "15": 8,
+            "17": 9,
+            "19": 9
+          }
+        }
+      ]
+    },
+    {
+      "id": "eldritch_master",
+      "name": "Eldritch Master",
+      "level": 20,
+      "description": "You can spend 1 minute entreating your patron for aid to regain all expended Pact Magic spell slots. Once used, can't use again for 1d4 long rests.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Eldritch Master",
+          "per": "1d4 long_rest",
+          "restores": "all_pact_magic_slots"
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "otherworldly_patron",
+        "pact_magic"
+      ],
+      "spellSlots": {
+        "1": 1
+      },
+      "spells_known": 2,
+      "cantrips_known": 2
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "eldritch_invocations"
+      ],
+      "spellSlots": {
+        "1": 2
+      },
+      "spells_known": 3,
+      "cantrips_known": 2
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "pact_boon"
+      ],
+      "spellSlots": {
+        "2": 2
+      },
+      "spells_known": 4,
+      "cantrips_known": 2
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "2": 2
+      },
+      "spells_known": 5,
+      "cantrips_known": 3
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "3": 2
+      },
+      "spells_known": 6,
+      "cantrips_known": 3
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "3": 2
+      },
+      "spells_known": 7,
+      "cantrips_known": 3
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "4": 2
+      },
+      "spells_known": 8,
+      "cantrips_known": 3
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "4": 2
+      },
+      "spells_known": 9,
+      "cantrips_known": 3
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "5": 2
+      },
+      "spells_known": 10,
+      "cantrips_known": 3
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "5": 2
+      },
+      "spells_known": 10,
+      "cantrips_known": 4
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [
+        "mystic_arcanum_6"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 11,
+      "cantrips_known": 4
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 11,
+      "cantrips_known": 4
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "mystic_arcanum_7"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 12,
+      "cantrips_known": 4
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 12,
+      "cantrips_known": 4
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "mystic_arcanum_8"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 13,
+      "cantrips_known": 4
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "5": 3
+      },
+      "spells_known": 13,
+      "cantrips_known": 4
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "mystic_arcanum_9"
+      ],
+      "spellSlots": {
+        "5": 4
+      },
+      "spells_known": 14,
+      "cantrips_known": 4
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "5": 4
+      },
+      "spells_known": 14,
+      "cantrips_known": 4
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "mystic_arcanum_9b",
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "5": 4
+      },
+      "spells_known": 15,
+      "cantrips_known": 4
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "eldritch_master"
+      ],
+      "spellSlots": {
+        "5": 4
+      },
+      "spells_known": 15,
+      "cantrips_known": 4
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "archfey",
+      "name": "The Archfey",
+      "grantedAtLevel": 1,
+      "description": "Your patron is a lord or lady of the fey, a being of tremendous power whose court is the natural world. Your magic reflects this association.",
+      "expandedSpells": {
+        "1": [
+          "faerie_fire",
+          "sleep"
+        ],
+        "3": [
+          "calm_emotions",
+          "phantasmal_force"
+        ],
+        "5": [
+          "blink",
+          "plant_growth"
+        ],
+        "7": [
+          "dominate_beast",
+          "greater_invisibility"
+        ],
+        "9": [
+          "dominate_person",
+          "wall_of_thorns"
+        ]
+      },
+      "features": [
+        {
+          "id": "fey_presence",
+          "name": "Fey Presence",
+          "level": 1,
+          "description": "As an action, charmed or frightened by you within 10 ft makes WIS save or is charmed/frightened 1 turn. Recharges on short rest.",
+          "effects": [
+            {
+              "type": "action_emote_fey_charm_or_fear",
+              "aoe": 3,
+              "save": "sab",
+              "duration": "1 turno",
+              "recarga": "descanso_corto"
+            }
+          ]
+        },
+        {
+          "id": "misty_escape",
+          "name": "Misty Escape",
+          "level": 6,
+          "description": "Reaction when you take damage: teleport up to 60 ft to unoccupied space you can see, become invisible until end of your next turn or until you attack/hard cast.",
+          "effects": [
+            {
+              "type": "reaccion_teletransporte + invisibilidad",
+              "rango": 18,
+              "trigger": "recibir_danho"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "warlock",
+      "id": "archfey_patron",
+      "name": "The Archfey Patron",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "fey_presence",
+          "name": "Fey Presence",
+          "level": 1,
+          "description": "Action: 10-ft radius Wis save charmed or frightened 1 round.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "dark_one",
+          "name": "Misty Escape",
+          "level": 6,
+          "description": "Reaction when damaged: teleport 60 ft and invisible until your turn."
+        },
+        {
+          "id": "beguiling_defenses",
+          "name": "Beguiling Defenses",
+          "level": 6,
+          "description": "Advantage on saves vs being charmed; magic re-targets to caster."
+        },
+        {
+          "id": "soul_of_the_storm_archfey",
+          "name": "Soul of the Archfey",
+          "level": 10,
+          "description": "Cast Charm Person and Greater Invisibility at will."
+        },
+        {
+          "id": "capstone",
+          "name": "Dark Delirium",
+          "level": 14,
+          "description": "Action: Wis save; creature sees nothing real; on imagination attacks."
+        }
+      ],
+      "description": "Your patron is a powerful fey lord, lady of the mists, or similar. Your magic is whimsical."
+    },
+    {
+      "class_id": "warlock",
+      "id": "celestial_patron",
+      "name": "The Celestial Patron",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "expanded_spell_casting",
+          "name": "Expanded Spell List (Celestial)",
+          "level": 1,
+          "description": "Add Cure Wounds, Revivify, etc."
+        },
+        {
+          "id": "healing_light",
+          "name": "Healing Light",
+          "level": 1,
+          "description": "Bonus action: spend a slot to heal warlock level + CHA mod to target."
+        },
+        {
+          "id": "radiant_soul",
+          "name": "Radiant Soul",
+          "level": 6,
+          "description": "Resistance to radiant damage. Add CHA mod to radiant/fire damage from warlock cantrips and spells."
+        },
+        {
+          "id": "celestial_revelation",
+          "name": "Celestial Revelation",
+          "level": 6,
+          "description": "Action: see invisible, fly 10 ft, dim light; use 1/warlock level use per long rest."
+        },
+        {
+          "id": "searing_vengeance",
+          "name": "Searing Vengeance",
+          "level": 10,
+          "description": "Reaction when reduced to 0 HP: expend slot to gain temp HP and target one creature."
+        },
+        {
+          "id": "summon_star",
+          "name": "Summon a Star",
+          "level": 14,
+          "description": "Cast a level 7 spell (Greater Restoration / Wall of Fire, etc.) as bonus action."
+        }
+      ],
+      "description": "Your patron is a celestial: an angel, couatl, deva, solars, or similar. Your weapon is light."
+    },
+    {
+      "class_id": "warlock",
+      "id": "fathomless_patron",
+      "name": "The Fathomless Patron",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "deep_sea_aristocracy",
+          "name": "Expanded Spell List (Fathomless)",
+          "level": 1,
+          "description": "Thunderwave, Lightning Bolt, etc."
+        },
+        {
+          "id": "tentacle_of_the_deep",
+          "name": "Tentacle of the Deep",
+          "level": 1,
+          "description": "Bonus action create water tentacle: 1d8+CHA bludgeoning or 10 ft pull."
+        },
+        {
+          "id": "guardians_of_the_depths",
+          "name": "Guardians of the Deep",
+          "level": 6,
+          "description": "Sea creatures ignore you; advantage on stealth near water."
+        },
+        {
+          "id": "abyssal_screams",
+          "name": "Grasping Tail",
+          "level": 10,
+          "description": "Create tentacles attack with CHA mod (1d6+CHA)."
+        },
+        {
+          "id": "capstone",
+          "name": "Fathomless Soul",
+          "level": 14,
+          "description": "Cast Cone of Cold (5/turn) or Lightning Bolt 2x per turn (free)."
+        }
+      ],
+      "description": "Your patron is Dagon, an aquatic horror, or other deep-sea entity. Your magic is the darkness of the sea."
+    },
+    {
+      "id": "fiend",
+      "name": "The Fiend",
+      "grantedAtLevel": 1,
+      "description": "You have made a pact with a Fiend, a powerful otherworldly being of malice and cunning. Such a being might be a powerful lord of the Nine Hells, a duke or baron of Gehenna, or a powerful elemental prince of the Abyss.",
+      "expandedSpells": {
+        "1": [
+          "burning_hands",
+          "command"
+        ],
+        "3": [
+          "blindness_deafness",
+          "scorching_ray"
+        ],
+        "5": [
+          "fireball",
+          "stinking_cloud"
+        ],
+        "7": [
+          "fire_shield",
+          "wall_of_fire"
+        ],
+        "9": [
+          "cone_of_cold",
+          "dominate_person"
+        ]
+      },
+      "features": [
+        {
+          "id": "dark_ones_blessing",
+          "name": "Dark One's Blessing (Optional)",
+          "level": 1,
+          "description": "When you reduce a hostile creature to 0 hit points, gain temporary HP equal to your CHA mod + warlock level.",
+          "effects": [
+            {
+              "type": "tmp_hp_on_kill",
+              "formula": "car_mod + nivel_brujo"
+            }
+          ]
+        },
+        {
+          "id": "dark_ones_own_luck",
+          "name": "Dark One's Own Luck",
+          "level": 6,
+          "description": "As a bonus action, you can add a d10 to one attack roll, ability check, or saving throw you make. You must finish a short or long rest before using this again.",
+          "effects": [
+            {
+              "type": "recurso_accion_adicional_modificador_d10",
+              "per": "descanso_corto",
+              "uso_unico": true
+            }
+          ]
+        },
+        {
+          "id": "fiendish_resilience",
+          "name": "Fiendish Resilience",
+          "level": 10,
+          "description": "Choose one damage type at the end of each short/long rest. You have resistance to that damage type until you choose differently.",
+          "effects": [
+            {
+              "type": "resistencia_una_tipo_danho_reinicio_descanso"
+            }
+          ]
+        },
+        {
+          "id": "hurl_through_hell",
+          "name": "Hurl Through Hell",
+          "level": 14,
+          "description": "Once per long rest, when you hit a creature with an attack and deal damage, you can hurl it through the lower planes. The target takes 10d10 psychic damage (CON save half). It reappears in an unoccupied space of your choice within 30 ft of you.",
+          "effects": [
+            {
+              "type": "recurso_leg_through_hell",
+              "per": "descanso_largo",
+              "danho": "10d10 psicotico",
+              "save": "con",
+              "rango": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "warlock",
+      "id": "hexblade_patron",
+      "name": "The Hexblade Patron",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "hex_magic",
+          "name": "Hex Magic",
+          "level": 1,
+          "description": "Expanded spell list: Shield, Bless, Lightning Bolt, etc."
+        },
+        {
+          "id": "hexblade_curse",
+          "name": "Hexblade's Curse",
+          "level": 1,
+          "description": "Bonus action target a creature; deal 1d6 + Proficiency bonus extra damage; score crits on 19-20."
+        },
+        {
+          "id": "eldritch_invocation",
+          "name": "Accursed Specter",
+          "level": 6,
+          "description": "Spawn specter from a corpse (using a spell slot) acts on turn."
+        },
+        {
+          "id": "armor_of_hexes",
+          "name": "Armor of Hexes",
+          "level": 10,
+          "description": "Reaction when hit by attack: roll d6: 4+ spell failure."
+        },
+        {
+          "id": "master_of_hexes",
+          "name": "Master of Hexes",
+          "level": 14,
+          "description": "Hexblade's Curse target = 2 creatures; restore on short rest."
+        }
+      ],
+      "description": "Your patron is a mysterious entity from the Shadowfell. Your bond is forged with a sentient weapon."
+    },
+    {
+      "class_id": "warlock",
+      "id": "undead_patron",
+      "name": "The Undead Patron",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "expanded_spell_casting_undead",
+          "name": "Expanded Spell List (Undead)",
+          "level": 1,
+          "description": "False Life, Blindness/Deafness, etc."
+        },
+        {
+          "id": "necrotic_husk",
+          "name": "Form of the Dead",
+          "level": 1,
+          "description": "Advantage on death saves; you don't need to sleep; immune to sleep/disease; speak with dead."
+        },
+        {
+          "id": "grave_managed",
+          "name": "Grave Managed",
+          "level": 3,
+          "description": "Bonus action: create skeletal form and ward zone."
+        },
+        {
+          "id": "spirit_projection",
+          "name": "Spirit Projection",
+          "level": 6,
+          "description": "Project your spirit; immune to physical; damage projection cast."
+        },
+        {
+          "id": "undying_servitude",
+          "name": "Undying Servitude",
+          "level": 10,
+          "description": "Cast Animate Dead and Create Undead at will."
+        }
+      ],
+      "description": "Your patron is Vecna, a lich, or other powerful undead. Your magic is cold and fearsome."
+    },
+    {
+      "id": "archihada",
+      "name": "La Archihada",
+      "grantedAtLevel": 1,
+      "description": "Tu patrono es un señor o señora de las hadas, un ser de enorme poder cuya corte es el mundo natural.",
+      "expandedSpells": {
+        "1": [
+          "fuego_hada",
+          "suenho"
+        ],
+        "3": [
+          "calmar_emociones",
+          "fuerza_fantasmal"
+        ],
+        "5": [
+          "parpadear",
+          "crecimiento_vegetal"
+        ],
+        "7": [
+          "dominar_bestia",
+          "invisibilidad_mejorada"
+        ],
+        "9": [
+          "dominar_persona",
+          "muro_de_espinas"
+        ]
+      },
+      "features": [
+        {
+          "id": "presencia_hada",
+          "name": "Presencia hada",
+          "level": 1,
+          "description": "Acción: encantas o asustas a una criatura a 3 m (salv SAB). Recarga con descanso corto.",
+          "effects": [
+            {
+              "type": "accion_emote_hada_hechizo_o_miedo",
+              "rango": 3,
+              "save": "sab",
+              "recarga": "descanso_corto"
+            }
+          ]
+        },
+        {
+          "id": "escape_brumoso",
+          "name": "Escape brumoso",
+          "level": 6,
+          "description": "Reacción al recibir daño: te teletransportas hasta 18 m a un espacio libre y te vuelves invisible hasta fin de tu siguiente turno.",
+          "effects": [
+            {
+              "type": "reaccion_teleport_e_invisibilidad",
+              "rango": 18,
+              "trigger": "danho"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "infernal",
+      "name": "El Infernal",
+      "grantedAtLevel": 1,
+      "description": "Has hecho un pacto con un ser Infernal — un poderoso señor de los Nueve Infiernos, duque o barón de Gehena o príncipe elemental del Abismo.",
+      "expandedSpells": {
+        "1": [
+          "llamas",
+          "orden"
+        ],
+        "3": [
+          "ceguera_sordera",
+          "rayo_moriente"
+        ],
+        "5": [
+          "bola_de_fuego",
+          "nube_maloliente"
+        ],
+        "7": [
+          "escudo_de_fuego",
+          "muro_de_fuego"
+        ],
+        "9": [
+          "cono_frio",
+          "dominar_persona"
+        ]
+      },
+      "features": [
+        {
+          "id": "bendicion_oscura",
+          "name": "Bendición del Oscuro",
+          "level": 1,
+          "description": "Cuando reduces a 0 PG un enemigo, obtienes PG temporales iguales a mod CAR + nivel de brujo.",
+          "effects": [
+            {
+              "type": "pg_temporales_al_matar",
+              "formula": "mod_CAR + nivel_brujo"
+            }
+          ]
+        },
+        {
+          "id": "suerte_oscura",
+          "name": "Suerte del Oscuro",
+          "level": 6,
+          "description": "Acción adicional: añade un d10 a una tirada. Recarga con descanso corto o largo.",
+          "effects": [
+            {
+              "type": "recurso_accion_adicional_modificador_d10",
+              "per": "descanso_corto",
+              "uso_unico": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "cha",
+    "list": "warlock",
+    "spellbook": false,
+    "preparedCasting": false,
+    "ritualCasting": false,
+    "knownCasting": true,
+    "pactMagic": true
+  }
+}

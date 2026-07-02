@@ -1,0 +1,53 @@
+{
+  "id": "bandit_captain",
+  "name": "Bandit Captain",
+  "slug": "bandit_captain",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "any non-lawful alignment",
+  "armorClass": 15,
+  "hitPoints": {
+    "average": 65,
+    "roll": "10d8 + 30"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 16,
+    "con": 14,
+    "int": 14,
+    "wis": 11,
+    "cha": 15
+  },
+  "saves": [
+    " STR +4 ",
+    " DEX +5 "
+  ],
+  "skills": [
+    " Athletics +4 ",
+    " Deception +4 "
+  ],
+  "senses": "passive Perception 10",
+  "languages": "any two languages",
+  "challengeRating": "3",
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Three attacks: two scimitar + one dagger."
+    },
+    {
+      "name": "Scimitar",
+      "text": "+5 to hit. Hit: 6 (1d6 + 3) slashing."
+    },
+    {
+      "name": "Dagger",
+      "text": "+5 to hit, range 20/60 ft. Hit: 5 (1d4 + 3) piercing."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 700,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

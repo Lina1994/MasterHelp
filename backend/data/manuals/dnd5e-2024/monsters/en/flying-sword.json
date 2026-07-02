@@ -1,0 +1,78 @@
+{
+  "id": "flying_sword",
+  "slug": "flying-sword",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Flying Sword",
+  "size": "Small",
+  "type": "Construct",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 17,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 17,
+    "roll": "5d6"
+  },
+  "speed": {
+    "walk": 0,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 12,
+    "dex": 15,
+    "con": 11,
+    "int": 1,
+    "wis": 5,
+    "cha": 1
+  },
+  "savingThrows": {
+    "dex": 4
+  },
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [
+    "poison",
+    "psychic"
+  ],
+  "conditionImmunities": [
+    "blinded",
+    "charmed",
+    "deafened",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "petrified",
+    "poisoned",
+    "stunned",
+    "unconscious"
+  ],
+  "senses": "blindsight 60 ft. (blind beyond), passive Perception 7",
+  "languages": "—",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "traits": [
+    {
+      "name": "Antimagic Susceptibility.",
+      "text": "The sword is incapacitated while in an antimagic field. If targeted by dispel magic, the sword is rendered inanimate for 1 minute."
+    },
+    {
+      "name": "False Appearance.",
+      "text": "While motionless, the sword is indistinguishable from a normal sword."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Longsword.",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d8 + 1) slashing damage, or 6 (1d10 + 1) if used with two hands."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

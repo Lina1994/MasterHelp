@@ -1,0 +1,120 @@
+{
+  "id": "magmin",
+  "slug": "magmin",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Magmin",
+  "type": "Elemental",
+  "size": "Pequeño",
+  "alignment": "caótico neutral",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d6 + 3"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 7,
+    "dex": 15,
+    "con": 12,
+    "int": 8,
+    "wis": 11,
+    "cha": 10
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "primordial (ígneo)",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Explotar al morir",
+      "text": "El magmin explota cuando muere."
+    },
+    {
+      "name": "Tirada de salvación de Destreza",
+      "text": "CD 11, todas las criaturas en una emanación de 3 m que se origina en el magmin. Fallo: 7 (2d6) de daño de fuego. Éxito: la mitad del daño."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Toque",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 7 (2d4 + 2) de daño de fuego. Si el objetivo es una criatura u objeto inflamable que no lleve o vista nadie, empieza a arder. Acciones adicionales"
+    },
+    {
+      "name": "Iluminación ardiente",
+      "text": "El magmin se prende fuego o extingue sus llamas. Mientras esté ardiendo, emitirá luz brillante en un radio de 3 m y luz tenue 3 m más allá. Magos Mago Humanoide Mediano o Pequeño (mago), neutral"
+    },
+    {
+      "name": "CA",
+      "text": "15 Iniciativa: +2 (12)"
+    },
+    {
+      "name": "PG",
+      "text": "81 (18d8)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 9 −1 −1 Des 14 +2 +2 Con 11 +0 +0 Int 17 +3 +6 sab 12 +1 +4 Car 11 +0 +0"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Conocimiento arcano +6, Historia +6, Percepción +4"
+    },
+    {
+      "name": "Equipo",
+      "text": "varita"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 14"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común y otros tres idiomas"
+    },
+    {
+      "name": "VD",
+      "text": "6 (2300 PX; BC +3) Acciones"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El mago realiza tres ataques con su estallido arcano."
+    },
+    {
+      "name": "Estallido arcano",
+      "text": "Tirada de ataque cuerpo a cuerpo o a distancia: +6, alcance 1,5 m o 36 m a distancia."
+    },
+    {
+      "name": "Acierto",
+      "text": "16 (3d8 + 3) de daño de fuerza."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "El mago lanza uno de los siguientes conjuros, que utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14):"
+    },
+    {
+      "name": "A voluntad",
+      "text": "armadura de mago (incluido en la CA), detectar magia, luz, mano de mago, prestidigitación 2/día cada uno: bola de fuego (versión de nivel 4), invisibilidad 1/día cada uno: cono de frío, volar Acciones adicionales Paso brumoso (3/día). El mago lanza paso brumoso usando la misma aptitud mágica que para su lanzamiento de conjuros."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "",
+      "text": "Magia protectora (3/día). El mago lanza contrahechizo o escudo en respuesta al desencadenante de esos conjuros, usando la misma aptitud mágica que para su lanzamiento de conjuros."
+    }
+  ],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Magmin",
+  "srd_es_page": 346
+}

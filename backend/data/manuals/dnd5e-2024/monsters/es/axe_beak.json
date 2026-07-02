@@ -1,0 +1,102 @@
+{
+  "id": "axe_beak",
+  "slug": "axe_beak",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Pico de hacha",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d10 + 3"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 12,
+    "con": 12,
+    "int": 2,
+    "wis": 10,
+    "cha": 5
+  },
+  "senses": "Percepción pasiva 10",
+  "languages": "ninguno",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Pico",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 6 (1d8 + 2) de daño cortante. Piratas Pirata Humanoide Mediano o Pequeño, neutral"
+    },
+    {
+      "name": "CA",
+      "text": "14 Iniciativa: +5 (15)"
+    },
+    {
+      "name": "PG",
+      "text": "33 (6d8 + 6)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 10 +0 +0 Des 16 +3 +5 Con 12 +1 +1 Int 8 −1 −1 sab 12 +1 +1 Car 14 +2 +4"
+    },
+    {
+      "name": "Equipo",
+      "text": "armadura de cuero, dagas (6)"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 11"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común y otro cualquiera"
+    },
+    {
+      "name": "VD",
+      "text": "1 (200 PX; BC +2) Acciones"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El pirata realiza dos ataques con sus dagas. Puede sustituir un ataque por un uso de su garbo cautivador."
+    },
+    {
+      "name": "Daga",
+      "text": "Tirada de ataque cuerpo a cuerpo o a distancia: +5, alcance 1,5 m o 6/18 m a distancia. Acierto: 5 (1d4 + 3) de daño perforante."
+    },
+    {
+      "name": "Garbo cautivador",
+      "text": "Tirada de salvación de Sabiduría: CD 12, una criatura que el pirata pueda ver a 9 m o menos. Fallo: el objetivo tendrá el estado de hechizado hasta el principio del siguiente turno del pirata. Capitán pirata Humanoide Mediano o Pequeño, neutral Fue 10 +0 +3 Des 18 +4 +7 Con 14 +2 +2 Int 10 +0 +0 sab 14 +2 +5 Car 17 +3 +6"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Acrobacias +7, Percepción +5 Acciones estoque o pistola en cualquier combinación."
+    },
+    {
+      "name": "Estoque",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 13 (2d8 + 4) de daño perforante y el pirata tendrá ventaja en la siguiente tirada de ataque que haga antes del final de este turno."
+    },
+    {
+      "name": "Pistola",
+      "text": "Tirada de ataque a distancia: +7, alcance 9/27 m. Acierto: 15 (2d10 + 4) de daño perforante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Pico de hacha",
+  "srd_es_page": 359
+}

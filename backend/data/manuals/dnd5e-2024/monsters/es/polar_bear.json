@@ -1,0 +1,46 @@
+{
+  "id": "polar_bear",
+  "slug": "polar_bear",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Oso polar",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 42,
+    "roll": "5d10 + 15"
+  },
+  "speed": {
+    "walk": 40,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 20,
+    "dex": 14,
+    "con": 16,
+    "int": 2,
+    "wis": 13,
+    "cha": 7
+  },
+  "skills": [
+    "Percepción +5",
+    "Sigilo +4"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Oso polar",
+  "srd_es_page": 390
+}

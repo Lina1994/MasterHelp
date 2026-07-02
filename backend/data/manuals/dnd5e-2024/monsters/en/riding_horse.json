@@ -1,0 +1,59 @@
+{
+  "id": "riding_horse",
+  "slug": "riding_horse",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Riding Horse",
+  "size": "Large",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 10,
+  "hitPoints": {
+    "average": 13,
+    "roll": "2d10 + 2"
+  },
+  "speed": {
+    "walk": 60
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 10,
+    "con": 12,
+    "int": 2,
+    "wis": 11,
+    "cha": 7
+  },
+  "senses": "passive Perception 10",
+  "languages": "—",
+  "challengeRating": "1/4",
+  "actions": [
+    {
+      "name": "Hooves",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 7 (1d8 + 3) Bludgeoning damage. Saber-Toothed Tiger"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 50,
+  "skills": "Perception +2, Stealth +5",
+  "traits": [
+    {
+      "name": "Running Leap",
+      "text": "With a 10-foot running start, the tiger can Long Jump up to 25 feet."
+    },
+    {
+      "name": "Water Breathing",
+      "text": "The seahorse can breathe only underwater."
+    }
+  ],
+  "srd_en_match_name": "Riding Horse",
+  "srd_en_page": 357,
+  "initiative": 1,
+  "savingThrows": {
+    "str": 3,
+    "dex": 1,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

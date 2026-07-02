@@ -1,0 +1,162 @@
+[
+  {
+    "id": "acolyte",
+    "name": "Acolyte",
+    "description": "You spent your life in service to a temple, learning sacred rites and serving in ceremonies.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Magic Initiate (Cleric)",
+    "skillProficiencies": ["Insight", "Religion"],
+    "toolProficiencies": [],
+    "equipment": "A holy symbol, a prayer book or prayer wheel, 5 sticks of incense, vestments, a set of common clothes, and a pouch containing 15 gp."
+  },
+  {
+    "id": "artisan",
+    "name": "Artisan",
+    "description": "You are a member of a guild of skilled craftspeople, expert in a particular trade.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Crafter",
+    "skillProficiencies": ["Investigation", "Persuasion"],
+    "toolProficiencies": ["One type of artisan's tools"],
+    "equipment": "A set of artisan's tools appropriate to your trade, a letter of introduction from your guild, a set of traveler's clothes, and a pouch containing 15 gp."
+  },
+  {
+    "id": "charlatan",
+    "name": "Charlatan",
+    "description": "You have a history of false identities, tall tales, and fantastic schemes.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Skilled",
+    "skillProficiencies": ["Deception", "Sleight of Hand"],
+    "toolProficiencies": ["Forgery kit", "Disguise kit"],
+    "equipment": "A fine set of clothes, a disguise kit, a forgery kit, and a pouch containing 15 gp."
+  },
+  {
+    "id": "criminal",
+    "name": "Criminal",
+    "description": "You have a history of breaking the law — small crimes or major offenses, but always dangerous.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Alert",
+    "skillProficiencies": ["Deception", "Stealth"],
+    "toolProficiencies": ["One type of gaming set", "Thieves' tools"],
+    "equipment": "A crowbar, a set of dark common clothes with a hood, and a pouch containing 15 gp."
+  },
+  {
+    "id": "cultist",
+    "name": "Cultist",
+    "description": "You belong to a sinister cult devoted to dark powers or forbidden practices.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Magic Initiate (Warlock)",
+    "skillProficiencies": ["Arcana", "Religion"],
+    "toolProficiencies": [],
+    "equipment": "A cult symbol, a hooded robe, vestments, a set of common clothes, and a pouch containing 15 gp."
+  },
+  {
+    "id": "entertainer",
+    "name": "Entertainer",
+    "description": "You thrive in front of an audience, whether as a musician, dancer, or storyteller.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Musician",
+    "skillProficiencies": ["Acrobatics", "Performance"],
+    "toolProficiencies": ["One type of musical instrument", "Disguise kit"],
+    "equipment": "A musical instrument, a costume, a belt pouch, and a pouch containing 15 gp."
+  },
+  {
+    "id": "farmer",
+    "name": "Farmer",
+    "description": "You grew up close to the land, working fields or herds and learning the rhythms of nature.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Tough",
+    "skillProficiencies": ["Animal Handling", "Nature"],
+    "toolProficiencies": ["One type of artisan's tools", "Vehicles (land)"],
+    "equipment": "A set of artisan's tools, a sickle, a set of traveler's clothes, and a pouch containing 15 gp."
+  },
+  {
+    "id": "guard",
+    "name": "Guard",
+    "description": "You served in some kind of organized military, militia, or watch.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Alert",
+    "skillProficiencies": ["Athletics", "Perception"],
+    "toolProficiencies": ["One type of gaming set"],
+    "equipment": "A uniform, a set of common clothes, a horn or whistle, and a pouch containing 10 gp."
+  },
+  {
+    "id": "guide",
+    "name": "Guide",
+    "description": "You have spent years traveling from place to place, learning the paths and peoples of the wilderness.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Magic Initiate (Druid)",
+    "skillProficiencies": ["Stealth", "Survival"],
+    "toolProficiencies": ["Cartographer's tools"],
+    "equipment": "A map of your home region, a compass, a set of traveler's clothes, and a pouch containing 10 gp."
+  },
+  {
+    "id": "hermit",
+    "name": "Hermit",
+    "description": "You lived in seclusion, either in a sheltered retreat or miles from civilization.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Magic Initiate (Druid) or Healer",
+    "skillProficiencies": ["Medicine", "Religion"],
+    "toolProficiencies": ["Herbalism kit"],
+    "equipment": "A scroll case stuffed with notes, a winter blanket, a set of common clothes, a herbalism kit, and 5 gp."
+  },
+  {
+    "id": "merchant",
+    "name": "Merchant",
+    "description": "You are an experienced trader, accustomed to bargaining, counting coin, and dealing in goods.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Skilled",
+    "skillProficiencies": ["Animal Handling", "Persuasion"],
+    "toolProficiencies": ["Navigator's tools"],
+    "equipment": "A letter of introduction, a set of fine clothes, an abacus, and a pouch containing 25 gp."
+  },
+  {
+    "id": "noble",
+    "name": "Noble",
+    "description": "You were raised in a noble family of considerable means and influence.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Skilled",
+    "skillProficiencies": ["History", "Persuasion"],
+    "toolProficiencies": ["One type of gaming set"],
+    "equipment": "A set of fine clothes, a signet ring, a scroll of pedigree, and a pouch containing 25 gp."
+  },
+  {
+    "id": "sage",
+    "name": "Sage",
+    "description": "You have spent years learning the lore of the multiverse.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": ["Intelligence"] } },
+    "featOrigin": "Magic Initiate (Wizard)",
+    "skillProficiencies": ["Arcana", "History"],
+    "toolProficiencies": [],
+    "equipment": "A bottle of black ink, a quill, a small knife, a letter from a dead colleague, a set of common clothes, and a pouch containing 10 gp."
+  },
+  {
+    "id": "sailor",
+    "name": "Sailor",
+    "description": "You have lived much of your life aboard a ship, braving storms and strange shores.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Tavern Brawler",
+    "skillProficiencies": ["Acrobatics", "Athletics"],
+    "toolProficiencies": ["Navigator's tools", "Vehicles (water)"],
+    "equipment": "A belaying pin (club), 50 feet of silk rope, a lucky charm, a set of common clothes, and a pouch containing 10 gp."
+  },
+  {
+    "id": "soldier",
+    "name": "Soldier",
+    "description": "You served in an organized army or militia, training for battle and following orders.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Savage Attacker",
+    "skillProficiencies": ["Athletics", "Intimidation"],
+    "toolProficiencies": ["One type of gaming set", "Vehicles (land)"],
+    "equipment": "An insignia of rank, a trophy from a fallen enemy, a set of bone dice or a deck of cards, a set of common clothes including a belt, and a pouch containing 10 gp."
+  },
+  {
+    "id": "wayfarer",
+    "name": "Wayfarer",
+    "description": "You travel the roads between towns and cities, surviving on your wits and resourcefulness.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Lucky",
+    "skillProficiencies": ["Insight", "Stealth"],
+    "toolProficiencies": ["Thieves' tools"],
+    "equipment": "A set of traveler's clothes, a backpack, a bedroll, a mess kit, a tinderbox, 2 daggers, and a pouch containing 10 gp."
+  }
+]

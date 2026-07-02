@@ -1,0 +1,92 @@
+{
+  "id": "adult_black_dragon",
+  "name": "Adult Black Dragon",
+  "slug": "adult_black_dragon",
+  "size": "Huge",
+  "type": "dragon",
+  "alignment": "chaotic evil",
+  "armorClass": 19,
+  "hitPoints": {
+    "average": 195,
+    "roll": "17d10 + 102"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 80,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 14,
+    "con": 21,
+    "int": 14,
+    "wis": 11,
+    "cha": 19
+  },
+  "saves": [
+    " DEX +7 ",
+    " CON +11 ",
+    " WIS +5 ",
+    " CHA +10 "
+  ],
+  "skills": [
+    " Perception +10 ",
+    " Stealth +7 "
+  ],
+  "damageImmunities": [
+    "acid"
+  ],
+  "senses": "blindsight 60 ft., darkvision 120 ft., passive Perception 20",
+  "languages": "Common, Draconic",
+  "challengeRating": "14",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "Can breathe air and water."
+    },
+    {
+      "name": "Legendary Resistance (3/Day)",
+      "text": "If fails save, can choose to succeed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two attacks: one bite + two claws OR one with acid breath as bonus."
+    },
+    {
+      "name": "Bite",
+      "text": "+11 to hit, reach 10 ft. Hit: 17 (2d10 + 6) piercing + 4 (1d8) acid."
+    },
+    {
+      "name": "Claw",
+      "text": "+11 to hit, reach 5 ft. Hit: 13 (2d6 + 6) slashing."
+    },
+    {
+      "name": "Tail",
+      "text": "+11 to hit, reach 15 ft. Hit: 15 (2d8 + 6) bludgeoning."
+    },
+    {
+      "name": "Frightful Presence",
+      "text": "Each creature within 120 ft: WIS save DC 16 or frightened 1 min."
+    },
+    {
+      "name": "Acid Breath (Recharge 5-6)",
+      "text": "60-ft × 5-ft line: 17 (5d6) acid. DC 17 DEX half."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Wing Attack (Cost 2)",
+      "text": "Flies up to half speed; each creature within 15 ft: 13 (2d6 + 6) bludgeoning. DC 17 STR or knocked prone + pushed 10 ft."
+    },
+    {
+      "name": "Claw Attack",
+      "text": "One claw attack."
+    }
+  ],
+  "proficiencyBonus": 5,
+  "experiencePoints": 11500,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

@@ -1,0 +1,55 @@
+{
+  "id": "blood_hawk",
+  "slug": "blood_hawk",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Halcón sangriento",
+  "type": "Bestia",
+  "size": "Pequeña",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 7,
+    "roll": "2d6"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 14,
+    "con": 10,
+    "int": 3,
+    "wis": 14,
+    "cha": 5
+  },
+  "skills": [
+    "Percepción +6"
+  ],
+  "senses": "Percepción pasiva 16",
+  "languages": "ninguno",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Atacar en manada",
+      "text": "El halcón tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del halcón se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pico",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 4 (1d4 + 2) de daño perforante o 6 (1d8 + 2) de daño perforante si el objetivo está maltrecho."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Halcón sangriento",
+  "srd_es_page": 386
+}

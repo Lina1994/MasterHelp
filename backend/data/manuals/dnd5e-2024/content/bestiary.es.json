@@ -1,0 +1,6 @@
+{
+  "id": "bestiary",
+  "title": "Bestiario",
+  "format": "markdown",
+  "markdown": "# Bestiario\n\nEl **Bestiario** es el catálogo de criaturas, PNJs y monstruos disponibles en el SRD 5.2. Cada entrada se describe en un formato de bloque de estadísticas estándar:\n\n- **Clase de Armadura (CA)** y **Puntos de Golpe (PG)**\n- **Velocidad**, **Puntuaciones de Característica** (FUE, DES, CON, INT, SAB, CAR)\n- **Tiradas de Salvación**, **Habilidades**, **Resistencias/Inmunidades al daño**, **Inmunidades a estados**\n- **Sentidos**, **Idiomas**, **Índice de Desafío (ID)** y **Bonificador de Competencia**\n- **Rasgos**, **Acciones**, **Reacciones** y (para criaturas legendarias) **Acciones Legendarias**\n- Bloques de **Lanzamiento de Conjuros** cuando proceda\n\n## Tipos de monstruo\n\nEl bestiario del SRD 5.2 cubre una amplia gama de tipos de criaturas: *aberraciones, bestias, celestiales, constructos, dragones, elementales, fey, infiernos, gigantes, humanoides, monstruosidades, oozes, plantas, no-muertos* y criaturas de temática *fungus* añadidas en la revisión de 2024.\n\nConsulta la página **Bestiario** de esta aplicación para filtrar por tipo, tamaño o Índice de Desafío y ver los detalles completos de cualquier criatura."
+}

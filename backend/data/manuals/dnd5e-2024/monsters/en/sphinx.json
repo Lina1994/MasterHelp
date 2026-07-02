@@ -1,0 +1,76 @@
+{
+  "id": "sphinx",
+  "name": "Sphinx",
+  "slug": "sphinx",
+  "size": "Large",
+  "type": "monstrosity",
+  "alignment": "lawful neutral",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 136,
+    "roll": "16d10 + 48"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 15,
+    "con": 16,
+    "int": 16,
+    "wis": 18,
+    "cha": 16
+  },
+  "saves": [
+    " DEX +4 ",
+    " WIS +7 ",
+    " CHA +7 "
+  ],
+  "skills": [
+    " Arcana +10 ",
+    " Perception +10 ",
+    " Religion +7 "
+  ],
+  "senses": "truesight 120 ft., passive Perception 20",
+  "languages": "Common + three others",
+  "challengeRating": "11",
+  "traits": [
+    {
+      "name": "Inscrutable",
+      "text": "Immune to any effect that would sense its emotions or read its thoughts, and to divination spells aimed at it."
+    },
+    {
+      "name": "Magic Weapons",
+      "text": "Weapon attacks are magical."
+    },
+    {
+      "name": "Spellcasting (Sphinx)",
+      "text": "WIS save DC 15. At will: Detect Magic, Identify. 1/day each: Remove Curse, Speak with Dead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two claw attacks."
+    },
+    {
+      "name": "Claw",
+      "text": "+7 to hit. Hit: 14 (2d10 + 4) slashing."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Pounce (Cost 2)",
+      "text": "Move up to half speed; +1 to hit; DC 17 STR or prone + 4d6 piercing extra."
+    },
+    {
+      "name": "Roar (Cost 1)",
+      "text": "Each enemy within 60 ft: WIS save DC 16 or frightened 1 min."
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 7200,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

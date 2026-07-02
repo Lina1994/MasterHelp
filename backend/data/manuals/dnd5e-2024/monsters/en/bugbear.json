@@ -1,0 +1,67 @@
+{
+  "id": "bugbear",
+  "slug": "bugbear",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Bugbear",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 16,
+    "type": "hide armor, shield"
+  },
+  "hitPoints": {
+    "average": 27,
+    "roll": "5d8+5"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 14,
+    "con": 13,
+    "int": 8,
+    "wis": 11,
+    "cha": 9
+  },
+  "savingThrows": null,
+  "skills": {
+    "stealth": 6
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 60 ft., passive Perception 10",
+  "languages": "Common, Goblin",
+  "proficiencyBonus": 2,
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "traits": [
+    {
+      "name": "Brute.",
+      "text": "A melee weapon deals one extra die of its damage when the bugbear hits with it (included in the attack)."
+    },
+    {
+      "name": "Sneak Attack (1/Turn).",
+      "text": "The bugbear deals an extra 2d6 damage when it hits with a weapon attack roll that has advantage, or when the target is within 5 ft. of an ally of the bugbear that isn't incapacitated."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Morningstar.",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 11 (2d8 + 2) piercing damage, plus 2d6 sneak attack damage."
+    },
+    {
+      "name": "Javelin.",
+      "text": "Melee or Ranged Weapon Attack: +4 to hit, reach 5 ft. or range 30/120 ft. Hit: 9 (2d6 + 2) piercing damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

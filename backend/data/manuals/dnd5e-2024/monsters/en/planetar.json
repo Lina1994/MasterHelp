@@ -1,0 +1,94 @@
+{
+  "id": "planetar",
+  "slug": "planetar",
+  "lang": "en",
+  "name": "Planetar",
+  "skills": "Perception +11",
+  "senses": {
+    "truesight": "120 ft",
+    "passivePerception": 21
+  },
+  "languages": "All; telepathy 120 ft.",
+  "challengeRating": "16",
+  "experiencePoints": 15000,
+  "proficiencyBonus": 5,
+  "traits": [
+    {
+      "name": "Divine Awareness",
+      "text": "The planetar knows if it hears a lie."
+    },
+    {
+      "name": "Exalted Restoration",
+      "text": "If the planetar dies outside Mount Celestia, its body disappears, and it gains a new body instantly, reviving with all its Hit Points somewhere in Mount Celestia."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The planetar has Advantage on sav- ing throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The planetar makes three Radiant Sword attacks or uses Holy Burst twice."
+    },
+    {
+      "name": "Radiant Sword",
+      "text": "Melee Attack Roll: +12, reach 10 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "14 (2d6 + 7) Slashing damage plus 18 (4d8) Radi- ant damage."
+    },
+    {
+      "name": "Holy Burst",
+      "text": "Dexterity Saving Throw: DC 20, each en- emy in a 20-foot-radius Sphere centered on a point the planetar can see within 120 feet. Failure: 24 (7d6) Radi- ant damage. Success: Half damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The planetar casts one of the following spells, requiring no Material components and using Charisma as spellcasting ability (spell save DC 20):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Evil and Good 1/Day Each: Commune, Control Weather, Dispel Evil and Good, Raise Dead Bonus Actions Divine Aid (2/Day). The planetar casts Cure Wounds, Invisibility, Lesser Restoration, or Remove Curse, using the same spellcasting ability as Spellcasting."
+    }
+  ],
+  "speed": {
+    "walk": 40,
+    "fly": 120
+  },
+  "srd_en_match_name": "Planetar",
+  "srd_en_page": 312,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "celestial",
+  "subtype": "Angel",
+  "alignment": "Lawful Good",
+  "armorClass": {
+    "value": 19,
+    "type": "+10 (20)"
+  },
+  "initiative": 10,
+  "hitPoints": {
+    "average": 262,
+    "roll": "21d10 + 147"
+  },
+  "abilities": {
+    "str": 24,
+    "dex": 20,
+    "con": 24,
+    "int": 19,
+    "wis": 22,
+    "cha": 25
+  },
+  "savingThrows": {
+    "str": 12,
+    "dex": 5,
+    "con": 12,
+    "int": 4,
+    "wis": 11,
+    "cha": 12
+  },
+  "srd_en_soft_warnings": [
+    "soft: CR 16 but no legendaryActions[] (SRD v5.2 omits)"
+  ]
+}

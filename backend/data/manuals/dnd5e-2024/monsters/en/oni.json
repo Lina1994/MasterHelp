@@ -1,0 +1,74 @@
+{
+  "id": "oni",
+  "slug": "oni",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Oni",
+  "size": "Large",
+  "type": "Giant",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 16,
+    "type": "chain mail"
+  },
+  "hitPoints": {
+    "average": 110,
+    "roll": "13d10+39"
+  },
+  "speed": {
+    "walk": 30,
+    "fly": 30
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 16,
+    "con": 17,
+    "int": 14,
+    "wis": 16,
+    "cha": 15
+  },
+  "savingThrows": {
+    "dex": 6,
+    "con": 6,
+    "wis": 6
+  },
+  "skills": {
+    "perception": 6,
+    "stealth": 6
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "bludgeoning, piercing, and slashing from nonmagical attacks"
+  ],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 60 ft., passive Perception 16",
+  "languages": "Common, Giant",
+  "proficiencyBonus": 3,
+  "challengeRating": "7",
+  "experiencePoints": 2900,
+  "traits": [
+    {
+      "name": "Regeneration",
+      "text": "The oni regains 10 Hit Points at the start of each of its turns if it has at least 1 Hit Point."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The oni makes two Claw or Nightmare"
+    },
+    {
+      "name": "Ray attacks",
+      "text": "It can replace one attack with a use of Spellcasting."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 0,
+  "srd_en_match_name": "Oni",
+  "srd_en_page": 309
+}

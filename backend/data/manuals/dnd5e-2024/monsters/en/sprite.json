@@ -1,0 +1,85 @@
+{
+  "id": "sprite",
+  "slug": "sprite",
+  "lang": "en",
+  "name": "Sprite",
+  "speed": {
+    "walk": 10,
+    "fly": 40
+  },
+  "senses": {
+    "passivePerception": 16
+  },
+  "languages": "Common plus one other language",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Fiendish Restoration",
+      "text": "If it dies, the naga returns to life in 1d6 days and regains all its Hit Points. Only a Wish spell can prevent this trait from functioning."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Needle Sword",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 6 (1d4 + 4) Piercing damage."
+    },
+    {
+      "name": "Enchanting Bow",
+      "text": "Ranged Attack Roll: +6, range 40/160 ft. Hit: 1 Piercing damage, and the target has the Charmed condition until the start of the sprite’s next turn."
+    },
+    {
+      "name": "Heart Sight",
+      "text": "Charisma Saving Throw: DC 10, one crea- ture within 5 feet the sprite can see (Celestials, Fiends, and Undead automatically fail the save). Failure: The sprite knows the target’s emotions and alignment."
+    },
+    {
+      "name": "Invisibility",
+      "text": "The sprite casts Invisibility on itself, requir- ing no spell components and using Charisma as the spellcasting ability. Spy Spy Medium or Small Humanoid, Neutral AC 12 Initiative +4 (14) HP 27 (6d8) Speed 30 ft., Climb 30 ft. MOD SAVE MOD SAVE MOD SAVE Str 10 +0 +0 Dex 15 +2 +2 Con 10 +0 +0 Int 12 +1 +1 WIS 14 +2 +2 Cha 16 +3 +3 Skills Deception +5, Insight +4, Investigation +5, Perception +6, Sleight of Hand +4, Stealth +6 Gear Hand Crossbow, Shortsword, Thieves’ Tools Senses Passive Perception 16 Languages Common plus one other language CR 1 (XP 200; PB +2) Actions"
+    },
+    {
+      "name": "Shortsword",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6 + 2) Piercing damage plus 7 (2d6) Poison damage."
+    },
+    {
+      "name": "Hand Crossbow",
+      "text": "Ranged Attack Roll: +4, range 30/120 ft. Hit: 5 (1d6 + 2) Piercing damage plus 7 (2d6) Poi- son damage. Bonus Actions"
+    },
+    {
+      "name": "Cunning Action",
+      "text": "The spy takes the Dash, Disengage, or Hide action. Stirge Stirge"
+    }
+  ],
+  "skills": "Deception +5, Insight +4, Investigation +5,",
+  "srd_en_match_name": "Sprite",
+  "srd_en_page": 326,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "fiend",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 17,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 135,
+    "roll": "18d10 + 36"
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 17,
+    "con": 14,
+    "int": 16,
+    "wis": 15,
+    "cha": 16
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 6,
+    "con": 5,
+    "int": 3,
+    "wis": 5,
+    "cha": 6
+  }
+}

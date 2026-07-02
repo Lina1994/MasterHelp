@@ -1,0 +1,62 @@
+{
+  "id": "giant_fire_beetle",
+  "slug": "giant_fire_beetle",
+  "lang": "en",
+  "name": "Giant Fire Beetle",
+  "speed": {
+    "walk": 40,
+    "climb": 30
+  },
+  "skills": "Perception +3",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +1, reach 5 ft. Hit: 1 Fire damage. Giant Frog"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Illumination",
+      "text": "The beetle sheds Bright Light in a 10-foot radius and Dim Light for an additional 10 feet."
+    }
+  ],
+  "srd_en_match_name": "Giant Fire Beetle",
+  "srd_en_page": 348,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "celestial",
+  "alignment": "Neutral Good",
+  "armorClass": {
+    "value": 14,
+    "type": "+6 (16)"
+  },
+  "initiative": 6,
+  "hitPoints": {
+    "average": 42,
+    "roll": "5d12 + 10"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 18,
+    "con": 14,
+    "int": 7,
+    "wis": 14,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 6,
+    "dex": 6,
+    "con": 2,
+    "int": 0,
+    "wis": 2,
+    "cha": 0
+  }
+}

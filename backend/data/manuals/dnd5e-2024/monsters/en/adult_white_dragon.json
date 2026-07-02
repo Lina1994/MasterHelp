@@ -1,0 +1,93 @@
+{
+  "id": "adult_white_dragon",
+  "name": "Adult White Dragon",
+  "slug": "adult_white_dragon",
+  "size": "Huge",
+  "type": "dragon",
+  "alignment": "chaotic evil",
+  "armorClass": 18,
+  "hitPoints": {
+    "average": 200,
+    "roll": "16d10 + 112"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 80,
+    "burrow": 30,
+    "swim": 40
+  },
+  "abilities": {
+    "str": 22,
+    "dex": 18,
+    "con": 22,
+    "int": 8,
+    "wis": 12,
+    "cha": 12
+  },
+  "saves": [
+    " DEX +9 ",
+    " CON +11 ",
+    " WIS +6 ",
+    " CHA +6 "
+  ],
+  "skills": [
+    " Perception +11 ",
+    " Stealth +6 "
+  ],
+  "damageImmunities": [
+    "cold"
+  ],
+  "senses": "blindsight 60 ft., darkvision 120 ft., passive Perception 21",
+  "languages": "Common, Draconic",
+  "challengeRating": "13",
+  "traits": [
+    {
+      "name": "Ice Walk",
+      "text": "Moves across icy terrain without difficulty."
+    },
+    {
+      "name": "Legendary Resistance (3/Day)",
+      "text": "If fails save, can choose to succeed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two attacks: one bite + two claws OR frost breath after another attack as bonus."
+    },
+    {
+      "name": "Bite",
+      "text": "+10 to hit. Hit: 17 (2d10 + 6) piercing + 4 (1d8) cold."
+    },
+    {
+      "name": "Claw",
+      "text": "+10 to hit. Hit: 13 (2d6 + 6) slashing."
+    },
+    {
+      "name": "Tail",
+      "text": "+10 to hit. Hit: 15 (2d8 + 6) bludgeoning."
+    },
+    {
+      "name": "Frightful Presence",
+      "text": "Each creature within 120 ft: WIS save DC 13 or frightened 1 min."
+    },
+    {
+      "name": "Cold Breath (Recharge 5-6)",
+      "text": "90-ft cone: 16 (5d6) cold. DC 17 CON half."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Wing Attack (Cost 2)",
+      "text": "Flies up to half speed; each within 15 ft: 13 (2d6 + 6) bludgeoning. DC 17 STR or prone."
+    },
+    {
+      "name": "Claw Attack",
+      "text": "One claw attack."
+    }
+  ],
+  "proficiencyBonus": 5,
+  "experiencePoints": 10000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

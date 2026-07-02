@@ -1,0 +1,6 @@
+{
+  "id": "spells",
+  "title": "Spells",
+  "format": "markdown",
+  "markdown": "# Spells\n\n**Spells** are the magical formulae used by the spellcasting classes. The SRD 5.2 catalogs hundreds of spells across **8 schools of magic** and **9 levels of power** (plus cantrips at level 0).\n\n## School of Magic\n\n- **Abjuration** — protective magic and banishment.\n- **Conjuration** — summoning and creation.\n- **Divination** — information-gathering magic.\n- **Enchantment** — mind-affecting magic.\n- **Evocation** — raw elemental damage.\n- **Illusion** — deception and disguise.\n- **Necromancy** — death, life force, and the undead.\n- **Transmutation** — alteration of properties and shapes.\n\n## Spell Level\n\n- **Cantrips** (level 0) — minor spells cast at will.\n- **1st–9th level** — spells that consume a spell slot of the matching level.\n\n## Spell Tags\n\nThe SRD 5.2 introduces the concept of **spell tags** — short metadata attached to each spell (e.g. *Damage Fire*, *Control*, *Detection*, *Healing*) — to help players find spells that fit a situation.\n\nUse the **Spells** page of this application to filter by class, level, school, or concentration/ritual status, and view the full description of any spell."
+}

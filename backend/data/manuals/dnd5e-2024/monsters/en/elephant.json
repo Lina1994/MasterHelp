@@ -1,0 +1,63 @@
+{
+  "id": "elephant",
+  "slug": "elephant",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Elephant",
+  "size": "Huge",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 76,
+    "roll": "8d12 + 24"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 22,
+    "dex": 9,
+    "con": 17,
+    "int": 3,
+    "wis": 11,
+    "cha": 6
+  },
+  "senses": "passive Perception 10",
+  "languages": "—",
+  "challengeRating": "4",
+  "traits": [
+    {
+      "name": "Flyby",
+      "text": "The snake doesn’t provoke an Opportunity At- tack when it flies out of an enemy’s reach."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The elephant makes two Gore attacks."
+    },
+    {
+      "name": "Gore",
+      "text": "Melee Attack Roll: +8, reach 5 ft. Hit: 15 (2d8 + 6) Piercing damage. If the target is a Huge or smaller creature and the elephant moved 20+ feet straight to- ward it immediately before the hit, the target has the Prone condition. Bonus Actions"
+    },
+    {
+      "name": "Trample",
+      "text": "Dexterity Saving Throw: DC 16, one creature within 5 feet that has the Prone condition. Failure: 17 (2d10 + 6) Bludgeoning damage. Success: Half damage. Elk"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 1100,
+  "skills": "Perception +1, Stealth +3",
+  "srd_en_match_name": "Elephant",
+  "srd_en_page": 345,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 0,
+    "dex": 2,
+    "con": 1,
+    "int": 0,
+    "wis": 2,
+    "cha": 0
+  }
+}

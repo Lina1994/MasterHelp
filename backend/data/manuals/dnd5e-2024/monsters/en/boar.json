@@ -1,0 +1,61 @@
+{
+  "id": "boar",
+  "slug": "boar",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Boar",
+  "size": "Medium",
+  "type": "beast",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d8 + 2"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 11,
+    "con": 12,
+    "int": 2,
+    "wis": 9,
+    "cha": 5
+  },
+  "skills": [
+    " Perception +1 "
+  ],
+  "senses": "passive Perception 11",
+  "languages": "—",
+  "challengeRating": "1/4",
+  "traits": [
+    {
+      "name": "Bloodied Fury",
+      "text": "While Bloodied, the boar has Advan- tage on attack rolls."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Gore",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1)"
+    },
+    {
+      "name": "Piercing damage",
+      "text": "If the target is a Medium or smaller creature and the boar moved 20+ feet straight toward it immediately before the hit, the target takes an extra 3 (1d6) Piercing damage and has the Prone condition. Brown Bear"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 50,
+  "srd_en_match_name": "Boar",
+  "srd_en_page": 343,
+  "initiative": 0,
+  "savingThrows": {
+    "str": 1,
+    "dex": 0,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

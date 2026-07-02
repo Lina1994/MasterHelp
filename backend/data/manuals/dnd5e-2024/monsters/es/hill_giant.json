@@ -1,0 +1,57 @@
+{
+  "id": "hill_giant",
+  "slug": "hill_giant",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Gigante de las colinas",
+  "type": "Gigante",
+  "size": "Enorme",
+  "alignment": "caótico malvado",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 105,
+    "roll": "10d12 + 40"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 8,
+    "con": 19,
+    "int": 5,
+    "wis": 9,
+    "cha": 6
+  },
+  "skills": [
+    "Percepción +2"
+  ],
+  "senses": "Percepción pasiva 12",
+  "languages": "gigante",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El gigante hace dos ataques con su árbol garrote o su lanzamiento de basura en cualquier combinación."
+    },
+    {
+      "name": "Árbol garrote",
+      "text": "Tirada de ataque cuerpo a cuerpo: +8, alcance 3 m. Acierto: 18 (3d8 + 5) de daño contundente. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de derribada."
+    },
+    {
+      "name": "Lanzamiento de basura",
+      "text": "Tirada de ataque a distancia: +8, alcance 18/72 m. Acierto: 16 (2d10 + 5) de daño contundente y el objetivo tendrá el estado de envenenado hasta el final de su siguiente turno. Gigante de las nubes"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Gigante de las colinas",
+  "srd_es_page": 328
+}

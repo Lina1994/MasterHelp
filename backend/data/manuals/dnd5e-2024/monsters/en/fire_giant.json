@@ -1,0 +1,94 @@
+{
+  "id": "fire_giant",
+  "slug": "fire_giant",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Fire Giant",
+  "size": "Huge",
+  "type": "giant",
+  "alignment": "lawful evil",
+  "armorClass": 18,
+  "hitPoints": {
+    "average": 162,
+    "roll": "13d12 + 65"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 25,
+    "dex": 9,
+    "con": 21,
+    "int": 10,
+    "wis": 14,
+    "cha": 13
+  },
+  "saves": [
+    " DEX +4 ",
+    " CON +10 ",
+    " WIS +7 "
+  ],
+  "skills": [
+    " Athletics +12 ",
+    " Perception +7 "
+  ],
+  "damageImmunities": [
+    "fire"
+  ],
+  "senses": "passive Perception 17",
+  "languages": "Common, Giant",
+  "challengeRating": "9",
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The giant makes two attacks, using Flame Sword or Hammer Throw in any combination."
+    },
+    {
+      "name": "Flame Sword",
+      "text": "Melee Attack Roll: +11, reach 10 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "21 (4d6 + 7) Slashing damage plus 10 (3d6) Fire damage."
+    },
+    {
+      "name": "Hammer Throw",
+      "text": "Ranged Attack Roll: +11, range 60/240 ft. Hit: 23 (3d10 + 7) Bludgeoning damage plus 4 (1d8) Fire damage, and the target is pushed up to 15 feet straight away from the giant and has Disadvantage on the next attack roll it makes before the end of its next turn. Flesh Golem Flesh Golem"
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 1800,
+  "traits": [
+    {
+      "name": "Aversion to Fire",
+      "text": "If the golem takes Fire damage, it has Disadvantage on attack rolls and ability checks until the end of its next turn."
+    },
+    {
+      "name": "Berserk",
+      "text": "Whenever the golem starts its turn Bloodied, roll 1d6. On a 6, the golem goes berserk. On each of its turns while berserk, the golem attacks the nearest creature it can see. If no creature is near enough to move to and attack, the golem attacks an object. Once the golem goes berserk, it remains so until it is de- stroyed or it is no longer Bloodied. The golem’s creator, if within 60 feet of the berserk golem, can try to calm it by taking an action to make a DC 15 Charisma (Persuasion) check; the golem must be able to hear its creator. If this check succeeds, the go- lem ceases being berserk until the start of its next turn, at which point it resumes rolling for the Berserk trait again if it is still Bloodied."
+    },
+    {
+      "name": "Immutable Form",
+      "text": "The golem can’t shape-shift."
+    },
+    {
+      "name": "Lightning Absorption",
+      "text": "Whenever the golem is sub- jected to Lightning damage, it regains a number of Hit Points equal to the Lightning damage dealt."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The golem has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "srd_en_match_name": "Fire Giant",
+  "srd_en_page": 282,
+  "initiative": 3,
+  "savingThrows": {
+    "str": 7,
+    "dex": 3,
+    "con": 10,
+    "int": 0,
+    "wis": 2,
+    "cha": 5
+  }
+}

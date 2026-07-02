@@ -1,0 +1,65 @@
+{
+  "id": "hell_hound",
+  "slug": "hell_hound",
+  "lang": "en",
+  "name": "Hell Hound",
+  "speed": {
+    "walk": 50
+  },
+  "skills": "Perception +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 15
+  },
+  "languages": "Understands Infernal but can’t speak",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The hound has Advantage on an attack roll against a creature if at least one of the hound’s al- lies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The hound makes two Bite attacks."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 7 (1d8 + 3) Piercing damage plus 3 (1d6) Fire damage. Fire Breath (Recharge 5–6). Dexterity Saving Throw: DC 12, each creature in a 15-foot Cone. Failure: 17 (5d6) Fire damage. Success: Half damage."
+    }
+  ],
+  "srd_en_match_name": "Hell Hound",
+  "srd_en_page": 294,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "dragon",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 18,
+    "type": "+5 (15)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 105,
+    "roll": "14d8 + 42"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 16,
+    "int": 10,
+    "wis": 15,
+    "cha": 14
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 5,
+    "con": 3,
+    "int": 0,
+    "wis": 5,
+    "cha": 2
+  }
+}

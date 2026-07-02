@@ -1,0 +1,54 @@
+{
+  "id": "spider",
+  "slug": "spider",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Araña",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 1,
+    "roll": "1d4 − 1"
+  },
+  "speed": {
+    "walk": 20,
+    "climb": 20
+  },
+  "abilities": {
+    "str": 2,
+    "dex": 14,
+    "con": 8,
+    "int": 1,
+    "wis": 10,
+    "cha": 2
+  },
+  "skills": [
+    "Sigilo +4"
+  ],
+  "senses": "visión en la oscuridad 9 m; Percepción pasiva 10",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Caminar por telarañas",
+      "text": "La araña ignora todas las restricciones de movimiento causadas por las telarañas y conoce la ubicación de cualquier otra criatura que esté en contacto con la misma telaraña."
+    },
+    {
+      "name": "Trepar cual arácnido",
+      "text": "La araña puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica."
+    }
+  ],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Araña",
+  "srd_es_page": 377
+}

@@ -1,0 +1,64 @@
+{
+  "id": "stone_giant",
+  "slug": "stone_giant",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Gigante de piedra",
+  "type": "Gigante",
+  "size": "Enorme",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 17
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 126,
+    "roll": "11d12 + 55"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 15,
+    "con": 20,
+    "int": 10,
+    "wis": 12,
+    "cha": 9
+  },
+  "skills": [
+    "Atletismo +12",
+    "Percepción +4",
+    "Sigilo +5"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "gigante",
+  "challengeRating": "7",
+  "experiencePoints": 2900,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El gigante realiza dos ataques con su garrote de piedra o pedrusco en cualquier combinación."
+    },
+    {
+      "name": "Garrote de piedra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +9, alcance 4,5 m. Acierto: 22 (3d10 + 6) de daño contundente."
+    },
+    {
+      "name": "Pedrusco",
+      "text": "Tirada de ataque a distancia: +9, alcance 18/72 m. Acierto: 15 (2d8 + 6) de daño contundente. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de derribada."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "",
+      "text": "Desviar proyectiles (recarga 5–6). Detonante: una tirada de ataque a distancia acierta al gigante y le hace daño contundente, cortante o perforante. Respuesta: el gigante reduce en 11 (1d10 + 6) el daño que recibe del ataque. Si lo reduce a 0, el gigante puede redirigir una parte de la fuerza del ataque. Tirada de salvación de Destreza: CD 17, una criatura que el gigante pueda ver a 18 m o menos. Fallo: 11 (1d10 + 6) de daño de fuerza."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Gigante de piedra",
+  "srd_es_page": 329
+}

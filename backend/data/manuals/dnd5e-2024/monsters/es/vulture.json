@@ -1,0 +1,55 @@
+{
+  "id": "vulture",
+  "slug": "vulture",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Buitre",
+  "type": "Bestia",
+  "size": "Mediana",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 5,
+    "roll": "1d8 + 1"
+  },
+  "speed": {
+    "walk": 10,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 7,
+    "dex": 10,
+    "con": 13,
+    "int": 2,
+    "wis": 12,
+    "cha": 4
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "Percepción pasiva 13",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Atacar en manada",
+      "text": "El buitre tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del buitre se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pico",
+      "text": "Tirada de ataque cuerpo a cuerpo: +2, alcance 1,5 m. Acierto: 2 (1d4) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Buitre",
+  "srd_es_page": 379
+}

@@ -1,0 +1,88 @@
+{
+  "id": "shadow",
+  "slug": "shadow",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Shadow",
+  "size": "Medium",
+  "type": "Undead",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 12
+  },
+  "hitPoints": {
+    "average": 16,
+    "roll": "3d8+3"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 14,
+    "con": 13,
+    "int": 6,
+    "wis": 10,
+    "cha": 8
+  },
+  "savingThrows": {
+    "dex": 4
+  },
+  "skills": {
+    "stealth": 4
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "acid",
+    "cold",
+    "fire",
+    "lightning",
+    "thunder"
+  ],
+  "damageImmunities": [
+    "necrotic",
+    "poison"
+  ],
+  "conditionImmunities": [
+    "exhaustion",
+    "frightened",
+    "grappled",
+    "paralyzed",
+    "petrified",
+    "poisoned",
+    "prone",
+    "restrained"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 10",
+  "languages": "—",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Amorphous",
+      "text": "The shadow can move through a space as narrow as 1 inch without expending extra move- ment to do so."
+    },
+    {
+      "name": "Sunlight Weakness",
+      "text": "While in sunlight, the shadow has Disadvantage on D20 Tests."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Life Drain.",
+      "text": "Melee Spell Attack: +4 to hit, reach 5 ft., one creature. Hit: 9 (2d6 + 2) necrotic damage, and the target's STR score is reduced by 1d4."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 2,
+  "srd_en_match_name": "Shadow",
+  "srd_en_page": 319,
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

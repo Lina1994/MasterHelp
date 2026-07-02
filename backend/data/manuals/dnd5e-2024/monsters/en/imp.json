@@ -1,0 +1,82 @@
+{
+  "id": "imp",
+  "slug": "imp",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Imp",
+  "size": "Tiny",
+  "type": "Fiend",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 13
+  },
+  "hitPoints": {
+    "average": 10,
+    "roll": "3d4+3"
+  },
+  "speed": {
+    "walk": 20,
+    "fly": 40
+  },
+  "abilities": {
+    "str": 6,
+    "dex": 17,
+    "con": 13,
+    "int": 11,
+    "wis": 12,
+    "cha": 13
+  },
+  "savingThrows": {
+    "dex": 5
+  },
+  "skills": {
+    "deception": 3,
+    "stealth": 5
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "cold",
+    "fire",
+    "lightning"
+  ],
+  "damageImmunities": [],
+  "conditionImmunities": [
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 11",
+  "languages": "Infernal, Common",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "traits": [
+    {
+      "name": "Shapechanger.",
+      "text": "The imp can use its action to polymorph into a beast form that resembles a rat (speed 20 ft.) or a raven (speed 10 ft., fly 50 ft.), or back into its true form. Its statistics are the same in each form, except for the speed changes listed."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Sting.",
+      "text": "Melee Weapon Attack: +5 to hit, reach 5 ft., one creature. Hit: 5 (1d4 + 3) piercing damage, and DC 11 CON save or 10 (3d6) poison damage."
+    },
+    {
+      "name": "Invisibility.",
+      "text": "The imp magically turns invisible until it attacks or its concentration ends (as if concentrating on a spell).",
+      "spellcasting": {
+        "header": "spellcasting"
+      }
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "subtype": "Devil",
+  "initiative": 3,
+  "srd_en_match_name": "Imp",
+  "srd_en_page": 297,
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

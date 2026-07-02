@@ -1,0 +1,162 @@
+[
+  {
+    "id": "acolyte",
+    "name": "Acólito",
+    "description": "Has pasado tu vida al servicio de un templo, aprendiendo ritos sagrados y sirviendo en ceremonias.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Iniciado Mágico (Clérigo)",
+    "skillProficiencies": ["Perspicacia", "Religión"],
+    "toolProficiencies": [],
+    "equipment": "Un símbolo sagrado, un libro de oraciones o rueda de oraciones, 5 varitas de incienso, vestiduras, un conjunto de ropa común y una bolsa con 15 po."
+  },
+  {
+    "id": "artisan",
+    "name": "Artesano",
+    "description": "Eres miembro de un gremio de artesanos cualificados, experto en un oficio particular.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": " Artesano (Crafter)",
+    "skillProficiencies": ["Investigación", "Persuasión"],
+    "toolProficiencies": ["Un tipo de herramientas de artesano"],
+    "equipment": "Un juego de herramientas de artesano apropiado a tu oficio, una carta de presentación de tu gremio, ropa de viajero y una bolsa con 15 po."
+  },
+  {
+    "id": "charlatan",
+    "name": "Charlatán",
+    "description": "Tienes un historial de identidades falsas,cuentos exagerados yplanes fantásticos.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Hábil",
+    "skillProficiencies": ["Engaño", "Juego de Manos"],
+    "toolProficiencies": ["Kit de falsificación", "Kit de disfraz"],
+    "equipment": "Un conjunto de ropa fina, un kit de disfraz, un kit de falsificación y una bolsa con 15 po."
+  },
+  {
+    "id": "criminal",
+    "name": "Criminal",
+    "description": "Tienes un historial de infringir la ley — delitos menores u ofensas mayores, pero siempre peligrosos.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Alerta",
+    "skillProficiencies": ["Engaño", "Sigilo"],
+    "toolProficiencies": ["Un tipo de juego de azar", "Herramientas de ladrón"],
+    "equipment": "Una palanca, un conjunto de ropa común oscura con capucha y una bolsa con 15 po."
+  },
+  {
+    "id": "cultist",
+    "name": "Cultista",
+    "description": "Perteneces a un culto siniestro dedicado a poderes oscuros o prácticas prohibidas.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Iniciado Mágico (Brujo)",
+    "skillProficiencies": ["Arcano", "Religión"],
+    "toolProficiencies": [],
+    "equipment": "Un símbolo del culto, una túnica con capucha, vestiduras, ropa común y una bolsa con 15 po."
+  },
+  {
+    "id": "entertainer",
+    "name": "Artista",
+    "description": "Prosperas frente al público, ya seas músico, bailarín o narrador.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Músico",
+    "skillProficiencies": ["Acrobacias", "Interpretación"],
+    "toolProficiencies": ["Un tipo de instrumento musical", "Kit de disfraz"],
+    "equipment": "Un instrumento musical, un disfraz, una riñonera y una bolsa con 15 po."
+  },
+  {
+    "id": "farmer",
+    "name": "Granjero",
+    "description": "Creciste cerca de la tierra,trabajando campos o rebaños y aprendiendo los ritmos de la naturaleza.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Resistente",
+    "skillProficiencies": ["Trato con Animales", "Naturaleza"],
+    "toolProficiencies": ["Un tipo de herramientas de artesano", "Vehículos (tierra)"],
+    "equipment": "Un juego de herramientas de artesano, una hoz, ropa de viajero y una bolsa con 15 po."
+  },
+  {
+    "id": "guard",
+    "name": "Guardia",
+    "description": "Serviste en algún tipo de milicia, ejército organizado o guardia.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Alerta",
+    "skillProficiencies": ["Atletismo", "Percepción"],
+    "toolProficiencies": ["Un tipo de juego de azar"],
+    "equipment": "Un uniforme, ropa común, un cuerno o silbato y una bolsa con 10 po."
+  },
+  {
+    "id": "guide",
+    "name": "Guía",
+    "description": "Has pasado años viajando de un lugar a otro, aprendiendo los caminos y pueblos de la naturaleza.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Iniciado Mágico (Druida)",
+    "skillProficiencies": ["Sigilo", "Supervivencia"],
+    "toolProficiencies": ["Herramientas de cartógrafo"],
+    "equipment": "Un mapa de tu región natal, una brújula, ropa de viajero y una bolsa con 10 po."
+  },
+  {
+    "id": "hermit",
+    "name": "Ermitaño",
+    "description": "Viviste en aislamiento, ya sea en un retiro resguardado o lejos de la civilización.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Iniciado Mágico (Druida) o Sanador",
+    "skillProficiencies": ["Medicina", "Religión"],
+    "toolProficiencies": ["Kit de herboristería"],
+    "equipment": "Un estuche de pergaminos lleno de notas, una manta de invierno, ropa común, un kit de herboristería y 5 po."
+  },
+  {
+    "id": "merchant",
+    "name": "Mercader",
+    "description": "Eres un comerciante experimentado, acostumbrado a regatear, contar monedas y tratar con productos.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Hábil",
+    "skillProficiencies": ["Trato con Animales", "Persuasión"],
+    "toolProficiencies": ["Herramientas de navegante"],
+    "equipment": "Una carta de presentación, ropa fina, un ábaco y una bolsa con 25 po."
+  },
+  {
+    "id": "noble",
+    "name": "Noble",
+    "description": "Te criaste en una familia noble de medios e influencia considerables.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Hábil",
+    "skillProficiencies": ["Historia", "Persuasión"],
+    "toolProficiencies": ["Un tipo de juego de azar"],
+    "equipment": "Ropa fina, un anillo de sello, un pergamino de linaje y una bolsa con 25 po."
+  },
+  {
+    "id": "sage",
+    "name": "Sabio",
+    "description": "Has pasado años aprendiendo el conocimiento del multiverso.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": ["Inteligencia"] } },
+    "featOrigin": "Iniciado Mágico (Mago)",
+    "skillProficiencies": ["Arcano", "Historia"],
+    "toolProficiencies": [],
+    "equipment": "Una botella de tinta negra, una pluma, un cuchillo pequeño, una carta de un colega fallecido, ropa común y una bolsa con 10 po."
+  },
+  {
+    "id": "sailor",
+    "name": "Marinero",
+    "description": "Has vivido gran parte de tu vida a bordo de un barco, desafiando tormentas y costas extrañas.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Camorrista de Taberna",
+    "skillProficiencies": ["Acrobacias", "Atletismo"],
+    "toolProficiencies": ["Herramientas de navegante", "Vehículos (agua)"],
+    "equipment": "Una clavija de amarre (garrote), 50 pies de cuerda de seda, un amuleto de la suerte, ropa común y una bolsa con 10 po."
+  },
+  {
+    "id": "soldier",
+    "name": "Soldado",
+    "description": "Serviste en un ejército o milicia organizada, entrenado para la batalla y siguiendo órdenes.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Atacante Salvaje",
+    "skillProficiencies": ["Atletismo", "Intimidación"],
+    "toolProficiencies": ["Un tipo de juego de azar", "Vehículos (tierra)"],
+    "equipment": "Una insignia de rango, un trofeo de un enemigo caído, dados de hueso o una baraja, ropa común con cinturón y una bolsa con 10 po."
+  },
+  {
+    "id": "wayfarer",
+    "name": "Caminante",
+    "description": "Recorres las rutas entre aldeas y ciudades, sobreviviendo con ingenio y recursos.",
+    "abilityBonuses": { "choice": { "count": 2, "per": 1, "exclude": [] } },
+    "featOrigin": "Suerte",
+    "skillProficiencies": ["Perspicacia", "Sigilo"],
+    "toolProficiencies": ["Herramientas de ladrón"],
+    "equipment": "Ropa de viajero, una mochila, un saco de dormir, un kit de comedor, un yesquero, 2 dagas y una bolsa con 10 po."
+  }
+]

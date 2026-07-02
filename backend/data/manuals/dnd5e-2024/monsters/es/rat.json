@@ -1,0 +1,55 @@
+{
+  "id": "rat",
+  "slug": "rat",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Rata",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 1,
+    "roll": "1d4 − 1"
+  },
+  "speed": {
+    "walk": 20,
+    "climb": 20
+  },
+  "abilities": {
+    "str": 2,
+    "dex": 11,
+    "con": 9,
+    "int": 2,
+    "wis": 10,
+    "cha": 4
+  },
+  "skills": [
+    "Percepción +2"
+  ],
+  "senses": "visión en la oscuridad 9 m; Percepción pasiva 12",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Ágil",
+      "text": "La rata no provoca ataques de oportunidad cuando se mueve para ponerse fuera del alcance de un enemigo."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +2, alcance 1,5 m. Acierto: 1 de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Rata",
+  "srd_es_page": 393
+}

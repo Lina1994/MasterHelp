@@ -1,0 +1,69 @@
+{
+  "id": "giant_crocodile",
+  "slug": "giant_crocodile",
+  "lang": "en",
+  "name": "Giant Crocodile",
+  "senses": {
+    "passivePerception": 16
+  },
+  "languages": "Celestial; understands Common and Primordial",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The crocodile makes one Bite attack and one Tail attack."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +8, reach 5 ft. Hit: 21 (3d10 + 5) Piercing damage. If the target is a Large or smaller creature, it has the Grappled condition (escape DC 15). While Grappled, the target has the Restrained condition and can’t be targeted by the crocodile’s Tail."
+    },
+    {
+      "name": "Tail",
+      "text": "Melee Attack Roll: +8, reach 10 ft. Hit: 18 (3d8 + 5) Bludgeoning damage. If the target is a Large or smaller creature, it has the Prone condition. Giant Eagle"
+    }
+  ],
+  "speed": {
+    "walk": 10,
+    "fly": 80
+  },
+  "skills": "Perception +6",
+  "traits": [
+    {
+      "name": "Hold Breath",
+      "text": "The crocodile can hold its breath for 1 hour."
+    }
+  ],
+  "srd_en_match_name": "Giant Crocodile",
+  "srd_en_page": 347,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 60,
+    "roll": "8d12 + 8"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 12,
+    "int": 1,
+    "wis": 10,
+    "cha": 3
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 2,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "id": "efreeti",
+  "slug": "efreeti",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Efreeti",
+  "size": "Large",
+  "type": "elemental",
+  "alignment": "lawful evil",
+  "armorClass": 17,
+  "hitPoints": {
+    "average": 168,
+    "roll": "16d10 + 80"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 23,
+    "dex": 15,
+    "con": 20,
+    "int": 16,
+    "wis": 15,
+    "cha": 16
+  },
+  "saves": [
+    " INT +8 ",
+    " WIS +7 "
+  ],
+  "conditionImmunities": [
+    "fire"
+  ],
+  "senses": "darkvision 120 ft., passive Perception 12",
+  "languages": "Common, Primordial",
+  "challengeRating": "11",
+  "traits": [
+    {
+      "name": "Elemental Restoration",
+      "text": "If the efreeti dies outside the Elemental Plane of Fire, its body dissolves into ash, and it gains a new body in 1d4 days, reviving with all its Hit Points somewhere on the Plane of Fire."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The efreeti has Advantage on saving throws against spells and other magical effects."
+    },
+    {
+      "name": "Wishes",
+      "text": "The efreeti has a 30 percent chance of know- ing the Wish spell. If the efreeti knows it, the efreeti can cast it only on behalf of a non-genie creature who communicates a wish in a way the efreeti can under- stand. If the efreeti casts the spell for the creature, the efreeti suffers none of the spell’s stress. Once the efreeti has cast it three times, the efreeti can’t do so again for 365 days."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The efreeti makes three attacks, using Heated Blade or Hurl Flame in any combination."
+    },
+    {
+      "name": "Heated Blade",
+      "text": "Melee Attack Roll: +10, reach 5 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "13 (2d6 + 6) Slashing damage plus 13 (2d12) Fire damage."
+    },
+    {
+      "name": "Hurl Flame",
+      "text": "Ranged Attack Roll: +8, range 120 ft. Hit: 24 (7d6) Fire damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The efreeti casts one of the following spells, requiring no Material components and using Charisma as the spellcasting ability (spell save DC 16):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Magic, Elementalism 1/Day Each: Gaseous Form, Invisibility, Major Image, Plane Shift, Tongues, Wall of Fire (level 7 version) Erinyes Erinyes"
+    }
+  ],
+  "proficiencyBonus": 4,
+  "experiencePoints": 1800,
+  "skills": "Perception +6, Persuasion +8",
+  "reactions": [
+    {
+      "name": "Parry",
+      "text": "Trigger: The erinyes is hit by a melee attack roll while holding a weapon. Response: The erinyes adds 4 to its AC against that attack, possibly causing it to miss."
+    }
+  ],
+  "srd_en_match_name": "Efreeti",
+  "srd_en_page": 280,
+  "subtype": "Genie",
+  "initiative": 1,
+  "savingThrows": {
+    "str": 6,
+    "dex": 1,
+    "con": 7,
+    "int": 3,
+    "wis": 6,
+    "cha": 8
+  }
+}

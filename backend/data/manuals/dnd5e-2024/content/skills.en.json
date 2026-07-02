@@ -1,0 +1,6 @@
+{
+  "id": "skills",
+  "title": "Skills",
+  "format": "markdown",
+  "markdown": "# Skills\n\nSkills reflect specialized areas of expertise your character has developed. Every skill is linked to one of the six ability scores and grants proficiency bonuses when the character is proficient.\n\nThe SRD 5.2 contains the 18 core skills (one per Strength, Dexterity, Intelligence, Wisdom, and Charisma check):\n\n- **Strength** — Athletics\n- **Dexterity** — Acrobatics, Sleight of Hand, Stealth\n- **Intelligence** — Arcana, History, Investigation, Nature, Religion\n- **Wisdom** — Animal Handling, Insight, Medicine, Perception, Survival\n- **Charisma** — Deception, Intimidation, Performance, Persuasion\n\nUse the **Skills** page of this application (filter by ability or name) to browse the full list with descriptions."
+}

@@ -1,0 +1,63 @@
+{
+  "id": "guard_captain",
+  "slug": "guard_captain",
+  "lang": "en",
+  "name": "Guard Captain",
+  "speed": {
+    "walk": 30
+  },
+  "skills": "Athletics +6, Perception +4",
+  "senses": {
+    "passivePerception": 14
+  },
+  "languages": "Common",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Bone Cudgel",
+      "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3) Bludgeoning damage plus 2 (1d4) Psy- chic damage. Guardian Naga Guardian Naga"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Celestial Restoration",
+      "text": "If the naga dies, it returns to life in 1d6 days and regains all its Hit Points unless Dispel Evil and Good is cast on its remains."
+    }
+  ],
+  "srd_en_match_name": "Guard Captain",
+  "srd_en_page": 293,
+  "source": "SRD 5.2 (pendiente)",
+  "size": "medium",
+  "type": "aberration",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 11,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 11,
+    "roll": "2d8 + 2"
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 12,
+    "con": 12,
+    "int": 9,
+    "wis": 8,
+    "cha": 6
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 1,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_partial_reasons": [
+    "name_match_failed: 'Guard Captain' did not match any of 2 chunk heads; using chunk[0] as best-effort"
+  ]
+}

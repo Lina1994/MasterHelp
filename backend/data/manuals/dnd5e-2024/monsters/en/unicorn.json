@@ -1,0 +1,117 @@
+{
+  "id": "unicorn",
+  "name": "Unicorn",
+  "slug": "unicorn",
+  "size": "Large",
+  "type": "celestial",
+  "alignment": "lawful good",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 67,
+    "roll": "9d10 + 18"
+  },
+  "speed": {
+    "walk": 50,
+    "fly": 0
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 15,
+    "int": 11,
+    "wis": 17,
+    "cha": 16
+  },
+  "saves": [
+    " WIS +7 ",
+    " CHA +7 "
+  ],
+  "skills": [
+    " Medicine +9 ",
+    " Perception +9 ",
+    " Survival +7 "
+  ],
+  "damageResistances": [
+    "radiant"
+  ],
+  "senses": "truesight 60 ft., passive Perception 19",
+  "languages": "Celestial, Elvish, Sylvan",
+  "challengeRating": "5",
+  "traits": [
+    {
+      "name": "",
+      "text": "Legendary Resistance (3/Day). If the unicorn fails a sav- ing throw, it can choose to succeed instead."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The unicorn has Advantage on sav- ing throws against spells and other magical effects."
+    },
+    {
+      "name": "Vampiric Connection",
+      "text": "While the familiar and its vam- pire master are on the same plane of existence, the vampire can communicate with the familiar telepathi- cally, and the vampire can perceive through the famil- iar’s senses."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The unicorn makes one Hooves attack and one Radiant Horn attack."
+    },
+    {
+      "name": "Hooves",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 11 (2d6 + 4) Bludgeoning damage."
+    },
+    {
+      "name": "Radiant Horn",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 9 (1d10 + 4) Radiant damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The unicorn casts one of the following spells, requiring no spell components and using Cha- risma as the spellcasting ability (spell save DC 14):"
+    },
+    {
+      "name": "At Will",
+      "text": "Detect Evil and Good, Druidcraft 1/Day Each: Calm Emotions, Dispel Evil and Good, En- tangle, Pass without Trace, Word of Recall Bonus Actions Unicorn’s Blessing (3/Day). The unicorn touches an- other creature with its horn and casts Cure Wounds or Lesser Restoration on that creature, using the same spellcasting ability as Spellcasting."
+    },
+    {
+      "name": "Multiattack",
+      "text": "The familiar makes two Umbral Dag- ger attacks."
+    },
+    {
+      "name": "Umbral Dagger",
+      "text": "Melee or Ranged Attack Roll: +5, reach 5 ft. or range 20/60 ft. Hit: 5 (1d4 + 3) Piercing damage plus 7 (3d4) Necrotic damage. If the target is reduced to 0 Hit Points by this attack, the target becomes Stable but has the Poisoned condition for 1 hour. While it has the Poisoned condition, the target has the Paralyzed condition. Bonus Actions"
+    },
+    {
+      "name": "Deathless Agility",
+      "text": "The familiar takes the Dash or Disen- gage action. Vampire Spawn Medium or Small Undead, Neutral Evil AC 16 Initiative +3 (13) HP 90 (12d8 + 36) Speed 30 ft."
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 1800,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3. Immediately after another creature’s turn, the unicorn can expend a use to take one of the following actions. The unicorn regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Charging Horn",
+      "text": "The unicorn moves up to half its Speed without provoking Opportunity Attacks, and it makes one Radiant Horn attack."
+    },
+    {
+      "name": "Shimmering Shield",
+      "text": "The unicorn targets itself or one creature it can see within 60 feet of itself. The target gains 10 (3d6) Temporary Hit Points, and its AC in- creases by 2 until the end of the unicorn’s next turn. The unicorn can’t take this action again until the start of its next turn. Vampires Vampire Familiar Medium or Small Humanoid, Neutral Evil AC 15 Initiative +5 (15) HP 65 (10d8 + 20) Speed 30 ft., Climb 30 ft. MOD SAVE MOD SAVE MOD SAVE Str 17 +3 +3 Dex 16 +3 +5 Con 15 +2 +2 Int 10 +0 +0 WIS 10 +0 +2 Cha 14 +2 +2 Skills Perception +4, Persuasion +4, Stealth +7 Resistances Necrotic Immunities Charmed (except from its vampire master) Gear Daggers (10) Senses Darkvision 60 ft.; Passive Perception 14 Languages Common plus one other language CR 3 (XP 700; PB +2)"
+    }
+  ],
+  "srd_en_match_name": "Unicorn",
+  "srd_en_page": 331,
+  "initiative": 8,
+  "savingThrows": {
+    "str": 4,
+    "dex": 2,
+    "con": 2,
+    "int": 0,
+    "wis": 3,
+    "cha": 3
+  }
+}

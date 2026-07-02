@@ -1,0 +1,54 @@
+{
+  "id": "acolyte_captain",
+  "name": "Acolyte Captain",
+  "slug": "acolyte_captain",
+  "size": "Medium",
+  "type": "humanoid (any race)",
+  "alignment": "non-evil alignment",
+  "armorClass": 14,
+  "hitPoints": {
+    "average": 33,
+    "roll": "6d8 + 6"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 13,
+    "con": 12,
+    "int": 13,
+    "wis": 15,
+    "cha": 12
+  },
+  "saves": [
+    " WIS +4 "
+  ],
+  "skills": [
+    " Medicine +4 ",
+    " Religion +3 "
+  ],
+  "senses": "passive Perception 12",
+  "languages": "Common, plus one sacred language",
+  "challengeRating": "3",
+  "traits": [
+    {
+      "name": "Divine Aid (1/Short Rest)",
+      "text": "Action: restore 14 (2d8 + 3) HP to one ally within 60 ft."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Two with mace + one spell."
+    },
+    {
+      "name": "Mace",
+      "text": "+4 to hit. Hit: 5 (1d6 + 2) bludgeoning."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 700,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

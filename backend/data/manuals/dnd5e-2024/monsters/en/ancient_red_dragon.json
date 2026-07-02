@@ -1,0 +1,88 @@
+{
+  "id": "ancient_red_dragon",
+  "name": "Ancient Red Dragon",
+  "slug": "ancient_red_dragon",
+  "size": "Gargantuan",
+  "type": "dragon",
+  "alignment": "chaotic evil",
+  "armorClass": 22,
+  "hitPoints": {
+    "average": 546,
+    "roll": "28d20 + 224"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 80,
+    "climb": 40
+  },
+  "abilities": {
+    "str": 30,
+    "dex": 10,
+    "con": 29,
+    "int": 18,
+    "wis": 15,
+    "cha": 23
+  },
+  "saves": [
+    " DEX +8 ",
+    " CON +16 ",
+    " WIS +10 ",
+    " CHA +14 "
+  ],
+  "skills": [
+    " Perception +18 ",
+    " Stealth +8 "
+  ],
+  "damageImmunities": [
+    "fire"
+  ],
+  "senses": "blindsight 60 ft., darkvision 120 ft., passive Perception 28",
+  "languages": "Common, Draconic",
+  "challengeRating": "24",
+  "traits": [
+    {
+      "name": "Legendary Resistance (3/Day)",
+      "text": "If fails save, can choose to succeed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "Three attacks: one bite + two claws. Can replace one with fire breath as bonus."
+    },
+    {
+      "name": "Bite",
+      "text": "+17 to hit, reach 15 ft. Hit: 21 (3d8 + 10) piercing + 4 (1d8) fire."
+    },
+    {
+      "name": "Claw",
+      "text": "+17 to hit, reach 10 ft. Hit: 18 (3d6 + 10) slashing."
+    },
+    {
+      "name": "Tail",
+      "text": "+17 to hit, reach 20 ft. Hit: 20 (3d8 + 10) bludgeoning."
+    },
+    {
+      "name": "Frightful Presence",
+      "text": "Each creature within 120 ft: WIS save DC 23 or frightened 1 min."
+    },
+    {
+      "name": "Fire Breath (Recharge 5-6)",
+      "text": "90-ft × 10-ft cone: 26 (9d6) fire. DC 24 DEX half or 26 (9d6) ongoing fire."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Wing Attack (Cost 2)",
+      "text": "Flies up to half speed; each within 20 ft: 18 (3d6 + 10) bludgeoning. DC 25 STR or prone + pushed 30 ft."
+    },
+    {
+      "name": "Claw Attack",
+      "text": "One claw attack."
+    }
+  ],
+  "proficiencyBonus": 7,
+  "experiencePoints": 62000,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

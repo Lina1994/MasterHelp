@@ -1,0 +1,61 @@
+{
+  "id": "awakened_tree",
+  "name": "Awakened Tree",
+  "slug": "awakened_tree",
+  "size": "Huge",
+  "type": "plant",
+  "alignment": "unaligned",
+  "armorClass": 13,
+  "hitPoints": {
+    "average": 59,
+    "roll": "6d12 + 12"
+  },
+  "speed": {
+    "walk": 20
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 6,
+    "con": 15,
+    "int": 10,
+    "wis": 10,
+    "cha": 7
+  },
+  "damageVulnerabilities": [
+    "fire"
+  ],
+  "damageResistances": [
+    "piercing"
+  ],
+  "senses": "passive Perception 10",
+  "languages": "one language its creator knew",
+  "challengeRating": "2",
+  "traits": [
+    {
+      "name": "Evasion",
+      "text": "If the assassin is subjected to an effect that allows it to make a Dexterity saving throw to take only half damage, the assassin instead takes no damage if it succeeds on the save and only half damage if it fails. It can’t use this trait if it has the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Slam",
+      "text": "Melee Attack Roll: +6, reach 10 ft. Hit: 14 (3d6 + 4) Bludgeoning damage. Axe Beak Axe Beak"
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 450,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "skills": "Acrobatics +7, Perception +6, Stealth +10",
+  "srd_en_match_name": "Awakened Tree",
+  "srd_en_page": 257,
+  "initiative": 1,
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

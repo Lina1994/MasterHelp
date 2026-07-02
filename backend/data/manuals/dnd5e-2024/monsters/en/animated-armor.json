@@ -1,0 +1,79 @@
+{
+  "id": "animated_armor",
+  "slug": "animated-armor",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Animated Armor",
+  "size": "Medium",
+  "type": "Construct",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 18,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 33,
+    "roll": "6d8+6"
+  },
+  "speed": {
+    "walk": 25
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 11,
+    "con": 13,
+    "int": 1,
+    "wis": 3,
+    "cha": 1
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [
+    "poison",
+    "psychic"
+  ],
+  "conditionImmunities": [
+    "blinded",
+    "charmed",
+    "deafened",
+    "exhaustion",
+    "frightened",
+    "paralyzed",
+    "petrified",
+    "poisoned",
+    "stunned",
+    "unconscious"
+  ],
+  "senses": "blindsight 60 ft. (blind beyond this radius), passive Perception 6",
+  "languages": "—",
+  "proficiencyBonus": 2,
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "traits": [
+    {
+      "name": "Antimagic Susceptibility.",
+      "text": "The armor is incapacitated while in the area of an antimagic field. If targeted by the dispel magic spell, the armor is rendered inanimate for 1 minute."
+    },
+    {
+      "name": "False Appearance.",
+      "text": "While the armor remains motionless, it is indistinguishable from a normal suit of armor."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack.",
+      "text": "The armor makes two slam attacks."
+    },
+    {
+      "name": "Slam.",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) bludgeoning damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

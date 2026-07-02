@@ -1,0 +1,635 @@
+{
+  "id": "bard",
+  "name": "Bardo",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 por nivel de bardo",
+    "at1stLevel": "8 + tu modificador de Constitución",
+    "atHigherLevels": "1d8 (o 5) + tu modificador de Constitución por nivel de bardo después del 1.er"
+  },
+  "primaryAbilities": [
+    "Carisma"
+  ],
+  "savingThrows": [
+    "Destreza",
+    "Carisma"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Armadura Ligera"
+    ],
+    "weapons": [
+      "Armas Sencillas",
+      "Ballestas de mano",
+      "Espadas largas",
+      "Estoques",
+      "Espadas cortas"
+    ],
+    "tools": [
+      "Tres instrumentos musicales a tu elección"
+    ]
+  },
+  "skills": {
+    "choose": 3,
+    "from": [
+      "Cualquier habilidad"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        "un estoque",
+        "una espada larga",
+        "cualquier arma sencilla"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "un paquete de diplomático",
+        "un paquete de artista"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "un laúd",
+        "cualquier otro instrumento musical"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "armadura de cuero",
+        "armadura de cuero tachonado",
+        "cota de malla"
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "cha",
+    "progression": "full",
+    "description": "Has aprendido a desenredar y remodelar el tejido de la realidad a través de la música, la poesía y la danza."
+  },
+  "features": [
+    {
+      "id": "bardic-inspiration",
+      "name": "Inspiración de Bardo",
+      "level": 1,
+      "description": "Como acción adicional, puedes inspirar a otra criatura en 60 pies que pueda oírte, dándole un dado de Inspiración de Bardo (d6 en nivel 1, d8 en 5, d10 en 10, d12 en 15). Puede sumar el dado a una prueba de característica, ataque o salvación en los próximos 10 minutos. Tienes un número de estos dados igual a tu mod. de Carisma (mínimo uno); recuperas todos al terminar un descanso corto o largo."
+    },
+    {
+      "id": "spellcasting",
+      "name": "Lanzamiento de Conjuros",
+      "level": 1,
+      "description": "Aprendes a lanzar conjuros usando tu Carisma. Puedes preparar un número de conjuros igual a tu mod. de Carisma + mitad de tu nivel de bardo, redondeado hacia arriba."
+    },
+    {
+      "id": "jack-of-all-trades",
+      "name": "Manitas",
+      "level": 2,
+      "description": "Puedes añadir la mitad de tu bonificador de competencia, redondeado hacia abajo, a cualquier prueba de característica que no incluya ya tu bonificador de competencia."
+    },
+    {
+      "id": "song-of-rest",
+      "name": "Canción de Descanso",
+      "level": 2,
+      "description": "Durante un descanso corto, tú o cualquier criatura amiga que pueda oírte puede usar una acción adicional para recuperar PG como si hubiera gastado Dados de Golpe. La cantidad es 1d6 en nivel 2 y aumenta en 1d6 en 9, 13 y 17."
+    },
+    {
+      "id": "expertise",
+      "name": "Pericia",
+      "level": 3,
+      "description": "Elige dos competencias en habilidades. Tu bonificador de competencia se duplica para esas pruebas. Obtienes dos más en el nivel 10."
+    },
+    {
+      "id": "font-of-inspiration",
+      "name": "Fuente de Inspiración",
+      "level": 5,
+      "description": "Recuperas todos los dados de Inspiración de Bardo gastados al terminar un descanso corto."
+    },
+    {
+      "id": "countercharm",
+      "name": "Contrahechizo",
+      "level": 7,
+      "description": "Como acción, inicias una actuación que dura hasta el final de tu siguiente turno. Durante ese tiempo, tú y las criaturas amigas en 30 pies tenéis ventaja en salvaciones contra ser asustados o hechizados. Debes usar tu voz y un instrumento en mano."
+    },
+    {
+      "id": "magical-secrets",
+      "name": "Secretos Mágicos",
+      "level": 10,
+      "description": "Aprendes dos conjuros a elección de cualquier lista de clase. Puedes lanzarlos sin gastar casilla y no cuentan contra tu límite. Obtienes dos más en 14 y dos más en 18."
+    },
+    {
+      "id": "superior-inspiration",
+      "name": "Inspiración Superior",
+      "level": 20,
+      "description": "Cuando tires iniciativa y no te queden dados de Inspiración de Bardo, recuperas uno."
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "bardic-inspiration",
+        "spellcasting"
+      ],
+      "knownSpellsCount": 4,
+      "knownCantripsCount": 2,
+      "spellSlots": {
+        "1": 2
+      }
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "jack-of-all-trades",
+        "song-of-rest"
+      ],
+      "knownSpellsCount": 5,
+      "knownCantripsCount": 2,
+      "spellSlots": {
+        "1": 3
+      }
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "expertise",
+        "college"
+      ],
+      "knownSpellsCount": 6,
+      "knownCantripsCount": 2,
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      }
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 7,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      }
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "font-of-inspiration"
+      ],
+      "knownSpellsCount": 8,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      }
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "college-feature"
+      ],
+      "knownSpellsCount": 9,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      }
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "countercharm"
+      ],
+      "knownSpellsCount": 10,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 11,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [
+        "song-of-rest-2"
+      ],
+      "knownSpellsCount": 12,
+      "knownCantripsCount": 3,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      }
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "magical-secrets",
+        "expertise-2"
+      ],
+      "knownSpellsCount": 13,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      }
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "knownSpellsCount": 14,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      }
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 15,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      }
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "song-of-rest-3"
+      ],
+      "knownSpellsCount": 16,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      }
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "magical-secrets-2",
+        "college-feature"
+      ],
+      "knownSpellsCount": 17,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      }
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "bardic-inspiration-d12"
+      ],
+      "knownSpellsCount": 18,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      }
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 19,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      }
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "song-of-rest-4"
+      ],
+      "knownSpellsCount": 20,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      }
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "magical-secrets-3"
+      ],
+      "knownSpellsCount": 21,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      }
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "knownSpellsCount": 22,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      }
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "superior-inspiration"
+      ],
+      "knownSpellsCount": 23,
+      "knownCantripsCount": 4,
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 2,
+        "8": 1,
+        "9": 1
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "college-of-lore",
+      "name": "Colegio del Saber",
+      "grantedAtLevel": 3,
+      "description": "Los bardos del Colegio del Saber recopilan y dominan el conocimiento antiguo de todas las partes del multiverso.",
+      "features": [
+        {
+          "id": "bonus-proficiencies-lore",
+          "name": "Competencias Adicionales",
+          "level": 3,
+          "description": "Obtienes competencia con tres habilidades adicionales a tu elección."
+        },
+        {
+          "id": "cutting-words",
+          "name": "Palabras Cortantes",
+          "level": 3,
+          "description": "Puedes usar tu Inspiración de Bardo para restar el dado a la tirada de ataque, prueba de característica o daño de un oponente."
+        },
+        {
+          "id": "additional-magical-secrets-lore",
+          "name": "Secretos Mágicos Adicionales",
+          "level": 6,
+          "description": "Aprendes dos conjuros adicionales de cualquier clase."
+        },
+        {
+          "id": "peerless-skill",
+          "name": "Destreza Sin Igual",
+          "level": 14,
+          "description": "Puedes añadir un dado de Inspiración de Bardo a cualquier prueba de característica sin gastar acción."
+        }
+      ]
+    },
+    {
+      "id": "college-of-valor",
+      "name": "Colegio del Valor",
+      "grantedAtLevel": 3,
+      "description": "Los bardos del Colegio del Valor se enfocan en inspirar heroísmo en batalla.",
+      "features": [
+        {
+          "id": "bonus-proficiencies-valor",
+          "name": "Competencias Adicionales",
+          "level": 3,
+          "description": "Obtienes competencia con armadura media, escudos y armas marciales."
+        },
+        {
+          "id": "combat-inspiration",
+          "name": "Inspiración de Combate",
+          "level": 3,
+          "description": "Tu Inspiración puede usarse para sumar el dado al daño de un ataque con arma o a la CA del objetivo al ser golpeado."
+        },
+        {
+          "id": "extra-attack-valor",
+          "name": "Ataque Extra",
+          "level": 6,
+          "description": "Puedes atacar dos veces al usar la acción de Atacar."
+        },
+        {
+          "id": "battle-magic",
+          "name": "Magia de Batalla",
+          "level": 14,
+          "description": "Cuando uses tu acción para lanzar un conjuro de bardo, puedes hacer un ataque con arma como acción adicional."
+        }
+      ]
+    },
+    {
+      "class_id": "bard",
+      "id": "college_of_dance",
+      "name": "Colegio del Baile",
+      "grantedAtLevel": 3,
+      "description_en": "Your art is movement itself. You weaponize dance into combat grace, magic, and inspiration.",
+      "description_es": "Tu arte es el movimiento mismo. Conviertes el baile en gracia combativa, magia e inspiración.",
+      "features": [
+        {
+          "id": "dance_of_the_dawn",
+          "name": "Danza del Alba",
+          "level": 3,
+          "description": "Tras descanso prolongado, ganas 4 puntos de inspiración (en vez de dados). Recuperas toda la inspiración gastada en descanso corto."
+        },
+        {
+          "id": "defensive_dance",
+          "name": "Baile Defensivo",
+          "level": 6,
+          "description": "Cuando dañas a una criatura, mueves 9 m y +10 a CA contra su próximo ataque este turno."
+        },
+        {
+          "id": "panache",
+          "name": "Garbo",
+          "level": 10,
+          "description": "Cuando impactas a una criatura, desventaja en su próxima tirada."
+        },
+        {
+          "id": "irrepressible_energy",
+          "name": "Energía Irrefrenable",
+          "level": 14,
+          "description": "Una vez por descanso corto, superas automáticamente una salvación contra encantamiento o miedo."
+        }
+      ]
+    },
+    {
+      "class_id": "bard",
+      "id": "college_of_glamour",
+      "name": "Colegio del Glamur",
+      "grantedAtLevel": 3,
+      "description_en": "You weave fey magic through your art, taking on an otherworldly presence that enchants audiences.",
+      "description_es": "Tejes magia feérica en tu arte, asumiendo una presencia sobrenatural que encanta al público.",
+      "features": [
+        {
+          "id": "mantle_of_inspiration",
+          "name": "Manto de Inspiración",
+          "level": 3,
+          "description": "Dados de inspiración otorgan pg temporales iguales a la tirada + Carisma en vez de ventaja."
+        },
+        {
+          "id": "enthralling_performance",
+          "name": "Actuación Cautivadora",
+          "level": 3,
+          "description": "Tras 1 min de actuación, Sabiduría o encantado 1 min.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "unwavering_majesty",
+          "name": "Majestad Firme",
+          "level": 6,
+          "description": "Reacción: una criatura repite su ataque contra ti; usa la nueva tirada."
+        },
+        {
+          "id": "synthetic_versification",
+          "name": "Versificación Sintética",
+          "level": 14,
+          "description": "Ventaja en tiradas de comunicación no verbal; puedes lanzar Sugestión sin gasto de slot."
+        }
+      ]
+    },
+    {
+      "class_id": "bard",
+      "id": "college_of_whispers",
+      "name": "Colegio de los Susurros",
+      "grantedAtLevel": 3,
+      "description_en": "Your art is subversion. You infiltrate, manipulate, and strike from the shadows using words as weapons.",
+      "description_es": "Tu arte es la subversión. Infiltras, manipulas y golpeas desde las sombras con palabras como arma.",
+      "features": [
+        {
+          "id": "psychic_blades",
+          "name": "Hojas Psíquicas",
+          "level": 3,
+          "description": "Usa dados de inspiración para añadir daño psíquico a ataques con armas."
+        },
+        {
+          "id": "words_of_terror",
+          "name": "Palabras de Terror",
+          "level": 3,
+          "description": "Acción: maldices a una criatura a 9 m; +1d6 psíquico en ataques; Sabiduría o asustado 1 min.",
+          "savingThrow": "Wisdom"
+        },
+        {
+          "id": "mantle_of_whispers",
+          "name": "Manto de Susurros",
+          "level": 6,
+          "description": "Reacción cuando un humanoide muere a 9 m: asumes su apariencia y obtienes sus memorias durante 1 hora."
+        },
+        {
+          "id": "shadow_lore",
+          "name": "Saber Sombrio",
+          "level": 14,
+          "description": "Lanzar Imagen Mayor a voluntad como acción completa."
+        }
+      ]
+    }
+  ],
+  "source": "SRD 5.2"
+}

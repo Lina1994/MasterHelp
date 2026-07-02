@@ -1,0 +1,74 @@
+{
+  "id": "hill_giant",
+  "slug": "hill_giant",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Hill Giant",
+  "size": "Huge",
+  "type": "giant",
+  "alignment": "chaotic evil",
+  "armorClass": 13,
+  "hitPoints": {
+    "average": 105,
+    "roll": "10d12 + 40"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 21,
+    "dex": 8,
+    "con": 19,
+    "int": 5,
+    "wis": 9,
+    "cha": 6
+  },
+  "skills": [
+    " Perception +2 "
+  ],
+  "senses": "passive Perception 12",
+  "languages": "Common, Giant",
+  "challengeRating": "5",
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The giant makes two attacks, using Tree Club or Trash Lob in any combination."
+    },
+    {
+      "name": "Tree Club",
+      "text": "Melee Attack Roll: +8, reach 10 ft. Hit: 18 (3d8 + 5) Bludgeoning damage. If the target is a Large or smaller creature, it has the Prone condition."
+    },
+    {
+      "name": "Trash Lob",
+      "text": "Ranged Attack Roll: +8, range 60/240 ft. Hit: 16 (2d10 + 5) Bludgeoning damage, and the target has the Poisoned condition until the end of its next turn. Hippogriff Hippogriff"
+    }
+  ],
+  "proficiencyBonus": 3,
+  "experiencePoints": 1800,
+  "traits": [
+    {
+      "name": "Demonic Restoration",
+      "text": "If the hezrou dies outside the Abyss, its body dissolves into ichor, and it gains a new body instantly, reviving with all its Hit Points some- where in the Abyss."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The hezrou has Advantage on saving throws against spells and other magical effects."
+    },
+    {
+      "name": "Stench",
+      "text": "Constitution Saving Throw: DC 16, any creature that starts its turn in a 10-foot Emanation originating from the hezrou. Failure: The target has the Poisoned condition until the start of its next turn."
+    }
+  ],
+  "srd_en_match_name": "Hill Giant",
+  "srd_en_page": 295,
+  "subtype": "Demon",
+  "initiative": 6,
+  "savingThrows": {
+    "str": 7,
+    "dex": 3,
+    "con": 8,
+    "int": 0,
+    "wis": 4,
+    "cha": 1
+  }
+}

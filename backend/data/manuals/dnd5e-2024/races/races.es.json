@@ -1,0 +1,183 @@
+[
+  {
+    "id": "human",
+    "name": "Humano",
+    "size": "Mediano",
+    "speed": 30,
+    "abilityBonuses": { "choice": { "count": 2, "per": 1 } },
+    "languages": ["Común", "Un idioma adicional"],
+    "traits": [
+      { "id": "heroic-encouragement", "name": "Aliento Heroico", "description": "Cuando hagas una prueba de Carisma (Persuasión) o una salvación contra ser hechizado o asustado, puedes darte a ti mismo una de las siguientes ventajas a tu elección (eliges cada vez):\n- Ventaja en una prueba de Carisma (Persuasión).\n- Ventaja en una salvación contra ser hechizado o asustado.\nUna vez uses este rasgo, no podrás volver a usarlo hasta que termines un descanso corto o largo." }
+    ],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "dwarf",
+    "name": "Enano",
+    "size": "Mediano",
+    "speed": 30,
+    "abilityBonuses": { "con": 2 },
+    "languages": ["Común", "Enano"],
+    "traits": [
+      { "id": "darkvision", "name": "Visión en la Oscuridad", "description": "Tienes Visión en la Oscuridad con un alcance de 60 pies." },
+      { "id": "dwarven-resilience", "name": "Resistencia Enana", "description": "Tienes ventaja en las salvaciones contra veneno y resistencia al daño por veneno." },
+      { "id": "stonecunning", "name": "Astucia Pétrea", "description": "Cuando hagas una prueba de Inteligencia (Historia) relacionada con el origen de la obra en piedra, se te considera competente y añades el doble de tu bonificador de competencia a la prueba." }
+    ],
+    "lineages": [
+      { "id": "duergar", "name": "Duergar", "description": "Descendiente de los enanos grises, tienes ventaja en salvaciones contra ilusiones y contra ser hechizado o paralizado, tienes Visión en la Oscuridad hasta 120 pies, y puedes lanzar Agrandar/Reducir e Invisibilidad una vez por descanso largo (Inteligencia es tu característica de lanzamiento)." },
+      { "id": "mountain", "name": "Enano de las Montañas", "description": "Los enanos de las montañas son robustos y fuertes. Obtienes un bonificador de +2 a la Fuerza y tienes competencia con armaduras ligeras y medias." },
+      { "id": "hill", "name": "Enano de las Colinas", "description": "Los enanos de las colinas tienen sentidos agudos y una resistencia notable. Obtienes un bonificador de +1 a la Sabiduría y tu máximo de puntos de golpe aumenta en 1, y aumenta en 1 cada vez que subes de nivel." }
+    ],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "elf",
+    "name": "Elfo",
+    "size": "Mediano",
+    "speed": 30,
+    "abilityBonuses": { "dex": 2 },
+    "languages": ["Común", "Élfico"],
+    "traits": [
+      { "id": "darkvision", "name": "Visión en la Oscuridad", "description": "Tienes Visión en la Oscuridad con un alcance de 60 pies." },
+      { "id": "fey-ancestry", "name": "Herencia Fey", "description": "Tienes ventaja en salvaciones para evitar o terminar la condición de hechizado." },
+      { "id": "trance", "name": "Trance", "description": "No necesitas dormir, y la magia no puede hacerte dormir. Puedes terminar un descanso largo en 4 horas pasando esas horas en un estado tranquilo, manteniendo la consciencia." }
+    ],
+    "lineages": [
+      { "id": "drow", "name": "Drow", "description": "Descendiente de los elfos oscuros, tienes Visión en la Oscuridad hasta 120 pies, competencia con estoque, espada corta y ballesta de mano, conoces el truco Luces Danzantes y puedes lanzar Fuego Feérico (3.er nivel) y Oscuridad una vez por descanso largo (Carisma es tu característica de lanzamiento)." },
+      { "id": "high", "name": "Elfo Noble", "description": "Grácil y estudioso, obtienes un bonificador de +1 a la Inteligencia, competencia con espada larga, espada corta, arco corto y arco largo, conoces un truco de Mago, y puedes leer y escribir un idioma adicional." },
+      { "id": "wood", "name": "Elfo del Bosque", "description": "Veloz y reclusivo, obtienes un bonificador de +1 a la Sabiduría, tu velocidad de caminar se vuelve 35 pies y tienes competencia con espada larga, espada corta, arco corto y arco largo." }
+    ],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "halfling",
+    "name": "Mediano",
+    "size": "Pequeño",
+    "speed": 30,
+    "abilityBonuses": { "dex": 2 },
+    "languages": ["Común", "Mediano"],
+    "traits": [
+      { "id": "lucky", "name": "Suerte", "description": "Cuando sacas un 1 en el d20 de una tirada de ataque, prueba de característica o salvación, puedes repetir el dado y debes usar el nuevo resultado." },
+      { "id": "brave", "name": "Valentía", "description": "Tienes ventaja en las salvaciones para evitar o terminar la condición de asustado." },
+      { "id": "halfling-nimbleness", "name": "Agilidad de Mediano", "description": "Puedes moverte a través del espacio de cualquier criatura de un tamaño mayor que el tuyo, pero no puedes detenerte en ese mismo espacio." }
+    ],
+    "lineages": [
+      { "id": "ghostwise", "name": "Mediano Sabio de los Espíritus", "description": "Los medianos sabios de los espíritus tienen un fuerte vínculo con su familia. Obtienes +1 a Sabiduría y puedes comunicarte telepáticamente con cualquier criatura en 30 pies que comparta un idioma contigo." },
+      { "id": "lightfoot", "name": "Mediano Piesligeros", "description": "Los medianos piesligeros son afables y buenos para esconderse. Obtienes +1 a Carisma y puedes intentar esconderte cuando estás obscuredo solo por una criatura de tamaño igual o mayor al tuyo." },
+      { "id": "stout", "name": "Mediano Robusto", "description": "Los medianos robustos son más resistentes que el promedio. Obtienes +1 a Constitución, ventaja en salvaciones contra veneno y resistencia al daño por veneno." }
+    ],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "gnome",
+    "name": "Gnomo",
+    "size": "Pequeño",
+    "speed": 30,
+    "abilityBonuses": { "int": 2 },
+    "languages": ["Común", "Gnómico"],
+    "traits": [
+      { "id": "darkvision", "name": "Visión en la Oscuridad", "description": "Tienes Visión en la Oscuridad con un alcance de 60 pies." },
+      { "id": "gnome-cunning", "name": "Astucia de Gnomo", "description": "Tienes ventaja en salvaciones de Inteligencia, Sabiduría y Carisma contra conjuros y otros efectos mágicos." }
+    ],
+    "lineages": [
+      { "id": "deep", "name": "Gnomo Profundo", "description": "Descendiente de los svirfneblin, tienes ventaja en pruebas de Sigilo, ignoras la desventaja de estar a 5 pies de una criatura visible y conoces el truco Ilusión Menor." },
+      { "id": "forest", "name": "Gnomo del Bosque", "description": "Obtienes +1 a Destreza, conoces el truco Ilusión Menor y puedes comunicar conceptos simples con bestias Pequeñas o menores." },
+      { "id": "rock", "name": "Gnomo de las Rocas", "description": "Obtienes +1 a Constitución, competencia con herramientas de Inventor y puedes crear pequeños dispositivos mecánicos que duran 24 horas (hasta tres activos a la vez)." }
+    ],
+    "source": "SRD 5.2 (Tasha's Cauldron of Everything)"
+  },
+  {
+    "id": "dragonborn",
+    "name": "Draconiano",
+    "size": "Mediano",
+    "speed": 30,
+    "abilityBonuses": { "str": 2, "cha": 1 },
+    "languages": ["Común", "Dracónico"],
+    "traits": [
+      { "id": "draconic-ancestry", "name": "Ascendencia Dracónica", "description": "Tienes ascendencia dracónica. Elige un tipo de dragón. Tu arma de aliento y tu resistencia al daño vienen determinados por ese tipo." },
+      { "id": "breath-weapon", "name": "Arma de Aliento", "description": "Puedes usar tu acción para exhalar energía destructiva asociada a tu ascendencia dracónica. El tipo y área dependen de la ascendencia. Las criaturas en el área deben hacer una salvación (CD 8 + mod Con + competencia). Si fallan, reciben 2d6 de daño, mitad si tienen éxito. El daño aumenta con el nivel. Una vez usada, no puedes usarla hasta el próximo descanso corto o largo." },
+      { "id": "damage-resistance", "name": "Resistencia al Daño", "description": "Tienes resistencia al tipo de daño asociado a tu ascendencia dracónica." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "tiefling",
+    "name": "Tiefling",
+    "size": "Mediano",
+    "speed": 30,
+    "abilityBonuses": { "cha": 2, "int": 1 },
+    "languages": ["Común", "Infernal"],
+    "traits": [
+      { "id": "darkvision", "name": "Visión en la Oscuridad", "description": "Tienes Visión en la Oscuridad con un alcance de 60 pies." },
+      { "id": "hellish-resistance", "name": "Resistencia Infernal", "description": "Tienes resistencia al daño por fuego." },
+      { "id": "infernal-legacy", "name": "Herencia Infernal", "description": "Conoces el truco Taumaturgia. En el nivel 3 puedes lanzar Reprensión Infernal como conjuro de nivel 2 una vez por descanso largo. En el nivel 5 puedes lanzar Oscuridad una vez por descanso largo. El Carisma es tu característica de lanzamiento." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2"
+  },
+  {
+    "id": "aasimar",
+    "name": "Aasimar",
+    "size": "Mediano",
+    "speed": 30,
+    "abilityBonuses": { "cha": 2 },
+    "languages": ["Común", "Celestial"],
+    "traits": [
+      { "id": "darkvision", "name": "Visión en la Oscuridad", "description": "Tienes Visión en la Oscuridad con un alcance de 60 pies." },
+      { "id": "celestial-resistance", "name": "Resistencia Celestial", "description": "Tienes resistencia al daño necrótico y al daño radiante." },
+      { "id": "hands-of-healing", "name": "Manos Curativas", "description": "Como acción mágica, tocas a una criatura y restauras puntos de golpe iguales a tu bonificador de competencia. Una vez usado, no puedes volver a usarlo hasta terminar un descanso largo." },
+      { "id": "healing-hands-innate", "name": "Manos Curativas (Innato)", "description": "A partir del nivel 3, puedes lanzar Restauración Menor una vez por descanso largo sin gastar casilla de conjuro." }
+    ],
+    "lineages": [
+      { "id": "protector", "name": "Aasimar Protector", "description": "+1 a Sabiduría, competencia con armas marciales. En el nivel 3, puedes emitir Represalia Radiante, infligiendo daño radiante a un objetivo en 30 pies." },
+      { "id": "scourge", "name": "Aasimar Azote", "description": "+1 a Constitución. En el nivel 3, puedes desatar Consumo Radiante: daño radiante en un radio de 30 pies centrado en ti (salvación de Constitución para mitad)." },
+      { "id": "fallen", "name": "Aasimar Caído", "description": "+1 a Fuerza. En el nivel 3, puedes usar Velo Necrótico: como acción adicional, te envuelves en energía necrótica y haces daño necrótico extra en tus ataques cuerpo a cuerpo (salvación de Sabiduría)." }
+    ],
+    "source": "SRD 5.2 (Mordenkainen Presents: Monsters of the Multiverse)"
+  },
+  {
+    "id": "goliath",
+    "name": "Goliat",
+    "size": "Mediano",
+    "speed": 35,
+    "abilityBonuses": { "str": 2, "con": 1 },
+    "languages": ["Común", "Gigante"],
+    "traits": [
+      { "id": "stoneborn", "name": "Nacido de la Piedra", "description": "Tienes resistencia al daño contundente de ataques no mágicos." },
+      { "id": "larger-than-life", "name": "Más Grande que la Vida", "description": "Puedes usar tu reacción para crecer una categoría de tamaño junto con tu equipo, durante 10 minutos. Mientras agrandado, tu alcance aumenta 5 pies, tus ataques hacen 1d4 extra de daño y tienes ventaja en pruebas y salvaciones de Fuerza. Una vez usado, no puedes volver a usarlo hasta el próximo descanso largo." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2 (Mordenkainen Presents: Monsters of the Multiverse)"
+  },
+  {
+    "id": "orc",
+    "name": "Orco",
+    "size": "Mediano",
+    "speed": 30,
+    "abilityBonuses": { "str": 2, "con": 1 },
+    "languages": ["Común", "Orco"],
+    "traits": [
+      { "id": "darkvision", "name": "Visión en la Oscuridad", "description": "Tienes Visión en la Oscuridad con un alcance de 60 pies." },
+      { "id": "powerful-build", "name": "Constitución Robusta", "description": "Cuentas como una categoría de tamaño mayor al determinar tu capacidad de carga y qué peso puedes empujar, arrastrar o levantar." },
+      { "id": "relentless-endurance", "name": "Resistencia Implacable", "description": "Cuando te reduzcan a 0 PG y no te maten al instante, puedes caer a 1 PG en su lugar. Una vez usado, no puedes volver a usarlo hasta el próximo descanso largo." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2 (Mordenkainen Presents: Monsters of the Multiverse)"
+  },
+  {
+    "id": "half-orc",
+    "name": "Semi-Orco",
+    "size": "Mediano",
+    "speed": 30,
+    "abilityBonuses": { "str": 2, "con": 1 },
+    "languages": ["Común", "Orco"],
+    "traits": [
+      { "id": "darkvision", "name": "Visión en la Oscuridad", "description": "Tienes Visión en la Oscuridad con un alcance de 60 pies." },
+      { "id": "relentless-endurance", "name": "Resistencia Implacable", "description": "Cuando te reduzcan a 0 PG sin morir al instante, puedes caer a 1 PG. Una vez usado, no puedes volver a usarlo hasta el próximo descanso largo." },
+      { "id": "savage-attacks", "name": "Ataques Salvajes", "description": "Cuando saques un crítico con un ataque cuerpo a cuerpo, puedes tirar uno de los dados de daño del arma una vez más y sumarlo al daño extra del crítico." }
+    ],
+    "lineages": [],
+    "source": "SRD 5.2"
+  }
+]

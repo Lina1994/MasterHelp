@@ -1,0 +1,49 @@
+{
+  "id": "badger",
+  "slug": "badger",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Tejón",
+  "type": "Bestia",
+  "size": "Diminuta",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 5,
+    "roll": "1d4 + 3"
+  },
+  "speed": {
+    "walk": 20
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 11,
+    "con": 16,
+    "int": 2,
+    "wis": 12,
+    "cha": 5
+  },
+  "skills": [
+    "Percepción +3"
+  ],
+  "senses": "visión en la oscuridad 9 m; Percepción pasiva 13",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +2, alcance 1,5 m. Acierto: 1 de daño perforante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Tejón",
+  "srd_es_page": 396
+}

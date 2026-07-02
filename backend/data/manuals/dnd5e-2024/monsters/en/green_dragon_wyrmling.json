@@ -1,0 +1,71 @@
+{
+  "id": "green_dragon_wyrmling",
+  "slug": "green_dragon_wyrmling",
+  "lang": "en",
+  "name": "Green Dragon Wyrmling",
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes two Rend attacks."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 7 (1d10 + 2) Slashing damage plus 3 (1d6) Poison damage. Poison Breath (Recharge 5–6). Constitution Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 11, each creature in a 15-foot Cone. Failure: 21 (6d6) Poison damage. Success: Half damage. Young Green Dragon"
+    }
+  ],
+  "speed": {
+    "walk": 40,
+    "fly": 80,
+    "swim": 40
+  },
+  "skills": "Deception +5, Perception +7, Stealth +4",
+  "senses": {
+    "blindsight": "30 ft."
+  },
+  "languages": "Common, Draconic",
+  "challengeRating": "8",
+  "experiencePoints": 3900,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The dragon can breathe air and water."
+    }
+  ],
+  "srd_en_match_name": "Green Dragon Wyrmling",
+  "srd_en_page": 290,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "ooze",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 9,
+    "type": "−2 (13)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 22,
+    "roll": "3d8 + 9"
+  },
+  "abilities": {
+    "str": 12,
+    "dex": 6,
+    "con": 16,
+    "int": 1,
+    "wis": 6,
+    "cha": 2
+  },
+  "savingThrows": {
+    "str": 1,
+    "dex": 0,
+    "con": 3,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "subtype": "Chromatic"
+}

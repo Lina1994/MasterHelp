@@ -1,0 +1,115 @@
+{
+  "id": "black_pudding",
+  "name": "Black Pudding",
+  "slug": "black_pudding",
+  "size": "Large",
+  "type": "ooze",
+  "alignment": "unaligned",
+  "armorClass": 7,
+  "hitPoints": {
+    "average": 85,
+    "roll": "10d10 + 30"
+  },
+  "speed": {
+    "walk": 20,
+    "climb": 20
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 5,
+    "con": 16,
+    "int": 1,
+    "wis": 5,
+    "cha": 1
+  },
+  "damageResistances": [
+    "acid"
+  ],
+  "damageImmunities": [
+    "cold",
+    "fire",
+    "lightning",
+    "piercing",
+    "slashing"
+  ],
+  "conditionImmunities": [
+    "blinded",
+    "charmed",
+    "deafened",
+    "exhaustion",
+    "frightened",
+    "prone"
+  ],
+  "senses": "blindsight 60 ft., passive Perception 7",
+  "languages": "—",
+  "challengeRating": "4",
+  "traits": [
+    {
+      "name": "Amorphous",
+      "text": "The pudding can move through a space as narrow as 1 inch without expending extra move- ment to do so."
+    },
+    {
+      "name": "Corrosive Form",
+      "text": "A creature that hits the pudding with a melee attack roll takes 4 (1d8) Acid damage. Nonmag- ical ammunition is destroyed immediately after hitting the pudding and dealing any damage. Any nonmagical weapon takes a cumulative −1 penalty to attack rolls immediately after dealing damage to the pudding and coming into contact with it. The weapon is destroyed if the penalty reaches −5. The penalty can be removed by casting the Mending spell on the weapon. In 1 minute, the pudding can eat through 2 feet of nonmagical wood or metal."
+    },
+    {
+      "name": "Spider Climb",
+      "text": "The pudding can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Dissolving Pseudopod",
+      "text": "Melee Attack Roll: +5, reach 10 ft. Hit: 17 (4d6 + 3) Acid damage. Nonmagical ar- mor worn by the target takes a −1 penalty to the AC it offers. The armor is destroyed if the penalty reduces its"
+    },
+    {
+      "name": "AC to 10",
+      "text": "The penalty can be removed by casting the Mending spell on the armor."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 1100,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "skills": "Perception +16, Stealth +9",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Cloud of Insects",
+      "text": "Dexterity Saving Throw: DC 21, one creature the dragon can see within 120 feet. Failure: 33 (6d10) Poison damage, and the target has Disadvantage on saving throws to maintain Concentration until the end of its next turn. Failure or Success: The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Frightful Presence",
+      "text": "The dragon uses Spellcasting to cast"
+    },
+    {
+      "name": "Fear",
+      "text": "The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Pounce",
+      "text": "The dragon moves up to half its Speed, and it makes one Rend attack. Black Pudding Black Pudding"
+    }
+  ],
+  "reactions": [
+    {
+      "name": "Split",
+      "text": "Trigger: While the pudding is Large or Medium and has 10+ Hit Points, it becomes Bloodied or is sub- jected to Lightning or Slashing damage. Response: The pudding splits into two new Black Puddings. Each new pudding is one size smaller than the original pudding and acts on its Initiative. The original pudding’s Hit"
+    }
+  ],
+  "srd_en_match_name": "Black Pudding",
+  "srd_en_page": 262,
+  "subtype": "Chromatic",
+  "initiative": 16,
+  "savingThrows": {
+    "str": 8,
+    "dex": 9,
+    "con": 7,
+    "int": 3,
+    "wis": 9,
+    "cha": 6
+  }
+}

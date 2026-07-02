@@ -1,0 +1,50 @@
+{
+  "id": "ogre",
+  "slug": "ogre",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Ogro",
+  "type": "Gigante",
+  "size": "Grande",
+  "alignment": "caótico malvado",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": -1,
+  "hitPoints": {
+    "average": 68,
+    "roll": "8d10 + 24"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 8,
+    "con": 16,
+    "int": 5,
+    "wis": 7,
+    "cha": 7
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción pasiva 8",
+  "languages": "común, gigante",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Garrote grande",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 13 (2d8 + 4) de daño contundente."
+    },
+    {
+      "name": "Jabalina",
+      "text": "Tirada de ataque cuerpo a cuerpo o a distancia: +6, alcance 1,5 m o 9/36 m a distancia. Acierto: 11 (2d6 + 4) de daño perforante. Oni"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Ogro",
+  "srd_es_page": 355
+}

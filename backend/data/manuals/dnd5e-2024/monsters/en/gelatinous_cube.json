@@ -1,0 +1,98 @@
+{
+  "id": "gelatinous_cube",
+  "slug": "gelatinous_cube",
+  "lang": "en",
+  "name": "Gelatinous Cube",
+  "skills": "Stealth +4",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 10
+  },
+  "languages": "Primordial (Terran)",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The giant makes two attacks, using Frost Axe or Great Bow in any combination."
+    },
+    {
+      "name": "Frost Axe",
+      "text": "Melee Attack Roll: +9, reach 10 ft. Hit: 19 (2d12 + 6) Slashing damage plus 9 (2d8) Cold damage."
+    },
+    {
+      "name": "Great Bow",
+      "text": "Ranged Attack Roll: +9, range 150/600 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "17 (2d10 + 6) Piercing damage plus 7 (2d6) Cold damage, and the target’s Speed decreases by 10 feet until the end of its next turn. Bonus Actions War Cry (Recharge 5–6). The giant or one creature of its choice that can see or hear it gains 16 (2d10 + 5) Temporary Hit Points and has Advantage on attack rolls until the start of the giant’s next turn. Fungi Shrieker Fungus"
+    },
+    {
+      "name": "Multiattack",
+      "text": "The fungus makes two Rotting Touch attacks."
+    },
+    {
+      "name": "Rotting Touch",
+      "text": "Melee Attack Roll: +2, reach 10 ft. Hit: 4 (1d8) Necrotic damage. Gargoyle Gargoyle"
+    },
+    {
+      "name": "Multiattack",
+      "text": "The gargoyle makes two Claw attacks."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d4 + 2) Slashing damage. Gelatinous Cube Gelatinous Cube"
+    }
+  ],
+  "speed": {
+    "walk": 15
+  },
+  "reactions": [
+    {
+      "name": "Shriek",
+      "text": "Trigger: A creature or a source of Bright Light moves within 30 feet of the shrieker. Response: The shrieker emits a shriek audible within 300 feet of itself for 1 minute or until the shrieker dies. Violet Fungus"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Flyby",
+      "text": "The gargoyle doesn’t provoke an Opportunity Attack when it flies out of an enemy’s reach."
+    }
+  ],
+  "srd_en_match_name": "Gelatinous Cube",
+  "srd_en_page": 283,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "plant",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 5,
+    "type": "−5 (5)"
+  },
+  "initiative": 5,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d8"
+  },
+  "abilities": {
+    "str": 1,
+    "dex": 1,
+    "con": 10,
+    "int": 1,
+    "wis": 3,
+    "cha": 1
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "sphinx_of_valor",
+  "slug": "sphinx_of_valor",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Esfinge del valor",
+  "type": "Celestial",
+  "size": "Grande",
+  "alignment": "legal neutral",
+  "armorClass": {
+    "value": 17
+  },
+  "initiative": 12,
+  "hitPoints": {
+    "average": 199,
+    "roll": "19d10 + 95"
+  },
+  "speed": {
+    "walk": 40,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 22,
+    "dex": 10,
+    "con": 20,
+    "int": 16,
+    "wis": 23,
+    "cha": 18
+  },
+  "skills": [
+    "Conocimiento arcano +9",
+    "Percepción +12"
+  ],
+  "senses": "visión verdadera 36 m; Percepción pasiva 22",
+  "languages": "celestial, común",
+  "challengeRating": "17",
+  "proficiencyBonus": 6,
+  "traits": [
+    {
+      "name": "Inescrutable",
+      "text": "La magia no puede observar desde lejos a la esfinge ni detectar sus pensamientos sin su permiso. Las pruebas de Sabiduría (Perspicacia) realizadas para determinar sus intenciones tienen desventaja. Resistencia legendaria (3/día o 4/día en la guarida). La esfinge puede elegir tener éxito en una tirada de salvación que haya fallado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "La esfinge realiza dos ataques con sus garras y emplea su rugido."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +12, alcance 1,5 m. Acierto: 20 (4d6 + 6) de daño cortante."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "La esfinge lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 20):"
+    },
+    {
+      "name": "A voluntad",
+      "text": "detectar el bien y el mal, taumaturgia 1/día cada uno: detectar magia, disipar magia, festín de héroes, restablecimiento mayor, zona de la verdad Rugido (3/día). La esfinge emite un rugido mágico. Cada vez que ruja, el rugido tendrá un efecto distinto, como se detalla a continuación (la secuencia se reinicia cada vez que haga un descanso largo):"
+    },
+    {
+      "name": "Primer rugido",
+      "text": "Tirada de salvación de Sabiduría: CD 20, todos los enemigos en una emanación de 150 m que se origina en la esfinge. Fallo: el objetivo tendrá el estado de asustado durante 1 minuto."
+    },
+    {
+      "name": "Segundo rugido",
+      "text": "Tirada de salvación de Sabiduría: CD 20, todos los enemigos en una emanación de 150 m que se origina en la esfinge. Fallo: el objetivo tendrá el estado de paralizado y repetirá la tirada de salvación al final de cada uno de sus turnos. Si tiene éxito, se librará del efecto. Tras 1 minuto, tendrá éxito automáticamente."
+    },
+    {
+      "name": "Tercer rugido",
+      "text": "Tirada de salvación de Constitución: CD 20, todos los enemigos en una emanación de 150 m que se origina en la esfinge. Fallo: 44 (8d10) de daño de trueno y el objetivo tendrá el estado de derribado. Éxito: solo la mitad del daño."
+    }
+  ],
+  "legendaryActions": [
+    {
+      "name": "Usos de acciones legendarias",
+      "text": "3 (4 en la guarida). Justo después del turno de otra criatura, la esfinge puede emplear un uso para llevar a cabo una de las siguientes acciones. La esfinge recupera todos los usos al principio de cada uno de sus turnos."
+    },
+    {
+      "name": "Merodeo arcano",
+      "text": "La esfinge puede teletransportarse hasta 9 m a un espacio sin ocupar que pueda ver y realiza un ataque con sus garras."
+    },
+    {
+      "name": "Peso de los años",
+      "text": "Tirada de salvación de Constitución: CD 16, una criatura que la esfinge pueda ver a 36 m o menos. Fallo: el objetivo suma 1 nivel de cansancio. Mientras el objetivo tenga al menos 1 nivel de cansan-"
+    }
+  ],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Esfinge del valor",
+  "srd_es_page": 322
+}

@@ -1,0 +1,73 @@
+{
+  "id": "roper",
+  "slug": "roper",
+  "lang": "en",
+  "name": "Roper",
+  "speed": {
+    "walk": 40
+  },
+  "skills": "Perception +6, Stealth +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The roper makes two Tentacle attacks, uses Reel, and makes two Bite attacks."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 17 (3d8 + 4) Piercing damage."
+    },
+    {
+      "name": "Tentacle",
+      "text": "Melee Attack Roll: +7, reach 60 ft. Hit: The target has the Grappled condition (escape DC 14) from one of six tentacles, and the target has the Poisoned condition until the grapple ends. The tentacle can be damaged, freeing a creature it has Grappled when destroyed (AC 20, HP 10, Immunity to Poison and Psychic damage). Damaging the tentacle deals no damage to the roper, and a destroyed tentacle regrows at the start of the roper’s next turn."
+    },
+    {
+      "name": "Reel",
+      "text": "The roper pulls each creature Grappled by it up to 30 feet straight toward it. Rust Monster Rust Monster"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The roper can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    }
+  ],
+  "srd_en_match_name": "Roper",
+  "srd_en_page": 317,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "monstrosity",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 15,
+    "type": "+8 (18)"
+  },
+  "initiative": 8,
+  "hitPoints": {
+    "average": 248,
+    "roll": "16d20 + 80"
+  },
+  "abilities": {
+    "str": 28,
+    "dex": 10,
+    "con": 20,
+    "int": 3,
+    "wis": 10,
+    "cha": 9
+  },
+  "savingThrows": {
+    "str": 9,
+    "dex": 4,
+    "con": 5,
+    "int": 0,
+    "wis": 4,
+    "cha": 0
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "gnoll",
+  "slug": "gnoll",
+  "lang": "en",
+  "source": "SRD 5.2",
+  "name": "Gnoll",
+  "size": "Medium",
+  "type": "Humanoid",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 12,
+    "type": "hide armor, shield"
+  },
+  "hitPoints": {
+    "average": 22,
+    "roll": "5d8"
+  },
+  "speed": {
+    "walk": 30
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 12,
+    "con": 11,
+    "int": 6,
+    "wis": 9,
+    "cha": 7
+  },
+  "savingThrows": null,
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [],
+  "conditionImmunities": [],
+  "senses": "darkvision 60 ft., passive Perception 9",
+  "languages": "Gnoll",
+  "proficiencyBonus": 2,
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "traits": [
+    {
+      "name": "Rampage.",
+      "text": "If the gnoll reduces a creature to 0 HP with a melee attack, the gnoll can take a bonus action to move up to half its speed and make a bite attack."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite.",
+      "text": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 4 (1d4 + 2) piercing damage."
+    },
+    {
+      "name": "Spear.",
+      "text": "Melee or Ranged Weapon Attack: +4 to hit, reach 5 ft. or range 20/60 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": []
+}

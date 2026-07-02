@@ -1,0 +1,28 @@
+{
+  "id": "rakshasa",
+  "slug": "rakshasa",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Rakshasa",
+  "type": "Infernal",
+  "size": "Mediano",
+  "alignment": "legal malvado",
+  "armorClass": {
+    "value": 17
+  },
+  "initiative": 8,
+  "hitPoints": {
+    "average": 221,
+    "roll": "26d8 + 104"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Rakshasa",
+  "srd_es_page": 362
+}

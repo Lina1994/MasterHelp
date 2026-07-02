@@ -1,0 +1,6 @@
+{
+  "id": "races",
+  "title": "Races",
+  "format": "markdown",
+  "markdown": "# Races\n\nA character's **race** determines their species, heritage, and the baseline traits they share with others of the same kind.\n\nThe SRD 5.2 unifies each race's traits into a single base species and separates ancestry (e.g. *Elf*) from lineage (e.g. *High Elf* / *Wood Elf*). This makes the character-creation flow cleaner: you pick an ancestry, choose a lineage for any bonuses or features it grants, and then build the rest of your character.\n\n## SRD 5.2 Races\n\nThe SRD 5.2 includes the following playable races:\n\n- Aasimar, Dragonborn, Dwarf, Elf, Goliath, Halfling, Human, Orc, Tiefling, and others.\n\nEach race grants one or more Ability Score increases, a base speed, languages, senses (often Darkvision), and one or more **traits**. Browse the full list from the **Races** page of this application."
+}

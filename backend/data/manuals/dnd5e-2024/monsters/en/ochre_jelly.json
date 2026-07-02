@@ -1,0 +1,81 @@
+{
+  "id": "ochre_jelly",
+  "name": "Ochre Jelly",
+  "slug": "ochre_jelly",
+  "size": "Large",
+  "type": "ooze",
+  "alignment": "unaligned",
+  "armorClass": 14,
+  "hitPoints": {
+    "average": 135,
+    "roll": "18d10 + 36"
+  },
+  "speed": {
+    "walk": 20,
+    "climb": 20
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 6,
+    "con": 14,
+    "int": 2,
+    "wis": 6,
+    "cha": 1
+  },
+  "damageResistances": [
+    "acid"
+  ],
+  "damageImmunities": [
+    "lightning",
+    "slashing"
+  ],
+  "conditionImmunities": [
+    "blinded",
+    "charmed",
+    "deafened",
+    "exhaustion",
+    "frightened",
+    "prone"
+  ],
+  "senses": "blindsight 60 ft., passive Perception 8",
+  "languages": "—",
+  "challengeRating": "2",
+  "traits": [
+    {
+      "name": "Amorphous",
+      "text": "The jelly can move through a space as narrow as 1 inch without expending extra move- ment to do so."
+    },
+    {
+      "name": "Spider Climb",
+      "text": "The jelly can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pseudopod",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 12 (3d6 + 2) Acid damage."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 450,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "skills": "Arcana +5, Deception +8, Perception +4",
+  "reactions": [
+    {
+      "name": "Split",
+      "text": "Trigger: While the jelly is Large or Medium and has 10+ Hit Points, it becomes Bloodied or is subjected to Lightning or Slashing damage. Response: The jelly splits into two new Ochre Jellies. Each new jelly is one size smaller than the original jelly and acts on its Initia- tive. The original jelly’s Hit Points are divided evenly between the new jellies (round down). Ogre Ogre"
+    }
+  ],
+  "srd_en_match_name": "Ochre Jelly",
+  "srd_en_page": 309,
+  "initiative": 2,
+  "savingThrows": {
+    "str": 2,
+    "dex": 0,
+    "con": 2,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

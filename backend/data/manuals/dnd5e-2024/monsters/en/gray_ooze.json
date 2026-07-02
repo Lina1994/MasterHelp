@@ -1,0 +1,65 @@
+{
+  "id": "gray_ooze",
+  "name": "Gray Ooze",
+  "slug": "gray_ooze",
+  "size": "Medium",
+  "type": "ooze",
+  "alignment": "unaligned",
+  "armorClass": 9,
+  "hitPoints": {
+    "average": 22,
+    "roll": "3d8 + 9"
+  },
+  "speed": {
+    "walk": 10,
+    "climb": 10
+  },
+  "abilities": {
+    "str": 12,
+    "dex": 6,
+    "con": 16,
+    "int": 1,
+    "wis": 6,
+    "cha": 2
+  },
+  "damageResistances": [
+    "acid",
+    "cold",
+    "fire"
+  ],
+  "damageImmunities": [
+    "lightning",
+    "slashing"
+  ],
+  "conditionImmunities": [
+    "blinded",
+    "charmed",
+    "deafened",
+    "exhaustion",
+    "frightened",
+    "prone"
+  ],
+  "senses": "blindsight 60 ft., passive Perception 8",
+  "languages": "—",
+  "challengeRating": "1/2",
+  "traits": [
+    {
+      "name": "Corrosive Form",
+      "text": "Metal weapons hitting it take 2 (1d4) acid damage."
+    },
+    {
+      "name": "Amorphous",
+      "text": "Can squeeze through 1-inch cracks as a free action."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Pseudopod",
+      "text": "+3 to hit, reach 5 ft. Hit: 4 (1d6 + 1) bludgeoning + 4 (1d8) acid."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 100,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

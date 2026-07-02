@@ -1,0 +1,55 @@
+{
+  "id": "unicorn",
+  "slug": "unicorn",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Unicornio",
+  "type": "Celestial",
+  "size": "Grande",
+  "alignment": "legal bueno",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 8,
+  "hitPoints": {
+    "average": 97,
+    "roll": "13d10 + 26"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 15,
+    "int": 11,
+    "wis": 17,
+    "cha": 16
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "celestial, elfo, silvano; telepatía 36 m",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "",
+      "text": "Resistencia legendaria (3/día). El unicornio puede elegir tener éxito en una tirada de salvación que haya fallado."
+    },
+    {
+      "name": "Resistencia mágica",
+      "text": "El unicornio tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El unicornio realiza un ataque con sus cascos y uno con su cuerno radiante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Unicornio",
+  "srd_es_page": 372
+}

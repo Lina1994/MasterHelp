@@ -1,0 +1,47 @@
+{
+  "id": "guardian_naga",
+  "slug": "guardian_naga",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Naga guardiana",
+  "type": "Celestial",
+  "size": "Grande",
+  "alignment": "legal bueno",
+  "armorClass": {
+    "value": 18
+  },
+  "initiative": 4,
+  "hitPoints": {
+    "average": 136,
+    "roll": "16d10 + 48"
+  },
+  "speed": {
+    "walk": 40,
+    "swim": 40,
+    "climb": 40
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 18,
+    "con": 16,
+    "int": 16,
+    "wis": 19,
+    "cha": 18
+  },
+  "skills": [
+    "Conocimiento arcano +11",
+    "Historia +11"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "celestial, común",
+  "challengeRating": "10",
+  "experiencePoints": 5900,
+  "proficiencyBonus": 4,
+  "traits": [],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Naga guardiana",
+  "srd_es_page": 353
+}

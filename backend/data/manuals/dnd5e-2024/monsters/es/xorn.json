@@ -1,0 +1,68 @@
+{
+  "id": "xorn",
+  "slug": "xorn",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Xorn",
+  "type": "Elemental",
+  "size": "Mediano",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 19
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 84,
+    "roll": "8d8 + 48"
+  },
+  "speed": {
+    "walk": 20,
+    "burrow": 20
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 10,
+    "con": 22,
+    "int": 11,
+    "wis": 10,
+    "cha": 11
+  },
+  "skills": [
+    "Percepción +6",
+    "Sigilo +6"
+  ],
+  "senses": "sentir vibraciones 18 m, visión en la oscuridad",
+  "languages": "primordial (terrano)",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Deslizarse por la tierra",
+      "text": "El xorn puede excavar a través de la tierra y la piedra que no sean mágicas ni estén trabajadas. Al hacer esto, no desplaza ni perturba la materia a través de la que se mueve."
+    },
+    {
+      "name": "Sentir tesoros",
+      "text": "El xorn puede localizar la ubicación de metales preciosos y piedras a 18 m o menos de él."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El xorn realiza un ataque de mordisco y tres con sus garras."
+    },
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 8 (1d10 + 3) de daño cortante."
+    },
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 17 (4d6 + 3) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Xorn",
+  "srd_es_page": 375
+}

@@ -1,0 +1,96 @@
+{
+  "id": "chimera",
+  "slug": "chimera",
+  "lang": "en",
+  "name": "Chimera",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 14
+  },
+  "languages": "Understands Deep Speech but can’t speak",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Diabolical Restoration",
+      "text": "If the devil dies outside the Nine Hells, its body disappears in sulfurous smoke, and it gains a new body instantly, reviving with all its Hit Points somewhere in the Nine Hells."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The devil has Advantage on saving throws against spells and other magical effects."
+    },
+    {
+      "name": "Amphibious",
+      "text": "The chuul can breathe air and water."
+    },
+    {
+      "name": "Sense Magic",
+      "text": "The chuul senses magic within 120 feet of itself. This trait otherwise works like the Detect Magic spell but isn’t itself magical."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The chimera makes one Ram attack, one Bite attack, and one Claw attack. It can replace the Claw attack with a use of Fire Breath if available."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 11 (2d6 + 4) Piercing damage, or 18 (4d6 + 4) Piercing damage if the chimera had Advantage on the attack roll."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 7 (1d6 + 4) Slashing damage."
+    },
+    {
+      "name": "Ram",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 10 (1d12 + 4) Bludgeoning damage. If the target is a Medium or smaller creature, it has the Prone condition. Fire Breath (Recharge 5–6). Dexterity Saving Throw: DC 15, each creature in a 15-foot Cone. Failure: 31 (7d8) Fire damage. Success: Half damage. Chuul Chuul"
+    }
+  ],
+  "reactions": [
+    {
+      "name": "Unnerving Gaze",
+      "text": "Trigger: A creature the devil can see starts its turn within 30 feet of the devil and can see the devil. Response—Wisdom Saving Throw: DC 15, the triggering creature. Failure: The target has the"
+    },
+    {
+      "name": "Frightened condition until the end of its turn",
+      "text": "Success: The target is immune to this devil’s Unnerving Gaze for 24 hours. Chimera Chimera"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "skills": "Perception +4",
+  "srd_en_match_name": "Chimera",
+  "srd_en_page": 270,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "monstrosity",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 14,
+    "type": "+0 (10)"
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 114,
+    "roll": "12d10 + 48"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 11,
+    "con": 19,
+    "int": 3,
+    "wis": 14,
+    "cha": 10
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 0,
+    "con": 4,
+    "int": 0,
+    "wis": 2,
+    "cha": 0
+  }
+}

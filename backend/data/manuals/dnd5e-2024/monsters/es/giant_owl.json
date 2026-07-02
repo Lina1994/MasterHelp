@@ -1,0 +1,64 @@
+{
+  "id": "giant_owl",
+  "slug": "giant_owl",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Búho gigante",
+  "type": "Celestial",
+  "size": "Grande",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 19,
+    "roll": "3d10 + 3"
+  },
+  "speed": {
+    "walk": 15,
+    "fly": 60
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 15,
+    "con": 12,
+    "int": 10,
+    "wis": 14,
+    "cha": 10
+  },
+  "skills": [
+    "Percepción +6",
+    "Sigilo +6"
+  ],
+  "senses": "visión en la oscuridad 36 m; Percepción",
+  "languages": "celestial; entiende común, elfo y silvano, pero no",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Pasar volando",
+      "text": "El búho no provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Garras",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 7 (1d10 + 2) de daño cortante."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "El búho lanza uno de los siguientes conjuros, que no requiere componentes y utiliza la Sabiduría como aptitud mágica:"
+    },
+    {
+      "name": "A voluntad",
+      "text": "detectar el bien y el mal, detectar magia 1/día: clarividencia"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Búho gigante",
+  "srd_es_page": 379
+}

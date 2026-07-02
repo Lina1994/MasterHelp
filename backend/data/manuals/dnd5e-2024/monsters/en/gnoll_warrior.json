@@ -1,0 +1,80 @@
+{
+  "id": "gnoll_warrior",
+  "slug": "gnoll_warrior",
+  "lang": "en",
+  "name": "Gnoll Warrior",
+  "speed": {
+    "walk": 30
+  },
+  "skills": "Athletics +10, Performance +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 10
+  },
+  "languages": "Gnoll",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Demonic Restoration",
+      "text": "If the glabrezu dies outside the Abyss, its body dissolves into ichor, and it gains a new body instantly, reviving with all its Hit Points some- where in the Abyss."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The glabrezu has Advantage on sav- ing throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6 + 2) Piercing damage."
+    },
+    {
+      "name": "Bone Bow",
+      "text": "Ranged Attack Roll: +3, range 150/600 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "6 (1d10 + 1) Piercing damage. Bonus Actions Rampage (1/Day). Immediately after dealing damage to a creature that is already Bloodied, the gnoll moves up to half its Speed, and it makes one Rend attack."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "Parry",
+      "text": "Trigger: The gladiator is hit by a melee attack roll while holding a weapon. Response: The gladiator adds 3 to its AC against that attack, possibly causing it to miss. Gnoll Gnoll Warrior"
+    }
+  ],
+  "srd_en_match_name": "Gnoll Warrior",
+  "srd_en_page": 286,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "fiend",
+  "subtype": "Demon",
+  "alignment": "Chaotic Evil",
+  "armorClass": {
+    "value": 17,
+    "type": "+6 (16)"
+  },
+  "initiative": 6,
+  "hitPoints": {
+    "average": 189,
+    "roll": "18d10 + 90"
+  },
+  "abilities": {
+    "str": 20,
+    "dex": 15,
+    "con": 21,
+    "int": 19,
+    "wis": 17,
+    "cha": 16
+  },
+  "savingThrows": {
+    "str": 9,
+    "dex": 2,
+    "con": 9,
+    "int": 4,
+    "wis": 7,
+    "cha": 7
+  }
+}

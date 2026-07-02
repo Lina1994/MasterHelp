@@ -1,0 +1,493 @@
+{
+  "id": "barbarian",
+  "name": "Barbarian",
+  "hitDie": 12,
+  "hitPoints": {
+    "hitDice": "1d12 per barbarian level",
+    "at1stLevel": "12 + your Constitution modifier",
+    "atHigherLevels": "1d12 (or 7) + your Constitution modifier per barbarian level after 1st"
+  },
+  "primaryAbilities": [
+    "Strength"
+  ],
+  "savingThrows": [
+    "Strength",
+    "Constitution"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Light Armor",
+      "Medium Armor",
+      "Shields"
+    ],
+    "weapons": [
+      "Simple Weapons",
+      "Martial Weapons"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Animal Handling",
+      "Athletics",
+      "Intimidation",
+      "Nature",
+      "Perception",
+      "Survival"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        "a martial melee weapon and two handaxes",
+        "two martial melee weapons"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "an explorer's pack",
+        "a dungeoneer's pack"
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        "four javelins",
+        "any simple weapon"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "rage",
+      "name": "Rage",
+      "level": 1,
+      "description": "As a bonus action, you can enter a rage, gaining advantage on Strength checks and saves, +2 damage on Strength melee weapon attacks, and resistance to bludgeoning, piercing, and slashing damage. Your rage lasts 1 minute and ends early if you fall unconscious or if your turn ends without attacking or taking damage."
+    },
+    {
+      "id": "unarmored-defense",
+      "name": "Unarmored Defense",
+      "level": 1,
+      "description": "While not wearing armor, your AC equals 10 + Dex modifier + Con modifier. You can use a shield."
+    },
+    {
+      "id": "reckless-attack",
+      "name": "Reckless Attack",
+      "level": 2,
+      "description": "When you make your first attack on your turn, you can attack recklessly, gaining advantage on Strength attack rolls but giving attackers advantage against you until your next turn."
+    },
+    {
+      "id": "danger-sense",
+      "name": "Danger Sense",
+      "level": 2,
+      "description": "You have advantage on Dexterity saves against effects you can see, like spells and traps (not unseen attacks)."
+    },
+    {
+      "id": "extra-attack",
+      "name": "Extra Attack",
+      "level": 5,
+      "description": "You can attack twice, instead of once, when you take the Attack action. (Increases to 3 at 11th, 4 at 17th.)"
+    },
+    {
+      "id": "fast-movement",
+      "name": "Fast Movement",
+      "level": 5,
+      "description": "Your speed increases by 10 feet while not wearing heavy armor."
+    },
+    {
+      "id": "feral-instinct",
+      "name": "Feral Instinct",
+      "level": 7,
+      "description": "You have advantage on initiative rolls. If you are surprised, you can still act normally on your first turn as long as you enter rage."
+    },
+    {
+      "id": "brutal-critical",
+      "name": "Brutal Critical",
+      "level": 9,
+      "description": "Roll extra damage dice when you score a critical hit with a melee attack (1 at 9th, 2 at 13th, 3 at 17th)."
+    },
+    {
+      "id": "relentless-rage",
+      "name": "Relentless Rage",
+      "level": 11,
+      "description": "If you drop to 0 HP while raging, you can make a Constitution save to instead drop to a number of HP equal to twice your barbarian level. The save DC increases by 5 each time you use it after the first in a rage."
+    },
+    {
+      "id": "persistent-rage",
+      "name": "Persistent Rage",
+      "level": 15,
+      "description": "Your rage ends only if you choose to end it or fall unconscious."
+    },
+    {
+      "id": "indomitable-might",
+      "name": "Indomitable Might",
+      "level": 18,
+      "description": "If your Strength check total is less than your Strength score, you can use your Strength score in place of the check total."
+    },
+    {
+      "id": "primal-champion",
+      "name": "Primal Champion",
+      "level": 20,
+      "description": "Your Strength and Constitution scores increase by 4, to a maximum of 24."
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "rage",
+        "unarmored-defense"
+      ],
+      "ragesPerLongRest": 2,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "reckless-attack",
+        "danger-sense"
+      ],
+      "ragesPerLongRest": 2,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "primal-path"
+      ],
+      "ragesPerLongRest": 3,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 3,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "extra-attack",
+        "fast-movement"
+      ],
+      "ragesPerLongRest": 3,
+      "rageDamageBonus": 2,
+      "extraAttack": true
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "path-feature"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [
+        "feral-instinct"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 2
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [
+        "brutal-critical-1"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "path-feature"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [
+        "relentless-rage"
+      ],
+      "ragesPerLongRest": 4,
+      "rageDamageBonus": 3,
+      "extraAttack": true
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [
+        "brutal-critical-2"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "path-feature"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [
+        "persistent-rage"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 3
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 5,
+      "rageDamageBonus": 4
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "brutal-critical-3",
+        "extra-attack-2"
+      ],
+      "ragesPerLongRest": 6,
+      "rageDamageBonus": 4,
+      "extraAttack": true
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [
+        "indomitable-might"
+      ],
+      "ragesPerLongRest": 6,
+      "rageDamageBonus": 4
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability-score-improvement"
+      ],
+      "ragesPerLongRest": 6,
+      "rageDamageBonus": 4
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "primal-champion"
+      ],
+      "ragesPerLongRest": "unlimited",
+      "rageDamageBonus": 4
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "berserker",
+      "name": "Berserker",
+      "grantedAtLevel": 3,
+      "description": "The Path of the Berserker emphasizes brute force and uncontrolled fury.",
+      "features": [
+        {
+          "id": "frenzy",
+          "name": "Frenzy",
+          "level": 3,
+          "description": "You can make a single melee attack as a bonus action on each of your turns while raging."
+        },
+        {
+          "id": "mindless-rage",
+          "name": "Mindless Rage",
+          "level": 6,
+          "description": "You can't be charmed or frightened while raging."
+        },
+        {
+          "id": "intimidating-presence",
+          "name": "Intimidating Presence",
+          "level": 10,
+          "description": "As an action, you can frighten a creature within 30 feet with a Wisdom save (DC = 8 + Prof + Cha). The effect ends if you or your allies attack or deal damage to it."
+        },
+        {
+          "id": "retaliation",
+          "name": "Retaliation",
+          "level": 14,
+          "description": "When you take damage from a creature within 5 feet, you can use your reaction to make a melee attack against that creature."
+        }
+      ]
+    },
+    {
+      "class_id": "barbarian",
+      "id": "path_of_the_wild_heart",
+      "name": "Path of the Wild Heart",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "animal_speaker",
+          "name": "Animal Speaker",
+          "level": 3,
+          "description": "Through sound and gesture, you gain the ability to communicate with Beasts and you always know their location within 30 ft of you."
+        },
+        {
+          "id": "aspect_of_the_wild",
+          "name": "Aspect of the Wild",
+          "level": 6,
+          "description": "You gain resistance to a damage type based on your aspect: Bear (force your mark), Eagle (knock back), Wolf (push effect)."
+        },
+        {
+          "id": "bestial_soul",
+          "name": "Bestial Soul",
+          "level": 10,
+          "description": "You gain a flying speed 30 ft OR a swimming speed 30 ft OR a climb speed 30 ft."
+        },
+        {
+          "id": "wilderness_magician",
+          "name": "Wilderness Magician",
+          "level": 14,
+          "description": "You learn spells from the druid spell list (Wisdom saves)."
+        }
+      ],
+      "description": "You draw on the primal bond between barbarian and beast. Animals sense your kinship and your rage lets you channel beast-like power."
+    },
+    {
+      "class_id": "barbarian",
+      "id": "path_of_the_world_tree",
+      "name": "Path of the World Tree",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "world_tree_walker",
+          "name": "World Tree Walker",
+          "level": 3,
+          "description": "You gain a climb speed equal to your walking speed."
+        },
+        {
+          "id": "branches_of_the_tree",
+          "name": "Branches of the Tree",
+          "level": 6,
+          "description": "While raging, you gain 2d6 temp HP at the start of each turn."
+        },
+        {
+          "id": "verdant_pierce",
+          "name": "Verdant Pierce",
+          "level": 10,
+          "description": "Vertically grow branches that turn into piercing damage behind you."
+        },
+        {
+          "id": "mighty_descent",
+          "name": "Mighty Descent",
+          "level": 14,
+          "description": "You can reduce falling damage; once per long rest, knock prone all creatures in 30-ft radius on impact."
+        }
+      ],
+      "description": "Your rage harnesses the resilience of Yggdrasil, the World Tree. You can call on the cosmos for protection."
+    },
+    {
+      "class_id": "barbarian",
+      "id": "path_of_the_zealot",
+      "name": "Path of the Zealot",
+      "grantedAtLevel": 3,
+      "features": [
+        {
+          "id": "divine_fury",
+          "name": "Divine Fury",
+          "level": 3,
+          "description": "While raging, the first creature you hit on each turn takes extra 1d6 + half barb level radiant or necrotic damage (your choice)."
+        },
+        {
+          "id": "warrior_of_the_gods",
+          "name": "Warrior of the Gods",
+          "level": 6,
+          "description": "Spell resurrection targeting you has a 50% chance of failure."
+        },
+        {
+          "id": "frenzied_focus",
+          "name": "Frenzied Focus",
+          "level": 10,
+          "description": "Gain advantage on Constitution saves when raging."
+        },
+        {
+          "id": "zealous_presence",
+          "name": "Zealous Presence",
+          "level": 14,
+          "description": "As an action, force Wisdom save on creatures in 60-ft radius; on fail, charmed or frightened 1 min (you choose).",
+          "savingThrow": "Wisdom"
+        }
+      ],
+      "description": "Your rage is fueled by a fierce devotion to a deity, cause, or creed. You undergo divine transformations in battle."
+    },
+    {
+      "id": "wild-heart",
+      "name": "Wild Heart",
+      "grantedAtLevel": 3,
+      "description": "Path of the Wild Heart features a magical animal guide that grants you supernatural boons.",
+      "features": [
+        {
+          "id": "animal-speak",
+          "name": "Animal Speaker",
+          "level": 3,
+          "description": "You can cast Speak with Animals as a ritual."
+        },
+        {
+          "id": "raging-flora-fauna",
+          "name": "Raging Flora and Fauna",
+          "level": 6,
+          "description": "While raging, plants grow around you and creatures sense you as a primal predator, granting advantage on Intimidation and Survival."
+        },
+        {
+          "id": "spirit-walk",
+          "name": "Spirit Walk",
+          "level": 10,
+          "description": "You can cast Tree Stride once per long rest."
+        },
+        {
+          "id": "wrath-of-the-nature",
+          "name": "Wrath of the Nature",
+          "level": 14,
+          "description": "While raging, you can cast Call Lightning as a bonus action."
+        }
+      ]
+    }
+  ],
+  "source": "SRD 5.2"
+}

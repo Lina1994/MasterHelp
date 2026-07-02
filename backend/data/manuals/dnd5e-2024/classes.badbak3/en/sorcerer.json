@@ -1,0 +1,837 @@
+{
+  "id": "sorcerer",
+  "name": "Sorcerer",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 6,
+  "hitPoints": {
+    "hitDice": "1d6 per sorcerer level",
+    "at1stLevel": "6 + your Constitution modifier",
+    "atHigherLevels": "1d6 (or 4) + your Constitution modifier per sorcerer level after 1st"
+  },
+  "primaryAbilities": [
+    "cha"
+  ],
+  "savingThrows": [
+    "con",
+    "cha"
+  ],
+  "proficiencies": {
+    "armor": [],
+    "weapons": [
+      "Daggers",
+      "Darts",
+      "Slings",
+      "Quarterstaffs",
+      "Light Crossbows"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Arcana",
+      "Deception",
+      "Insight",
+      "Intimidation",
+      "Persuasion",
+      "Religion"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "light_crossbow_20_bolts",
+          "description": "A light crossbow with 20 bolts"
+        },
+        {
+          "id": "simple_weapon",
+          "description": "Any simple weapon"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "component_pouch",
+          "description": "Component pouch"
+        },
+        {
+          "id": "arcane_focus",
+          "description": "Arcane focus"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "dungeoneers_pack",
+          "description": "Dungeoneer's Pack"
+        },
+        {
+          "id": "explorers_pack",
+          "description": "Explorer's Pack"
+        }
+      ]
+    },
+    {
+      "choose": 2,
+      "options": [
+        {
+          "id": "daggers",
+          "description": "Two daggers"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "spellcasting",
+      "name": "Spellcasting",
+      "level": 1,
+      "description": "An event in your past, or in your lineage, gave you an inherent magical ability. Charisma is your spellcasting ability. You know a number of sorcerer spells equal to your sorcerer level. You can change known spells whenever you gain a level.",
+      "effects": [
+        {
+          "type": "full_caster_known",
+          "ability": "cha",
+          "list": "sorcerer"
+        }
+      ]
+    },
+    {
+      "id": "cantrips_known",
+      "name": "Cantrips (Sorcerer)",
+      "level": 1,
+      "description": "You know 4 cantrips (Fire Bolt, Light, Mage Hand, Prestidigitation are common defaults). You learn additional cantrips at higher levels.",
+      "effects": [
+        {
+          "type": "cantrips_known",
+          "count": 4,
+          "scalesAt": [
+            4,
+            8,
+            12,
+            16,
+            20
+          ],
+          "perLevelStep": 1,
+          "default_free": [
+            "fire_bolt",
+            "light",
+            "mage_hand",
+            "prestidigitation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sorcery_points",
+      "name": "Sorcery Points",
+      "level": 1,
+      "description": "You have Sorcery Points equal to your sorcerer level. They fuel Metamagic. You regain all Sorcery Points on a long rest.",
+      "effects": [
+        {
+          "type": "resource",
+          "name": "Sorcery Points",
+          "per": "long_rest",
+          "count": "sorcerer level"
+        }
+      ]
+    },
+    {
+      "id": "flexible_casting",
+      "name": "Flexible Casting",
+      "level": 1,
+      "description": "Convert sorcery points ↔ spell slots: 1 SP = 1st-level slot; 2 SP = 2nd; 3 SP = 3rd; etc. (max 5th); create bonus action spell slots: 1 SP = 1st slot; reverse: 1 SP from a slot = slot level.",
+      "effects": [
+        {
+          "type": "flexible_casting_conversion_spell_slot_to_sp",
+          "ratio": "1:slot_level"
+        },
+        {
+          "type": "flexible_casting_create_slot",
+          "ratio": "1 SP = slot level"
+        }
+      ]
+    },
+    {
+      "id": "metamagic",
+      "name": "Metamagic",
+      "level": 3,
+      "description": "Choose two Metamagic options from: Careful Spell, Distant Spell, Empowered Spell, Extended Spell, Heightened Spell, Quickened Spell, Seeking Spell, Subtle Spell, Twinned Spell. You gain a third at 10th level and a fourth at 17th.",
+      "effects": [
+        {
+          "type": "metamagic_options_count_by_level",
+          "values_by_level": {
+            "3": 2,
+            "10": 3,
+            "17": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "sorcerous_origin",
+      "name": "Sorcerous Origin",
+      "level": 1,
+      "description": "Choose a Sorcerous Origin: Draconic Bloodline or Wild Magic.",
+      "effects": [
+        {
+          "type": "choose_subclass",
+          "atLevel": 1
+        }
+      ]
+    },
+    {
+      "id": "ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "level": 4,
+      "description": "Increase one score by 2, or two by 1. Max 20.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "font_of_magic",
+      "name": "Font of Magic (Optional rename of Sorcery)",
+      "level": 2,
+      "description": "You regain 1 SP per Long Rest extension if you choose to spend spell slots only.",
+      "effects": [
+        {
+          "type": "extra_sp_optional"
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "spellcasting",
+        "cantrips_known",
+        "sorcery_points",
+        "flexible_casting",
+        "sorcerous_origin"
+      ],
+      "spellSlots": {
+        "1": 2
+      },
+      "spells_known": 2,
+      "cantrips_known": 4
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "font_of_magic"
+      ],
+      "spellSlots": {
+        "1": 3
+      },
+      "spells_known": 3,
+      "cantrips_known": 4
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "metamagic"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 2
+      },
+      "spells_known": 4,
+      "cantrips_known": 4
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3
+      },
+      "spells_known": 5,
+      "cantrips_known": 5
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2
+      },
+      "spells_known": 6,
+      "cantrips_known": 5
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      },
+      "spells_known": 7,
+      "cantrips_known": 5
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      },
+      "spells_known": 8,
+      "cantrips_known": 5
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2
+      },
+      "spells_known": 9,
+      "cantrips_known": 6
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1
+      },
+      "spells_known": 10,
+      "cantrips_known": 6
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "metamagic_third"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2
+      },
+      "spells_known": 11,
+      "cantrips_known": 6
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      },
+      "spells_known": 12,
+      "cantrips_known": 6
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1
+      },
+      "spells_known": 12,
+      "cantrips_known": 7
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      },
+      "spells_known": 13,
+      "cantrips_known": 7
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1
+      },
+      "spells_known": 14,
+      "cantrips_known": 7
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      },
+      "spells_known": 15,
+      "cantrips_known": 7
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1
+      },
+      "spells_known": 15,
+      "cantrips_known": 8
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "metamagic_fourth"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "spells_known": 16,
+      "cantrips_known": 8
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "spells_known": 17,
+      "cantrips_known": 8
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "ability_score_improvement"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "spells_known": 18,
+      "cantrips_known": 8
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [
+        "sorcerous_restoration"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 2,
+        "8": 1,
+        "9": 1
+      },
+      "spells_known": 19,
+      "cantrips_known": 8
+    }
+  ],
+  "subclasses": [
+    {
+      "class_id": "sorcerer",
+      "id": "clockwork_soul",
+      "name": "Clockwork Soul",
+      "grantedAtLevel": 1,
+      "description_en": "Your magic comes from the blessed, ordered realms of Mechanus.",
+      "description_es": "Tu magia viene de los benditos y ordenados reinos de Mechanus.",
+      "features": [
+        {
+          "id": "clockwork_magic",
+          "name": "Clockwork Magic",
+          "level": 1,
+          "description": "Gain 2 sorcery points to spend on Clockwork Spells at 1st level or higher."
+        },
+        {
+          "id": "trance_of_order",
+          "name": "Trance of Order",
+          "level": 1,
+          "description": "Advantage on CON saves; reroll attack rolls; restore d6 sorcery points; spend 1 sorcery point to take an extra action."
+        },
+        {
+          "id": "tempo_de_orden_extra",
+          "name": "Watcher's Will",
+          "level": 6,
+          "description": "React to attack / save with Advantage; 10 swifty uses per day."
+        },
+        {
+          "id": "magnificent_mansion_soul",
+          "name": "Bastion of Law",
+          "level": 14,
+          "description": "Cast Magnificent Mansion / Mighty Fortress / Wall of Force once per long rest."
+        },
+        {
+          "id": "capstone_soul",
+          "name": "Capstone",
+          "level": 18,
+          "description": "Enchant mechanical advantage to allies."
+        }
+      ]
+    },
+    {
+      "id": "draconic_bloodline",
+      "name": "Draconic Bloodline",
+      "grantedAtLevel": 1,
+      "description": "Your innate magic comes from draconic blood. Choose a dragon type (Acid, Cold, Fire, Lightning, Poison, or Thunder).",
+      "dragonAncestor": "fire",
+      "features": [
+        {
+          "id": "dragon_ancestor",
+          "name": "Dragon Ancestor",
+          "level": 1,
+          "description": "You learn Draconic language. Choose a chromatic dragon damage type; your sorcerer spells of that damage type gain +1 damage per spell level.",
+          "effects": [
+            {
+              "type": "language_known",
+              "value": "Draconic"
+            },
+            {
+              "type": "damage_bonus_to_spells_of_chosen_type",
+              "formula": "1 per spell_level"
+            }
+          ]
+        },
+        {
+          "id": "draconic_resilience",
+          "name": "Draconic Resilience",
+          "level": 1,
+          "description": "Hit points +1 per sorcerer level (instead of +1 HP total). AC = 13 + DEX mod when not wearing armor.",
+          "effects": [
+            {
+              "type": "hp_bonus",
+              "amount": 1,
+              "scope": "per_level"
+            },
+            {
+              "type": "ac_formula",
+              "formula": "13 + DEX mod",
+              "requires": "no_armor"
+            }
+          ]
+        },
+        {
+          "id": "elemental_affinity",
+          "name": "Elemental Affinity",
+          "level": 6,
+          "description": "As a bonus action, you can add your Charisma modifier to one damage roll of a sorcerer spell that deals your chosen draconic damage type. Once per short rest, you can also gain resistance to that damage type for 1 hour (concentration).",
+          "effects": [
+            {
+              "type": "bonus_action_add_CHA_to_one_damage_roll",
+              "trigger": "chosen_dragon_type_spell"
+            },
+            {
+              "type": "resource",
+              "name": "Elemental Affinity Resistance",
+              "per": "short_rest",
+              "duration": "1 hour",
+              "resistance_to": "chosen_dragon_type"
+            }
+          ]
+        },
+        {
+          "id": "dragon_wings",
+          "name": "Dragon Wings",
+          "level": 14,
+          "description": "You gain a flying speed of 60 feet. You cannot benefit from this feature if you're wearing medium or heavy armor.",
+          "effects": [
+            {
+              "type": "fly_speed",
+              "value": 60,
+              "condition": "no_medium_heavy_armor"
+            }
+          ]
+        },
+        {
+          "id": "draconic_presence",
+          "name": "Draconic Presence",
+          "level": 18,
+          "description": "As an action, exude an aura of awe or fear for 1 minute (concentration). WIS save vs your DC or charmed (awe) or frightened (fear) for those within 60 ft. Recharges on short rest.",
+          "effects": [
+            {
+              "type": "aura_action",
+              "duration": "1 min",
+              "concentration": true,
+              "range": 60,
+              "save": "wis",
+              "dc": "spell_save_DC",
+              "outcomes": [
+                "charmed",
+                "frightened"
+              ],
+              "recharge": "short_rest"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "sorcerer",
+      "id": "lunar_sorcery",
+      "name": "Lunar Sorcery",
+      "grantedAtLevel": 1,
+      "description_en": "You draw your magic from the moon, channeling its various phases.",
+      "description_es": "Tu magia proviene de la luna, canalizando sus varias fases.",
+      "features": [
+        {
+          "id": "lunar_magic",
+          "name": "Lunar Magic",
+          "level": 1,
+          "description": "Cast 3 cantrips from lunar list; gain 4 d6 lunar sorcery points."
+        },
+        {
+          "id": "crescent_moon",
+          "name": "Crescent Moon",
+          "level": 1,
+          "description": "Cast Silence and Color Spray with lunar sorcery points (1 each)."
+        },
+        {
+          "id": "full_moon",
+          "name": "Full Moon",
+          "level": 6,
+          "description": "Cast Moonbeam and Faerie Fire with lunar sorcery points (2 each)."
+        },
+        {
+          "id": "new_moon",
+          "name": "New Moon",
+          "level": 7,
+          "description": "Apply diff to attacks; darkvision 120 ft; darkness gained."
+        },
+        {
+          "id": "moon_shield",
+          "name": "Shield of the Moon",
+          "level": 14,
+          "description": "Cast Heroes' Feast and Mass Heal once per long rest."
+        }
+      ]
+    },
+    {
+      "class_id": "sorcerer",
+      "id": "storm_sorcery",
+      "name": "Storm Sorcery",
+      "grantedAtLevel": 1,
+      "description_en": "You are the storm made flesh. Your magic is wild, powerful, and uncontrolled.",
+      "description_es": "Eres la tormenta hecha carne. Tu magia es salvaje, poderosa e incontrolada.",
+      "features": [
+        {
+          "id": "storm_magic",
+          "name": "Storm Magic",
+          "level": 1,
+          "description": "5 sorcery points Lightning damage on each lightning spell cast."
+        },
+        {
+          "id": "tempestuous_magic",
+          "name": "Tempestuous Magic",
+          "level": 1,
+          "description": "After casting spell of 1st+ level, teleport 10 ft as bonus action."
+        },
+        {
+          "id": "lightning_bolt_swap",
+          "name": "Lightning Strike",
+          "level": 6,
+          "description": "Channel Divinity-like: bonus action lightning damage to one target."
+        },
+        {
+          "id": "heart_of_the_storm",
+          "name": "Heart of the Storm",
+          "level": 6,
+          "description": "Resistance to thunder and lightning; magic damage from same type to creatures within 10 ft."
+        },
+        {
+          "id": "soul_of_the_storm",
+          "name": "Soul of the Storm",
+          "level": 14,
+          "description": "Cast Control Weather and Storm of Vengeance once per long rest."
+        },
+        {
+          "id": "wind_soul",
+          "name": "Wind Soul",
+          "level": 18,
+          "description": "Permanent flight, resistances, immunity to gas; reduces damage type by 60 ft."
+        }
+      ]
+    },
+    {
+      "id": "wild_magic",
+      "name": "Wild Magic",
+      "grantedAtLevel": 1,
+      "description": "Your magic derives from untamed forces. Wild Magic Surge may trigger when you cast a sorcerer spell of 1st level or higher.",
+      "features": [
+        {
+          "id": "wild_magic_surge",
+          "name": "Wild Magic Surge",
+          "level": 1,
+          "description": "Immediately after you cast a sorcerer spell of 1st level or higher, the DM can have you roll a d20. On a 1, the DM chooses a surge effect from the Wild Magic table (random flavor list).",
+          "effects": [
+            {
+              "type": "wild_magic_table",
+              "trigger": "sorcerer_spell_1plus",
+              "roll_threshold": 1
+            }
+          ]
+        },
+        {
+          "id": "tides_of_chaos",
+          "name": "Tides of Chaos",
+          "level": 1,
+          "description": "You can give yourself advantage on one attack roll, ability check, or saving throw. You must then finish a long rest before using this feature again. The DM may also have you roll on the Wild Magic Surge table afterward.",
+          "effects": [
+            {
+              "type": "resource",
+              "name": "Tides of Chaos",
+              "per": "long_rest",
+              "grants_advantage_one_roll": true
+            },
+            {
+              "type": "wild_magic_surge_after_tides_of_chaos_optional"
+            }
+          ]
+        },
+        {
+          "id": "bend_luck",
+          "name": "Bend Luck",
+          "level": 6,
+          "description": "As a reaction when another creature you can see rolls an attack roll, ability check, or saving throw, you can spend 1 Sorcery Point to roll 1d4 and add or subtract it from the result.",
+          "effects": [
+            {
+              "type": "reaction",
+              "cost_in_SP": 1,
+              "name": "Bend Luck",
+              "trigger": "creature_you_can_see_rolls_d20_for_attack_check_save",
+              "modifier": "+/-1d4"
+            }
+          ]
+        },
+        {
+          "id": "controlled_surge",
+          "name": "Controlled Surge",
+          "level": 14,
+          "description": "When you roll on the Wild Magic Surge table, you can choose the result (instead of rolling).",
+          "effects": [
+            {
+              "type": "controlled_surge_choose_outcome"
+            }
+          ]
+        },
+        {
+          "id": "spell_bombardment",
+          "name": "Spell Bombardment",
+          "level": 18,
+          "description": "When you apply a Metamagic option to a sorcerer spell of 1st level or higher, you can roll on the Wild Magic Surge table; if the result is a damage spell, the spell deals maximum damage.",
+          "effects": [
+            {
+              "type": "wild_magic_table_trigger_when_metamagic_used",
+              "IfDamageSpell": "maxDamage"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "cha",
+    "list": "sorcerer",
+    "spellbook": false,
+    "preparedCasting": false,
+    "ritualCasting": false,
+    "knownCasting": true
+  }
+}

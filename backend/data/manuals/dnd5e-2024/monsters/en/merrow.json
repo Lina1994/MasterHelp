@@ -1,0 +1,73 @@
+{
+  "id": "merrow",
+  "slug": "merrow",
+  "lang": "en",
+  "name": "Merrow",
+  "speed": {
+    "walk": 20
+  },
+  "skills": "Stealth +5",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 11
+  },
+  "languages": "None",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The merrow can breathe air and water."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The merrow makes two attacks, using Bite, Claw, or Harpoon in any combination."
+    },
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 6 (1d4 + 4) Piercing damage, and the target has the Poisoned con- dition until the end of the merrow’s next turn."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 9 (2d4 + 4) Slashing damage."
+    },
+    {
+      "name": "Harpoon",
+      "text": "Melee or Ranged Attack Roll: +6, reach 5 ft. or range 20/60 ft. Hit: 11 (2d6 + 4) Piercing damage. If the target is a Large or smaller creature, the merrow pulls the target up to 15 feet straight toward itself. Mimic Mimic"
+    }
+  ],
+  "srd_en_match_name": "Merrow",
+  "srd_en_page": 305,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "elemental",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 10,
+    "type": "+0 (10)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 17,
+    "roll": "5d6"
+  },
+  "abilities": {
+    "str": 5,
+    "dex": 11,
+    "con": 10,
+    "int": 11,
+    "wis": 10,
+    "cha": 12
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 1
+  }
+}

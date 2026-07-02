@@ -1,0 +1,72 @@
+Desgarrar. Tirada de ataque cuerpo a cuerpo: +1, al-
+Plebeyo
+Plebeyo
+CA: 10 Iniciativa: +0 (10)
+PG: 4 (1d8)
+Velocidad: 9 m Pudin negro
+MOD. SALV. MOD. SALV. MOD. SALV.
+Fue 10 +0 +0 Des 10 +0 +0 Con 10 +0 +0 Pudin negro
+Int 10 +0 +0 sab 10 +0 +0 Car 10 +0 +0
+VD: 0 (10 PX; BC +2)
+Atributos
+Entrenamiento. El plebeyo es competente en una ha-
+bilidad a elección de cada GM y tiene ventaja siempre Inmunidades: ácido, cortante, frío, relámpago; agarrado,
+que realice una prueba de característica con esa habi- apresado, asustado, cansancio, derribado, ensordecido,
+Acciones
+Garrote. Tirada de ataque cuerpo a cuerpo: +2, al- VD: 4 (1100 PX; BC +2)
+cance 1,5 m. Acierto: 2 (1d4) de daño contundente.
+Pseudodragón
+Pseudodragón
+Dragón Diminuto, neutral bueno
+Fue 6 −2 −2 Des 15 +2 +2 Con 13 +1 +1 acumulativo de −1 a las tiradas de ataque inmediata-
+Int 10 +0 +0 sab 12 +1 +1 Car 10 +0 +0 mente después de causar daño al pudin y entrar en
+Sentidos: visión ciega 3 m, visión en la oscuridad 18 m; el conjuro reparar sobre el arma.
+hablar
+VD: 1/4 (50 PX; BC +2)
+Resistencia mágica. El pseudodragón tiene ventaja en Acciones
+las tiradas de salvación contra conjuros y otros efectos
+mágicos.
+Ataque múltiple. El pseudodragón realiza dos ataques
+de mordisco.
+361 Documento de referencia del sistema 5.2.1
+Acciones Mordisco. Tirada de ataque cuerpo a cuerpo: +4, al-
+cance 1,5 m. Acierto: 4 (1d4 + 2) de daño perforante.
+cance 1,5 m. Acierto: 1 de daño cortante. Aguijón. Tirada de salvación de Constitución: CD 12,
+una criatura que el pseudodragón pueda ver a 1,5 m
+o menos. Fallo: 5 (2d4) de daño de veneno y el objetivo
+tendrá el estado de envenenado durante 1 hora. Fallo
+por 5 o más: mientras esté envenenado, el objetivo
+Humanoide Mediano o Pequeño, neutral también tendrá el estado de inconsciente, que termi-
+nará antes si recibe daño o una criatura a 1,5 m o me-
+nos de él utiliza una acción para despertarlo.
+Cieno Grande, sin alineamiento
+Equipo: garrote CA: 7 Iniciativa: −3 (7)
+Sentidos: Percepción pasiva 10 PG: 68 (8d10 + 24)
+Idiomas: común Velocidad: 6 m, trepar 6 m
+MOD. SALV. MOD. SALV. MOD. SALV.
+Fue 16 +3 +3 Des 5 −3 −3 Con 16 +3 +3
+Int 1 −5 −5 sab 6 −2 −2 Car 1 −5 −5
+lidad. hechizado
+Sentidos: visión ciega 18 m; Percepción pasiva 8
+Idiomas: ninguno
+Atributos
+Amorfo. El pudin puede moverse a través de un es-
+pacio de solo 2,5 cm de ancho sin gastar movimiento
+adicional para hacerlo.
+Forma corrosiva. Una criatura que acierte al pudin con
+CA: 14 Iniciativa: +2 (12) una tirada de ataque cuerpo a cuerpo recibirá 4 (1d8)
+PG: 10 (3d4 + 3) de daño de ácido. La munición no mágica se destruirá
+Velocidad: 4,5 m, volar 18 m de inmediato tras impactar en el pudin y causarle daño.
+MOD. SALV. MOD. SALV. MOD. SALV. Cualquier arma no mágica recibirá un penalizador
+contacto con él. Si el penalizador llega a −5, el arma
+Habilidades: Percepción +5, Sigilo +4 se destruirá. El penalizador se puede eliminar lanzando
+Percepción pasiva 15 En 1 minuto, el pudin puede devorar y atravesar
+Idiomas: entiende común y dracónico, pero no puede 60 cm de madera o metal no mágicos.
+Trepar cual arácnido. El pudin puede trepar por super-
+ficies difíciles e incluso recorrer techos sin tener que
+Atributos realizar pruebas de característica.
+Pseudópodo disolvente. Tirada de ataque cuerpo
+a cuerpo: +5, alcance 3 m. Acierto: 17 (4d6 + 3) de
+Acciones daño de ácido. La armadura no mágica que lleve el ob-
+jetivo recibirá un penalizador de −1 a la CA que ofrece.
+La armadura se destruirá si el penalizador reduce su CA

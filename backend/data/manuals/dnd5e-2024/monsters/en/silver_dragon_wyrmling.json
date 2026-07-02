@@ -1,0 +1,74 @@
+{
+  "id": "silver_dragon_wyrmling",
+  "slug": "silver_dragon_wyrmling",
+  "lang": "en",
+  "name": "Silver Dragon Wyrmling",
+  "speed": {
+    "walk": 40,
+    "fly": 80
+  },
+  "skills": "History +8, Perception +11, Stealth +5",
+  "senses": {
+    "blindsight": "60 ft."
+  },
+  "languages": "Common, Draconic",
+  "challengeRating": "16",
+  "proficiencyBonus": 5,
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes two Rend attacks."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 9 (1d10 + 4) Piercing damage. Cold Breath (Recharge 5–6). Constitution Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 13, each creature in a 15-foot Cone. Failure: 18 (4d8) Cold damage. Success: Half damage."
+    },
+    {
+      "name": "Paralyzing Breath",
+      "text": "Constitution Saving Throw: DC 13, each creature in a 15-foot Cone. First Failure: The target has the Incapacitated condition until the end of its next turn, when it repeats the save. Second Failure: The tar- get has the Paralyzed condition, and it repeats the save at the end of each of its turns, ending the effect on itself on a success. After 1 minute, it succeeds automatically. Young Silver Dragon"
+    }
+  ],
+  "experiencePoints": 15000,
+  "traits": [
+    {
+      "name": "",
+      "text": "Legendary Resistance (3/Day, or 4/Day in Lair). If the dragon fails a saving throw, it can choose to suc- ceed instead."
+    }
+  ],
+  "srd_en_match_name": "Silver Dragon Wyrmling",
+  "srd_en_page": 321,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "dragon",
+  "subtype": "Metallic",
+  "alignment": "Lawful Good",
+  "armorClass": {
+    "value": 17,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d8 + 18"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 10,
+    "con": 17,
+    "int": 12,
+    "wis": 11,
+    "cha": 15
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 2,
+    "con": 3,
+    "int": 1,
+    "wis": 2,
+    "cha": 2
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "satyr",
+  "slug": "satyr",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Sátiro",
+  "type": "Feérico",
+  "size": "Mediano",
+  "alignment": "caótico neutral",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 31,
+    "roll": "7d8"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 12,
+    "dex": 16,
+    "con": 11,
+    "int": 12,
+    "wis": 10,
+    "cha": 14
+  },
+  "skills": [
+    "Interpretación +6",
+    "Percepción +2",
+    "Sigilo +5"
+  ],
+  "senses": "Percepción pasiva 12",
+  "languages": "común, elfo, silvano",
+  "challengeRating": "1/2",
+  "experiencePoints": 100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Resistencia mágica",
+      "text": "El sátiro tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+    }
+  ],
+  "actions": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Sátiro",
+  "srd_es_page": 367
+}

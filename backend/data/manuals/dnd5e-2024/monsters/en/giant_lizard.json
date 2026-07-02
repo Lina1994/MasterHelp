@@ -1,0 +1,68 @@
+{
+  "id": "giant_lizard",
+  "slug": "giant_lizard",
+  "lang": "en",
+  "name": "Giant Lizard",
+  "speed": {
+    "walk": 5,
+    "fly": 60
+  },
+  "skills": "Perception +6, Stealth +6",
+  "senses": {
+    "darkvision": "120 ft",
+    "passivePerception": 16
+  },
+  "languages": "Celestial; understands Common, Elvish, and",
+  "challengeRating": "1/4",
+  "experiencePoints": 50,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8 + 2) Piercing damage. Giant Octopus"
+    }
+  ],
+  "traits": [
+    {
+      "name": "Spider Climb",
+      "text": "The lizard can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    }
+  ],
+  "reactions": [
+    {
+      "name": "",
+      "text": "Ink Cloud (1/Day). Trigger: The octopus takes damage while underwater. Response: The octopus releases ink that fills a 10-foot Cube centered on itself, and the oc- topus moves up to its Swim Speed. The Cube is Heavily Obscured for 1 minute or until a strong current or simi- lar effect disperses the ink. Giant Owl"
+    }
+  ],
+  "srd_en_match_name": "Giant Lizard",
+  "srd_en_page": 349,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 45,
+    "roll": "6d10 + 12"
+  },
+  "abilities": {
+    "str": 16,
+    "dex": 14,
+    "con": 14,
+    "int": 2,
+    "wis": 12,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 3,
+    "dex": 2,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

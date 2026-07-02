@@ -1,0 +1,46 @@
+{
+  "id": "camel",
+  "slug": "camel",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Camello",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 10
+  },
+  "initiative": -1,
+  "hitPoints": {
+    "average": 17,
+    "roll": "2d10 + 6"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 15,
+    "dex": 8,
+    "con": 17,
+    "int": 2,
+    "wis": 11,
+    "cha": 5
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1/8",
+  "experiencePoints": 25,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +4, alcance 1,5 m. Acierto: 4 (1d4 + 2) de daño contundente."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Camello",
+  "srd_es_page": 381
+}

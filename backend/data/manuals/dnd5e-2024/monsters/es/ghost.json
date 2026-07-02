@@ -1,0 +1,64 @@
+{
+  "id": "ghost",
+  "slug": "ghost",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Fantasma",
+  "type": "Muerto viviente",
+  "size": "Mediano",
+  "alignment": "neutral",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 45,
+    "roll": "10d8"
+  },
+  "speed": {
+    "walk": 15,
+    "fly": 40
+  },
+  "abilities": {
+    "str": 7,
+    "dex": 13,
+    "con": 10,
+    "int": 10,
+    "wis": 12,
+    "cha": 17
+  },
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "común y otro cualquiera",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Movimiento incorpóreo",
+      "text": "El fantasma puede moverse a través de otras criaturas y objetos como si fueran terreno difícil. Recibe 5 (1d10) de daño de fuerza si acaba su turno dentro de un objeto."
+    },
+    {
+      "name": "Visión etérea",
+      "text": "El fantasma puede ver a 18 m de distancia en el Plano Etéreo cuando se encuentra en el Plano Material."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El fantasma realiza dos ataques de toque marchitador."
+    },
+    {
+      "name": "Toque marchitador",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 19 (3d10 + 3) de daño necrótico."
+    },
+    {
+      "name": "Etéreo",
+      "text": "El fantasma lanza el conjuro excursión etérea, que no requiere componentes y utiliza el Carisma como aptitud mágica. El fantasma es visible en el Plano Material mientras está en la Frontera Etérea y viceversa, pero no puede afectar a nada en el otro plano ni ser afectado por nada del otro plano. Poseer (recarga 6). Tirada de salvación de Carisma: CD 13, un humanoide que el fantasma pueda ver a 1,5 m o menos. Fallo: el objetivo será poseído por el fantasma, que desaparecerá. El objetivo tendrá el estado de incapacitado y perderá el control de su cuerpo. Desde ese momento, el fantasma controlará el cuerpo, pero el objetivo conservará su consciencia. El fantasma no podrá ser objetivo de ningún ataque, conjuro u otro efecto, salvo los que hagan objetivo a muertos vivientes de forma específica. El perfil del fantasma permanecerá igual, salvo que empleará la velocidad y modificadores por Fuerza, Destreza y Constitución del objetivo poseído. La posesión durará hasta que los puntos de golpe del cuerpo se reduzcan a 0 o el fantasma lo abandone como acción adicional. Cuando termine la posesión, el fantasma aparecerá en un espacio sin ocupar a 1,5 m del objetivo, que será inmune a la posesión de este fantasma durante 24 horas. Éxito: el objetivo será inmune a la posesión de este fantasma durante 24 horas."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Fantasma",
+  "srd_es_page": 325
+}

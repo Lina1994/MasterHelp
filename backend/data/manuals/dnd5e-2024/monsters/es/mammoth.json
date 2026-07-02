@@ -1,0 +1,54 @@
+{
+  "id": "mammoth",
+  "slug": "mammoth",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Mamut",
+  "type": "Bestia",
+  "size": "Enorme",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 126,
+    "roll": "11d12 + 55"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 24,
+    "dex": 9,
+    "con": 21,
+    "int": 3,
+    "wis": 11,
+    "cha": 6
+  },
+  "senses": "Percepción pasiva 10",
+  "languages": "ninguno",
+  "challengeRating": "6",
+  "experiencePoints": 2300,
+  "proficiencyBonus": 3,
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El mamut realiza dos ataques con sus colmillos."
+    },
+    {
+      "name": "Colmillos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +10, alcance 3 m. Acierto: 18 (2d10 + 7) de daño perforante. Si el objetivo es una criatura Enorme o más pequeña y el mamut recorre al menos 6 m en línea recta hacia ella justo antes de acertarle, tendrá el estado de derribada. Acciones adicionales"
+    },
+    {
+      "name": "Arrollar",
+      "text": "Tirada de salvación de Destreza: CD 18, una criatura a 1,5 m o menos que tenga el estado de derribada. Fallo: 29 (4d10 + 7) de daño contundente. Éxito: la mitad del daño."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Mamut",
+  "srd_es_page": 389
+}

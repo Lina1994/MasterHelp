@@ -1,0 +1,105 @@
+{
+  "id": "will_o_wisp",
+  "name": "Will-o'-Wisp",
+  "slug": "will_o_wisp",
+  "size": "Tiny",
+  "type": "undead",
+  "alignment": "neutral evil",
+  "armorClass": 19,
+  "hitPoints": {
+    "average": 22,
+    "roll": "9d4"
+  },
+  "speed": {
+    "walk": 0,
+    "fly": 50
+  },
+  "abilities": {
+    "str": 1,
+    "dex": 28,
+    "con": 10,
+    "int": 13,
+    "wis": 14,
+    "cha": 11
+  },
+  "damageResistances": [
+    "acid",
+    "cold",
+    "fire",
+    "lightning",
+    "thunder"
+  ],
+  "damageImmunities": [
+    "lightning",
+    "poison"
+  ],
+  "conditionImmunities": [
+    "exhaustion",
+    "grappled",
+    "paralyzed",
+    "poisoned",
+    "prone",
+    "restrained"
+  ],
+  "senses": "darkvision 120 ft., passive Perception 12",
+  "languages": "the languages it knew in life",
+  "challengeRating": "2",
+  "traits": [
+    {
+      "name": "Ice Walk",
+      "text": "The dragon can move across and climb icy surfaces without needing to make an ability check. Additionally, Difficult Terrain composed of ice or snow doesn’t cost it extra movement. Legendary Resistance (4/Day, or 5/Day in Lair). If the dragon fails a saving throw, it can choose to suc- ceed instead."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The dragon makes three Rend attacks."
+    },
+    {
+      "name": "Rend",
+      "text": "Melee Attack Roll: +14, reach 15 ft. Hit: 17 (2d8 + 8) Slashing damage plus 7 (2d6) Cold damage. Cold Breath (Recharge 5–6). Constitution Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 22, each creature in a 90-foot Cone. Fail- ure: 63 (14d8) Cold damage. Success: Half damage."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 450,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "skills": "Perception +3, Stealth +4",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Freezing Burst",
+      "text": "Constitution Saving Throw: DC 20, each creature in a 30-foot-radius Sphere centered on a point the dragon can see within 120 feet. Failure: 14 (4d6) Cold damage, and the target’s Speed is 0 until the end of the target’s next turn. Failure or Success: The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Frightful Presence",
+      "text": "The dragon casts Fear, requiring no Material components and using Charisma as the spell- casting ability (spell save DC 18). The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Pounce",
+      "text": "The dragon moves up to half its Speed, and it makes one Rend attack. Wight Wight"
+    }
+  ],
+  "srd_en_match_name": "Will-o’-Wisp",
+  "srd_en_page": 338,
+  "subtype": "Chromatic",
+  "initiative": 12,
+  "savingThrows": {
+    "str": 8,
+    "dex": 6,
+    "con": 8,
+    "int": 0,
+    "wis": 7,
+    "cha": 4
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

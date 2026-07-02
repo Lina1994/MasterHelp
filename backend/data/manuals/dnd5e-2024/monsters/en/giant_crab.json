@@ -1,0 +1,65 @@
+{
+  "id": "giant_crab",
+  "slug": "giant_crab",
+  "lang": "en",
+  "name": "Giant Crab",
+  "senses": {
+    "passivePerception": 16
+  },
+  "languages": "Celestial; understands Common and Primordial",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1)"
+    },
+    {
+      "name": "Bludgeoning damage",
+      "text": "If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 11) from one of two claws. Giant Crocodile"
+    }
+  ],
+  "speed": {
+    "walk": 10,
+    "fly": 80
+  },
+  "skills": "Perception +6",
+  "traits": [
+    {
+      "name": "Amphibious",
+      "text": "The crab can breathe air and water."
+    }
+  ],
+  "srd_en_match_name": "Giant Crab",
+  "srd_en_page": 347,
+  "source": "SRD 5.2 (2024)",
+  "size": "huge",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 12,
+    "type": "+2 (12)"
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 60,
+    "roll": "8d12 + 8"
+  },
+  "abilities": {
+    "str": 19,
+    "dex": 14,
+    "con": 12,
+    "int": 1,
+    "wis": 10,
+    "cha": 3
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 2,
+    "con": 1,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "id": "harpy",
+  "slug": "harpy",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Arpía",
+  "type": "Monstruosidad",
+  "size": "Mediana",
+  "alignment": "caótica malvada",
+  "armorClass": {
+    "value": 11
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 38,
+    "roll": "7d8 + 7"
+  },
+  "speed": {
+    "walk": 20,
+    "fly": 40
+  },
+  "abilities": {
+    "str": 12,
+    "dex": 13,
+    "con": 12,
+    "int": 7,
+    "wis": 10,
+    "cha": 13
+  },
+  "senses": "Percepción pasiva 10",
+  "languages": "común",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Garra",
+      "text": "Tirada de ataque cuerpo a cuerpo: +3, alcance 1,5 m. Acierto: 6 (2d4 + 1) de daño cortante."
+    },
+    {
+      "name": "Canción tentadora",
+      "text": "La arpía canta una melodía mágica, que dura hasta que la arpía deja de concentrarse en ella. Tirada de salvación de Sabiduría: CD 11, todos los humanoides y gigantes en una emanación de 90 m que se origina en la arpía cuando empieza la canción. Fallo: el objetivo tendrá el estado de hechizado hasta que termine la canción y repetirá la tirada de salvación al final de cada uno de sus turnos. Mientras esté hechizado, tendrá el estado de incapacitado e ignorará la canción tentadora de otras arpías. Si el objetivo se encuentra a más de 1,5 m de la arpía, deberá moverse durante su turno hacia ella por el camino más corto para intentar situarse a 1,5 m o menos de ella. No evitará provocar ataques de oportunidad; sin embargo, antes de moverse a un terreno que le causaría daño (como lava o un pozo) y cada vez que sufra daño de una fuente distinta a la arpía, repetirá la tirada de salvación. Éxito: el objetivo será inmune a la canción tentadora de esta arpía durante 24 horas. Asesino Asesino Humanoide Mediano o Pequeño, neutral"
+    },
+    {
+      "name": "CA",
+      "text": "16 Iniciativa: +10 (20)"
+    },
+    {
+      "name": "PG",
+      "text": "97 (15d8 + 30)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "9 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 11 +0 +0 Des 18 +4 +7 Con 14 +2 +2 Int 16 +3 +6 sab 11 +0 +0 Car 10 +0 +0"
+    },
+    {
+      "name": "Habilidades",
+      "text": "Acrobacias +7, Percepción +6, Sigilo +10"
+    },
+    {
+      "name": "Resistencias",
+      "text": "veneno"
+    },
+    {
+      "name": "Equipo",
+      "text": "armadura de cuero tachonado, ballesta ligera, espada corta"
+    },
+    {
+      "name": "Sentidos",
+      "text": "Percepción pasiva 16"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común, jerga de ladrones"
+    },
+    {
+      "name": "VD",
+      "text": "8 (3900 PX; BC +3)"
+    },
+    {
+      "name": "Ataque múltiple",
+      "text": "El asesino realiza tres ataques con su espada corta o su ballesta ligera en cualquier combinación."
+    },
+    {
+      "name": "Espada corta",
+      "text": "Tirada de ataque cuerpo a cuerpo: +7, alcance 1,5 m. Acierto: 7 (1d6 + 4) de daño perforante más 17 (5d6) de daño de veneno y el objetivo tendrá el estado de envenenado hasta el principio del siguiente turno del asesino."
+    }
+  ],
+  "traits": [
+    {
+      "name": "Evasión",
+      "text": "Si el asesino sufre un efecto que le permita hacer una tirada de salvación de Destreza para sufrir solo la mitad de daño, no recibe ningún daño si la supera y solo sufre la mitad si la falla. No puede usar este atributo si tiene el estado de incapacitado."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Arpía",
+  "srd_es_page": 285
+}

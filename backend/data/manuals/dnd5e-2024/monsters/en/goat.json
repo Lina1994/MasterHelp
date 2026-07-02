@@ -1,0 +1,69 @@
+{
+  "id": "goat",
+  "slug": "goat",
+  "lang": "en",
+  "name": "Goat",
+  "senses": {
+    "passivePerception": 13
+  },
+  "languages": "None",
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Flyby",
+      "text": "The wasp doesn’t provoke an Opportunity At- tack when it flies out of an enemy’s reach."
+    },
+    {
+      "name": "Spider Climb",
+      "text": "The spider can climb difficult surfaces, including along ceilings, without needing to make an ability check."
+    },
+    {
+      "name": "Hold Breath",
+      "text": "The hippopotamus can hold its breath for 10 minutes."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ram",
+      "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 1 Blud- geoning damage, or 2 (1d4) Bludgeoning damage if the goat moved 20+ feet straight toward the target immedi- ately before the hit. Hawk"
+    }
+  ],
+  "speed": {
+    "walk": 30,
+    "swim": 30
+  },
+  "skills": "Perception +3",
+  "srd_en_match_name": "Goat",
+  "srd_en_page": 352,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "beast",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 13,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 9,
+    "roll": "2d8"
+  },
+  "abilities": {
+    "str": 11,
+    "dex": 17,
+    "con": 10,
+    "int": 4,
+    "wis": 12,
+    "cha": 5
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 3,
+    "con": 0,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

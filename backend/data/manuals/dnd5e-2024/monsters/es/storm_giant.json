@@ -1,0 +1,75 @@
+{
+  "id": "storm_giant",
+  "slug": "storm_giant",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Gigante de las tormentas",
+  "type": "Gigante",
+  "size": "Enorme",
+  "alignment": "caótico bueno",
+  "armorClass": {
+    "value": 16
+  },
+  "initiative": 7,
+  "hitPoints": {
+    "average": 230,
+    "roll": "20d12 + 100"
+  },
+  "speed": {
+    "walk": 50,
+    "swim": 50
+  },
+  "abilities": {
+    "str": 29,
+    "dex": 14,
+    "con": 20,
+    "int": 16,
+    "wis": 20,
+    "cha": 18
+  },
+  "skills": [
+    "Atletismo +14",
+    "Conocimiento arcano +8"
+  ],
+  "senses": "visión en la oscuridad 36 m, visión verdadera",
+  "languages": "común, gigante",
+  "challengeRating": "13",
+  "proficiencyBonus": 5,
+  "traits": [
+    {
+      "name": "Anfibio",
+      "text": "El gigante puede respirar tanto dentro como fuera del agua."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Ataque múltiple",
+      "text": "El gigante realiza dos ataques con su espada tormentosa o su rayo en cualquier combinación."
+    },
+    {
+      "name": "Espada tormentosa",
+      "text": "Tirada de ataque cuerpo a cuerpo: +14, alcance 3 m. Acierto: 23 (4d6 + 9) de daño cortante más 13 (3d8) de daño de relámpago."
+    },
+    {
+      "name": "Rayo",
+      "text": "Tirada de ataque a distancia: +14, alcance 150 m."
+    },
+    {
+      "name": "Acierto",
+      "text": "22 (2d12 + 9) de daño de relámpago y el objetivo tendrá los estados de cegado y ensordecido hasta el principio del siguiente turno del gigante."
+    },
+    {
+      "name": "Lanzamiento de conjuros",
+      "text": "El gigante lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 18):"
+    },
+    {
+      "name": "A voluntad",
+      "text": "detectar magia, luz 1/día: controlar el clima Tormenta de relámpagos (recarga 5–6). Tirada de salvación de Destreza: CD 18, todas las criaturas en un cilindro de 3 m de radio y 12 m de alto que se origina en un punto que el gigante pueda ver a 150 m o menos. Fallo: 55 (10d10) de daño de relámpago. Éxito: la mitad del daño. Gigante de piedra"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Gigante de las tormentas",
+  "srd_es_page": 329
+}

@@ -1,0 +1,50 @@
+{
+  "id": "jackal",
+  "slug": "jackal",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Chacal",
+  "type": "Bestia",
+  "size": "Pequeña",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 3,
+    "roll": "1d6"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 15,
+    "con": 11,
+    "int": 3,
+    "wis": 12,
+    "cha": 6
+  },
+  "skills": [
+    "Percepción +5",
+    "Sigilo +4"
+  ],
+  "senses": "visión en la oscuridad 27 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +1, alcance 1,5 m. Acierto: 1 (1d4 − 1) de daño perforante."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Chacal",
+  "srd_es_page": 382
+}

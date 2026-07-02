@@ -1,0 +1,52 @@
+{
+  "id": "baboon",
+  "slug": "baboon",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Babuino",
+  "type": "Bestia",
+  "size": "Pequeña",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 12
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 3,
+    "roll": "1d6"
+  },
+  "speed": {
+    "walk": 30,
+    "climb": 30
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 14,
+    "con": 11,
+    "int": 4,
+    "wis": 12,
+    "cha": 6
+  },
+  "senses": "Percepción pasiva 11",
+  "languages": "ninguno",
+  "challengeRating": "0",
+  "experiencePoints": 10,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Atacar en manada",
+      "text": "El babuino tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del babuino se encuentra a 1,5 m o menos de la criatura y no tiene el estado de incapacitado."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Mordisco",
+      "text": "Tirada de ataque cuerpo a cuerpo: +1, alcance 1,5 m. Acierto: 1 (1d4 − 1) de daño perforante."
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Babuino",
+  "srd_es_page": 378
+}

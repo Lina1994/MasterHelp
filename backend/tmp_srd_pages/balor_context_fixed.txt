@@ -1,0 +1,77 @@
+Fue 15 +2 +2 Des 16 +3 +3 Con 12 +1 +1 que dura hasta que la arpía deja de concentrarse en
+Int 6 −2 −2 sab 10 +0 +0 Car 6 −2 −2 ella. Tirada de salvación de Sabiduría: CD 11, todos los
+Atributos
+Caminar por telarañas. La araña ignora todas las res-
+tricciones de movimiento causadas por las telarañas
+y conoce la ubicación de cualquier otra criatura que
+esté en contacto con la misma telaraña.
+Visión etérea. La araña puede ver a 18 m de distancia
+en el Plano Etéreo cuando se encuentra en el Plano Asesino
+Material y viceversa.
+Acciones
+Ataque múltiple. La araña realiza dos ataques de mor-
+Mordisco. Tirada de ataque cuerpo a cuerpo: +5, al-
+cance 1,5 m. Acierto: 8 (1d10 + 3) de daño perforante
+más 9 (2d8) de daño de veneno. Si este daño reduce
+a 0 los puntos de golpe del objetivo, pasará a estar es-
+table y tendrá el estado de envenenado durante 1 hora.
+Mientras esté envenenado, también tendrá el estado de
+paralizado.
+Salto etéreo. La araña se teletransporta del Plano Mate-
+rial al Plano Etéreo o viceversa.
+Arpía
+Monstruosidad Mediana, caótica malvada
+MOD. SALV. MOD. SALV. MOD. SALV.
+Fue 12 +1 +1 Des 13 +1 +1 Con 12 +1 +1
+Int 7 −2 −2 sab 10 +0 +0 Car 13 +1 +1 Ataque múltiple. El asesino realiza tres ataques con su
+Sentidos: Percepción pasiva 10 ción.
+Idiomas: común
+VD: 1 (200 PX; BC +2)
+Garra. Tirada de ataque cuerpo a cuerpo: +3, alcance
+1,5 m. Acierto: 6 (2d4 + 1) de daño cortante.
+285 Documento de referencia del sistema 5.2.1
+MOD. SALV. MOD. SALV. MOD. SALV. Canción tentadora. La arpía canta una melodía mágica,
+humanoides y gigantes en una emanación de 90 m que
+Habilidades: Sigilo +7 se origina en la arpía cuando empieza la canción. Fallo:
+Sentidos: visión en la oscuridad 18 m; Percepción el objetivo tendrá el estado de hechizado hasta que ter-
+pasiva 10 mine la canción y repetirá la tirada de salvación al final
+Idiomas: ninguno de cada uno de sus turnos. Mientras esté hechizado,
+VD: 3 (700 PX; BC +2) tendrá el estado de incapacitado e ignorará la canción
+tentadora de otras arpías. Si el objetivo se encuentra
+a más de 1,5 m de la arpía, deberá moverse durante su
+turno hacia ella por el camino más corto para intentar
+situarse a 1,5 m o menos de ella. No evitará provocar
+ataques de oportunidad; sin embargo, antes de moverse
+a un terreno que le causaría daño (como lava o un
+Trepar cual arácnido. La araña puede trepar por super- pozo) y cada vez que sufra daño de una fuente distinta
+ficies difíciles e incluso recorrer techos sin tener que a la arpía, repetirá la tirada de salvación. Éxito: el ob-
+realizar pruebas de característica. jetivo será inmune a la canción tentadora de esta arpía
+durante 24 horas.
+Asesino
+Humanoide Mediano o Pequeño, neutral
+disco. CA: 16 Iniciativa: +10 (20)
+PG: 97 (15d8 + 30)
+Velocidad: 9 m
+MOD. SALV. MOD. SALV. MOD. SALV.
+Fue 11 +0 +0 Des 18 +4 +7 Con 14 +2 +2
+Int 16 +3 +6 sab 11 +0 +0 Car 10 +0 +0
+Habilidades: Acrobacias +7, Percepción +6, Sigilo +10
+Resistencias: veneno
+Acciones adicionales Equipo: armadura de cuero tachonado, ballesta ligera,
+espada corta
+Sentidos: Percepción pasiva 16
+Idiomas: común, jerga de ladrones
+Arpía VD: 8 (3900 PX; BC +3)
+Atributos
+Evasión. Si el asesino sufre un efecto que le permita ha-
+cer una tirada de salvación de Destreza para sufrir solo
+CA: 11 Iniciativa: +1 (11) la mitad de daño, no recibe ningún daño si la supera
+PG: 38 (7d8 + 7) y solo sufre la mitad si la falla. No puede usar este atri-
+Velocidad: 6 m, volar 12 m buto si tiene el estado de incapacitado.
+Acciones
+espada corta o su ballesta ligera en cualquier combina-
+Espada corta. Tirada de ataque cuerpo a cuerpo: +7,
+alcance 1,5 m. Acierto: 7 (1d6 + 4) de daño perforante
+Acciones más 17 (5d6) de daño de veneno y el objetivo tendrá
+el estado de envenenado hasta el principio del si-
+guiente turno del asesino.

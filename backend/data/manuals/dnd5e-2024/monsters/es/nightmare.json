@@ -1,0 +1,60 @@
+{
+  "id": "nightmare",
+  "slug": "nightmare",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Pesadilla",
+  "type": "Infernal",
+  "size": "Grande",
+  "alignment": "neutral malvado",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 2,
+  "hitPoints": {
+    "average": 68,
+    "roll": "8d10 + 24"
+  },
+  "speed": {
+    "walk": 60,
+    "fly": 90
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 15,
+    "con": 16,
+    "int": 10,
+    "wis": 13,
+    "cha": 15
+  },
+  "senses": "Percepción pasiva 11",
+  "languages": "entiende abisal, común e infernal, pero no puede",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Iluminación",
+      "text": "La pesadilla emite luz brillante en un radio de 3 m y luz tenue 3 m más allá."
+    },
+    {
+      "name": "Otorgar resistencia al fuego",
+      "text": "La pesadilla puede conferir resistencia al daño de fuego a cualquiera que monte sobre ella."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Cascos",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 13 (2d8 + 4) de daño contundente más 10 (3d6) de daño de fuego."
+    },
+    {
+      "name": "Trote etéreo",
+      "text": "La pesadilla y hasta tres criaturas voluntarias situadas a 1,5 m o menos de ella se teletransportan del Plano Etéreo al Plano Material, o viceversa. Pico de hacha"
+    }
+  ],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Pesadilla",
+  "srd_es_page": 359
+}

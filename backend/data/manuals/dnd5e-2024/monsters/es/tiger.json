@@ -1,0 +1,54 @@
+{
+  "id": "tiger",
+  "slug": "tiger",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Tigre",
+  "type": "Bestia",
+  "size": "Grande",
+  "alignment": "sin alineamiento",
+  "armorClass": {
+    "value": 13
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 30,
+    "roll": "4d10 + 8"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 16,
+    "con": 14,
+    "int": 3,
+    "wis": 12,
+    "cha": 8
+  },
+  "skills": [
+    "Percepción +3",
+    "Sigilo +7"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "ninguno",
+  "challengeRating": "1",
+  "experiencePoints": 200,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Desgarro",
+      "text": "Tirada de ataque cuerpo a cuerpo: +5, alcance 1,5 m. Acierto: 10 (2d6 + 3) de daño cortante. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de derribada. Acciones adicionales"
+    },
+    {
+      "name": "Huida veloz",
+      "text": "El tigre realiza las acciones de destrabarse o esconderse."
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Tigre",
+  "srd_es_page": 397
+}

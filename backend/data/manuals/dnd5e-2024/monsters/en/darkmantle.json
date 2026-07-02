@@ -1,0 +1,72 @@
+{
+  "id": "darkmantle",
+  "slug": "darkmantle",
+  "lang": "en",
+  "name": "Darkmantle",
+  "actions": [
+    {
+      "name": "",
+      "text": "Divine Aid (2/Day). The couatl casts Bless, Lesser Res- toration, or Sanctuary, requiring no spell components and using the same spellcasting ability as Spellcasting. Crawling Claw Swarm of Crawling Claws Medium Swarm of Tiny Undead, Neutral Evil"
+    },
+    {
+      "name": "Swarm of Grasping Hands",
+      "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 20 (4d8 + 2) Necrotic damage, or 11 (2d8 + 2) Necrotic damage if the swarm is Bloodied. If the target is a Medium or smaller creature, it has the Prone condition. Cultists Cultist Medium or Small Humanoid, Neutral"
+    },
+    {
+      "name": "Ritual Sickle",
+      "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 3 (1d4 + 1) Slashing damage plus 1 Necrotic damage. Cultist Fanatic Medium or Small Humanoid, Neutral"
+    },
+    {
+      "name": "Pact Blade",
+      "text": "Melee Attack Roll: +4, reach 5 ft."
+    },
+    {
+      "name": "Hit",
+      "text": "6 (1d8 + 2) Slashing damage plus 7 (2d6) Ne- crotic damage."
+    },
+    {
+      "name": "Spellcasting",
+      "text": "The cultist casts one of the following spells, using Wisdom as the spellcasting ability (spell save DC 12, +4 to hit with spell attacks):"
+    },
+    {
+      "name": "At Will",
+      "text": "Light, Thaumaturgy 2/Day: Command 1/Day: Hold Person Bonus Actions Spiritual Weapon (2/Day). The cultist casts the Spiritual Weapon spell, using the same spellcasting ability as Spellcasting. Darkmantle Darkmantle"
+    }
+  ],
+  "speed": {
+    "walk": 10,
+    "fly": 30
+  },
+  "senses": {
+    "passivePerception": 12
+  },
+  "languages": "Common",
+  "challengeRating": "2",
+  "experiencePoints": 450,
+  "proficiencyBonus": 2,
+  "traits": [
+    {
+      "name": "Swarm",
+      "text": "The swarm can occupy another creature’s space and vice versa, and the swarm can move through any opening large enough for a Tiny creature. The swarm can’t regain Hit Points or gain Temporary Hit Points."
+    }
+  ],
+  "skills": "Deception +3, Persuasion +3, Religion +2",
+  "srd_en_match_name": "Darkmantle",
+  "srd_en_page": 275,
+  "source": "SRD 5.2 (2024)",
+  "size": "small",
+  "type": "aberration",
+  "alignment": "Unaligned",
+  "armorClass": {
+    "value": 11,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 22,
+    "roll": "5d6 + 5"
+  },
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

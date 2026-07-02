@@ -1,0 +1,44 @@
+{
+  "id": "gazer",
+  "name": "Gazer",
+  "slug": "gazer",
+  "size": "Small",
+  "type": "aberration",
+  "alignment": "neutral evil",
+  "armorClass": 13,
+  "hitPoints": {
+    "average": 13,
+    "roll": "3d6 + 3"
+  },
+  "speed": {
+    "walk": 0,
+    "fly": 20
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 15,
+    "con": 13,
+    "int": 7,
+    "wis": 12,
+    "cha": 11
+  },
+  "senses": "darkvision 60 ft., passive Perception 11",
+  "languages": "understands Deep Speech but cannot speak",
+  "challengeRating": "1/2",
+  "traits": [
+    {
+      "name": "Eye Rays",
+      "text": "Action: roll 1d4 for random eye ray (sleep, fear, acid, confusion, charm)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "+4 to hit. Hit: 4 (1d4 + 2) piercing."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 100,
+  "lang": "en",
+  "source": "SRD 5.2 (2024)"
+}

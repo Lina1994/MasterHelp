@@ -1,0 +1,92 @@
+{
+  "id": "bone_devil",
+  "slug": "bone_devil",
+  "lang": "en",
+  "name": "Bone Devil",
+  "legendaryActions": [
+    {
+      "name": "Legendary Action Uses",
+      "text": "3 (4 in Lair). Immediately after another creature’s turn, the dragon can expend a use to take one of the following actions. The dragon regains all expended uses at the start of each of its turns."
+    },
+    {
+      "name": "Cloaked Flight",
+      "text": "The dragon uses Spellcasting to cast In- visibility on itself, and it can fly up to half its Fly Speed. The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Sonic Boom",
+      "text": "The dragon uses Spellcasting to cast Shat- ter (level 3 version). The dragon can’t take this action again until the start of its next turn."
+    },
+    {
+      "name": "Tail Swipe",
+      "text": "The dragon makes one Rend attack. Bone Devil Bone Devil"
+    }
+  ],
+  "speed": {
+    "walk": 40,
+    "fly": 40
+  },
+  "skills": "Deception +7, Insight +6",
+  "senses": {
+    "darkvision": "120 ft."
+  },
+  "languages": "Infernal; telepathy 120 ft.",
+  "challengeRating": "9",
+  "experiencePoints": 5000,
+  "proficiencyBonus": 4,
+  "traits": [
+    {
+      "name": "Diabolical Restoration",
+      "text": "If the devil dies outside the Nine Hells, its body disappears in sulfurous smoke, and it gains a new body instantly, reviving with all its Hit Points somewhere in the Nine Hells."
+    },
+    {
+      "name": "Magic Resistance",
+      "text": "The devil has Advantage on saving throws against spells and other magical effects."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The devil makes two Claw attacks and one Infernal Sting attack."
+    },
+    {
+      "name": "Claw",
+      "text": "Melee Attack Roll: +8, reach 10 ft. Hit: 13 (2d8 + 4) Slashing damage."
+    },
+    {
+      "name": "Infernal Sting",
+      "text": "Melee Attack Roll: +8, reach 10 ft. Hit: 15 (2d10 + 4) Piercing damage plus 18 (4d8) Poison"
+    }
+  ],
+  "srd_en_match_name": "Bone Devil",
+  "srd_en_page": 264,
+  "source": "SRD 5.2 (2024)",
+  "size": "gargantuan",
+  "type": "dragon",
+  "subtype": "Chromatic",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 22,
+    "type": "+14 (24)"
+  },
+  "initiative": 14,
+  "hitPoints": {
+    "average": 481,
+    "roll": "26d20 + 208"
+  },
+  "abilities": {
+    "str": 29,
+    "dex": 10,
+    "con": 27,
+    "int": 18,
+    "wis": 17,
+    "cha": 25
+  },
+  "savingThrows": {
+    "str": 9,
+    "dex": 7,
+    "con": 8,
+    "int": 4,
+    "wis": 10,
+    "cha": 7
+  }
+}

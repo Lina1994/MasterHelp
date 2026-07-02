@@ -18,6 +18,7 @@ export interface MonsterIndexItem {
   alignment?: string;
   challengeRating?: string; // supports fractions like "1/8"
   translated?: boolean; // when lang=es and content cloned from en
+  source?: string; // e.g., 'SRD 5.2 castellano (Wizards)' or '... (pendiente)' for stubs
 }
 
 export interface ArmorClass {

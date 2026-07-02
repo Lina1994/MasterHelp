@@ -1,0 +1,70 @@
+{
+  "id": "winter_wolf",
+  "slug": "winter_wolf",
+  "lang": "en",
+  "name": "Winter Wolf",
+  "senses": {
+    "darkvision": "60 ft",
+    "passivePerception": 12
+  },
+  "languages": "Common plus two other languages",
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "proficiencyBonus": 3,
+  "traits": [
+    {
+      "name": "Pack Tactics",
+      "text": "The wolf has Advantage on an attack roll against a creature if at least one of the wolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bite",
+      "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 11 (2d6 + 4)"
+    },
+    {
+      "name": "Piercing damage",
+      "text": "If the target is a Large or smaller crea- ture, it has the Prone condition. Cold Breath (Recharge 5–6). Constitution Saving"
+    },
+    {
+      "name": "Throw",
+      "text": "DC 12, each creature in a 15-foot Cone. Failure: 18 (4d8) Cold damage. Success: Half damage. Worg Worg"
+    }
+  ],
+  "speed": {
+    "walk": 5,
+    "fly": 60
+  },
+  "skills": "Perception +4",
+  "srd_en_match_name": "Winter Wolf",
+  "srd_en_page": 339,
+  "source": "SRD 5.2 (2024)",
+  "size": "large",
+  "type": "monstrosity",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 13,
+    "type": "+1 (11)"
+  },
+  "initiative": 1,
+  "hitPoints": {
+    "average": 75,
+    "roll": "10d10 + 20"
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 13,
+    "con": 14,
+    "int": 7,
+    "wis": 12,
+    "cha": 8
+  },
+  "savingThrows": {
+    "str": 4,
+    "dex": 1,
+    "con": 2,
+    "int": 0,
+    "wis": 1,
+    "cha": 0
+  }
+}

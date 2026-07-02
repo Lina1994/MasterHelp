@@ -1,0 +1,41 @@
+{
+  "id": "rug_of_smothering",
+  "slug": "rug_of_smothering",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Rug of Smothering",
+  "size": "Large",
+  "type": "construct",
+  "alignment": "unaligned",
+  "armorClass": 12,
+  "hitPoints": {
+    "average": 33,
+    "roll": "6d10"
+  },
+  "speed": {
+    "walk": 10
+  },
+  "abilities": {
+    "str": 17,
+    "dex": 14,
+    "con": 10,
+    "int": 1,
+    "wis": 3,
+    "cha": 1
+  },
+  "senses": "blindsight 60 ft., passive Perception 6",
+  "languages": "—",
+  "conditionImmunities": [
+    "blinded",
+    "prone"
+  ],
+  "challengeRating": "2",
+  "actions": [
+    {
+      "name": "Smother",
+      "text": "+5 to hit. Hit: target grappled, DC 12 STR ends each turn; 2d6 bludgeoning if start in grapple."
+    }
+  ],
+  "proficiencyBonus": 2,
+  "experiencePoints": 450
+}

@@ -1,0 +1,87 @@
+{
+  "id": "succubus",
+  "slug": "succubus",
+  "lang": "en",
+  "name": "Succubus",
+  "traits": [
+    {
+      "name": "Incubus Form",
+      "text": "When the succubus finishes a Long Rest, it can shape-shift into an Incubus, using that stat block instead of this one."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack",
+      "text": "The succubus makes one Fiendish Touch attack and uses Charm or Draining Kiss."
+    },
+    {
+      "name": "Fiendish Touch",
+      "text": "Melee Attack Roll: +7, reach 5 ft. Hit: 16 (2d10 + 5) Psychic damage."
+    },
+    {
+      "name": "Charm",
+      "text": "The succubus casts Dominate Person (level 8 version), requiring no spell components and using Cha- risma as the spellcasting ability (spell save DC 15)."
+    },
+    {
+      "name": "Draining Kiss",
+      "text": "Constitution Saving Throw: DC 15, one creature Charmed by the succubus within 5 feet. Fail- ure: 13 (3d8) Psychic damage. Success: Half damage."
+    },
+    {
+      "name": "Failure or Success",
+      "text": "The target’s Hit Point maximum de- creases by an amount equal to the damage taken. Bonus Actions"
+    },
+    {
+      "name": "Shape-Shift",
+      "text": "The succubus shape-shifts into a Medium or Small Humanoid, or it returns to its true form. Its game statistics are the same in each form, except its Fly"
+    },
+    {
+      "name": "Speed is available only in its true form",
+      "text": "Any equipment it is wearing or carrying isn’t transformed. Tarrasque Tarrasque"
+    }
+  ],
+  "speed": {
+    "walk": 60,
+    "burrow": 40,
+    "climb": 60
+  },
+  "skills": "Perception +9",
+  "senses": {
+    "blindsight": "120 ft",
+    "passivePerception": 19
+  },
+  "languages": "None",
+  "challengeRating": "30",
+  "experiencePoints": 155000,
+  "proficiencyBonus": 9,
+  "srd_en_match_name": "Succubus",
+  "srd_en_page": 328,
+  "source": "SRD 5.2 (2024)",
+  "size": "medium",
+  "type": "fiend",
+  "alignment": "Neutral Evil",
+  "armorClass": {
+    "value": 15,
+    "type": "+3 (13)"
+  },
+  "initiative": 3,
+  "hitPoints": {
+    "average": 71,
+    "roll": "13d8 + 13"
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 17,
+    "con": 13,
+    "int": 15,
+    "wis": 12,
+    "cha": 20
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 3,
+    "con": 1,
+    "int": 2,
+    "wis": 1,
+    "cha": 5
+  }
+}

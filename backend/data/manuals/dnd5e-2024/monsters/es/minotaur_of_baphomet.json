@@ -1,0 +1,86 @@
+{
+  "id": "minotaur_of_baphomet",
+  "slug": "minotaur_of_baphomet",
+  "lang": "es",
+  "source": "SRD 5.2 castellano (Wizards)",
+  "name": "Minotauro de Bafomet",
+  "type": "Monstruosidad",
+  "size": "Grande",
+  "alignment": "caótica malvada",
+  "armorClass": {
+    "value": 14
+  },
+  "initiative": 0,
+  "hitPoints": {
+    "average": 85,
+    "roll": "10d10 + 30"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 11,
+    "con": 16,
+    "int": 6,
+    "wis": 16,
+    "cha": 9
+  },
+  "skills": [
+    "Percepción +7",
+    "Supervivencia +7"
+  ],
+  "senses": "visión en la oscuridad 18 m; Percepción",
+  "languages": "abisal",
+  "challengeRating": "3",
+  "experiencePoints": 700,
+  "proficiencyBonus": 2,
+  "actions": [
+    {
+      "name": "Guja abisal",
+      "text": "Tirada de ataque cuerpo a cuerpo: +6, alcance 3 m. Acierto: 10 (1d12 + 4) de daño cortante más 10 (3d6) de daño necrótico. Cornada (recarga 5–6). Tirada de ataque cuerpo a cuerpo: +6, alcance 1,5 m. Acierto: 18 (4d6 + 4) de daño perforante. Si el objetivo es una criatura Grande o más pequeña y el minotauro recorre al menos 3 m en línea recta hacia ella justo antes de acertarle, esta recibirá 10 (3d6) de daño perforante adicional y tendrá el estado de derribada. Momias Momia Muerto viviente Mediano o Pequeño, legal malvado"
+    },
+    {
+      "name": "CA",
+      "text": "11 Iniciativa: −1 (9)"
+    },
+    {
+      "name": "PG",
+      "text": "58 (9d8 + 18)"
+    },
+    {
+      "name": "Velocidad",
+      "text": "6 m"
+    },
+    {
+      "name": "MOD",
+      "text": "SALV. MOD. SALV. MOD. SALV. Fue 16 +3 +3 Des 8 −1 −1 Con 15 +2 +2 Int 6 −2 −2 sab 12 +1 +3 Car 12 +1 +1"
+    },
+    {
+      "name": "Vulnerabilidades",
+      "text": "fuego"
+    },
+    {
+      "name": "Inmunidades",
+      "text": "necrótico, veneno; asustado, cansancio, envenenado, hechizado, paralizado"
+    },
+    {
+      "name": "Sentidos",
+      "text": "visión en la oscuridad 18 m; Percepción pasiva 11"
+    },
+    {
+      "name": "Idiomas",
+      "text": "común y otros dos idiomas"
+    },
+    {
+      "name": "VD",
+      "text": "3 (700 PX; BC +2)"
+    }
+  ],
+  "traits": [],
+  "legendaryActions": [],
+  "reactions": [],
+  "spellcasting": [],
+  "srd_es_match_name": "Minotauro de Bafomet",
+  "srd_es_page": 351
+}

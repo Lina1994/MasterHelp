@@ -1,0 +1,84 @@
+{
+  "id": "rakshasa",
+  "slug": "rakshasa",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Rakshasa",
+  "size": "Medium",
+  "type": "Fiend",
+  "alignment": "Lawful Evil",
+  "armorClass": {
+    "value": 16,
+    "type": "natural armor"
+  },
+  "hitPoints": {
+    "average": 110,
+    "roll": "20d8+20"
+  },
+  "speed": {
+    "walk": 40
+  },
+  "abilities": {
+    "str": 13,
+    "dex": 19,
+    "con": 15,
+    "int": 16,
+    "wis": 16,
+    "cha": 17
+  },
+  "savingThrows": {
+    "dex": 7,
+    "wis": 6
+  },
+  "skills": {
+    "deception": 7,
+    "insight": 6
+  },
+  "damageVulnerabilities": [],
+  "damageResistances": [
+    "bludgeoning, piercing, and slashing from nonmagical attacks"
+  ],
+  "damageImmunities": [
+    "poison"
+  ],
+  "conditionImmunities": [
+    "frightened",
+    "poisoned"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 13",
+  "languages": "Common, Infernal",
+  "proficiencyBonus": 2,
+  "challengeRating": "4",
+  "experiencePoints": 1100,
+  "traits": [
+    {
+      "name": "Limited Magic Immunity.",
+      "text": "The rakshasa can't be affected or detected by spells of 6th level or lower, unless it wishes to be. It has advantage on saving throws against all other spells and magical effects."
+    },
+    {
+      "name": "Innate Spellcasting.",
+      "text": "The rakshasa's innate spellcasting ability is Charisma. It can innately cast detect thoughts, disguise self, and major image at will, and the following 1/day each: charm person, create food and water, tongues."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack.",
+      "text": "The rakshasa makes two claw attacks."
+    },
+    {
+      "name": "Claw.",
+      "text": "Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 9 (2d6 + 4) slashing damage, and the target must succeed on a DC 15 CON save or be poisoned for 1 hour."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 8,
+  "srd_en_match_name": "Rakshasa",
+  "srd_en_page": 314,
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}

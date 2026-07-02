@@ -1,0 +1,1203 @@
+{
+  "id": "cleric",
+  "name": "Clérigo",
+  "source": "SRD 5.2 (2024)",
+  "hitDie": 8,
+  "hitPoints": {
+    "hitDice": "1d8 por nivel de clérigo",
+    "at1stLevel": "8 + tu modificador de Constitución",
+    "atHigherLevels": "1d8 (o 5) + tu modificador de Constitución por cada nivel de clérigo por encima del primero"
+  },
+  "primaryAbilities": [
+    "wis"
+  ],
+  "savingThrows": [
+    "wis",
+    "cha"
+  ],
+  "proficiencies": {
+    "armor": [
+      "Armadura ligera",
+      "Armadura media",
+      "Armadura pesada",
+      "Escudos"
+    ],
+    "weapons": [
+      "Armas simples"
+    ],
+    "tools": []
+  },
+  "skills": {
+    "choose": 2,
+    "from": [
+      "Historia",
+      "Perspicacia",
+      "Medicina",
+      "Persuasión",
+      "Religión"
+    ]
+  },
+  "equipment": [
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "maza",
+          "description": "Una maza"
+        },
+        {
+          "id": "martillo_guerra",
+          "description": "Un martillo de guerra (si tienes competencia)"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "cota_de_malla",
+          "description": "Cota de malla"
+        },
+        {
+          "id": "armadura_cuero",
+          "description": "Armadura de cuero"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "ballesta_mano_virotes_x20",
+          "description": "Una ballesta de mano con 20 virotes"
+        },
+        {
+          "id": "arma_simple",
+          "description": "Cualquier arma simple"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "paquete_sacerdote",
+          "description": "Paquete de sacerdote"
+        },
+        {
+          "id": "paquete_explorador",
+          "description": "Paquete de explorador"
+        }
+      ]
+    },
+    {
+      "choose": 1,
+      "options": [
+        {
+          "id": "escudo_simbolo_sagrado",
+          "description": "Un escudo y un símbolo sagrado"
+        },
+        {
+          "id": "simbolo_sagrado",
+          "description": "Un símbolo sagrado"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "lanzamiento_conjuros",
+      "name": "Lanzamiento de conjuros",
+      "level": 1,
+      "description": "Has aprendido a lanzar conjuros a través de la oración y la meditación. Tu habilidad para lanzar conjuros es Sabiduría. Cada día, preparas tu lista de conjuros disponibles de la lista de clérigo. Puedes cambiar los conjuros preparados después de un descanso largo.",
+      "effects": [
+        {
+          "type": "lanzamiento_ritual",
+          "value": true
+        },
+        {
+          "type": "espacios_conjuro_por_nivel",
+          "ability": "wis",
+          "lists": [
+            "clerigo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dominio_divino",
+      "name": "Dominio divino",
+      "level": 1,
+      "description": "Elige un Dominio Divino: Vida o Luz. Cada dominio concede conjuros de dominio en niveles específicos y una dote única.",
+      "effects": [
+        {
+          "type": "eleguir_subclase",
+          "atLevel": 1
+        }
+      ]
+    },
+    {
+      "id": "trucos_conocidos",
+      "name": "Trucos (Clérigo)",
+      "level": 1,
+      "description": "Conoces tres trucos: Llamas sagradas, Taumaturgia y otro truco de clérigo a elegir. Aprendes trucos adicionales en niveles superiores.",
+      "effects": [
+        {
+          "type": "trucos_conocidos",
+          "count": 3,
+          "scalesAt": [
+            4,
+            8,
+            10,
+            12,
+            14,
+            16,
+            18,
+            20
+          ],
+          "perLevelStep": 1,
+          "free": [
+            "sacred_flame",
+            "thaumaturgy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "canalizar_divinidad",
+      "name": "Canalizar Divinidad",
+      "level": 2,
+      "description": "Obtienes la habilidad de canalizar energía divina directamente desde los Planos Exteriores. Recuperas los usos gastados con un descanso corto o largo.",
+      "effects": [
+        {
+          "type": "recurso",
+          "name": "Canalizar Divinidad",
+          "per": "descanso_corto",
+          "count": {
+            "2": 1,
+            "6": 2,
+            "11": 3,
+            "17": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "dote_dominio_1",
+      "name": "Dote de dominio (N1)",
+      "level": 2,
+      "description": "Obtienes una dote concedida por tu Dominio Divino.",
+      "effects": [
+        {
+          "type": "dote_subclase",
+          "ref": "dominio_1"
+        }
+      ]
+    },
+    {
+      "id": "dote_dominio_3",
+      "name": "Dote de dominio (N3)",
+      "level": 3,
+      "description": "Obtienes otra dote concedida por tu Dominio Divino.",
+      "effects": [
+        {
+          "type": "dote_subclase",
+          "ref": "dominio_3"
+        }
+      ]
+    },
+    {
+      "id": "mejora_puntuacion_caracteristica",
+      "name": "Mejora de puntuación de característica",
+      "level": 4,
+      "description": "Puedes aumentar una puntuación de característica en 2, o dos puntuaciones en 1. No puedes elevar una puntuación por encima de 20 con esta dote.",
+      "effects": [
+        {
+          "type": "asi",
+          "value": "2/1+1",
+          "max": 20
+        }
+      ]
+    },
+    {
+      "id": "dote_dominio_5",
+      "name": "Dote de dominio (N5)",
+      "level": 5,
+      "description": "Obtienes un conjuro y dote de dominio en este nivel.",
+      "effects": [
+        {
+          "type": "dote_subclase",
+          "ref": "dominio_5"
+        }
+      ]
+    },
+    {
+      "id": "intervencion_divina",
+      "name": "Intervención divina",
+      "level": 10,
+      "description": "Puedes invocar a tu deidad para que interceda por ti. Como acción mágica, gastas un uso de Canalizar Divinidad para pedir ayuda. Tu deidad puede intervenir duplicando cualquier conjuro de clérigo de nivel 5 o menor. La naturaleza la elige la deidad; tú no tienes control. Una vez por descanso largo; en el nivel 20 no requiere acción y siempre tiene éxito.",
+      "effects": [
+        {
+          "type": "recurso",
+          "name": "Intervención Divina",
+          "per": "descanso_largo",
+          "autoSucceedAt": 20,
+          "cost": "Canalizar Divinidad"
+        }
+      ]
+    },
+    {
+      "id": "dote_dominio_6",
+      "name": "Dote de dominio (N6)",
+      "level": 6,
+      "description": "Obtienes una dote concedida por tu Dominio Divino.",
+      "effects": [
+        {
+          "type": "dote_subclase",
+          "ref": "dominio_6"
+        }
+      ]
+    },
+    {
+      "id": "dote_dominio_8",
+      "name": "Dote de dominio (N8)",
+      "level": 8,
+      "description": "Obtienes una dote concedida por tu Dominio Divino.",
+      "effects": [
+        {
+          "type": "dote_subclase",
+          "ref": "dominio_8"
+        }
+      ]
+    },
+    {
+      "id": "dote_dominio_14",
+      "name": "Dote de dominio (N14)",
+      "level": 14,
+      "description": "Obtienes una dote concedida por tu Dominio Divino.",
+      "effects": [
+        {
+          "type": "dote_subclase",
+          "ref": "dominio_14"
+        }
+      ]
+    },
+    {
+      "id": "dote_dominio_17",
+      "name": "Dote de dominio (N17)",
+      "level": 17,
+      "description": "Obtienes una dote concedida por tu Dominio Divino.",
+      "effects": [
+        {
+          "type": "dote_subclase",
+          "ref": "dominio_17"
+        }
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "proficiencyBonus": 2,
+      "features": [
+        "lanzamiento_conjuros",
+        "dominio_divino",
+        "trucos_conocidos"
+      ],
+      "spellSlots": {
+        "1": 2,
+        "cantrips_known": 3
+      }
+    },
+    {
+      "level": 2,
+      "proficiencyBonus": 2,
+      "features": [
+        "canalizar_divinidad",
+        "dote_dominio_1"
+      ],
+      "spellSlots": {
+        "1": 3,
+        "cantrips_known": 3
+      }
+    },
+    {
+      "level": 3,
+      "proficiencyBonus": 2,
+      "features": [
+        "dote_dominio_3"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 2,
+        "cantrips_known": 3
+      }
+    },
+    {
+      "level": 4,
+      "proficiencyBonus": 2,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "cantrips_known": 4
+      }
+    },
+    {
+      "level": 5,
+      "proficiencyBonus": 3,
+      "features": [
+        "dote_dominio_5"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 2,
+        "cantrips_known": 4
+      }
+    },
+    {
+      "level": 6,
+      "proficiencyBonus": 3,
+      "features": [
+        "dote_dominio_6"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "cantrips_known": 4
+      }
+    },
+    {
+      "level": 7,
+      "proficiencyBonus": 3,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 1,
+        "cantrips_known": 4
+      }
+    },
+    {
+      "level": 8,
+      "proficiencyBonus": 3,
+      "features": [
+        "dote_dominio_8",
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 2,
+        "cantrips_known": 4
+      }
+    },
+    {
+      "level": 9,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1,
+        "cantrips_known": 4
+      }
+    },
+    {
+      "level": 10,
+      "proficiencyBonus": 4,
+      "features": [
+        "intervencion_divina"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 11,
+      "proficiencyBonus": 4,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 12,
+      "proficiencyBonus": 4,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 13,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 14,
+      "proficiencyBonus": 5,
+      "features": [
+        "dote_dominio_14"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 15,
+      "proficiencyBonus": 5,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 16,
+      "proficiencyBonus": 5,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 17,
+      "proficiencyBonus": 6,
+      "features": [
+        "dote_dominio_17"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 18,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 19,
+      "proficiencyBonus": 6,
+      "features": [
+        "mejora_puntuacion_caracteristica"
+      ],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "cantrips_known": 5
+      }
+    },
+    {
+      "level": 20,
+      "proficiencyBonus": 6,
+      "features": [],
+      "spellSlots": {
+        "1": 4,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "cantrips_known": 5
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "class_id": "cleric",
+      "id": "life_domain",
+      "name": "Dominio de Vida",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "disciple_of_life",
+          "name": "Discípulo de Vida",
+          "level": 1,
+          "description": "Al lanzar conjuros de curación nivel 1+, el objetivo recibe pg extra igual a 2 + nivel."
+        },
+        {
+          "id": "preserve_life",
+          "name": "Preservar Vida",
+          "level": 2,
+          "description": "Acción: restaura hasta 5×nivel de clérigo (50 ft al nivel 11+) de criaturas a 9 m."
+        },
+        {
+          "id": "blessed_healer",
+          "name": "Sanador Bendito",
+          "level": 6,
+          "description": "Cuando lanzas sanación a otro, recuperas 2 + nivel pg."
+        },
+        {
+          "id": "divine_strike",
+          "name": "Golpe Divino",
+          "level": 8,
+          "description": "Una vez por turno, +1d8 radiante a un ataque de arma (2d8 al 14)."
+        },
+        {
+          "id": "supreme_healing",
+          "name": "Sanación Suprema",
+          "level": 17,
+          "description": "Heal o palabra curativa restauran pg máximos en vez del valor tirado."
+        }
+      ],
+      "description": "Sírves a una deidad de sanación, generosidad y compasión. Tu magia sustenta la vida y repele la muerte."
+    },
+    {
+      "class_id": "cleric",
+      "id": "light_domain",
+      "name": "Dominio de Luz",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "light_bearer",
+          "name": "Portador de Luz",
+          "level": 1,
+          "description": "Aprendes el truco Luz. Sabiduría es tu Característica de Lanzamiento."
+        },
+        {
+          "id": "warding_flare",
+          "name": "Destello de Guardia",
+          "level": 1,
+          "description": "Cuando una criatura te ataca, reacción para imponer desventaja o +1 a CA."
+        },
+        {
+          "id": "radiance_of_the_dawn",
+          "name": "Resplandor del Alba",
+          "level": 2,
+          "description": "Acción: luz mágica radio 9 m; Constitución o 2d10 radiante y cegado hasta tu próximo turno.",
+          "savingThrow": "Constitution"
+        },
+        {
+          "id": "improved_flare",
+          "name": "Destello Mejorado",
+          "level": 6,
+          "description": "Usa Destello de Guardia también sobre aliados; repites los dados."
+        },
+        {
+          "id": "potent_spellcasting",
+          "name": "Lanzamiento Potente",
+          "level": 8,
+          "description": "Suma modificador de Sabiduría al daño de trucos."
+        },
+        {
+          "id": "nineteen_levels",
+          "name": "Culminación",
+          "level": 17,
+          "description": "Lanza Luz Diurna y Golpe de Llama a voluntad."
+        }
+      ],
+      "description": "Sírves a una deidad de luz o te iluminas con su resplandor en una obsesión ardiente por la luz."
+    },
+    {
+      "id": "luz",
+      "name": "Dominio de la Luz",
+      "grantedAtLevel": 1,
+      "description": "Los dioses de la luz — incluidas las deidades del amanecer, el brillo y la renovación — empoderan a los clérigos con magia radiante y el coraje de rechazar la oscuridad.",
+      "domainSpells": {
+        "1": [
+          "llamas",
+          "luces_feericas"
+        ],
+        "3": [
+          "rayo_moriente",
+          "ver_invisible"
+        ],
+        "5": [
+          "luz_diurna",
+          "bola_de_fuego"
+        ],
+        "7": [
+          "guardian_de_fe",
+          "muro_de_fuego"
+        ],
+        "9": [
+          "golpe_de_llamas",
+          "restauracion_mayor"
+        ]
+      },
+      "features": [
+        {
+          "id": "luz_competencia_armas_marciales",
+          "name": "Entrenamiento del Dominio de Luz",
+          "level": 1,
+          "description": "Obtienes competencia con armadura ligera y armas marciales.",
+          "effects": [
+            {
+              "type": "anadir_competencia",
+              "category": "arma",
+              "items": [
+                "Armas marciales"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "resplandor_amanecer",
+          "name": "Resplandor del amanecer (Canalizar Divinidad)",
+          "level": 2,
+          "description": "Como acción mágica, presentas tu símbolo sagrado y emites luz brillante en un radio de 9 metros. Cada criatura a tu elección en esa luz recibe 2d10 + tu modificador de Sabiduría de daño radiante, y puedes gastar un espacio de conjuro para aumentar el daño.",
+          "effects": [
+            {
+              "type": "canalizar_opcion",
+              "action_cost": "accion_magica",
+              "aoe": {
+                "shape": "esfera",
+                "radius": 9,
+                "type": "luz_radiante"
+              },
+              "damage": "2d10 + mod_SAB",
+              "slot_upcast": {
+                "1": "+1d10",
+                "2": "+2d10",
+                "3": "+3d10",
+                "4": "+4d10",
+                "5": "+5d10",
+                "6": "+6d10",
+                "7": "+7d10",
+                "8": "+8d10",
+                "9": "+9d10"
+              }
+            }
+          ]
+        },
+        {
+          "id": "corona_luz",
+          "name": "Corona de luz",
+          "level": 6,
+          "description": "Puedes usar tu acción para que tu símbolo sagrado emita luz brillante en un radio de 18 metros y luz tenue 18 metros más. Como acción adicional, puedes disipar esta luz. Mientras brilla, tienes resistencia al daño radiante, y cada criatura a tu elección dentro de la luz brillante tiene desventaja en sus tiradas de ataque contra ti.",
+          "effects": [
+            {
+              "type": "alternar_aura",
+              "speed": "accion",
+              "radio_brillante": 18,
+              "radio_tenue": 18,
+              "resistencia_radiante": true,
+              "desventaja_contra_ti": true
+            }
+          ]
+        },
+        {
+          "id": "destello_mejorado",
+          "name": "Destello mejorado",
+          "level": 8,
+          "description": "Cuando una criatura en 9 metros que puedas ver te ataque, puedes usar tu reacción para imponer desventaja en la tirada de ataque, causando que una luz radiante destelle a tu alrededor.",
+          "effects": [
+            {
+              "type": "reaccion_imponer_desventaja_ataque",
+              "trigger": "objetivo_te_ataca",
+              "range": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "class_id": "cleric",
+      "id": "nature_domain",
+      "name": "Dominio de Naturaleza",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "druidic_learning",
+          "name": "Druida",
+          "level": 1,
+          "description": "Aprendes Drúdico (lengua secreta). Puedes realizar rituales druidas."
+        },
+        {
+          "id": "a_heavily_armored_cleric",
+          "name": "Competencia Armadura Pesada",
+          "level": 1,
+          "description": "Ganas competencia con armadura pesada."
+        },
+        {
+          "id": "nature_lover",
+          "name": "Amor Animal",
+          "level": 2,
+          "description": "Aprendes Arte de druida y Hablar con animales."
+        },
+        {
+          "id": "transmute_stone",
+          "name": "Alma Camaleón",
+          "level": 6,
+          "description": "Gasta una Divinidad del Canal para obtener visión en la oscuridad 18 m y resistencia a un daño durante 10 min."
+        },
+        {
+          "id": "divine_strike_primal",
+          "name": "Golpe Divino (Primal)",
+          "level": 8,
+          "description": "+1d8 frío, fuego o trueno adicional en ataques cuerpo a cuerpo."
+        },
+        {
+          "id": "master_of_nature",
+          "name": "Maestro de Naturaleza",
+          "level": 17,
+          "description": "Lanza Crecimiento de plantas y Muro de viento una vez al amanecer sin slot."
+        }
+      ],
+      "description": "Sírves a una deidad de naturaleza o respetas a la naturaleza como fuerza divina."
+    },
+    {
+      "class_id": "cleric",
+      "id": "trickery_domain",
+      "name": "Dominio del Engaño",
+      "grantedAtLevel": 1,
+      "features": [
+        {
+          "id": "blessed_of_the_trickster",
+          "name": "Bendición del Tramposo",
+          "level": 1,
+          "description": "Lanza Disfrazarte a voluntad sin slot."
+        },
+        {
+          "id": "trickery_cloak",
+          "name": "Capa de Sombras",
+          "level": 2,
+          "description": "Divinidad del Canal: invisible durante 10 min. Atacar lo termina."
+        },
+        {
+          "id": "invoke_duplicity",
+          "name": "Invocar Duplicidad",
+          "level": 2,
+          "description": "Divinidad del Canal: duplicado ilusorio perfecto (hasta 9 m)."
+        },
+        {
+          "id": "improved_invisibility",
+          "name": "Duplicidad Mejorada",
+          "level": 6,
+          "description": "Lanza Imagen duplicada e Imagen mayor a voluntad."
+        },
+        {
+          "id": "divine_strike_stealth",
+          "name": "Golpe Divino (Sigilo)",
+          "level": 8,
+          "description": "+1d8 psíquico con ataque de arma."
+        },
+        {
+          "id": "improved_invisibility_powerful",
+          "name": "Invisibilidad Mejorada",
+          "level": 17,
+          "description": "Capa de Sombras persiste mientras atacas (termina tras ataque)."
+        }
+      ],
+      "description": "Sírves a una deidad de ladrones, engaño, truco o astucia. Tu magia es sutil y engañosa."
+    },
+    {
+      "id": "vida",
+      "name": "Dominio de Vida",
+      "grantedAtLevel": 1,
+      "description": "El Dominio de Vida se centra en la energía positiva que sostiene toda la vida. Los dioses de la curación y la vitalidad conceden a los clérigos de este Dominio poderosas capacidades curativas.",
+      "domainSpells": {
+        "1": [
+          "bendecir",
+          "curar_heridas"
+        ],
+        "3": [
+          "restauracion_menor",
+          "arma_espiritual"
+        ],
+        "5": [
+          "esperanza_viva",
+          "revivificar"
+        ],
+        "7": [
+          "guardia_muerte",
+          "guardian_de_fe"
+        ],
+        "9": [
+          "restauracion_mayor",
+          "curar_heridas_masivo"
+        ]
+      },
+      "features": [
+        {
+          "id": "vida_competencia_armadura_pesada",
+          "name": "Competencia con armadura pesada",
+          "level": 1,
+          "description": "Obtienes competencia con armadura pesada.",
+          "effects": [
+            {
+              "type": "anadir_competencia",
+              "category": "armadura",
+              "items": [
+                "Armadura pesada"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "discipulo_vida",
+          "name": "Discípulo de la Vida",
+          "level": 1,
+          "description": "Cuando lanzas un conjuro de nivel 1 o superior que restaura puntos de golpe a una criatura, el objetivo recupera puntos de golpe adicionales: 2 + el nivel del conjuro.",
+          "effects": [
+            {
+              "type": "bonus_curacion",
+              "formula": "2 + nivel_conjuro",
+              "appliesTo": "conjuros_curacion_nivel_1_plus"
+            }
+          ]
+        },
+        {
+          "id": "preservador_vida",
+          "name": "Preservador de la vida (Canalizar Divinidad)",
+          "level": 2,
+          "description": "Como acción mágica, presentas tu símbolo sagrado y evocas energía sanadora: cada criatura a tu elección en 9 metros (30 pies) que pueda oírte recupera puntos de golpe iguales a 2d8 + tu modificador de Sabiduría (puedes gastar un espacio de conjuro para aumentar).",
+          "effects": [
+            {
+              "type": "canalizar_opcion",
+              "action_cost": "accion_magica",
+              "range": 9,
+              "heal": "2d8 + mod_SAB",
+              "slot_upcast": {
+                "1": "+1d8",
+                "2": "+2d8",
+                "3": "+3d8",
+                "4": "+4d8",
+                "5": "+5d8",
+                "6": "+6d8",
+                "7": "+7d8",
+                "8": "+8d8",
+                "9": "+9d8"
+              }
+            }
+          ]
+        },
+        {
+          "id": "vida_preservada",
+          "name": "Vida preservada (Canalizar Divinidad)",
+          "level": 6,
+          "description": "Puedes usar tu Canalizar Divinidad para maximizar la curación de un conjuro sanador que lances.",
+          "effects": [
+            {
+              "type": "maximizar_curacion_conjuro",
+              "cost": "Canalizar Divinidad"
+            }
+          ]
+        },
+        {
+          "id": "curacion_suprema",
+          "name": "Curación suprema",
+          "level": 8,
+          "description": "Cuando tires un dado de golpe para determinar puntos de golpe ganados, lo tratas como si obtuviera su valor máximo.",
+          "effects": [
+            {
+              "type": "maximizar_dado_golpe",
+              "scope": "self"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "light",
+      "name": "Light Domain",
+      "grantedAtLevel": 1,
+      "description": "Gods of light — including deities of dawn, brilliance, and renewal — empower Clerics with radiant magic and the courage to drive back darkness.",
+      "domainSpells": {
+        "1": [
+          "burning_hands",
+          "faerie_fire"
+        ],
+        "3": [
+          "scorching_ray",
+          "see_invisibility"
+        ],
+        "5": [
+          "daylight",
+          "fireball"
+        ],
+        "7": [
+          "guardian_of_faith",
+          "wall_of_fire"
+        ],
+        "9": [
+          "flame_strike",
+          "greater_restoration"
+        ]
+      },
+      "features": [
+        {
+          "id": "light_domain_martial_weapons",
+          "name": "Light Domain Training",
+          "level": 1,
+          "description": "You gain proficiency with Light Armor and with Martial Weapons.",
+          "effects": [
+            {
+              "type": "add_proficiency",
+              "category": "weapon",
+              "items": [
+                "Martial Weapons"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "radiance_of_the_dawn",
+          "name": "Radiance of the Dawn (Channel Divinity)",
+          "level": 2,
+          "description": "As a magic action, you present your holy symbol and shed bright light in a 30-foot radius. Each creature of your choice in that light takes 2d10 + your Wisdom modifier radiant damage, and you can spend a spell slot to deal more damage.",
+          "effects": [
+            {
+              "type": "channel_divinity_option",
+              "action_cost": "magic_action",
+              "aoe": {
+                "shape": "sphere",
+                "radius": 30,
+                "type": "radiant_light"
+              },
+              "damage": "2d10 + WIS mod",
+              "slot_upcast": {
+                "1": "+1d10",
+                "2": "+2d10",
+                "3": "+3d10",
+                "4": "+4d10",
+                "5": "+5d10",
+                "6": "+6d10",
+                "7": "+7d10",
+                "8": "+8d10",
+                "9": "+9d10"
+              }
+            }
+          ]
+        },
+        {
+          "id": "corona_of_light",
+          "name": "Corona of Light",
+          "level": 6,
+          "description": "You can use your action to cause your holy symbol to shed bright light in a 60-foot radius, dim light for an additional 60 feet. As a bonus action, you can dismiss this light. While it shines, you have resistance to radiant damage, and each creature of your choice within the bright light has disadvantage on attack rolls against you.",
+          "effects": [
+            {
+              "type": "toggle_aura",
+              "speed": "action",
+              "bright_radius": 60,
+              "dim_radius": 60,
+              "resistance_to_radiant": true,
+              "disadvantage_against_you": true
+            }
+          ]
+        },
+        {
+          "id": "improved_flare",
+          "name": "Improved Flare",
+          "level": 8,
+          "description": "When a creature within 30 feet that you can see attacks you, you can use your reaction to impose disadvantage on the attack roll, causing radiant light to flare around you.",
+          "effects": [
+            {
+              "type": "reaction_impose_disadvantage_on_attack",
+              "trigger": "target_attacks_you",
+              "range": 30,
+              "save_or_impose": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "life",
+      "name": "Life Domain",
+      "grantedAtLevel": 1,
+      "description": "The Life Domain focuses on the vibrant positive energy that sustains all life. Gods of healing and vitality grant Clerics of this Domain powerful healing abilities.",
+      "domainSpells": {
+        "1": [
+          "bless",
+          "cure_wounds"
+        ],
+        "3": [
+          "lesser_restoration",
+          "spiritual_weapon"
+        ],
+        "5": [
+          "beacon_of_hope",
+          "revivify"
+        ],
+        "7": [
+          "death_ward",
+          "guardian_of_faith"
+        ],
+        "9": [
+          "greater_restoration",
+          "mass_cure_wounds"
+        ]
+      },
+      "features": [
+        {
+          "id": "life_domain_heavy_armor",
+          "name": "Heavy Armor Proficiency",
+          "level": 1,
+          "description": "You gain proficiency with Heavy Armor.",
+          "effects": [
+            {
+              "type": "add_proficiency",
+              "category": "armor",
+              "items": [
+                "Heavy Armor"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "disciple_of_life",
+          "name": "Disciple of Life",
+          "level": 1,
+          "description": "Whenever you use a spell of 1st level or higher to restore hit points to a creature, the target regains additional hit points: 2 + the spell's level.",
+          "effects": [
+            {
+              "type": "healing_bonus",
+              "formula": "2 + spell_level",
+              "appliesTo": "healing_spells_of_1st_plus"
+            }
+          ]
+        },
+        {
+          "id": "life_preserver",
+          "name": "Life Preserver (Channel Divinity)",
+          "level": 2,
+          "description": "As a magic action, you present your holy symbol and evoke healing energy: each creature of your choice within 30 feet that can hear you regains hit points equal to 2d8 + your Wisdom modifier (and you can spend a spell slot to increase it).",
+          "effects": [
+            {
+              "type": "channel_divinity_option",
+              "action_cost": "magic_action",
+              "range": 30,
+              "heal": "2d8 + WIS mod",
+              "slot_upcast": {
+                "1": "+1d8",
+                "2": "+2d8",
+                "3": "+3d8",
+                "4": "+4d8",
+                "5": "+5d8",
+                "6": "+6d8",
+                "7": "+7d8",
+                "8": "+8d8",
+                "9": "+9d8"
+              }
+            }
+          ]
+        },
+        {
+          "id": "preserved_life",
+          "name": "Preserved Life (Channel Divinity)",
+          "level": 6,
+          "description": "You can use your Channel Divinity to maximize the healing of a healing spell you cast.",
+          "effects": [
+            {
+              "type": "maximize_healing_spell",
+              "cost": "Channel Divinity"
+            }
+          ]
+        },
+        {
+          "id": "supreme_healing",
+          "name": "Supreme Healing",
+          "level": 8,
+          "description": "When you roll a hit die to determine hit points gained, you treat the die as if it rolled its maximum value.",
+          "effects": [
+            {
+              "type": "maximize_hit_dice_roll",
+              "scope": "self"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spellcasting": {
+    "ability": "wis",
+    "list": "clerigo",
+    "spellbook": false,
+    "preparedCasting": true,
+    "ritualCasting": true
+  }
+}

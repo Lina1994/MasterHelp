@@ -1,0 +1,92 @@
+{
+  "id": "fire-elemental",
+  "slug": "fire-elemental",
+  "lang": "en",
+  "source": "SRD 5.2 (2024)",
+  "name": "Fire Elemental",
+  "size": "Large",
+  "type": "Elemental",
+  "alignment": "Neutral",
+  "armorClass": {
+    "value": 13
+  },
+  "hitPoints": {
+    "average": 102,
+    "roll": "12d10+36"
+  },
+  "speed": {
+    "walk": 50
+  },
+  "abilities": {
+    "str": 10,
+    "dex": 17,
+    "con": 16,
+    "int": 6,
+    "wis": 10,
+    "cha": 7
+  },
+  "savingThrows": {
+    "str": 0,
+    "dex": 3,
+    "con": 3,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "skills": null,
+  "damageVulnerabilities": [],
+  "damageResistances": [],
+  "damageImmunities": [
+    "fire"
+  ],
+  "conditionImmunities": [
+    "exhaustion",
+    "grappled",
+    "paralyzed",
+    "petrified",
+    "poisoned",
+    "prone",
+    "restrained",
+    "unconscious"
+  ],
+  "senses": "darkvision 60 ft., passive Perception 10",
+  "languages": "Ignan",
+  "proficiencyBonus": 3,
+  "challengeRating": "5",
+  "experiencePoints": 1800,
+  "traits": [
+    {
+      "name": "Fire Aura",
+      "text": "At the end of each of the elemental’s turns, each creature in a 10-foot Emanation originating from the elemental takes 5 (1d10) Fire damage. Creatures and flammable objects in the Emanation start burning."
+    },
+    {
+      "name": "Fire Form",
+      "text": "The elemental can move through a space as narrow as 1 inch without expending extra movement to do so, and it can enter a creature’s space and stop there. The first time it enters a creature’s space on a turn, that creature takes 5 (1d10) Fire damage."
+    },
+    {
+      "name": "Illumination",
+      "text": "The elemental sheds Bright Light in a 30- foot radius and Dim Light for an additional 30 feet."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Multiattack.",
+      "text": "The elemental makes two touch attacks."
+    },
+    {
+      "name": "Touch.",
+      "text": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 14 (2d10 + 3) fire damage, or 7 (2d6) fire damage if the elemental has half HP or fewer."
+    }
+  ],
+  "reactions": [],
+  "legendaryActions": [],
+  "spellcasting": [],
+  "environment": [],
+  "notes": [],
+  "initiative": 3,
+  "srd_en_match_name": "Fire-Elemental",
+  "srd_en_page": 281,
+  "srd_en_soft_warnings": [
+    "soft: no actions[] (multi-page split or partial extraction)"
+  ]
+}
